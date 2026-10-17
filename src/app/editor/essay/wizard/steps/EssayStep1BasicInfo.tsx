@@ -108,7 +108,7 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
               <Input
                 value={data.groom.firstName}
                 onChange={(e) => { updateNestedData('groom.firstName', e.target.value); updateNestedData('groom.name', data.groom.lastName + e.target.value) }}
-                placeholder="민준"
+                placeholder="지훈"
               />
             </div>
           </div>

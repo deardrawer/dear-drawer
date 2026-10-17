@@ -11,7 +11,9 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
 import IntroAnimation from '@/components/invitation/IntroAnimation'
-import { IntroSettings, getDefaultIntroSettings } from '@/lib/introPresets'
+import InteractiveIntro, { hasInteractiveRenderer } from '@/components/invitation/intros/InteractiveIntro'
+import { buildIntroData } from '@/components/invitation/intros/shared'
+import { IntroSettings, getDefaultIntroSettings, isInteractiveIntro } from '@/lib/introPresets'
 import { parseHighlight } from '@/lib/textUtils'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
@@ -3921,6 +3923,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
   // Get intro settings from invitation or use default
   const effectiveIntroSettings = introSettings || invitation.intro || getDefaultIntroSettings('cinematic')
+  // 인터랙티브 인트로는 4.5초 애니메이션+커버 대신 쓰이고, 끝나면 바로 초대글로 넘어간다
+  const interactiveIntroId = isInteractiveIntro(effectiveIntroSettings?.presetId) && hasInteractiveRenderer(effectiveIntroSettings.presetId) ? effectiveIntroSettings.presetId : null
 
   // Handle intro animation complete
   const handleIntroComplete = useCallback(() => {
@@ -4047,12 +4051,12 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
   return (
     <div className="relative w-full h-screen">
       {/* A-1: 인트로 이미지 decode 대기 중엔 IntroAnimation 폴백과 동일한 다크 배경만 표시(흰 플래시 방지) */}
-      {showIntroAnimation && effectiveIntroSettings?.presetId && !introImgReady && (
+      {showIntroAnimation && !interactiveIntroId && effectiveIntroSettings?.presetId && !introImgReady && (
         <div className="fixed inset-0 z-40" style={{ background: 'linear-gradient(135deg, #333 0%, #111 100%)' }} />
       )}
 
       {/* INTRO ANIMATION - Using IntroAnimation component based on saved preset */}
-      {showIntroAnimation && effectiveIntroSettings?.presetId && introImgReady && (
+      {showIntroAnimation && !interactiveIntroId && effectiveIntroSettings?.presetId && introImgReady && (
         <IntroAnimation
           settings={effectiveIntroSettings}
           coverImage={invitation.media.coverImage}
@@ -4067,8 +4071,17 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         />
       )}
 
+      {currentScreen === 'cover' && interactiveIntroId && (
+        <InteractiveIntro
+          styleId={interactiveIntroId}
+          settings={effectiveIntroSettings}
+          data={buildIntroData({ ...invitation, intro: effectiveIntroSettings })}
+          onNext={() => switchScreen('cover', 'invitation')}
+        />
+      )}
+
       {/* COVER SECTION - matching original template exactly */}
-      {currentScreen === 'cover' && (
+      {currentScreen === 'cover' && !interactiveIntroId && (
       <section
         className="fixed inset-0 flex flex-col justify-center items-center cursor-pointer z-40"
         style={{

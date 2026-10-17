@@ -425,7 +425,7 @@ export const filmSampleContent = {
     "thankYou": {
       "title": "SPECIAL THANKS",
       "message": "바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.",
-      "sign": "민준 & 서연 올림"
+      "sign": "지훈 & 서연 올림"
     },
     "info": {
       "dressCode": {

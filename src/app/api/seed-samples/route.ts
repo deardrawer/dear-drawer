@@ -90,7 +90,7 @@ const ourSampleContent = {
     thankYou: {
       title: 'THANK YOU',
       message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.',
-      sign: '민준 & 서연 올림',
+      sign: '지훈 & 서연 올림',
     },
     info: {
       dressCode: { title: '드레스코드', content: '결혼식에 맞는 옷차림을 고민하지 않으셔도 괜찮아요.\n여러분이 가장 좋아하는 옷, 가장 여러분 다운 모습으로 오셔서 함께 웃고 즐겨주신다면 그걸로 충분합니다.\n우리의 특별한 하루를 함께 빛내주세요.', enabled: true },
@@ -134,7 +134,7 @@ const ourSampleContent = {
     bgm: '',
   },
   meta: {
-    title: '민준 ♥ 서연 결혼합니다',
+    title: '지훈 ♥ 서연 결혼합니다',
     description: '2025년 5월 24일 토요일 오후 2시\n더채플앳청담 그랜드볼룸',
     ogImage: '/sample/cover.jpg',
     kakaoThumbnail: '/sample/cover.jpg',

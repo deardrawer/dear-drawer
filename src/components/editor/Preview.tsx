@@ -128,6 +128,20 @@ function RecordPreviewWrapper({ invitation, skipIntro }: { invitation: Invitatio
     highlightColor: invitation.highlightColor,
     displayFont: (invitation as any).displayFont,
     styleOverrides: (invitation as any).styleOverrides,
+    recordIntroStyle: (invitation as any).recordIntroStyle,
+    recordDaysLabel: (invitation as any).recordDaysLabel,
+    recordDaysStart: (invitation as any).recordDaysStart,
+    recordDaysTitle: (invitation as any).recordDaysTitle,
+    recordDaysImage: (invitation as any).recordDaysImage,
+    recordDaysImageSettings: (invitation as any).recordDaysImageSettings,
+    recordDaysTone: (invitation as any).recordDaysTone,
+    recordDaysSong: (invitation as any).recordDaysSong,
+    recordDaysArtist: (invitation as any).recordDaysArtist,
+    recordDaysMessage: (invitation as any).recordDaysMessage,
+    recordDaysBg: (invitation as any).recordDaysBg,
+    recordDaysInk: (invitation as any).recordDaysInk,
+    recordLpImage: (invitation as any).recordLpImage,
+    recordLpImageSettings: (invitation as any).recordLpImageSettings,
     ddayPopup: invitation.ddayPopup,
   }), [invitation])
 
@@ -218,6 +232,33 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     filmFrameTitle: (invitation as any).filmFrameTitle,
     filmFrameImage2: (invitation as any).filmFrameImage2,
     filmFrameImage2Settings: (invitation as any).filmFrameImage2Settings,
+    filmFrameFontEn: (invitation as any).filmFrameFontEn,
+    filmFrameFontKo: (invitation as any).filmFrameFontKo,
+    filmBoothImages: (invitation as any).filmBoothImages,
+    filmBoothImageSettings: (invitation as any).filmBoothImageSettings,
+    filmBoothBgColor: (invitation as any).filmBoothBgColor,
+    filmBoothLabel: (invitation as any).filmBoothLabel,
+    filmBoothTitle: (invitation as any).filmBoothTitle,
+    filmBoothLead: (invitation as any).filmBoothLead,
+    filmBoothTone: (invitation as any).filmBoothTone,
+    filmBoothGroomEn: (invitation as any).filmBoothGroomEn,
+    filmBoothBrideEn: (invitation as any).filmBoothBrideEn,
+    filmDotsImage: (invitation as any).filmDotsImage,
+    filmDotsImageSettings: (invitation as any).filmDotsImageSettings,
+    filmDotsNamePos: (invitation as any).filmDotsNamePos,
+    filmDotsCaption: (invitation as any).filmDotsCaption,
+    filmDotsGroomEn: (invitation as any).filmDotsGroomEn,
+    filmDotsBrideEn: (invitation as any).filmDotsBrideEn,
+    filmDotsDeco: (invitation as any).filmDotsDeco,
+    filmDaysStart: (invitation as any).filmDaysStart,
+    filmDaysImage: (invitation as any).filmDaysImage,
+    filmDaysImageSettings: (invitation as any).filmDaysImageSettings,
+    filmDaysTitle: (invitation as any).filmDaysTitle,
+    filmDaysMessage: (invitation as any).filmDaysMessage,
+    filmDaysBg: (invitation as any).filmDaysBg,
+    filmDaysInk: (invitation as any).filmDaysInk,
+    filmOttGenre: (invitation as any).filmOttGenre,
+    filmTicketSeat: (invitation as any).filmTicketSeat,
     fullHeightDividers: (invitation as any).fullHeightDividers,
     parentIntro: (invitation as any).parentIntro,
     whyWeChose: (invitation as any).whyWeChose,
@@ -300,6 +341,8 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
   const invitation = useDeferredValue(rawInvitation)
   const [currentPage, setCurrentPage] = useState<PageType>('intro')
   const [introScreen, setIntroScreen] = useState<'cover' | 'invitation'>('cover')
+  // 인트로 다시 보기: 미리보기를 처음부터 다시 그린다
+  const [replayKey, setReplayKey] = useState(0)
   const previewContentRef = useRef<HTMLDivElement>(null)
 
   // 탭 전환 안정화를 위한 refs
@@ -462,6 +505,14 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
               Main
             </button>
           </div>
+          {/* 인트로 탭에서만: 애니메이션을 처음부터 다시 보기 */}
+          {currentPage === 'intro' && (
+            <button type="button" onClick={() => { setIntroScreen('cover'); setReplayKey((k) => k + 1) }} aria-label="인트로 다시 보기"
+              className="ml-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white text-[11px] font-medium text-gray-600 hover:text-gray-900 hover:border-gray-300 transition-colors select-none">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+              다시 보기
+            </button>
+          )}
         </div>
       )}
       <div className="flex-1 min-h-0 flex justify-center px-6 pb-6">
@@ -480,8 +531,8 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
             `}</style>
             <div ref={previewContentRef} className={`flex-1 overflow-y-auto min-h-0 relative z-0 theme-${invitation.colorTheme || 'classic-rose'} ${isRomantic ? 'font-romantic' : ''}`} id="preview-content" style={{ fontFamily: fonts.body, color: customBodyTextColor, letterSpacing: '-0.3px', ...(customAccentTextColor ? { '--text-accent': customAccentTextColor } as React.CSSProperties : {}), ...(invitation.highlightColor ? { '--highlight-white': invitation.highlightColor } as React.CSSProperties : {}) }}>
               {invitation.templateId === 'narrative-record'
-                ? <RecordPreviewWrapper invitation={invitation} skipIntro={currentPage !== 'intro'} />
-                : <InvitationPreviewWrapper invitation={invitation} skipIntro={currentPage !== 'intro'} onIntroScreenChange={setIntroScreen} />
+                ? <RecordPreviewWrapper key={replayKey} invitation={invitation} skipIntro={currentPage !== 'intro'} />
+                : <InvitationPreviewWrapper key={replayKey} invitation={invitation} skipIntro={currentPage !== 'intro'} onIntroScreenChange={setIntroScreen} />
               }
             </div>
             {/* Floating Button - OUR/FAMILY 인트로 커버에서는 숨김 */}

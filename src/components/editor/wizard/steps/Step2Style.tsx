@@ -1221,45 +1221,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
         )}
       </section>
 
-      {/* 넘김 안내 문구 (인트로 하단) — OUR/FAMILY 전용 */}
-      {['narrative-our', 'narrative-family'].includes(templateId || invitation.templateId || '') && (
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            넘김 안내 문구
-          </h3>
-          <Switch
-            checked={invitation.intro?.guideEnabled ?? false}
-            onCheckedChange={(checked) => {
-              updateNestedField('intro.guideEnabled', checked)
-              // 켜면 미리보기를 인트로 커버(문구가 보이는 화면)로 이동
-              if (checked) {
-                setActiveSection(null)
-                setTimeout(() => setActiveSection('intro-cover'), 0)
-              }
-            }}
-          />
-        </div>
-        <p className="text-sm text-gray-500">
-          인트로 하단에 스크롤·터치로 넘기는 방법을 안내하는 문구를 표시합니다.
-        </p>
-        {invitation.intro?.guideEnabled && (
-          <div className="p-3 bg-gray-50 rounded-lg space-y-2">
-            <label className="text-sm text-gray-700">안내 문구</label>
-            <input
-              type="text"
-              value={invitation.intro?.guideText ?? ''}
-              onChange={(e) => updateNestedField('intro.guideText', e.target.value)}
-              placeholder="터치하거나 아래로 넘겨주세요"
-              maxLength={30}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[color:var(--ed-accent)]"
-            />
-            <p className="text-xs text-gray-400">비워두면 기본 문구가 표시됩니다</p>
-          </div>
-        )}
-      </section>
-      )}
-
       {/* 오디오 플레이어 (숨김) */}
       <audio
         ref={audioRef}

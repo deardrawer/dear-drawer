@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import ImageUploader from '@/components/editor/ImageUploader'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
-import { getPresetById } from '@/lib/introPresets'
+import { resolvePresetId } from '@/lib/introPresets'
+import { getIntroStyle } from '@/lib/introStyles'
 import { SAMPLE_GREETING, SAMPLE_QUOTE } from '@/lib/sampleData'
 import { Sparkles, X, Loader2, AlertTriangle } from 'lucide-react'
 import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
@@ -121,7 +122,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
   if (!invitation) return null
 
   const { intro, media } = invitation
-  const currentPreset = getPresetById(intro.presetId)
+  const currentPreset = getIntroStyle(resolvePresetId(intro.presetId))
   const isFamily = templateId === 'narrative-family' || invitation.templateId === 'narrative-family'
   const isMagazine = templateId === 'narrative-magazine' || invitation.templateId === 'narrative-magazine'
 
@@ -367,23 +368,6 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         </div>
       </section>
 
-      {/* 커버 제목 */}
-      <section className="space-y-2">
-        <h3 className="text-base font-semibold text-gray-900">커버 제목</h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인트로가 끝난 뒤 커버 화면 가운데 크게 보이는 문구예요. (기본 &lsquo;{isFamily ? 'WEDDING INVITATION' : 'OUR WEDDING'}&rsquo; · Enter로 줄바꿈)</p>
-        <Textarea
-          value={invitation.wedding.title ?? ''}
-          onChange={(e) => {
-            updateNestedField('wedding.title', e.target.value)
-            updateNestedField('design.coverTitle', e.target.value)
-          }}
-          onFocus={() => setActiveSection('invitation')}
-          placeholder={isFamily ? 'WEDDING INVITATION' : 'OUR WEDDING'}
-          rows={2}
-          className="resize-none"
-        />
-      </section>
-
       {/* 결혼식 정보 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">
@@ -528,7 +512,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         {/* 스타일 편집 버튼 */}
         <button
           onClick={handleOpenIntroSelector}
-          className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3 px-4 bg-[color:var(--ed-accent)] hover:bg-[#684B38] text-[#F5F0ED] rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />

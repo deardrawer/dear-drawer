@@ -14,6 +14,9 @@ import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 import { YouTubeLite } from '@/components/invitation/YouTubeLite'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
+import { FRAME_EN_FONTS, FRAME_KO_FONTS, FRAME_FONTS_HREF } from '@/lib/filmFrameFonts'
+import { FilmDotsCover } from '@/components/invitation/film/FilmDotsCover'
+import { FilmOttCover, FilmTicketCover } from '@/components/invitation/film/FilmDaysCovers'
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'film-dark' | 'film-light'
@@ -240,279 +243,6 @@ function MusicToggle({ audioRef, isVisible, shouldAutoPlay, tc, showNotification
   )
 }
 
-// ===== Netflix-Style Cinematic Opening =====
-function FilmPosterCover({ invitation, fonts, tc, onEnter, isPreview }: {
-  invitation: any; fonts: FontConfig; tc: ColorConfig; onEnter: () => void; isPreview?: boolean
-}) {
-  const [phase, setPhase] = useState(0)
-  // 0: pure black (0~0.4s)
-  // 1: light streak flash (0.4~0.8s) — TUDUM moment
-  // 2: accent bar slams in + "presents" (0.8~1.6s)
-  // 3: names punch in BIG (1.6~3s)
-  // 4: date + venue slide in (3~4s)
-  // 5: hold (4~5s)
-  // 6: cinematic zoom-fade out (5~5.8s)
-  const [flash, setFlash] = useState(false)
-
-  const w = invitation.wedding
-  const weddingDate = w?.date ? new Date(w.date) : new Date()
-  const dateFormatted = `${weddingDate.getFullYear()}.${String(weddingDate.getMonth() + 1).padStart(2,'0')}.${String(weddingDate.getDate()).padStart(2,'0')}`
-  const dayNames = ['일', '월', '화', '수', '목', '금', '토']
-  const dayOfWeek = dayNames[weddingDate.getDay()]
-  const groomName = invitation.groom?.nameEn || invitation.groom?.name || ''
-  const brideName = invitation.bride?.nameEn || invitation.bride?.name || ''
-  const hasGroomEn = !!invitation.groom?.nameEn
-  const hasBrideEn = !!invitation.bride?.nameEn
-  const venueName = invitation.wedding?.venue?.name || ''
-  const dfs = (px: number) => `${Math.round(px * (fonts.ds || 1))}px`
-
-  useEffect(() => {
-    const timers = [
-      setTimeout(() => { setPhase(1); setFlash(true) }, 400),
-      setTimeout(() => setFlash(false), 700),
-      setTimeout(() => setPhase(2), 800),
-      setTimeout(() => setPhase(3), 1600),
-      setTimeout(() => setPhase(4), 3000),
-      setTimeout(() => setPhase(5), 4000),
-      setTimeout(() => setPhase(6), 5000),
-      setTimeout(() => onEnter(), 5800),
-    ]
-    return () => timers.forEach(clearTimeout)
-  }, [])
-
-  const accent = tc.accent || '#D4838F'
-  // 배경 밝기로 라이트/다크 판정 (기본 배경색을 커스텀해도 커버가 다크로 오판되지 않게)
-  const isLight = (() => {
-    const hex = (tc.background || '#FFFFFF').replace('#', '')
-    if (hex.length < 6) return true
-    const r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16)
-    return (0.299 * r + 0.587 * g + 0.114 * b) > 150
-  })()
-  const coverBg = isLight ? getAccentTint(accent, 0.92) : '#0A0A0A'
-  const coverText = isLight ? tc.text : '#FFFFFF'
-  const coverGray = isLight ? tc.gray : 'rgba(255,255,255,0.6)'
-  const coverGrayDim = isLight ? `${tc.gray}60` : 'rgba(255,255,255,0.3)'
-  const barColor = isLight ? tc.divider : '#000'
-
-  return (
-    <div className="relative w-full flex flex-col items-center justify-center"
-      style={{ backgroundColor: coverBg, overflow: 'hidden', minHeight: isPreview ? '660px' : '100vh' }}>
-
-      {/* Cinematic letterbox bars (dark theme only) */}
-      {!isLight && (<>
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0,
-          height: phase >= 3 ? '0px' : '60px',
-          background: barColor, zIndex: 20,
-          transition: 'height 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-        }} />
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          height: phase >= 3 ? '0px' : '60px',
-          background: barColor, zIndex: 20,
-          transition: 'height 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-        }} />
-      </>)}
-
-      {/* TUDUM flash — full screen light burst */}
-      <div style={{
-        position: 'absolute', inset: 0, zIndex: 15, pointerEvents: 'none',
-        background: `radial-gradient(circle at 50% 50%, ${accent}40 0%, ${accent}15 30%, transparent 70%)`,
-        opacity: flash ? 1 : 0,
-        transition: flash ? 'opacity 0.05s ease' : 'opacity 0.4s ease',
-      }} />
-
-      {/* Horizontal light streak */}
-      <div style={{
-        position: 'absolute', top: '50%', left: 0, right: 0,
-        height: '1px', zIndex: 14, pointerEvents: 'none',
-        background: `linear-gradient(90deg, transparent 10%, ${accent}80 40%, #fff 50%, ${accent}80 60%, transparent 90%)`,
-        opacity: flash ? 0.8 : 0,
-        boxShadow: flash ? `0 0 30px 8px ${accent}50` : 'none',
-        transition: flash ? 'opacity 0.05s ease' : 'opacity 0.5s ease',
-        transform: 'translateY(-50%)',
-      }} />
-
-      {/* Ambient accent glow — persistent after flash */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
-        background: `radial-gradient(ellipse at 50% 45%, ${accent}12 0%, transparent 60%)`,
-        opacity: phase >= 2 ? 1 : 0,
-        transition: 'opacity 1s ease',
-      }} />
-
-      {/* Main content */}
-      <div style={{
-        opacity: phase >= 6 ? 0 : 1,
-        transform: phase >= 6 ? 'scale(1.15)' : 'scale(1)',
-        transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        width: '100%', padding: '0 24px',
-      }}>
-
-        {/* Accent bar — slams in fast */}
-        <div style={{
-          width: phase >= 2 ? '56px' : '0px',
-          height: '2px',
-          background: accent,
-          transition: phase >= 2 ? 'width 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none',
-          marginBottom: '16px',
-          boxShadow: phase >= 2 ? `0 0 24px 4px ${accent}50, 0 0 8px ${accent}80` : 'none',
-        }} />
-
-        {/* "A WEDDING FILM" tagline */}
-        <div style={{
-          opacity: phase >= 2 ? 1 : 0,
-          transform: phase >= 2 ? 'translateY(0) scaleY(1)' : 'translateY(-4px) scaleY(0.8)',
-          transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          marginBottom: '32px',
-        }}>
-          <span style={{
-            fontFamily: fonts.body,
-            fontSize: '9px',
-            fontWeight: 500,
-            letterSpacing: '8px',
-            color: accent,
-          }}>
-            A Wedding Movie
-          </span>
-        </div>
-
-        {/* Couple names — BIG punch-in with overshoot */}
-        <div style={{
-          textAlign: 'center',
-          marginBottom: '8px',
-        }}>
-          {/* Groom */}
-          <div style={{
-            opacity: phase >= 3 ? 1 : 0,
-            transform: phase >= 3 ? 'translateY(0) scale(1)' : 'translateY(20px) scale(1.1)',
-            transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          }}>
-            <span style={{
-              fontFamily: hasGroomEn ? fonts.display : fonts.displayKr,
-              fontSize: hasGroomEn ? dfs(36) : '36px',
-              fontWeight: 300,
-              color: coverText,
-              letterSpacing: hasGroomEn ? '4px' : '8px',
-              textShadow: isLight ? `0 0 40px ${accent}20` : `0 0 40px ${accent}30, 0 2px 20px rgba(0,0,0,0.5)`,
-            }}>
-              {groomName}
-            </span>
-          </div>
-
-          {/* & symbol with glow */}
-          <div style={{
-            opacity: phase >= 3 ? 1 : 0,
-            transform: phase >= 3 ? 'scale(1)' : 'scale(0.5)',
-            transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s',
-            margin: '6px 0',
-          }}>
-            <span style={{
-              fontFamily: fonts.display,
-              fontSize: dfs(16),
-              color: accent,
-              letterSpacing: '4px',
-              textShadow: `0 0 20px ${accent}60`,
-            }}>
-              &amp;
-            </span>
-          </div>
-
-          {/* Bride */}
-          <div style={{
-            opacity: phase >= 3 ? 1 : 0,
-            transform: phase >= 3 ? 'translateY(0) scale(1)' : 'translateY(-20px) scale(1.1)',
-            transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s',
-          }}>
-            <span style={{
-              fontFamily: hasBrideEn ? fonts.display : fonts.displayKr,
-              fontSize: hasBrideEn ? dfs(36) : '36px',
-              fontWeight: 300,
-              color: coverText,
-              letterSpacing: hasBrideEn ? '4px' : '8px',
-              textShadow: isLight ? `0 0 40px ${accent}20` : `0 0 40px ${accent}30, 0 2px 20px rgba(0,0,0,0.5)`,
-            }}>
-              {brideName}
-            </span>
-          </div>
-        </div>
-
-        {/* Expanding divider line */}
-        <div style={{
-          width: phase >= 4 ? '120px' : '0px',
-          height: '1px',
-          background: `linear-gradient(90deg, transparent, ${accent}60, transparent)`,
-          transition: 'width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-          margin: '24px 0 20px',
-        }} />
-
-        {/* Date + Venue — slide up */}
-        <div style={{
-          opacity: phase >= 4 ? 1 : 0,
-          transform: phase >= 4 ? 'translateY(0)' : 'translateY(12px)',
-          transition: 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-          textAlign: 'center',
-        }}>
-          <div style={{
-            fontFamily: fonts.body,
-            fontSize: '13px',
-            fontWeight: 300,
-            color: coverGray,
-            letterSpacing: '5px',
-            marginBottom: '8px',
-          }}>
-            {w?.showDate !== false && <>{dateFormatted} {dayOfWeek && <span style={{ color: coverGrayDim, fontSize: '11px' }}>({dayOfWeek})</span>}</>}
-          </div>
-          {w?.showVenue !== false && venueName && (
-            <div style={{
-              fontFamily: fonts.displayKr,
-              fontSize: '11px',
-              fontWeight: 300,
-              color: coverGrayDim,
-              letterSpacing: '2px',
-              opacity: phase >= 4 ? 1 : 0,
-              transition: 'opacity 0.6s ease 0.3s',
-            }}>
-              {venueName}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Skip button */}
-      <div className="absolute" style={{
-        bottom: '36px',
-        opacity: (phase >= 2 && phase < 6) ? 0.5 : 0,
-        transition: 'opacity 0.3s ease',
-        pointerEvents: (phase >= 2 && phase < 6) ? 'auto' : 'none',
-        zIndex: 25,
-      }}>
-        <button onClick={onEnter} style={{
-          fontFamily: fonts.body,
-          fontSize: '9px',
-          letterSpacing: '4px',
-          color: coverGrayDim,
-          background: 'none',
-          border: `1px solid ${isLight ? `${tc.divider}60` : 'rgba(255,255,255,0.1)'}`,
-          borderRadius: '20px',
-          cursor: 'pointer',
-          padding: '8px 24px',
-        }}>
-          SKIP ▸
-        </button>
-      </div>
-
-      {/* Movie grain overlay */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10,
-        opacity: 0.04,
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-      }} />
-    </div>
-  )
-}
-
 // ===== Frame Intro Cover (사진 프레임) =====
 type FrameBox = { x: number; y: number; w: number; h: number }
 const FILM_FRAME_CFG: Record<string, { box: FrameBox; slots?: FrameBox[] }> = {
@@ -559,7 +289,21 @@ function FilmFrameCover({ invitation, fonts, tc, onEnter, isPreview }: {
   const frameLabel = invitation.filmFrameLabel != null ? invitation.filmFrameLabel : 'SAVE THE DATE'
   // 커스텀 문구에 한글 포함 시 한글 폰트 사용
   const titleHasKo = /[가-힣]/.test(frameTitle)
-  const nameFont = (hasEn && !titleHasKo) ? fonts.display : fonts.displayKr
+  // 영문·한글 글꼴을 따로 고를 수 있다 (비우면 템플릿 기본)
+  const enF = FRAME_EN_FONTS.find(f => f.id === invitation.filmFrameFontEn) || FRAME_EN_FONTS[0]
+  const koF = FRAME_KO_FONTS.find(f => f.id === invitation.filmFrameFontKo) || FRAME_KO_FONTS[0]
+  const enFont = enF.family || fonts.display
+  const koFont = koF.family || fonts.displayKr
+  // 손글씨 영문 글꼴은 작은 대문자 라벨에서 읽히지 않아 라벨은 세리프 대문자로
+  const labelFont = enF.script ? "'Cormorant Garamond', serif" : enFont
+  // 영문 글꼴을 직접 고르면 문구에 한글이 없는 한 영문 글꼴 (영문 이름칸이 비어 있어도 직접 쓴 영문 문구에 반영)
+  // '기본'이면 예전 규칙 그대로 → 이미 발행된 청첩장 모양은 바뀌지 않는다
+  const nameFont = titleHasKo ? koFont : (hasEn || enF.family) ? enFont : koFont
+  useEffect(() => {
+    if ((!enF.family && !koF.family) || document.querySelector('link[data-frame-fonts]')) return
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = FRAME_FONTS_HREF; l.setAttribute('data-frame-fonts', '1')
+    document.head.appendChild(l)
+  }, [enF.family, koF.family])
 
   const CB = 'cubic-bezier(.16,1,.3,1)'
 
@@ -593,214 +337,160 @@ function FilmFrameCover({ invitation, fonts, tc, onEnter, isPreview }: {
         </div>
         {/* 상단 글자 */}
         <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: `${box.y}%`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: textColor, padding: '0 20px' }}>
-          {frameLabel && <div style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '4px', fontWeight: 600, animation: `ffLetter 2.1s ${CB} 1.3s both` }}>{frameLabel}</div>}
+          {frameLabel && <div style={{ fontFamily: labelFont, fontSize: '11px', letterSpacing: '4px', fontWeight: 600, animation: `ffLetter 2.1s ${CB} 1.3s both` }}>{frameLabel}</div>}
           {frameTitle && <div style={{ fontFamily: nameFont, fontSize: '30px', marginTop: '6px', whiteSpace: 'pre-line', animation: `ffUp 1.9s ${CB} 2.1s both` }}>{frameTitle}</div>}
         </div>
         {/* 하단 글자 */}
         <div style={{ position: 'absolute', left: 0, right: 0, top: `${box.y + box.h}%`, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: textColor, padding: '0 20px', gap: '10px' }}>
-          {w?.showDate !== false && <div style={{ fontFamily: fonts.display, fontSize: '18px', fontStyle: 'italic', animation: `ffUp 1.9s ${CB} 2.9s both` }}>{dateStr}</div>}
-          {w?.showVenue !== false && venueName && <div style={{ fontFamily: fonts.body, fontSize: '13px', letterSpacing: '1px', animation: `ffUp 1.9s ${CB} 3.5s both` }}>{venueName}</div>}
+          {w?.showDate !== false && <div style={{ fontFamily: enFont, fontSize: '18px', fontStyle: 'italic', animation: `ffUp 1.9s ${CB} 2.9s both` }}>{dateStr}</div>}
+          {w?.showVenue !== false && venueName && <div style={{ fontFamily: koF.family || fonts.body, fontSize: '13px', letterSpacing: '1px', animation: `ffUp 1.9s ${CB} 3.5s both` }}>{venueName}</div>}
         </div>
       </div>
+      <FilmTapCue text="화면을 눌러 청첩장을 열어주세요" color={textColor} show delay={5.4} />
     </div>
   )
 }
 
-// ===== Cinematic Photo Cover (B version) =====
-function FilmCinematicCover({ invitation, fonts, tc, onEnter, isPreview }: {
+/** 인트로 화면 아래 '화면을 눌러…' 안내 (프레임·포토부스 공용) */
+function FilmTapCue({ text, color, show, delay = 0 }: { text: string; color: string; show: boolean; delay?: number }) {
+  const dark = boothIsDark(color)   // 글자색이 어두우면 밝은 알약, 밝으면 어두운 알약
+  // 처음부터 show 인 경우 CSS transition 이 돌지 않아 바로 보이던 문제 → 타이머로 연출이 끝난 뒤 켠다
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    if (!show) return
+    const t = setTimeout(() => setReady(true), delay * 1000)
+    return () => clearTimeout(t)
+  }, [show, delay])
+  const on = show && ready
+  return (
+    <div style={{ position: 'absolute', left: 0, right: 0, bottom: 22, display: 'flex', justifyContent: 'center', pointerEvents: 'none', zIndex: 5,
+      opacity: on ? 1 : 0, transition: 'opacity .8s ease' }}>
+      <span style={{ padding: '6px 14px', borderRadius: 999, fontFamily: "'Noto Sans KR', sans-serif", fontSize: 11.5, letterSpacing: '.02em',
+        color, background: dark ? 'rgba(255,255,255,.55)' : 'rgba(0,0,0,.28)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+        animation: on ? 'ftCue 2s ease-in-out infinite' : undefined }}>{text}</span>
+      <style dangerouslySetInnerHTML={{ __html: '@keyframes ftCue{0%,100%{opacity:.7;transform:translateY(0)}50%{opacity:1;transform:translateY(-2px)}}' }} />
+    </div>
+  )
+}
+
+// ===== Photo Booth Cover =====
+// 포토부스 스트립: 하늘빛 바탕에 타자기 글씨로 이름·날짜를 흩어 놓고, 오른쪽에 세 컷 스트립.
+// 처음엔 스트립이 비어 있고, 하객이 누르면 칸마다 3·2·1 카운트다운 → 플래시 → 사진이 현상된다. 다 찍힌 뒤 누르면 본문으로.
+const FILM_BOOTH_CSS = `
+@keyframes fbFlash { 0%{opacity:.95} 100%{opacity:0} }
+@keyframes fbHint { 0%,100%{opacity:.55} 50%{opacity:1} }
+`
+const BOOTH_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const BOOTH_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+function boothIsDark(hex: string) {
+  const h = (hex || '').replace('#', '')
+  if (h.length < 6) return false
+  const [r, g, b] = [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16))
+  return r * 0.299 + g * 0.587 + b * 0.114 < 140
+}
+/** 이름 → [이름, 성]: 영문은 'Jihoon Han' 처럼 띄어 쓴 마지막 단어를 성으로, 한글은 첫 글자를 성으로 */
+function boothSplitName(en: string | undefined, ko: string | undefined): [string, string] {
+  const e = (en || '').trim()
+  if (e) { const p = e.split(/\s+/); return p.length > 1 ? [p.slice(0, -1).join(' '), p[p.length - 1]] : [e, ''] }
+  // 한글 이름은 성·이름을 나누지 않고 그대로 (두 글자 이름이 '준 민'처럼 뒤집히지 않게)
+  return [(ko || '').trim(), '']
+}
+function FilmBoothCover({ invitation, onEnter, isPreview }: {
   invitation: any; fonts: FontConfig; tc: ColorConfig; onEnter: () => void; isPreview?: boolean
 }) {
-  const [phase, setPhase] = useState(0)
-  const dfs = (px: number) => `${Math.round(px * (fonts.ds || 1))}px`
+  useEffect(() => {
+    if (document.querySelector('link[data-booth-font]')) return
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('data-booth-font', '1')
+    l.href = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap'
+    document.head.appendChild(l)
+  }, [])
+  const bg = (invitation.filmBoothBgColor as string) || '#BFD0DD'
+  const dark = boothIsDark(bg)
+  const ink = dark ? '#EEF1F3' : '#1C2024'
+  const MONO = "'IBM Plex Mono', 'Courier New', monospace"
+
+  const cover = invitation.media?.coverImage || ''
+  const imgs: string[] = Array.isArray(invitation.filmBoothImages) ? invitation.filmBoothImages : []
+  const crops: any[] = Array.isArray(invitation.filmBoothImageSettings) ? invitation.filmBoothImageSettings : []
+  const shots = [0, 1, 2].map(i => ({ src: imgs[i] || cover, crop: imgs[i] ? (crops[i] || {}) : (invitation.media?.coverImageSettings || {}) }))
+  const mono = (invitation.filmBoothTone || 'mono') === 'mono'
+
+  // 포토부스 전용 영문 이름 > 청첩장 영문 이름 > 한글 이름
+  const [gGiven, gSur] = boothSplitName(invitation.filmBoothGroomEn || invitation.groom?.nameEn, invitation.groom?.name)
+  const [bGiven, bSur] = boothSplitName(invitation.filmBoothBrideEn || invitation.bride?.nameEn, invitation.bride?.name)
+  const up = (s: string) => /[a-z]/i.test(s) ? s.toUpperCase() : s
+  const ini = (g: string, s: string) => /[a-z]/i.test(g) ? [g, s].filter(Boolean).map(t => (t[0] || '').toUpperCase()).join('.') : ''
+  const lead = ((invitation.filmBoothLead as string) || 'Please join us\nin celebration of our\nupcoming wedding.').split('\n').slice(0, 4)
 
   const w = invitation.wedding
-  const weddingDate = w?.date ? new Date(w.date) : new Date()
-  const dateFormatted = `${weddingDate.getFullYear()}.${String(weddingDate.getMonth() + 1).padStart(2,'0')}.${String(weddingDate.getDate()).padStart(2,'0')}`
-  const dayNames = ['일', '월', '화', '수', '목', '금', '토']
-  const dayOfWeek = dayNames[weddingDate.getDay()]
-  const groomName = invitation.groom?.nameEn || invitation.groom?.name || ''
-  const brideName = invitation.bride?.nameEn || invitation.bride?.name || ''
-  const venueName = invitation.wedding?.venue?.name || ''
-  const coverImage = invitation.media?.coverImage || ''
-  const cropSettings = invitation.media?.coverImageSettings || {}
-  const cropPosX = 50 + (cropSettings.positionX || 0)
-  const cropPosY = 50 + (cropSettings.positionY || 0)
-  const cropScale = cropSettings.scale || 1
-  const hasGroomEn = !!invitation.groom?.nameEn
-  const hasBrideEn = !!invitation.bride?.nameEn
+  const d = w?.date ? new Date(w.date) : null
+  const dateOk = !!d && !isNaN(d.getTime()) && w?.showDate !== false
+  const [hh, mm] = String(w?.time || '').split(':').map(Number)
+  const timeEn = dateOk && !isNaN(hh) ? `${hh % 12 || 12}:${String(mm || 0).padStart(2, '0')} ${hh < 12 ? 'AM' : 'PM'}` : ''
+  const showVenue = w?.showVenue !== false
+  const when = [
+    dateOk ? `${BOOTH_DAYS[d!.getDay()]}, ${BOOTH_MONTHS[d!.getMonth()]} ${d!.getDate()}, ${d!.getFullYear()}` : '',
+    timeEn,
+    showVenue ? (w?.venue?.name || '') : '',
+  ].filter(Boolean)
+  const whenSub = showVenue ? [w?.venue?.hall || ''].filter(Boolean) : []
+  const digits = dateOk ? [...String(d!.getFullYear()).split(''), '', String(d!.getMonth() + 1), String(d!.getDate()), ...(isNaN(hh) ? [] : [String(hh)])] : []
 
-  const accent = tc.accent || '#D4838F'
-  const coverGray = 'rgba(255,255,255,0.55)'
-  const coverGrayDim = 'rgba(255,255,255,0.3)'
-
+  // 촬영: 칸마다 3·2·1 → 플래시 → 현상
+  const [started, setStarted] = useState(false)
+  const [count, setCount] = useState<{ i: number; n: number } | null>(null)
+  const [developed, setDeveloped] = useState(0)
+  const [flashKey, setFlashKey] = useState(0)
+  const done = developed >= 3
+  // 누르지 않아도 잠시 뒤 저절로 촬영을 시작한다
+  useEffect(() => { const t = setTimeout(() => setStarted(true), 1200); return () => clearTimeout(t) }, [])
   useEffect(() => {
-    const timers = [
-      setTimeout(() => setPhase(1), 300),    // photo fade-in + slow zoom
-      setTimeout(() => setPhase(2), 1600),   // top label
-      setTimeout(() => setPhase(3), 2400),   // names
-      setTimeout(() => setPhase(4), 3400),   // date + venue
-      setTimeout(() => setPhase(5), 5000),   // hold
-      setTimeout(() => setPhase(6), 5600),   // fade out
-      setTimeout(() => onEnter(), 6400),
-    ]
+    if (!started || done) return
+    const i = developed
+    let n = 3
+    const timers: ReturnType<typeof setTimeout>[] = []
+    const tick = () => {
+      if (n > 0) { setCount({ i, n }); n--; timers.push(setTimeout(tick, 380)); return }
+      setCount(null); setFlashKey(k => k + 1); setDeveloped(i + 1)
+    }
+    timers.push(setTimeout(tick, i === 0 ? 0 : 700))
     return () => timers.forEach(clearTimeout)
-  }, [])
+  }, [started, developed, done])
+  const onTap = () => { if (!started) setStarted(true); else if (done) onEnter() }
 
+  const pad = 16
+  const line: React.CSSProperties = { position: 'absolute', left: pad, right: pad, display: 'flex', justifyContent: 'space-between' }
   return (
-    <div className="relative w-full" style={{ height: isPreview ? '660px' : '100dvh', overflow: 'hidden', backgroundColor: '#0A0A0A' }}>
-
-      {/* Photo background with slow Ken Burns zoom + crop settings */}
-      {coverImage && (
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `url(${coverImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: `${cropPosX}% ${cropPosY}%`,
-          opacity: phase >= 1 ? 1 : 0,
-          transform: phase >= 1 ? 'scale(1.12)' : 'scale(1)',
-          transition: phase >= 1
-            ? 'opacity 2s ease, transform 16s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-            : 'none',
-        }} />
-      )}
-
-      {/* Dark overlay — cinematic bottom-heavy gradient */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 25%, rgba(0,0,0,0.2) 45%, rgba(0,0,0,0.7) 72%, rgba(0,0,0,0.92) 100%)',
-        opacity: phase >= 1 ? 1 : 0,
-        transition: 'opacity 2s ease',
-      }} />
-
-      {/* Fade out overlay */}
-      <div style={{
-        position: 'absolute', inset: 0, zIndex: 15,
-        background: '#0A0A0A',
-        opacity: phase >= 6 ? 1 : 0,
-        transition: 'opacity 0.8s ease',
-        pointerEvents: 'none',
-      }} />
-
-      {/* Top: "A FILM" */}
-      <div style={{
-        position: 'absolute', top: '32px', left: 0, right: 0, zIndex: 5,
-        textAlign: 'center',
-        opacity: phase >= 2 ? 1 : 0,
-        transition: 'opacity 1s ease',
-      }}>
-        <span style={{
-          fontFamily: fonts.display, fontSize: dfs(8), fontWeight: 400,
-          letterSpacing: '6px', color: coverGray,
-        }}>A Film</span>
+    <div onClick={onTap} className="relative w-full" style={{ height: isPreview ? '660px' : '100dvh', overflow: 'hidden', background: bg, color: ink, fontFamily: MONO, fontSize: 10.5, lineHeight: 1.45, cursor: 'pointer' }}>
+      <style dangerouslySetInnerHTML={{ __html: FILM_BOOTH_CSS }} />
+      <div style={{ ...line, top: 20 }}>{[up(gGiven), up(gSur), '&', up(bGiven), up(bSur)].map((t, i) => <span key={i}>{t}</span>)}</div>
+      <p style={{ position: 'absolute', left: pad, top: 48, margin: 0, whiteSpace: 'pre-line' }}>{lead.join('\n')}</p>
+      {/* 세 컷 스트립 */}
+      {/* 스트립은 화면 높이에 맞춰 이니셜 줄 위에서 끝난다 (세로가 짧은 화면에서도 겹치지 않게) */}
+      <div style={{ position: 'absolute', right: '7%', top: '15%', height: 'calc(85% - 124px)', aspectRatio: '1 / 3.55', maxWidth: '36%', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {shots.map((s, i) => (
+          <div key={i} style={{ position: 'relative', flex: '1 1 0', minHeight: 0, background: '#2a2d30', overflow: 'hidden' }}>
+            {s.src && (
+              <div style={{ position: 'absolute', inset: 0, opacity: i < developed ? 1 : 0, filter: i < developed ? (mono ? 'grayscale(1) contrast(1.15)' : 'none') : 'brightness(2.2) contrast(.6)', transition: 'opacity 1.6s ease, filter 2.4s ease' }}>
+                <CroppedImageDiv src={s.src} crop={s.crop} className="w-full h-full" />
+              </div>
+            )}
+            {count?.i === i && <b style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d9e3ea', fontWeight: 400, fontSize: 30 }}>{count.n}</b>}
+          </div>
+        ))}
       </div>
-
-      {/* Bottom content */}
-      <div style={{
-        position: 'absolute', bottom: '80px', left: 0, right: 0, zIndex: 5,
-        textAlign: 'center', padding: '0 30px',
-      }}>
-        {/* Names — stacked vertical */}
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{
-            opacity: phase >= 3 ? 1 : 0,
-            transform: phase >= 3 ? 'translateY(0)' : 'translateY(18px)',
-            transition: 'all 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-          }}>
-            <span style={{
-              fontFamily: hasGroomEn ? fonts.display : fonts.displayKr, fontSize: hasGroomEn ? dfs(38) : '38px', fontWeight: 400,
-              color: '#FFFFFF', letterSpacing: hasGroomEn ? '2px' : '8px',
-              textShadow: '0 2px 24px rgba(0,0,0,0.6)',
-            }}>{groomName}</span>
-          </div>
-          <div style={{
-            opacity: phase >= 3 ? 1 : 0,
-            transform: phase >= 3 ? 'scale(1)' : 'scale(0.7)',
-            transition: 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.15s',
-            margin: '-2px 0',
-          }}>
-            <span style={{
-              fontFamily: fonts.display, fontSize: dfs(20), fontWeight: 400,
-              color: accent, textShadow: `0 0 16px ${accent}40`,
-            }}>&amp;</span>
-          </div>
-          <div style={{
-            opacity: phase >= 3 ? 1 : 0,
-            transform: phase >= 3 ? 'translateY(0)' : 'translateY(-18px)',
-            transition: 'all 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s',
-          }}>
-            <span style={{
-              fontFamily: hasBrideEn ? fonts.display : fonts.displayKr, fontSize: hasBrideEn ? dfs(38) : '38px', fontWeight: 400,
-              color: '#FFFFFF', letterSpacing: hasBrideEn ? '2px' : '8px',
-              textShadow: '0 2px 24px rgba(0,0,0,0.6)',
-            }}>{brideName}</span>
-          </div>
-        </div>
-
-        {/* Thin accent line */}
-        <div style={{
-          width: phase >= 4 ? '50px' : '0px', height: '1px',
-          background: `${accent}80`,
-          margin: '0 auto 18px',
-          transition: 'width 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-        }} />
-
-        {/* Date + Venue */}
-        <div style={{
-          opacity: phase >= 4 ? 1 : 0,
-          transition: 'opacity 0.8s ease',
-        }}>
-          <div style={{
-            fontFamily: fonts.display, fontSize: dfs(12), fontWeight: 300,
-            color: coverGray, letterSpacing: '4px',
-          }}>
-            {w?.showDate !== false && <>{dateFormatted} {dayOfWeek && <span style={{ fontSize: dfs(10), color: coverGrayDim }}>({dayOfWeek})</span>}</>}
-          </div>
-          {w?.showVenue !== false && venueName && (
-            <div style={{
-              fontFamily: fonts.displayKr, fontSize: '11px', fontWeight: 300,
-              color: coverGrayDim, letterSpacing: '2px', marginTop: '6px',
-            }}>
-              {venueName}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Skip button */}
-      <div className="absolute" style={{
-        bottom: '36px', left: 0, right: 0,
-        textAlign: 'center',
-        opacity: (phase >= 2 && phase < 6) ? 0.5 : 0,
-        transition: 'opacity 0.3s ease',
-        pointerEvents: (phase >= 2 && phase < 6) ? 'auto' : 'none',
-        zIndex: 25,
-      }}>
-        <button onClick={onEnter} style={{
-          fontFamily: fonts.body,
-          fontSize: dfs(9),
-          letterSpacing: '4px',
-          color: coverGrayDim,
-          background: 'none',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '20px',
-          cursor: 'pointer',
-          padding: '8px 24px',
-        }}>
-          SKIP ▸
-        </button>
-      </div>
-
-      {/* Movie grain overlay */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10,
-        opacity: 0.04,
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-      }} />
+      <p style={{ position: 'absolute', left: pad, bottom: 104, margin: 0 }}>
+        {when.map((t, i) => <span key={i} style={{ display: 'block' }}>{t}</span>)}
+        {whenSub.map((t, i) => <span key={'s' + i} style={{ display: 'block', paddingLeft: '3.2em' }}>{t}</span>)}
+      </p>
+      <div style={{ ...line, left: 'auto', width: '36%', bottom: 92 }}><span>{ini(gGiven, gSur)}</span><span>{ini(bGiven, bSur)}</span></div>
+      {digits.length > 0 && <div style={{ ...line, bottom: 64 }}>{digits.map((t, i) => <span key={i}>{t}</span>)}</div>}
+      <FilmTapCue text="화면을 눌러 청첩장을 열어주세요" color={ink} show={done} delay={0.6} />
+      <div key={flashKey} style={{ position: 'absolute', inset: 0, background: '#fff', opacity: 0, pointerEvents: 'none', animation: flashKey ? 'fbFlash .55s ease-out' : undefined }} />
     </div>
   )
 }
 
-// ===== Minimal Header =====
 function FilmHeader({ invitation, fonts, tc }: { invitation: any; fonts: FontConfig; tc: ColorConfig }) {
   const dfs = (px: number) => `${Math.round(px * (fonts.ds || 1))}px`
   return (
@@ -3217,6 +2907,33 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     filmFrameTitle: (content as any).filmFrameTitle,
     filmFrameImage2: (content as any).filmFrameImage2,
     filmFrameImage2Settings: (content as any).filmFrameImage2Settings,
+    filmFrameFontEn: (content as any).filmFrameFontEn,
+    filmFrameFontKo: (content as any).filmFrameFontKo,
+    filmBoothImages: (content as any).filmBoothImages,
+    filmBoothImageSettings: (content as any).filmBoothImageSettings,
+    filmBoothBgColor: (content as any).filmBoothBgColor,
+    filmBoothLabel: (content as any).filmBoothLabel,
+    filmBoothTitle: (content as any).filmBoothTitle,
+    filmBoothLead: (content as any).filmBoothLead,
+    filmBoothTone: (content as any).filmBoothTone,
+    filmBoothGroomEn: (content as any).filmBoothGroomEn,
+    filmBoothBrideEn: (content as any).filmBoothBrideEn,
+    filmDotsImage: (content as any).filmDotsImage,
+    filmDotsImageSettings: (content as any).filmDotsImageSettings,
+    filmDotsNamePos: (content as any).filmDotsNamePos,
+    filmDotsCaption: (content as any).filmDotsCaption,
+    filmDotsGroomEn: (content as any).filmDotsGroomEn,
+    filmDotsBrideEn: (content as any).filmDotsBrideEn,
+    filmDotsDeco: (content as any).filmDotsDeco,
+    filmDaysStart: (content as any).filmDaysStart,
+    filmDaysImage: (content as any).filmDaysImage,
+    filmDaysImageSettings: (content as any).filmDaysImageSettings,
+    filmDaysTitle: (content as any).filmDaysTitle,
+    filmDaysMessage: (content as any).filmDaysMessage,
+    filmDaysBg: (content as any).filmDaysBg,
+    filmDaysInk: (content as any).filmDaysInk,
+    filmOttGenre: (content as any).filmOttGenre,
+    filmTicketSeat: (content as any).filmTicketSeat,
     magazineSectionOrder: content.magazineSectionOrder,
     magazineSectionBgMap: (content as any).magazineSectionBgMap,
     styleOverrides: (content as any).styleOverrides,
@@ -3428,11 +3145,16 @@ function InvitationClientFilmContent({
               <WatermarkOverlay isPaid={isPaid || !!isPreview} className="relative w-full min-h-screen">
                 <div className="relative w-full min-h-screen overflow-x-hidden" style={{ backgroundColor: tc.background, fontFamily: fonts.body, color: tc.text }}>
                   {currentPage === 'cover' ? (
-                    invitation.filmIntroStyle === 'frame'
-                      ? <FilmFrameCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} isPreview={isPreview} />
-                      : invitation.filmIntroStyle === 'cinematic'
-                      ? <FilmCinematicCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} isPreview={isPreview} />
-                      : <FilmPosterCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} isPreview={isPreview} />
+                    invitation.filmIntroStyle === 'ott'
+                      ? <FilmOttCover invitation={invitation} onEnter={() => setCurrentPage('main')} isPreview={!!isPreview} />
+                      : invitation.filmIntroStyle === 'ticket'
+                      ? <FilmTicketCover invitation={invitation} onEnter={() => setCurrentPage('main')} isPreview={!!isPreview} />
+                      : invitation.filmIntroStyle === 'dots'
+                      ? <FilmDotsCover invitation={invitation} onEnter={() => setCurrentPage('main')} isPreview={!!isPreview} />
+                      : invitation.filmIntroStyle === 'booth'
+                      ? <FilmBoothCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} isPreview={isPreview} />
+                      // 프레임 (값이 없거나 예전 '타이틀'·'시네마틱' 값도 프레임으로)
+                      : <FilmFrameCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} isPreview={isPreview} />
                   ) : (
                     <>
                       <FilmHeader invitation={invitation} fonts={fonts} tc={tc} />

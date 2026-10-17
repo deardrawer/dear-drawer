@@ -58,7 +58,7 @@ export interface PolaroidData {
 }
 
 export const SAMPLE_DATA: ThankYouData = {
-  coupleNames: "민준 & 서연",
+  coupleNames: "지훈 & 서연",
   date: "2026. 03. 14",
   heroMessage: "함께해 주셔서 감사합니다",
   heroImage: "/sample/thankyou-main.jpg",
@@ -87,7 +87,7 @@ export const SAMPLE_DATA: ThankYouData = {
     "바쁘신 와중에도\n저희의 결혼을 축하해주시고,\n그날을 함께해주셔서\n진심으로 감사드립니다.",
     "여러분과 함께한 그 순간은\n저희에게 오래도록 기억될\n소중한 시간이었습니다.",
     "그 마음을 잊지 않고,\n천천히 그리고 단단하게\n저희만의 이야기를 이어가겠습니다.",
-    "민준 & 서연 올림",
+    "지훈 & 서연 올림",
   ],
   photoShare: {
     enabled: true,

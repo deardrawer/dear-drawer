@@ -15,6 +15,7 @@ import Preview from '@/components/editor/Preview'
 import ShareModal from '@/components/share/ShareModal'
 import IntroSelector from '@/components/editor/IntroSelector'
 import IntroPreview from '@/components/editor/IntroPreview'
+import { buildIntroData } from '@/components/invitation/intros/shared'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AIStoryGenerator } from '@/components/ai-story'
 import { GeneratedContent } from '@/types/ai-generator'
@@ -765,13 +766,14 @@ function EditorContent() {
                         coverImage={invitation.media.coverImage}
                         coverImageSettings={invitation.media.coverImageSettings}
                         autoPlay={true}
-                        weddingDate={invitation.wedding.date}
-                        weddingTime={invitation.wedding.time}
-                        weddingTimeDisplay={invitation.wedding.timeDisplay}
-                        venueName={invitation.wedding.venue.name}
+                        weddingDate={invitation.wedding.showDate !== false ? invitation.wedding.date : ''}
+                        weddingTime={invitation.wedding.showDate !== false ? invitation.wedding.time : ''}
+                        weddingTimeDisplay={invitation.wedding.showDate !== false ? invitation.wedding.timeDisplay : ''}
+                        venueName={invitation.wedding.showVenue !== false ? invitation.wedding.venue.name : ''}
                         groomName={invitation.groom.name}
                         brideName={invitation.bride.name}
                         coverTitle={invitation.wedding.title}
+                        introData={buildIntroData(invitation)}
                       />
                     </div>
                     <button
@@ -786,7 +788,31 @@ function EditorContent() {
 
                 {/* 인트로 선택 패널 - 오른쪽 */}
                 <div className={`${isMobile ? 'w-full' : 'flex-1'}`}>
-                  <IntroSelector onBack={() => setIsIntroSelectorOpen(false)} />
+                  <IntroSelector
+                    onBack={() => setIsIntroSelectorOpen(false)}
+                    preview={isMobile ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="relative h-[300px] aspect-[9/16] overflow-hidden rounded-xl shadow border border-gray-100">
+                          <IntroPreview
+                            key={introReplayKey}
+                            settings={invitation.intro}
+                            coverImage={invitation.media.coverImage}
+                            coverImageSettings={invitation.media.coverImageSettings}
+                            autoPlay={true}
+                            weddingDate={invitation.wedding.showDate !== false ? invitation.wedding.date : ''}
+                            weddingTime={invitation.wedding.showDate !== false ? invitation.wedding.time : ''}
+                            weddingTimeDisplay={invitation.wedding.showDate !== false ? invitation.wedding.timeDisplay : ''}
+                            venueName={invitation.wedding.showVenue !== false ? invitation.wedding.venue.name : ''}
+                            groomName={invitation.groom.name}
+                            brideName={invitation.bride.name}
+                            coverTitle={invitation.wedding.title}
+                        introData={buildIntroData(invitation)}
+                          />
+                        </div>
+                        <button onClick={() => setIntroReplayKey(k => k + 1)} className="text-xs text-gray-600 px-3 py-1 rounded-full bg-white border">다시 보기</button>
+                      </div>
+                    ) : undefined}
+                  />
                 </div>
               </>
             ) : (

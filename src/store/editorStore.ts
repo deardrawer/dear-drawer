@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { Template } from '@/lib/templates'
 import { GeneratedStory, FamilyWhyWeChoseStory } from '@/app/api/ai/generate-story/route'
-import { IntroSettings, IntroPresetId, getDefaultIntroSettings, mergeIntroSettings } from '@/lib/introPresets'
+import { IntroSettings, IntroPresetId, IntroStyleId, getDefaultIntroSettings, mergeIntroSettings, resolvePresetId } from '@/lib/introPresets'
 import { StyleOverrides } from '@/lib/styleOverrides'
 import type { DdayPopupData } from '@/lib/ddayPopupTypes'
 
@@ -492,8 +492,26 @@ export interface InvitationContent {
   // ===== 매거진 인트로 스타일 =====
   magazineIntroStyle?: 'cover' | 'clean' | 'editorial'
 
+  // ===== 레코드 인트로 스타일 (cd = 기존 CD PLAYER) =====
+  recordIntroStyle?: 'cd' | 'days' | 'lp'
+  // 함께한 날 (N DAYS TOGETHER) — 제목·편지의 {N} 은 함께한 날 수로 바뀐다
+  recordDaysLabel?: string      // 맨 위 작은 문구 (기본 dear love)
+  recordDaysStart?: string      // 처음 만난(사귄) 날 YYYY-MM-DD → 함께한 날 수
+  recordDaysTitle?: string      // 비우면 'N DAYS\nTOGETHER'
+  recordDaysImage?: string
+  recordDaysImageSettings?: Record<string, number | undefined>
+  recordDaysTone?: 'mono' | 'color'
+  recordDaysSong?: string       // 플레이어 카드 노래 제목
+  recordDaysArtist?: string     // 비우면 두 사람 이름
+  recordDaysMessage?: string    // 아래 짧은 편지
+  recordDaysBg?: string         // 배경색 (기본 흰색)
+  recordDaysInk?: string        // 포인트색 — 제목·하트 (기본 와인)
+  recordLpImage?: string        // LP 커버 인트로의 정사각 커버 사진 (나머지 설정은 함께한 날과 공용)
+  recordLpImageSettings?: Record<string, number | undefined>
+
   // ===== 필름 인트로 스타일 =====
-  filmIntroStyle?: 'tudum' | 'cinematic' | 'frame'
+  // tudum·cinematic은 이전 스타일 (에디터에서는 더 고르지 않지만 기존 청첩장은 그대로 보인다)
+  filmIntroStyle?: 'frame' | 'booth' | 'dots' | 'ott' | 'ticket'
   // 프레임 인트로 설정
   filmFrameId?: string
   filmFrameColorMode?: 'original' | 'custom'
@@ -504,6 +522,36 @@ export interface InvitationContent {
   filmFrameTitle?: string
   filmFrameImage2?: string
   filmFrameImage2Settings?: { scale?: number; positionX?: number; positionY?: number }
+  filmFrameFontEn?: string   // 프레임 영문 글꼴 id (lib/filmFrameFonts)
+  filmFrameFontKo?: string   // 프레임 한글 글꼴 id
+  // 함께한 날 (OTT · 티켓 인트로 공용) — 제목·줄거리의 {N} 은 함께한 날 수
+  filmDaysStart?: string        // 처음 만난 날 YYYY-MM-DD
+  filmDaysImage?: string
+  filmDaysImageSettings?: Record<string, number | undefined>
+  filmDaysTitle?: string        // 비우면 'N DAYS TOGETHER'
+  filmDaysMessage?: string      // OTT 줄거리
+  filmDaysBg?: string           // 배경색 (OTT 기본 #0F0F12, 티켓 기본 #ECE9E4)
+  filmDaysInk?: string          // 포인트색 (OTT 버튼·막대 / 티켓 체크·제목·스캔선)
+  filmOttGenre?: string         // OTT 정보 줄 장르 (기본 Romance)
+  filmTicketSeat?: string       // 티켓 좌석 (기본 YOU & ME)
+  // 도트 자수 인트로 설정
+  filmDotsImage?: string
+  filmDotsImageSettings?: Record<string, number | undefined>
+  filmDotsNamePos?: 'top' | 'bottom'
+  filmDotsCaption?: string    // 수놓기가 끝나면 나오는 '눌러서 넘기기' 문구
+  filmDotsGroomEn?: string    // 도트 자수 전용 영문 이름 (비우면 청첩장 영문 이름 → Groom)
+  filmDotsBrideEn?: string
+  filmDotsDeco?: 'flourish' | 'sparkle' | 'heart' | 'twinkle' | 'none'   // 자수 장식 (flourish = 네 모서리 덩굴)
+  // 포토부스 인트로 설정
+  filmBoothImages?: string[]
+  filmBoothImageSettings?: Record<string, number | undefined>[]
+  filmBoothBgColor?: string
+  filmBoothLabel?: string
+  filmBoothTitle?: string
+  filmBoothLead?: string            // 왼쪽 초대 문구 (타자기 글씨)
+  filmBoothTone?: 'mono' | 'color'  // 현상된 사진 색감
+  filmBoothGroomEn?: string         // 포토부스 영문 이름 ('Jihoon Han' 처럼 쓰면 이름·성)
+  filmBoothBrideEn?: string
 
   // ===== 매거진 섹션 순서 =====
   magazineSectionOrder?: string[]
@@ -604,6 +652,8 @@ interface EditorStore {
   // 인트로 관련 액션
   updateIntroPreset: (presetId: IntroPresetId) => void
   updateIntroField: <K extends keyof IntroSettings>(field: K, value: IntroSettings[K]) => void
+  updateIntroStyleOption: (styleId: IntroStyleId, key: string, value: unknown) => void
+  resetIntroStyleOptions: (styleId: IntroStyleId) => void
   setEditorActiveTab: (tab: string) => void
   setValidationError: (error: { tab: string; message: string } | null) => void
   // D-Day 팝업 미리보기 액션
@@ -651,6 +701,8 @@ const createDefaultPerson = (isGroom: boolean): PersonInfo => ({
 })
 
 const createDefaultInvitation = (template: Template): InvitationContent => ({
+  // 무비 기본 목업: 포토부스 이름은 영문 (성은 뒤에 — 마지막 단어가 성으로 쓰인다)
+  ...(template.id === 'narrative-film' ? { filmIntroStyle: 'frame' as const, filmBoothGroomEn: 'Jihoon Han', filmBoothBrideEn: 'Seoyeon Yoon' } : {}),
   // 커플 정보
   groom: {
     ...createDefaultPerson(true),
@@ -671,7 +723,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
         tag: '세상에서 가장 따뜻한 사람',
       },
     } : template.id === 'narrative-film' ? {
-      name: '민준',
+      name: '한지훈',
       profile: { ...createDefaultPerson(true).profile, tag: '세상에서 가장 따뜻한 사람' },
     } : template.id === 'narrative-record' ? {
       profile: { ...createDefaultPerson(true).profile, tag: '세상에서 가장 따뜻한 사람' },
@@ -698,7 +750,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
         tag: '매일 웃게 해주는 사람',
       },
     } : template.id === 'narrative-film' ? {
-      name: '서연',
+      name: '윤서연',
       profile: { ...createDefaultPerson(false).profile, tag: '매일 웃게 해주는 사람' },
     } : template.id === 'narrative-record' ? {
       profile: { ...createDefaultPerson(false).profile, tag: '매일 웃게 해주는 사람' },
@@ -780,13 +832,13 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
     thankYou: template.id === 'narrative-our'
       ? { title: 'THANK YOU', message: '바쁘신 와중에도\n저희의 결혼을 축하해 주셔서\n진심으로 감사드립니다.\n\n여러분의 축복 속에서\n서로 아끼고 사랑하며 살겠습니다.', sign: '' }
       : template.id === 'narrative-family'
-      ? { title: 'THANK YOU', message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.', sign: '민준 & 서연 올림' }
+      ? { title: 'THANK YOU', message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.', sign: '지훈 & 서연 올림' }
       : template.id === 'narrative-film'
-      ? { title: 'SPECIAL THANKS', message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.', sign: '민준 & 서연 올림' }
+      ? { title: 'SPECIAL THANKS', message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.', sign: '지훈 & 서연 올림' }
       : template.id === 'narrative-record'
-      ? { title: 'THANK YOU', message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.', sign: '민준 & 서연 올림' }
+      ? { title: 'THANK YOU', message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.', sign: '지훈 & 서연 올림' }
       : template.id === 'narrative-magazine'
-      ? { title: 'THANK YOU', message: '바쁘신 가운데\n저희의 새로운 시작을\n축하해 주셔서 감사합니다.\n\n여러분의 따뜻한 마음을 담아\n행복하게 살겠습니다.', sign: '민준 & 서연 올림' }
+      ? { title: 'THANK YOU', message: '바쁘신 가운데\n저희의 새로운 시작을\n축하해 주셔서 감사합니다.\n\n여러분의 따뜻한 마음을 담아\n행복하게 살겠습니다.', sign: '지훈 & 서연 올림' }
       : { title: 'THANK YOU', message: '', sign: '' },
     info: {
       dressCode: { title: '드레스코드 안내', content: '결혼식에 맞는 옷차림을 고민하지 않으셔도 괜찮아요.\n여러분이 가장 좋아하는 옷,\n가장 여러분다운 모습으로 오셔서\n함께 웃고 즐겨주신다면 그걸로 충분합니다.', enabled: false },
@@ -1127,12 +1179,18 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     }),
 
   updateMultipleFields: (fields) =>
-    set((state) => ({
-      invitation: state.invitation
-        ? { ...state.invitation, ...fields }
-        : null,
-      isDirty: true,
-    })),
+    set((state) => {
+      // 삭제된 예전 인트로 프리셋 id는 시네마틱으로 정규화 (기존 데이터 보호)
+      const next = fields.intro
+        ? { ...fields, intro: { ...fields.intro, presetId: resolvePresetId(fields.intro.presetId) } }
+        : fields
+      return {
+        invitation: state.invitation
+          ? { ...state.invitation, ...next }
+          : null,
+        isDirty: true,
+      }
+    }),
 
   applyAIStory: (story) =>
     set((state) => {
@@ -1402,6 +1460,23 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         },
         isDirty: true,
       }
+    }),
+
+  updateIntroStyleOption: (styleId, key, value) =>
+    set((state) => {
+      if (!state.invitation) return state
+      const intro = state.invitation.intro
+      const styleOptions = { ...(intro.styleOptions || {}), [styleId]: { ...(intro.styleOptions?.[styleId] || {}), [key]: value } }
+      return { invitation: { ...state.invitation, intro: { ...intro, styleOptions } }, isDirty: true }
+    }),
+
+  resetIntroStyleOptions: (styleId) =>
+    set((state) => {
+      if (!state.invitation) return state
+      const intro = state.invitation.intro
+      const styleOptions = { ...(intro.styleOptions || {}) }
+      delete styleOptions[styleId]
+      return { invitation: { ...state.invitation, intro: { ...intro, styleOptions } }, isDirty: true }
     }),
 
   setEditorActiveTab: (tab) => set({ editorActiveTab: tab }),

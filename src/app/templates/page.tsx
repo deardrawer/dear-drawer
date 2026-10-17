@@ -158,6 +158,22 @@ const QUIZ_RESULTS: Record<string, {
     ],
     sampleUrl: '/i/sample-the-simple',
   },
+  'narrative-thankyou': {
+    templateId: 'narrative-thankyou',
+    templateName: 'THANKS',
+    category: 'thankyou',
+    categoryLabel: '감사장',
+    tagline: '결혼식 후 감사의 마음을 전하는',
+    color: 'text-amber-600',
+    colorBg: 'bg-amber-500',
+    colorBorder: 'border-amber-200',
+    points: [
+      '결혼식 후 하객분들께 감사 인사를 전하는 감사장',
+      '웨딩 사진과 감사 메시지를 함께 담는 구성',
+      '모바일로 간편하게 공유',
+    ],
+    sampleUrl: '/sample/thank-you',
+  },
 }
 
 // 샘플 쇼케이스 데이터
@@ -325,14 +341,73 @@ const SHOWCASE_ITEMS: {
   },
 ]
 
+// ===== 첫 화면 디자인 =====
+// 산세리프(한글 Pretendard · 영문 Inter)만, 굵기·크기·자간·행간으로 위계. 사진 중심 그리드, 둥근 모서리·그림자 최소, 장식 없음.
+const TV = { ink: '#1F1C19', ink2: '#5E5751', ink3: '#9A908C', line: 'rgba(31,28,25,.11)', paper: '#FFFAF9', img: '#F0E5E3' }
+const TV_FONT = "'Inter', 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif"
+const SHOWCASE_TABS: { id: ShowcaseFilter; label: string }[] = [
+  { id: 'all', label: '전체' }, { id: 'story', label: '스토리형' }, { id: 'mini', label: '미니스토리형' }, { id: 'parents', label: '혼주용' }, { id: 'thankyou', label: '감사장' },
+]
+// 형식별 소개 화면(selectCategory)으로 이어지는 목록
+const FORMAT_ROWS: { id: Exclude<TemplateCategory, null>; name: string; mood: string; desc: string; list: string }[] = [
+  { id: 'story', name: '스토리형', mood: '깊이 있는 이야기', desc: '우리의 사랑 이야기를 풍부하게 담는 청첩장', list: 'OUR · FAMILY' },
+  { id: 'mini', name: '미니 스토리형', mood: '감각적 디자인', desc: '감각적인 디자인에 이야기를 간결하게 담는 청첩장', list: 'MAGAZINE · MOVIE · RECORD' },
+  { id: 'parents', name: '혼주용', mood: '격식 있는', desc: '부모님이 지인분들께 보내는 격식 있는 청첩장', list: 'PARENTS' },
+  { id: 'the-series', name: 'THE 시리즈', mood: '프리미엄', desc: '우리만의 무드를 담고 싶다면', list: 'THE SIMPLE · THE CLASSIC' },
+]
+const TV_CSS = `
+  .tv-main { -webkit-font-smoothing: antialiased; }
+  .tv-main a { color: inherit; text-decoration: none; }
+  .tv-wrap { max-width: 1240px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px); }
+  .tv-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(12px, 1.8vw, 24px); }
+  .tv-hero-title, .tv-hero-side { grid-column: 1 / span 12; }
+  .tv-cards { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(12px, 1.8vw, 24px); row-gap: clamp(36px, 4.5vw, 56px); }
+  @media (min-width: 760px) {
+    .tv-hero-title { grid-column: 1 / span 7; }
+    .tv-hero-side { grid-column: 9 / span 4; align-self: end; }
+    .tv-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1080px) { .tv-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .tv-card .tv-img img { transition: transform 1.2s cubic-bezier(.2,.7,.2,1); }
+  .tv-card:hover .tv-img img { transform: scale(1.025); }
+  .tv-card .tv-act { opacity: 0; transition: opacity .3s ease; }
+  .tv-card:hover .tv-act, .tv-card:focus-within .tv-act { opacity: 1; }
+  @media (hover: none) { .tv-card .tv-act { display: none; } }
+  .tv-link { background: none; border: 0; padding: 0 0 2px; cursor: pointer; font: inherit; color: inherit; background-image: linear-gradient(currentColor, currentColor); background-size: 100% 1px; background-repeat: no-repeat; background-position: 0 100%; transition: background-size .3s ease; }
+  .tv-link:hover { background-size: 0 1px; background-position: 100% 100%; }
+  .tv-tabs::-webkit-scrollbar { display: none; }
+  .tv-row { display: grid; width: 100%; grid-template-columns: 1fr; row-gap: 8px; padding: 22px 0; border: 0; border-bottom: 1px solid ${TV.line}; background: none; text-align: left; cursor: pointer; font: inherit; color: inherit; transition: background .25s ease, padding .25s ease; }
+  .tv-row:hover { background: rgba(31,28,25,.025); }
+  @media (min-width: 760px) {
+    .tv-row { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(12px, 1.8vw, 24px); align-items: baseline; padding: 30px 0; }
+    .tv-row:hover { padding-left: 10px; padding-right: 10px; }
+    .tv-row-name { grid-column: 1 / span 4; }
+    .tv-row-desc { grid-column: 5 / span 5; }
+    .tv-row-list { grid-column: 10 / span 3; text-align: right; }
+  }
+  @keyframes tvIn { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+  @keyframes tvSheet { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: none } }
+`
+
 function TemplatesContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialCategory = searchParams.get('category') as TemplateCategory
   const [selectedCategory, setSelectedCategory] = useState<TemplateCategory>(initialCategory)
-  const [quizStep, setQuizStep] = useState<QuizStep>(null)
+  // ?quiz=1 로 들어오면 추천 퀴즈 1단계부터 (다른 화면의 '추천받기' 링크용)
+  const [quizStep, setQuizStep] = useState<QuizStep>(searchParams.get('quiz') === '1' ? 'q1' : null)
   const [quizResult, setQuizResult] = useState<string | null>(null)
   const [showcaseFilter, setShowcaseFilter] = useState<ShowcaseFilter>('all')
+  const [sheet, setSheet] = useState<(typeof SHOWCASE_ITEMS)[number] | null>(null)
+  // 시트가 열리면 뒤 화면 스크롤 잠금 · ESC 로 닫기
+  useEffect(() => {
+    if (!sheet) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSheet(null) }
+    window.addEventListener('keydown', onKey)
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey) }
+  }, [sheet])
 
   const filteredShowcase = useMemo(() => {
     if (showcaseFilter === 'all') return SHOWCASE_ITEMS
@@ -549,6 +624,12 @@ function TemplatesContent() {
                 sub="디자인 중심으로 간결하게 전달하고 싶어요"
                 onClick={() => goQuizStep('q2b')}
               />
+              <QuizOption
+                icon={<svg className="w-5 h-5 sm:w-6 sm:h-6 text-stone-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="5" y="3" width="14" height="18" rx="1.5" fill="rgba(120,113,108,0.08)" /><path d="M9 8h6M9 12h6M9 16h4" /></svg>}
+                title="익숙한 구성으로, 세련되게"
+                sub="기본에 충실하면서 고급스럽게 보이고 싶어요"
+                onClick={() => showResult('narrative-the-simple')}
+              />
             </div>
             <div className="mt-8 text-center space-y-3">
               <button onClick={goDirectSelect} className="text-xs text-gray-400 hover:text-gray-600 transition-colors underline underline-offset-2">
@@ -560,6 +641,14 @@ function TemplatesContent() {
                   className="text-xs text-amber-500 hover:text-amber-600 transition-colors"
                 >
                   혼주용 청첩장을 찾으시나요?
+                </button>
+              </div>
+              <div>
+                <button
+                  onClick={() => showResult('narrative-thankyou')}
+                  className="text-xs text-amber-500 hover:text-amber-600 transition-colors"
+                >
+                  결혼식 후 감사장을 찾으시나요?
                 </button>
               </div>
             </div>
@@ -625,6 +714,12 @@ function TemplatesContent() {
                 title="여러 컨셉 믹스"
                 sub="다양한 장소/컨셉의 사진이 있어요"
                 onClick={() => showResult('narrative-exhibit')}
+              />
+              <QuizOption
+                icon={<svg className="w-5 h-5 sm:w-6 sm:h-6 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z" fill="rgba(180,83,9,0.06)" /><path d="M8 7h8M8 11h6" /></svg>}
+                title="사진보다 글로 전하고 싶어요"
+                sub="웨딩 촬영 없이, 문장으로 마음을 담고 싶어요"
+                onClick={() => showResult('narrative-essay')}
               />
             </div>
             <div className="mt-8 text-center">
@@ -703,11 +798,17 @@ function TemplatesContent() {
     )
   }
 
+  const isGallery = quizStep === null && !selectedCategory
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-blue-50" style={{ fontFamily: TV_FONT }}>
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+      <style>{TV_CSS}</style>
       {/* 헤더 */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div className={`${isGallery ? 'tv-wrap' : 'max-w-5xl mx-auto px-4'} h-14 flex items-center justify-between`}>
           <Link href="/" className="flex items-center gap-2">
             <img src="/logo.png" alt="Dear Drawer" className="h-5 w-auto" />
           </Link>
@@ -717,7 +818,106 @@ function TemplatesContent() {
         </div>
       </header>
 
-      {/* 메인 콘텐츠 */}
+      {/* 첫 화면: 템플릿 갤러리 + 형식 고르기 */}
+      {isGallery && (
+        <main className="tv-main tv-wrap" style={{ color: TV.ink, paddingTop: 56, paddingBottom: 'clamp(80px, 10vw, 140px)' }}>
+          <SocialProofCounter />
+          {/* 머리말: 7칸 제목 / 4칸 설명 */}
+          <section className="tv-grid" style={{ paddingTop: 'clamp(56px, 9vw, 112px)', paddingBottom: 'clamp(40px, 6vw, 72px)', rowGap: 24, animation: 'tvIn .8s ease both' }}>
+            <div className="tv-hero-title">
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 500, letterSpacing: '.02em', color: TV.ink3, fontVariantNumeric: 'tabular-nums' }}>Templates — {SHOWCASE_ITEMS.length}</p>
+              <h1 style={{ margin: '18px 0 0', fontSize: 'clamp(26px, 3.1vw, 38px)', lineHeight: 1.32, letterSpacing: '-.035em', fontWeight: 300 }}>
+                어떤 이야기로<br /><span style={{ fontWeight: 600 }}>초대할까요?</span>
+              </h1>
+            </div>
+            <div className="tv-hero-side">
+              <p style={{ margin: 0, fontSize: 14, lineHeight: 1.75, letterSpacing: '-.01em', color: TV.ink2, wordBreak: 'keep-all' }}>
+                완성된 청첩장을 먼저 열어보고, 두 분의 이야기에 맞는 형식으로 시작하세요.
+              </p>
+              <p style={{ margin: '16px 0 0', fontSize: 13, fontWeight: 500, letterSpacing: '-.01em' }}>
+                <button type="button" className="tv-link" onClick={() => goQuizStep('q1')}>질문 몇 개로 추천받기</button>
+              </p>
+            </div>
+          </section>
+
+          {/* 분류 */}
+          <nav className="tv-tabs" style={{ display: 'flex', gap: 'clamp(20px, 2.6vw, 34px)', overflowX: 'auto', scrollbarWidth: 'none', borderTop: `1px solid ${TV.line}`, borderBottom: `1px solid ${TV.line}`, marginBottom: 'clamp(28px, 4vw, 48px)' }}>
+            {SHOWCASE_TABS.map((t) => {
+              const on = showcaseFilter === t.id
+              const n = t.id === 'all' ? SHOWCASE_ITEMS.length : SHOWCASE_ITEMS.filter((i) => i.category === t.id).length
+              return (
+                <button key={t.id} type="button" onClick={() => setShowcaseFilter(t.id)}
+                  style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'baseline', gap: 6, padding: '15px 0 14px', background: 'none', border: 0, borderBottom: `1px solid ${on ? TV.ink : 'transparent'}`, marginBottom: -1, cursor: 'pointer', fontFamily: TV_FONT, fontSize: 13.5, fontWeight: on ? 600 : 400, letterSpacing: '-.01em', color: on ? TV.ink : TV.ink3, whiteSpace: 'nowrap', transition: 'color .2s' }}>
+                  {t.label}
+                  <span style={{ fontSize: 11, fontWeight: 400, color: TV.ink3, fontVariantNumeric: 'tabular-nums' }}>{n}</span>
+                </button>
+              )
+            })}
+          </nav>
+
+          {/* 갤러리 */}
+          <section className="tv-grid">
+            <div className="tv-cards">
+              {filteredShowcase.map((item, i) => (
+                <article key={item.id} className="tv-card" style={{ cursor: item.comingSoon ? 'default' : 'pointer', animation: `tvIn .6s ease ${Math.min(i, 8) * 0.04}s both` }} onClick={() => { if (!item.comingSoon) setSheet(item) }}>
+                  <div className="tv-img group" style={{ position: 'relative', aspectRatio: '9 / 16', borderRadius: 3, overflow: 'hidden', background: TV.img, outline: `1px solid ${TV.line}`, outlineOffset: -1 }}>
+                    {item.comingSoon ? (
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 500, letterSpacing: '.08em', color: TV.ink3 }}>COMING SOON</div>
+                    ) : (
+                      <Image src={item.thumbnail} alt={`${item.name} 샘플`} fill sizes="(max-width: 760px) 46vw, (max-width: 1080px) 30vw, 280px" className="object-cover object-top group-hover:animate-scroll-preview" />
+                    )}
+                    {!item.comingSoon && (
+                      <div className="tv-act" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'rgba(255,250,249,.94)', backdropFilter: 'blur(6px)', borderTop: `1px solid ${TV.line}` }}>
+                        <a href={item.sampleUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+                          style={{ padding: '13px 0', textAlign: 'center', fontSize: 12.5, fontWeight: 500, color: TV.ink2, borderRight: `1px solid ${TV.line}` }}>미리보기</a>
+                        <button type="button" onClick={(e) => { e.stopPropagation(); handleTemplateSelect(item.templateId) }}
+                          style={{ padding: '13px 0', background: 'none', border: 0, cursor: 'pointer', fontFamily: TV_FONT, fontSize: 12.5, fontWeight: 600, color: TV.ink }}>시작하기</button>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr auto', columnGap: 10, alignItems: 'baseline' }}>
+                    <h3 style={{ margin: 0, fontSize: 'clamp(16px, 1.45vw, 19px)', fontWeight: 650, lineHeight: 1.2, letterSpacing: '-.005em' }}>{item.name}</h3>
+                    <span style={{ fontSize: 11.5, color: TV.ink3, letterSpacing: '-.01em' }}>{item.categoryLabel}</span>
+                    <p style={{ gridColumn: '1 / -1', margin: '7px 0 0', fontSize: 13, lineHeight: 1.6, letterSpacing: '-.015em', color: TV.ink2, wordBreak: 'keep-all' }}>{item.tagline}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          {/* 형식으로 고르기 — 형식별 소개 화면과 추천 퀴즈로 이어진다 */}
+          <section className="tv-grid" style={{ marginTop: 'clamp(96px, 12vw, 160px)', rowGap: 24 }}>
+            <div className="tv-hero-title">
+              <h2 style={{ margin: 0, fontSize: 'clamp(22px, 2.3vw, 28px)', lineHeight: 1.36, letterSpacing: '-.035em', fontWeight: 300 }}>
+                어떤 청첩장을<br /><span style={{ fontWeight: 600 }}>원하세요?</span>
+              </h2>
+            </div>
+            <div className="tv-hero-side">
+              <p style={{ margin: 0, fontSize: 14, lineHeight: 1.75, letterSpacing: '-.01em', color: TV.ink2, wordBreak: 'keep-all' }}>
+                어떤 스타일이 맞을지 모르겠다면, 질문 2~3개로 어울리는 템플릿을 골라 드려요.
+              </p>
+              <p style={{ margin: '16px 0 0', fontSize: 13, fontWeight: 500, letterSpacing: '-.01em' }}>
+                <button type="button" className="tv-link" onClick={() => goQuizStep('q1')}>맞춤 템플릿 추천받기</button>
+              </p>
+            </div>
+            <div style={{ gridColumn: '1 / -1', marginTop: 'clamp(16px, 3vw, 32px)', borderTop: `1px solid ${TV.ink}` }}>
+              {FORMAT_ROWS.map((fm) => (
+                <button key={fm.id} type="button" className="tv-row" onClick={() => selectCategory(fm.id)}>
+                  <span className="tv-row-name">
+                    <span style={{ display: 'block', fontSize: 'clamp(17px, 1.6vw, 20px)', fontWeight: 600, letterSpacing: '-.02em' }}>{fm.name}</span>
+                    <span style={{ display: 'block', marginTop: 4, fontSize: 12, color: TV.ink3, letterSpacing: '-.01em' }}>{fm.mood}</span>
+                  </span>
+                  <span className="tv-row-desc" style={{ fontSize: 14, lineHeight: 1.7, letterSpacing: '-.015em', color: TV.ink2, wordBreak: 'keep-all' }}>{fm.desc}</span>
+                  <span className="tv-row-list" style={{ fontSize: 11.5, fontWeight: 500, letterSpacing: '.08em', color: TV.ink3 }}>{fm.list}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        </main>
+      )}
+
+      {/* 퀴즈 · 형식별 화면 (기존 그대로) */}
+      {!isGallery && (
       <main className="pt-24 pb-16 px-2 sm:px-4">
         <div className="max-w-4xl mx-auto">
 
@@ -732,294 +932,6 @@ function TemplatesContent() {
                 </div>
               )}
               {renderQuiz()}
-            </div>
-          )}
-
-          {/* Step 1: 카테고리 직접 선택 (퀴즈 스킵 시) */}
-          {quizStep === null && !selectedCategory && (
-            <div>
-              {/* 샘플 쇼케이스 섹션 */}
-              <div className="max-w-4xl mx-auto mb-10 sm:mb-14">
-                <div className="text-center mb-6 sm:mb-8">
-                  <p className="text-[10px] sm:text-xs tracking-widest text-gray-400 uppercase mb-2">Sample Gallery</p>
-                  <h2 className="text-lg sm:text-2xl font-bold text-gray-900 mb-2">모든 샘플 미리보기</h2>
-                  <p className="text-xs sm:text-sm text-gray-500">완성된 청첩장을 먼저 확인해 보세요</p>
-                </div>
-
-                {/* 카테고리 필터 탭 */}
-                <div className="flex items-center justify-center gap-2 mb-6 sm:mb-8">
-                  {([
-                    { key: 'all' as ShowcaseFilter, label: '전체', count: SHOWCASE_ITEMS.length, activeClass: 'bg-gray-900 text-white' },
-                    { key: 'story' as ShowcaseFilter, label: '스토리형', count: SHOWCASE_ITEMS.filter(i => i.category === 'story').length, activeClass: 'bg-rose-500 text-white' },
-                    { key: 'mini' as ShowcaseFilter, label: '미니스토리형', count: SHOWCASE_ITEMS.filter(i => i.category === 'mini').length, activeClass: 'bg-violet-500 text-white' },
-                    { key: 'parents' as ShowcaseFilter, label: '혼주용', count: SHOWCASE_ITEMS.filter(i => i.category === 'parents').length, activeClass: 'bg-sky-500 text-white' },
-                    { key: 'thankyou' as ShowcaseFilter, label: '감사장', count: SHOWCASE_ITEMS.filter(i => i.category === 'thankyou').length, activeClass: 'bg-amber-500 text-white' },
-                  ]).map(tab => (
-                    <button
-                      key={tab.key}
-                      onClick={() => setShowcaseFilter(tab.key)}
-                      className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full transition-colors ${
-                        showcaseFilter === tab.key
-                          ? tab.activeClass
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      {tab.label}
-                      <span className={`ml-1 ${showcaseFilter === tab.key ? 'text-gray-300' : 'text-gray-400'}`}>
-                        {tab.count}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-
-                {/* 카드 그리드 */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
-                  {filteredShowcase.map(item => (
-                    <div
-                      key={item.id}
-                      className="group flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300 overflow-hidden"
-                    >
-                      {/* 폰 프레임 썸네일 */}
-                      <a href={item.comingSoon ? undefined : item.sampleUrl} target={item.comingSoon ? undefined : '_blank'} rel="noopener noreferrer" className={`relative bg-gray-50 px-4 pt-5 pb-4 sm:px-5 sm:pt-6 sm:pb-5 flex items-center justify-center ${item.comingSoon ? '' : 'cursor-pointer'}`}>
-                        <div className="relative w-full aspect-[9/16] rounded-[18px] sm:rounded-[22px] overflow-hidden border-[3px] sm:border-4 border-gray-800 bg-white shadow-lg">
-                          {/* 노치 */}
-                          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 sm:w-18 h-3.5 sm:h-4.5 bg-gray-800 rounded-b-lg z-10" />
-                          {item.comingSoon ? (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center px-3" style={{ background: 'linear-gradient(180deg,#F4F0E9,#E7DECF)' }}>
-                              <span className="text-base sm:text-lg font-semibold tracking-wide text-stone-600" style={{ fontFamily: 'Georgia, serif' }}>THE CLASSIC</span>
-                              <span className="text-[9px] sm:text-[10px] tracking-[0.3em] text-stone-400">COMING SOON</span>
-                            </div>
-                          ) : (
-                            <Image
-                              src={item.thumbnail}
-                              alt={`${item.name} 샘플`}
-                              fill
-                              className="object-cover object-top group-hover:animate-scroll-preview"
-                              sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 25vw"
-                            />
-                          )}
-                        </div>
-                      </a>
-
-                      {/* 카드 정보 */}
-                      <div className="p-3 sm:p-4 flex flex-col flex-1">
-                        <div className="flex items-center gap-1.5 mb-1.5">
-                          <span className={`px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium rounded-full ${item.badgeBg} ${item.badgeColor}`}>
-                            {item.categoryLabel}
-                          </span>
-                          {item.badge === 'Best' && (
-                            <span className="px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold rounded-full bg-amber-400 text-white">
-                              Best
-                            </span>
-                          )}
-                          {item.badge === 'New' && (
-                            <span className="px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold rounded-full bg-emerald-500 text-white">
-                              New
-                            </span>
-                          )}
-                          {item.comingSoon && (
-                            <span className="px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold rounded-full bg-stone-500 text-white">
-                              준비중
-                            </span>
-                          )}
-                        </div>
-                        <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-0.5">{item.name}</h3>
-                        <p className="text-[10px] sm:text-xs text-gray-400 mb-3 line-clamp-2 flex-1">{item.tagline}</p>
-
-                        <div className="flex flex-col gap-1.5 mt-auto">
-                          {item.comingSoon ? (
-                            <button
-                              disabled
-                              className="w-full h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-medium border border-gray-200 text-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
-                            >
-                              미리보기 준비중
-                            </button>
-                          ) : (
-                            <a
-                              href={item.sampleUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-full h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-medium border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
-                            >
-                              미리보기
-                            </a>
-                          )}
-                          <button
-                            onClick={() => handleTemplateSelect(item.templateId)}
-                            className={`w-full h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-medium text-white rounded-lg transition-colors ${item.btnClass}`}
-                          >
-                            이 스타일로 시작
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 스타일 선택 헤딩 */}
-              <div className="border-t border-gray-200 mt-10 sm:mt-14 mb-4 sm:mb-6" />
-              <div className="text-center mb-4 sm:mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">어떤 청첩장을 원하세요?</h2>
-                <p className="text-xs sm:text-sm text-gray-400 mt-1.5">스타일을 선택하면 맞춤 템플릿을 추천해 드려요</p>
-              </div>
-
-              {/* 취향 퀴즈 배너 */}
-              <div className="max-w-2xl mx-auto mb-4 sm:mb-6">
-                <button
-                  onClick={() => goQuizStep('q1')}
-                  className="group w-full p-4 sm:p-5 rounded-2xl border-2 border-dashed border-gray-200 bg-gradient-to-r from-rose-50/60 via-violet-50/60 to-blue-50/60 hover:border-gray-300 hover:shadow-md transition-all duration-300 text-center"
-                >
-                  <div className="flex items-center justify-center gap-3">
-                    <span className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white shadow-sm border border-gray-100">
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                        <line x1="12" y1="17" x2="12.01" y2="17" />
-                      </svg>
-                    </span>
-                    <div className="text-left">
-                      <p className="text-sm sm:text-base font-semibold text-gray-800">어떤 스타일이 맞을지 모르겠다면?</p>
-                      <p className="text-[11px] sm:text-xs text-gray-400">2~3개 질문으로 맞춤 템플릿 추천받기</p>
-                    </div>
-                    <svg className="w-4 h-4 text-gray-300 group-hover:text-violet-400 transition-colors ml-auto flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 sm:gap-5 max-w-2xl mx-auto">
-                {/* 스토리형 */}
-                <button
-                  onClick={() => selectCategory('story')}
-                  className="group relative p-5 sm:p-8 rounded-2xl border border-gray-100 bg-white shadow-sm hover:border-rose-300 hover:shadow-xl hover:scale-[1.01] transition-all duration-300 text-left"
-                >
-                  <div className="flex items-center gap-4 sm:gap-6">
-                    <div className="relative w-10 h-10 sm:w-14 sm:h-14 flex-shrink-0">
-                      <div className="absolute -inset-1 bg-rose-200 rounded-full opacity-[0.12] blur-[10px]" />
-                      <div className="relative w-full h-full bg-rose-50/80 border border-rose-100/60 rounded-full flex items-center justify-center">
-                        <svg className="w-5 h-5 sm:w-7 sm:h-7 text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" fill="rgba(253,164,175,0.15)" />
-                          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-base sm:text-xl font-semibold text-gray-900">스토리형</h3>
-                        <span className="px-2 py-0.5 text-[9px] sm:text-xs bg-rose-50 text-rose-500 rounded-full font-medium">깊이 있는 이야기</span>
-                      </div>
-                      <p className="text-xs sm:text-sm text-gray-500 mb-1.5 sm:mb-2">
-                        우리의 사랑 이야기를 풍부하게 담는 청첩장
-                      </p>
-                      <p className="text-[10px] sm:text-xs text-gray-400">OUR &middot; FAMILY</p>
-                    </div>
-                    <svg className="w-5 h-5 text-gray-300 group-hover:text-rose-400 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </button>
-
-                {/* 미니 스토리형 */}
-                <button
-                  onClick={() => selectCategory('mini')}
-                  className="group relative p-5 sm:p-8 rounded-2xl border border-gray-100 bg-white shadow-sm hover:border-gray-800 hover:shadow-xl hover:scale-[1.01] transition-all duration-300 text-left"
-                >
-                  <div className="flex items-center gap-4 sm:gap-6">
-                    <div className="relative w-10 h-10 sm:w-14 sm:h-14 flex-shrink-0">
-                      <div className="absolute -inset-1 bg-violet-200 rounded-full opacity-[0.12] blur-[10px]" />
-                      <div className="relative w-full h-full bg-violet-50/80 border border-violet-100/60 rounded-full flex items-center justify-center">
-                        <svg className="w-5 h-5 sm:w-7 sm:h-7 text-violet-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="3" width="7" height="9" rx="1.5" fill="rgba(196,181,253,0.15)" />
-                          <rect x="14" y="3" width="7" height="5" rx="1.5" />
-                          <rect x="3" y="15" width="7" height="6" rx="1.5" />
-                          <rect x="14" y="11" width="7" height="10" rx="1.5" fill="rgba(196,181,253,0.1)" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-base sm:text-xl font-semibold text-gray-900">미니 스토리형</h3>
-                        <span className="px-2 py-0.5 text-[9px] sm:text-xs bg-gray-100 text-gray-600 rounded-full font-medium">감각적 디자인</span>
-                      </div>
-                      <p className="text-xs sm:text-sm text-gray-500 mb-1.5 sm:mb-2">
-                        감각적인 디자인에 이야기를 간결하게 담는 청첩장
-                      </p>
-                      <p className="text-[10px] sm:text-xs text-gray-400">MAGAZINE &middot; MOVIE &middot; RECORD</p>
-                    </div>
-                    <svg className="w-5 h-5 text-gray-300 group-hover:text-gray-800 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </button>
-
-                {/* 혼주용 */}
-                <button
-                  onClick={() => selectCategory('parents')}
-                  className="group relative p-5 sm:p-8 rounded-2xl border border-gray-100 bg-white shadow-sm hover:border-amber-300 hover:shadow-xl hover:scale-[1.01] transition-all duration-300 text-left"
-                >
-                  <div className="flex items-center gap-4 sm:gap-6">
-                    <div className="relative w-10 h-10 sm:w-14 sm:h-14 flex-shrink-0">
-                      <div className="absolute -inset-1 bg-sky-200 rounded-full opacity-[0.12] blur-[10px]" />
-                      <div className="relative w-full h-full bg-sky-50/80 border border-sky-100/60 rounded-full flex items-center justify-center">
-                        <svg className="w-5 h-5 sm:w-7 sm:h-7 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="9" cy="7" r="4" />
-                          <path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2" fill="rgba(125,211,252,0.15)" />
-                          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                          <path d="M21 21v-2a4 4 0 0 0-3-3.87" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-base sm:text-xl font-semibold text-gray-900">혼주용</h3>
-                        <span className="px-2 py-0.5 text-[9px] sm:text-xs bg-amber-50 text-amber-600 rounded-full font-medium">격식 있는</span>
-                      </div>
-                      <p className="text-xs sm:text-sm text-gray-500 mb-1.5 sm:mb-2">
-                        부모님이 지인분들께 보내는 격식 있는 청첩장
-                      </p>
-                      <p className="text-[10px] sm:text-xs text-gray-400">PARENTS</p>
-                    </div>
-                    <svg className="w-5 h-5 text-gray-300 group-hover:text-amber-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </button>
-
-                {/* THE 시리즈 */}
-                <button
-                  onClick={() => selectCategory('the-series')}
-                  className="group relative p-5 sm:p-8 rounded-2xl border border-gray-100 bg-white shadow-sm hover:border-stone-400 hover:shadow-xl hover:scale-[1.01] transition-all duration-300 text-left"
-                >
-                  <div className="flex items-center gap-4 sm:gap-6">
-                    <div className="relative w-10 h-10 sm:w-14 sm:h-14 flex-shrink-0">
-                      <div className="absolute -inset-1 rounded-full opacity-[0.12] blur-[10px]" style={{ background: '#8C7B6B' }} />
-                      <div className="relative w-full h-full rounded-full flex items-center justify-center border" style={{ background: 'rgba(140,123,107,0.06)', borderColor: 'rgba(140,123,107,0.2)' }}>
-                        <svg className="w-5 h-5 sm:w-7 sm:h-7" style={{ color: '#8C7B6B' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="rgba(140,123,107,0.08)" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-base sm:text-xl font-semibold text-gray-900">THE 시리즈</h3>
-                        <span className="px-2 py-0.5 text-[9px] sm:text-xs rounded-full font-medium" style={{ background: 'rgba(140,123,107,0.1)', color: '#8C7B6B' }}>프리미엄</span>
-                      </div>
-                      <p className="text-xs sm:text-sm text-gray-500 mb-1.5 sm:mb-2">
-                        우리만의 무드를 담고 싶다면
-                      </p>
-                      <p className="text-[10px] sm:text-xs text-gray-400">THE SIMPLE &middot; THE CLASSIC</p>
-                    </div>
-                    <svg className="w-5 h-5 text-gray-300 group-hover:text-stone-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </button>
-
-              </div>
-
-
             </div>
           )}
 
@@ -1607,6 +1519,33 @@ function TemplatesContent() {
 
         </div>
       </main>
+      )}
+
+      {/* 템플릿 시트: 모바일은 아래에서, 데스크톱은 가운데 */}
+      {sheet && (
+        <div onClick={() => setSheet(null)} className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" style={{ background: 'rgba(31,28,25,.38)', fontFamily: TV_FONT, color: TV.ink }}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-h-[92vh] overflow-y-auto rounded-t-[10px] px-5 pt-5 pb-7 sm:rounded-[4px] sm:max-w-[720px] sm:flex sm:gap-10 sm:p-10"
+            style={{ background: TV.paper, animation: 'tvSheet .4s cubic-bezier(.2,.7,.2,1) both' }}>
+            <div className="relative mx-auto max-h-[50vh] sm:max-h-none sm:w-[270px] sm:flex-shrink-0 sm:mx-0" style={{ aspectRatio: '9 / 16', borderRadius: 3, overflow: 'hidden', background: TV.img, outline: `1px solid ${TV.line}`, outlineOffset: -1 }}>
+              <Image src={sheet.thumbnail} alt={`${sheet.name} 샘플`} fill sizes="300px" className="object-cover object-top animate-scroll-preview" />
+            </div>
+            <div className="sm:flex sm:flex-col sm:justify-between" style={{ flex: 1, minWidth: 0 }}>
+              <div>
+                <p style={{ margin: '22px 0 0', fontSize: 12, color: TV.ink3, letterSpacing: '-.01em' }}>{sheet.categoryLabel}</p>
+                <h2 style={{ margin: '8px 0 0', fontSize: 22, fontWeight: 600, letterSpacing: '.04em' }}>{sheet.name}</h2>
+                <p style={{ margin: '12px 0 0', fontSize: 14, lineHeight: 1.75, letterSpacing: '-.015em', color: TV.ink2, wordBreak: 'keep-all' }}>{sheet.tagline}</p>
+              </div>
+              <div style={{ display: 'grid', gap: 8, marginTop: 28 }}>
+                <button type="button" onClick={() => handleTemplateSelect(sheet.templateId)}
+                  style={{ height: 50, borderRadius: 2, background: TV.ink, color: '#FFF9F8', border: 0, fontSize: 14, fontWeight: 500, letterSpacing: '-.01em', cursor: 'pointer', fontFamily: TV_FONT }}>이 스타일로 시작하기</button>
+                <a href={sheet.sampleUrl} target="_blank" rel="noopener noreferrer"
+                  style={{ height: 50, borderRadius: 2, border: `1px solid ${TV.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 500, letterSpacing: '-.01em', color: TV.ink, textDecoration: 'none' }}>샘플 청첩장 열어보기</a>
+                <button type="button" onClick={() => setSheet(null)} style={{ marginTop: 6, background: 'none', border: 0, fontSize: 12.5, color: TV.ink3, cursor: 'pointer', fontFamily: TV_FONT }}>닫기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

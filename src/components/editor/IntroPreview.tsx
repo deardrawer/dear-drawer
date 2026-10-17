@@ -3,7 +3,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { IntroSettings, IntroImageSettings, presetAccentColors, presetCustomColors } from '@/lib/introPresets'
 import { ImageSettings } from '@/store/editorStore'
+import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 import { X } from 'lucide-react'
+import { isInteractiveIntro } from '@/lib/introPresets'
+import { BlurIntro } from '@/components/invitation/BlurIntro'
+import InteractiveIntro, { hasInteractiveRenderer } from '@/components/invitation/intros/InteractiveIntro'
+import { buildIntroData, type IntroData } from '@/components/invitation/intros/shared'
 
 interface IntroPreviewProps {
   settings: IntroSettings
@@ -24,107 +29,10 @@ interface IntroPreviewProps {
   brideName?: string
   // 커버(인트로 애니메이션 뒤에 자동으로 넘어가 보여줄 실제 커버 화면) 제목
   coverTitle?: string
+  // 인터랙티브 인트로용 청첩장 정보 (이름·사진·갤러리)
+  introData?: IntroData
 }
 
-// 보케(빛 입자) 컴포넌트
-function BokehParticles({ count = 12, color = 'white' }: { count?: number; color?: 'warm' | 'gold' | 'white' }) {
-  const colors = {
-    warm: 'rgba(255, 215, 180, 0.25)',
-    gold: 'rgba(255, 215, 0, 0.3)',
-    white: 'rgba(255, 255, 255, 0.3)',
-  }
-  const particles = Array.from({ length: count }, (_, i) => ({
-    id: i,
-    size: Math.random() * 25 + 8,
-    left: Math.random() * 100,
-    top: Math.random() * 100,
-    delay: Math.random() * 5,
-    duration: Math.random() * 10 + 12,
-    opacity: Math.random() * 0.25 + 0.05,
-  }))
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className="absolute rounded-full intro-bokeh-particle"
-          style={{
-            width: p.size,
-            height: p.size,
-            left: `${p.left}%`,
-            top: `${p.top}%`,
-            animationDelay: `${p.delay}s`,
-            animationDuration: `${p.duration}s`,
-            opacity: p.opacity,
-            background: `radial-gradient(circle at 30% 30%, rgba(255, 250, 240, 0.9), ${colors[color]})`,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-// 꽃잎 컴포넌트
-function FallingPetals({ count = 8 }: { count?: number }) {
-  const petals = Array.from({ length: count }, (_, i) => ({
-    id: i,
-    left: 10 + (i * 80) / count + Math.random() * 10,
-    delay: Math.random() * 3,
-    duration: Math.random() * 5 + 12,
-    size: Math.random() * 10 + 18,
-    rotation: Math.random() * 360,
-  }))
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {petals.map((p) => (
-        <div
-          key={p.id}
-          className="absolute intro-petal"
-          style={{
-            left: `${p.left}%`,
-            top: '-20px',
-            animationDelay: `${p.delay}s`,
-            animationDuration: `${p.duration}s`,
-            width: p.size,
-            height: p.size,
-            transform: `rotate(${p.rotation}deg)`,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-// 빛 광선 컴포넌트
-function LightRays({ count = 6 }: { count?: number }) {
-  const rays = Array.from({ length: count }, (_, i) => ({
-    id: i,
-    rotation: (360 / count) * i,
-    delay: i * 0.15,
-    width: 1 + Math.random() * 1,
-  }))
-
-  return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-      {rays.map((r) => (
-        <div
-          key={r.id}
-          className="absolute intro-light-ray"
-          style={{
-            transform: `rotate(${r.rotation}deg)`,
-            animationDelay: `${r.delay}s`,
-            width: `${r.width}px`,
-            height: '150%',
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-// 날짜 포맷팅 함수 (영어식: May 24, 2025)
 function formatDate(dateString: string): string {
   if (!dateString) return ''
   const date = new Date(dateString)
@@ -152,7 +60,32 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-export default function IntroPreview({
+// 인터랙티브 스타일은 실제 하객 화면과 같은 컴포넌트로 미리보기한다
+export default function IntroPreview(props: IntroPreviewProps) {
+  const { settings } = props
+  const [round, setRound] = useState(0)
+  // 스타일 설정을 바꾸면 바로 결과가 보이도록 완료 화면으로 (다 보고 넘기면 다시 처음부터)
+  const optsKey = JSON.stringify((settings.styleOptions as Record<string, unknown> | undefined)?.[settings.presetId] ?? {})
+  const [seenOpts, setSeenOpts] = useState(optsKey)
+  const [showDone, setShowDone] = useState(false)
+  if (optsKey !== seenOpts) { setSeenOpts(optsKey); setShowDone(true) }
+  if (isInteractiveIntro(settings.presetId) && hasInteractiveRenderer(settings.presetId)) {
+    const data = props.introData || buildIntroData({
+      groom: { name: props.groomName }, bride: { name: props.brideName },
+      wedding: { date: props.weddingDate, timeDisplay: props.weddingTimeDisplay, venue: { name: props.venueName } },
+      media: { coverImage: props.coverImage }, intro: settings,
+    })
+    return (
+      <div className="relative w-full h-full overflow-hidden bg-black">
+        <InteractiveIntro key={`${settings.presetId}-${round}-${showDone ? 'done' : 'play'}`} embedded startFinished={showDone} styleId={settings.presetId} settings={settings} data={data}
+          onNext={() => setTimeout(() => { setShowDone(false); setRound(r => r + 1) }, 700)} />
+      </div>
+    )
+  }
+  return <CinematicPreview {...props} />
+}
+
+function CinematicPreview({
   settings,
   coverImage,
   coverImageSettings,
@@ -308,69 +241,19 @@ export default function IntroPreview({
   // accentColor: 사용자 설정 우선, 없으면 프리셋 기본값
   const accentColor = settings.accentColor || presetAccentColors[settings.presetId] || '#d4a574'
   const overlayColor = settings.overlayColor || presetCustomColors[settings.presetId]?.overlayColor || '#000000'
-  const bodyTextColor = settings.bodyTextColor || presetCustomColors[settings.presetId]?.bodyTextColor || '#2c2c2c'
-  const bgColor = settings.bgColor || presetCustomColors[settings.presetId]?.bgColor || '#F8F6F3'
-  const waveColor = settings.waveColor || presetCustomColors[settings.presetId]?.waveColor || '#FAF8F5'
-  const envelopeColor = settings.envelopeColor || presetCustomColors[settings.presetId]?.envelopeColor || '#f5f0e8'
 
-  // 프리셋별 렌더링
-  const renderIntro = () => {
-    const commonProps = { key, settings: effectiveSettings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, overlayColor, bodyTextColor, bgColor, waveColor, envelopeColor }
-
-    switch (settings.presetId) {
-      case 'cinematic':
-        return <CinematicIntro {...commonProps} />
-      case 'typing':
-        return <TypingIntro {...commonProps} />
-      case 'blur':
-        return <BlurIntro {...commonProps} />
-      case 'zoom':
-        return <ZoomIntro {...commonProps} />
-      case 'letter':
-        return <LetterIntro {...commonProps} />
-      case 'petal':
-        return <PetalIntro {...commonProps} />
-      case 'watercolor':
-        return <WatercolorIntro {...commonProps} />
-      case 'lightray':
-        return <LightrayIntro {...commonProps} />
-      case 'film':
-        return <FilmIntro {...commonProps} />
-      case 'filmstrip':
-        return <FilmstripIntro {...commonProps} />
-      default:
-        return <CinematicIntro {...commonProps} />
-    }
-  }
+  // 타임드 인트로: 포커스(블러) 또는 시네마틱 (그 외 스타일은 인터랙티브 인트로로 별도 렌더)
+  const renderIntro = () => settings.presetId === 'blur' ? (
+    <BlurIntro key={key} settings={effectiveSettings} backgroundStyle={backgroundStyle} titleStyle={titleStyle} accentColor={accentColor} overlayColor={overlayColor} />
+  ) : (
+    <CinematicIntro key={key} settings={effectiveSettings} backgroundStyle={backgroundStyle} overlayStyle={overlayStyle}
+      photo={imageMode === 'photo' && effectiveImage ? { src: effectiveImage, crop: effectiveImageSettings as Partial<ImageSettings> | undefined } : undefined}
+      titleStyle={titleStyle} subTitleStyle={subTitleStyle} accentColor={accentColor} overlayColor={overlayColor} />
+  )
 
   return (
     <div ref={containerRef} className="relative w-full h-full overflow-hidden bg-black">
       <style jsx global>{`
-        /* ========== 기본 애니메이션 ========== */
-
-        /* 타이핑 커서 */
-        @keyframes introBlink {
-          0%, 50% { opacity: 1; }
-          51%, 100% { opacity: 0; }
-        }
-        .intro-typing-cursor {
-          animation: introBlink 1s infinite;
-          margin-left: 2px;
-        }
-
-        /* 글자별 페이드 리빌 (타이핑 대체) */
-        @keyframes introCharReveal {
-          0% { opacity: 0; filter: blur(7px); transform: translateY(9px); }
-          100% { opacity: 1; filter: blur(0); transform: translateY(0); }
-        }
-        .intro-char {
-          display: inline-block;
-          white-space: pre;
-          opacity: 0;
-          animation: introCharReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-
-        /* 페이드 인 */
         @keyframes introFadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -379,296 +262,27 @@ export default function IntroPreview({
         .intro-fade-in-delay { animation: introFadeIn 1s ease-out 0.5s forwards; opacity: 0; }
         .intro-fade-in-delay-2 { animation: introFadeIn 1s ease-out 1s forwards; opacity: 0; }
         .intro-fade-in-delay-3 { animation: introFadeIn 1s ease-out 1.5s forwards; opacity: 0; }
-
-        /* 페이드 인 업 */
         @keyframes introFadeInUp {
           0% { opacity: 0; transform: translateY(20px); }
           100% { opacity: 1; transform: translateY(0); }
         }
         .intro-fade-in-up { animation: introFadeInUp 1s ease-out forwards; }
         .intro-fade-in-up-delay { animation: introFadeInUp 1s ease-out 0.5s forwards; opacity: 0; }
-
-        /* 슬라이드 업 */
-        @keyframes introSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .intro-slide-up { animation: introSlideUp 0.8s ease-out forwards; }
-        .intro-slide-up-delay { animation: introSlideUp 0.8s ease-out 0.3s forwards; opacity: 0; }
-
-        /* 줌 아웃 */
         @keyframes introZoomOut {
           from { transform: scale(1.1); }
           to { transform: scale(1); }
         }
         .intro-zoom-out { animation: introZoomOut 2.5s ease-out forwards; }
-
-        /* 블러 → 선명 */
-        @keyframes introBlurToSharp {
-          0% { filter: blur(20px); opacity: 0; transform: scale(1.1); }
-          100% { filter: blur(0); opacity: 1; transform: scale(1); }
-        }
-        .intro-blur-to-sharp { animation: introBlurToSharp 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-
-        /* 글자 좁아지기 */
         @keyframes introLetterSpread {
           0% { opacity: 0; }
           100% { opacity: 1; }
         }
         .intro-letter-spread { animation: introLetterSpread 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.15s forwards; opacity: 0; }
-
-        /* 라인 확장 */
         @keyframes introLineExpand {
           from { width: 0; }
           to { width: 50px; }
         }
         .intro-line-expand { animation: introLineExpand 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
-
-        /* 플로팅 */
-        @keyframes introFloat {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        .intro-float { animation: introFloat 3s ease-in-out infinite; }
-
-
-        /* 스플릿 reveal */
-        @keyframes introSplitReveal {
-          0% { opacity: 0; transform: scaleX(0); }
-          100% { opacity: 1; transform: scaleX(1); }
-        }
-        .intro-split-reveal { animation: introSplitReveal 0.8s ease-out forwards; transform-origin: center; opacity: 0; }
-
-        /* 슬라이드 인 */
-        @keyframes introSlideInLeft {
-          0% { opacity: 0; transform: translateX(-30px); }
-          100% { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes introSlideInRight {
-          0% { opacity: 0; transform: translateX(30px); }
-          100% { opacity: 1; transform: translateX(0); }
-        }
-        .intro-slide-in-left { animation: introSlideInLeft 0.8s ease-out forwards; opacity: 0; }
-        .intro-slide-in-right { animation: introSlideInRight 0.8s ease-out forwards; opacity: 0; }
-
-        /* 스케일 업 */
-        @keyframes introScaleUp {
-          0% { opacity: 0; transform: scale(0.5); }
-          100% { opacity: 1; transform: scale(1); }
-        }
-        .intro-scale-up { animation: introScaleUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0; }
-
-
-        /* ========== 보케 파티클 ========== */
-        @keyframes introBokehFloat {
-          0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
-          10% { opacity: 0.6; }
-          50% { transform: translateY(-30px) translateX(20px); opacity: 0.8; }
-          90% { opacity: 0.4; }
-        }
-        @keyframes introBokehPulse {
-          0%, 100% { transform: scale(1); box-shadow: none; }
-          50% { transform: scale(1.1); box-shadow: none; }
-        }
-        .intro-bokeh-particle {
-          filter: blur(4px);
-          animation: introBokehFloat 18s ease-in-out infinite, introBokehPulse 5s ease-in-out infinite;
-          will-change: transform, opacity;
-        }
-
-        /* ========== 꽃잎 ========== */
-        @keyframes introPetalFall {
-          0% { transform: translateY(-100px) rotate(0deg) translateX(0); opacity: 0; }
-          10% { opacity: 1; }
-          100% { transform: translateY(100vh) rotate(720deg) translateX(100px); opacity: 0.3; }
-        }
-        .intro-petal {
-          background: rgba(180, 160, 150, 0.12);
-          border-radius: 50% 0 50% 50%;
-          animation: introPetalFall linear infinite;
-          opacity: 0.2;
-        }
-
-        /* ========== 빛 광선 ========== */
-        @keyframes introRayExpand {
-          0% { opacity: 0; transform: scaleY(0); }
-          100% { opacity: 0.15; transform: scaleY(1); }
-        }
-        @keyframes introRayPulse {
-          0%, 100% { opacity: 0.1; }
-          50% { opacity: 0.2; }
-        }
-        .intro-light-ray {
-          background: linear-gradient(to bottom, transparent, rgba(255, 248, 220, 0.3), transparent);
-          transform-origin: center center;
-          animation: introRayExpand 3s ease-out forwards, introRayPulse 4s ease-in-out infinite 3s;
-        }
-
-        /* ========== 편지 봉투 ========== */
-        @keyframes introFlapOpen {
-          0% { transform: perspective(500px) rotateX(0deg); z-index: 4; }
-          99% { z-index: 4; }
-          100% { transform: perspective(500px) rotateX(-180deg); z-index: 1; }
-        }
-        @keyframes introCardSlideOut {
-          0% { transform: translateY(0px); }
-          100% { transform: translateY(-160px); }
-        }
-        @keyframes introCardExpand {
-          0% { opacity: 0; transform: scale(0.8); }
-          100% { opacity: 1; transform: scale(1); }
-        }
-        @keyframes introSealBreak {
-          0% { opacity: 1; transform: scale(1) rotate(0deg); }
-          100% { opacity: 0; transform: scale(0.5) rotate(45deg); }
-        }
-        @keyframes introEnvelopeDown {
-          0% { opacity: 1; transform: translateY(0); }
-          100% { opacity: 0; transform: translateY(100px); }
-        }
-
-        /* ========== 수채화 ========== */
-        @keyframes introWatercolorSpread {
-          0% { clip-path: circle(0% at 50% 50%); opacity: 0; }
-          100% { clip-path: circle(100% at 50% 50%); opacity: 1; }
-        }
-        @keyframes introWatercolorBlob {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.01); }
-        }
-        @keyframes introTextSpread {
-          0% { opacity: 0; filter: blur(10px); transform: scale(1.1); }
-          100% { opacity: 1; filter: blur(0); transform: scale(1); }
-        }
-        .intro-watercolor-spread { animation: introWatercolorSpread 2s ease-out forwards; }
-        .intro-watercolor-blob { animation: introWatercolorBlob 10s ease-in-out infinite; }
-        .intro-text-spread { animation: introTextSpread 1.5s ease-out forwards; opacity: 0; }
-
-        /* ========== 필름 ========== */
-        @keyframes introFilmGrain {
-          0%, 100% { transform: translate(0, 0); }
-          50% { transform: translate(0.1%, 0.1%); }
-        }
-        @keyframes introFilmFlicker {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.97; }
-        }
-        @keyframes introFilmVignette {
-          0% { box-shadow: inset 0 0 150px 60px rgba(0,0,0,0.9); }
-          100% { box-shadow: inset 0 0 100px 40px rgba(0,0,0,0.5); }
-        }
-        .intro-film-grain { animation: introFilmGrain 2s ease-in-out infinite; }
-        .intro-film-flicker { animation: introFilmFlicker 3s ease-in-out infinite; }
-        .intro-film-vignette { animation: introFilmVignette 2s ease-out forwards; }
-        .intro-film-overlay { background: repeating-linear-gradient(0deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 1px, transparent 1px, transparent 2px); }
-        .intro-sepia-filter { filter: sepia(0.4) contrast(1.1) brightness(0.95); }
-
-        /* ========== 물결 ========== */
-        @keyframes introWaterDistort {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
-        }
-        @keyframes introWaterDistort2 {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(8px); }
-        }
-        @keyframes introRippleShine {
-          0% { opacity: 0; transform: translateX(-100%) skewX(-15deg); }
-          50% { opacity: 0.5; }
-          100% { opacity: 0; transform: translateX(100%) skewX(-15deg); }
-        }
-        @keyframes introRippleGlow {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 0.6; }
-        }
-        .intro-water-ripple-line {
-          position: absolute; left: 0; right: 0; height: 3px;
-          background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 20%, rgba(200, 230, 255, 0.5) 50%, rgba(255, 255, 255, 0.4) 80%, transparent 100%);
-          filter: blur(1px);
-        }
-        .intro-water-shine {
-          position: absolute; inset: 0;
-          background: linear-gradient(105deg, transparent 0%, transparent 40%, rgba(255, 255, 255, 0.3) 50%, transparent 60%, transparent 100%);
-          animation: introRippleShine 4s ease-in-out infinite;
-        }
-        .intro-water-glow {
-          position: absolute; inset: 0;
-          background: radial-gradient(ellipse 100% 40% at 50% 100%, rgba(100, 180, 255, 0.35) 0%, rgba(150, 200, 255, 0.2) 30%, transparent 70%);
-          animation: introRippleGlow 3s ease-in-out infinite;
-        }
-
-        /* ========== 포커스 ========== */
-        @keyframes introFocusPull {
-          0% { filter: blur(15px); transform: scale(1.05); opacity: 0.5; }
-          30% { filter: blur(20px); opacity: 0.7; }
-          100% { filter: blur(0px); transform: scale(1); opacity: 1; }
-        }
-        @keyframes introDepthShift {
-          0% { filter: blur(8px); opacity: 0.3; }
-          50% { filter: blur(15px); opacity: 0.5; }
-          100% { filter: blur(0px); opacity: 1; }
-        }
-        .intro-focus-pull { animation: introFocusPull 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-        .intro-depth-shift { animation: introDepthShift 3s ease-out forwards; opacity: 0; }
-
-        /* ========== 기타 ========== */
-        @keyframes introDarkToLight {
-          0% { opacity: 0.9; }
-          100% { opacity: 0; }
-        }
-        .intro-dark-to-light { animation: introDarkToLight 3s ease-out forwards; }
-
-        @keyframes introSlowZoom {
-          0% { transform: scale(1); }
-          100% { transform: scale(1.15); }
-        }
-        .intro-slow-zoom { animation: introSlowZoom 8s ease-out forwards; }
-
-        /* ========== 폴라로이드 드롭 ========== */
-        @keyframes introPolaroidDrop {
-          0% { opacity: 0; transform: rotate(3deg) translateY(-60px) scale(0.92); }
-          60% { opacity: 1; transform: rotate(-3deg) translateY(8px) scale(1.01); }
-          80% { transform: rotate(-1.5deg) translateY(-3px) scale(1); }
-          100% { opacity: 1; transform: rotate(-2deg) translateY(0) scale(1); }
-        }
-        .intro-polaroid-drop { animation: introPolaroidDrop 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; opacity: 0; }
-
-        /* ========== 필름 슬라이드 인 ========== */
-        @keyframes introFilmSlideIn {
-          0% { opacity: 0; transform: translateX(-100%); }
-          60% { opacity: 1; transform: translateX(4%); }
-          100% { opacity: 1; transform: translateX(0); }
-        }
-        .intro-film-slide-in { animation: introFilmSlideIn 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; opacity: 0; }
-
-        /* ========== 시네마 리빌 (좌→우 클립) ========== */
-        @keyframes introCinemaReveal {
-          0% { clip-path: inset(0 100% 0 0); opacity: 0; }
-          15% { opacity: 1; }
-          100% { clip-path: inset(0 0 0 0); opacity: 1; }
-        }
-        .intro-cinema-reveal { animation: introCinemaReveal 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; opacity: 0; }
-
-        /* ========== 줌 어프로치 (사진이 다가오는 느낌) ========== */
-        @keyframes introZoomApproach {
-          0% { transform: scale(1); }
-          100% { transform: scale(1.15); }
-        }
-        .intro-zoom-approach { animation: introZoomApproach 4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-
-        /* ========== 물결 흘러가기 ========== */
-        @keyframes introWaveDrift {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .intro-wave-drift { animation: introWaveDrift 6s linear infinite; }
-
-        /* ========== 대각선 리빌 ========== */
-        @keyframes introDiagonalReveal {
-          0% { clip-path: polygon(0 0, 0 0, 0 0, 0 0); opacity: 0; }
-          100% { clip-path: polygon(0 0, 100% 0, 100% 50%, 0 68%); opacity: 1; }
-        }
-        .intro-diagonal-reveal { animation: introDiagonalReveal 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; opacity: 0; }
       `}</style>
 
       {/* 인트로 애니메이션 — 커버 등장 시 함께 페이드아웃(게스트 뷰와 동일) */}
@@ -713,6 +327,13 @@ export default function IntroPreview({
               </p>
             )}
           </div>
+          {/* 넘김 안내 문구 (하객 화면 커버 하단과 같은 자리) */}
+          {settings.guideEnabled && (
+            <p className="absolute left-0 right-0 text-center text-[11px] font-light"
+              style={{ bottom: 92, color: 'rgba(255,255,255,0.85)', letterSpacing: '1px', opacity: coverAnimated ? 1 : 0, transition: 'opacity 0.6s ease-out 1.8s' }}>
+              {settings.guideText || '터치하거나 아래로 넘겨주세요'}
+            </p>
+          )}
         </div>
       )}
 
@@ -740,14 +361,12 @@ interface IntroComponentProps {
   subTitleStyle: React.CSSProperties
   accentColor: string
   overlayColor: string
-  bodyTextColor: string
-  bgColor: string
-  waveColor: string
-  envelopeColor: string
+  /** 사진 배경: 원본 크기를 재서 크롭 영역을 정확히 맞춘다 (근사 계산은 세로로 긴 사진에서 위아래가 잘렸다) */
+  photo?: { src: string; crop?: Partial<ImageSettings> }
 }
 
 // 시네마틱 인트로
-function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, overlayColor }: IntroComponentProps) {
+function CinematicIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, accentColor, overlayColor, photo }: IntroComponentProps) {
   const overlayOpacity = (settings.overlayOpacity ?? 30) / 100
   const customOverlayStyle = {
     backgroundColor: hexToRgba(overlayColor, overlayOpacity),
@@ -757,7 +376,11 @@ function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, s
 
   return (
     <div className="relative h-full">
-      <div className="absolute inset-0 intro-fade-in intro-zoom-out" style={backgroundStyle} />
+      {photo ? (
+        <CroppedImageDiv src={photo.src} crop={photo.crop} className="absolute inset-0 intro-fade-in intro-zoom-out" style={{ filter: backgroundStyle.filter }} />
+      ) : (
+        <div className="absolute inset-0 intro-fade-in intro-zoom-out" style={backgroundStyle} />
+      )}
       <div className="absolute inset-0" style={customOverlayStyle} />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         <div className="intro-line-expand h-px mb-5" style={{ backgroundColor: `${accentColor}80` }} />
@@ -770,596 +393,6 @@ function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, s
           </p>
         )}
       </div>
-    </div>
-  )
-}
-
-// 타이핑 인트로 (상하 분할 레이아웃)
-function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor, waveColor }: IntroComponentProps) {
-  const fullText = settings.mainTitle || '소중한 분들을 초대합니다'
-  // 글자별 페이드 리빌 (기존 타자기 커서 방식 제거 — 느긋한 속도 유지)
-  const charStart = 0.8   // 첫 글자 시작 (초)
-  const charStep = 0.09   // 글자 간격 (초)
-
-  // 밝은 배경용 타이틀 색상 보정 (bodyTextColor 유지)
-  const adjustedTitleStyle = {
-    ...titleStyle,
-    color: titleStyle.color === '#ffffff' ? bodyTextColor : titleStyle.color,
-  }
-
-  return (
-    <div className="relative h-full flex flex-col">
-      {/* 상단: 사진 영역 55% */}
-      <div className="relative" style={{ height: '55%' }}>
-        <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
-        <div className="absolute inset-0" style={overlayStyle} />
-        {/* 물결 경계 (2레이어) */}
-        <div className="absolute bottom-[8px] left-0 right-0 z-10">
-          <svg className="w-[200%] intro-wave-drift" viewBox="0 0 1440 40" preserveAspectRatio="none" style={{ height: 22, display: 'block', animationDuration: '8s' }}>
-            <path d="M0,20 C240,40 480,0 720,20 C960,40 1200,0 1440,20 L1440,40 L0,40 Z" fill={hexToRgba(waveColor, 0.45)} />
-          </svg>
-        </div>
-        <div className="absolute bottom-[-1px] left-0 right-0 z-10">
-          <svg className="w-[200%] intro-wave-drift" viewBox="0 0 1440 40" preserveAspectRatio="none" style={{ height: 28, display: 'block' }}>
-            <path d="M0,20 C240,40 480,0 720,20 C960,40 1200,0 1440,20 L1440,40 L0,40 Z" fill={waveColor} />
-          </svg>
-        </div>
-      </div>
-
-      {/* 하단: 텍스트 영역 45% */}
-      <div className="relative flex-1 flex flex-col items-center justify-center text-center px-6" style={{ backgroundColor: waveColor }}>
-        {settings.subTitle && (
-          <p className="text-[10px] tracking-[4px] mb-5 intro-slide-up" style={{ color: hexToRgba(accentColor, 0.6) }}>
-            {settings.subTitle}
-          </p>
-        )}
-        <p className="mb-2" style={adjustedTitleStyle} aria-label={fullText}>
-          {[...fullText].map((ch, i) => (
-            <span
-              key={i}
-              className="intro-char"
-              aria-hidden="true"
-              style={{ animationDelay: `${charStart + i * charStep}s` }}
-            >
-              {ch}
-            </span>
-          ))}
-        </p>
-        <div className="w-16 h-px my-5 intro-split-reveal" style={{ backgroundColor: `${accentColor}66`, animationDelay: '2.8s' }} />
-        {settings.dateText && (
-          <p className="text-xs intro-fade-in-up" style={{ color: hexToRgba(accentColor, 0.5), animationDelay: '3.2s', opacity: 0 }}>
-            {settings.dateText}
-          </p>
-        )}
-        {settings.venueText && (
-          <p className="text-[11px] mt-1.5 intro-fade-in-up" style={{ color: hexToRgba(accentColor, 0.4), animationDelay: '3.5s', opacity: 0 }}>
-            {settings.venueText}
-          </p>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// 블러 인트로
-function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, overlayColor }: IntroComponentProps) {
-  const overlayOpacity = (settings.overlayOpacity ?? 30) / 100
-  const customOverlayStyle = {
-    backgroundColor: hexToRgba(overlayColor, overlayOpacity),
-  }
-
-  return (
-    <div className="relative h-full overflow-hidden">
-      <div className="absolute inset-0 intro-blur-to-sharp" style={backgroundStyle} />
-      <div className="absolute inset-0" style={customOverlayStyle} />
-      <BokehParticles count={10} color="white" />
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
-        {settings.subTitle && (
-          <p className="text-xs tracking-[4px] mb-4 intro-fade-in-up" style={{ color: hexToRgba(accentColor, 0.7), animationDelay: '1.5s', opacity: 0 }}>
-            {settings.subTitle}
-          </p>
-        )}
-        <p className="intro-fade-in-up" style={{ ...titleStyle, animationDelay: '2s', opacity: 0 }}>
-          {settings.mainTitle || '우리 결혼합니다'}
-        </p>
-        <div className="w-16 h-px my-6 intro-split-reveal" style={{ backgroundColor: `${accentColor}80`, animationDelay: '2.5s' }} />
-        {settings.dateText && (
-          <p className="text-sm intro-fade-in-up" style={{ color: hexToRgba(accentColor, 0.7), animationDelay: '2.8s', opacity: 0 }}>
-            {settings.dateText}
-          </p>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// 줌 인트로 (중앙 확대 레이아웃)
-function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor, bgColor }: IntroComponentProps) {
-  // 밝은 배경용 타이틀 색상 보정 (bodyTextColor 유지)
-  const adjustedTitleStyle = {
-    ...titleStyle,
-    color: titleStyle.color === '#ffffff' ? bodyTextColor : titleStyle.color,
-  }
-
-  return (
-    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: bgColor }}>
-      {/* 서브타이틀 (사진 위) */}
-      {settings.subTitle && (
-        <p className="text-[10px] tracking-[4px] mb-6 intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.6), opacity: 0, animationDelay: '0.5s' }}>
-          {settings.subTitle}
-        </p>
-      )}
-
-      {/* 중앙 사진 프레임 (고정) - 안의 사진이 다가옴 */}
-      <div
-        className="relative overflow-hidden intro-fade-in z-10"
-        style={{
-          width: '70%',
-          maxWidth: 280,
-          aspectRatio: '3 / 4',
-          borderRadius: 4,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)',
-        }}
-      >
-        <div className="absolute inset-0 intro-zoom-approach" style={backgroundStyle} />
-        <div className="absolute inset-0" style={overlayStyle} />
-      </div>
-
-      {/* 메인타이틀 (사진 아래) */}
-      <p className="mt-6 intro-fade-in-up relative z-10" style={{ ...adjustedTitleStyle, opacity: 0, animationDelay: '1.5s' }}>
-        {settings.mainTitle || '새로운 시작을 함께해주세요'}
-      </p>
-      <div className="w-16 h-px my-4 intro-split-reveal relative z-10" style={{ backgroundColor: `${accentColor}66`, animationDelay: '2s', opacity: 0 }} />
-      {settings.dateText && (
-        <p className="text-xs intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.5), opacity: 0, animationDelay: '2.3s' }}>
-          {settings.dateText}
-        </p>
-      )}
-      {settings.venueText && (
-        <p className="text-[11px] mt-1.5 intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.4), opacity: 0, animationDelay: '2.6s' }}>
-          {settings.venueText}
-        </p>
-      )}
-    </div>
-  )
-}
-
-// 편지 인트로 (봉투 열림 애니메이션)
-function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, accentColor, overlayColor, envelopeColor }: IntroComponentProps) {
-  // 편지 카드 내부는 밝은 배경이므로 흰색 텍스트면 어두운 색으로 변환
-  const cardTitleColor = titleStyle.color === '#ffffff' ? '#4a4a4a' : titleStyle.color
-
-  // 색상 명도 조절 헬퍼
-  const shade = (hex: string, amt: number) => {
-    const r = parseInt(hex.slice(1, 3), 16)
-    const g = parseInt(hex.slice(3, 5), 16)
-    const b = parseInt(hex.slice(5, 7), 16)
-    const c = (v: number) => Math.max(0, Math.min(255, v + amt)).toString(16).padStart(2, '0')
-    return `#${c(r)}${c(g)}${c(b)}`
-  }
-  const darkerEnvelopeColor = shade(envelopeColor, -15)
-  const envLight = shade(envelopeColor, 10)
-  const envShade = shade(envelopeColor, -10)
-  // 톤온톤 왁스 씰 색상 (봉투색에서 파생)
-  const sealTop = shade(envelopeColor, -6)
-  const sealMid = shade(envelopeColor, -20)
-  const sealDeep = shade(envelopeColor, -42)
-  const sealRing = shade(envelopeColor, -32)
-  const sealEmblem = shade(envelopeColor, -78)
-  const sealHi = shade(envelopeColor, 16)
-
-  const overlayOpacity = (settings.overlayOpacity ?? 30) / 100
-  const customOverlayStyle = {
-    backgroundColor: hexToRgba(overlayColor, overlayOpacity),
-  }
-
-  return (
-    <div className="relative h-full flex items-center justify-center overflow-hidden">
-      {/* Background image */}
-      <div className="absolute inset-0" style={backgroundStyle} />
-      {/* Overlay with overlayColor */}
-      <div className="absolute inset-0" style={customOverlayStyle} />
-
-      {/* 화이트 꽃잎 */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[8, 18, 28, 38, 48, 58, 68, 78, 88, 13, 33, 53, 73, 93].map((left, i) => (
-          <div
-            key={i}
-            className="absolute"
-            style={{
-              left: `${left}%`,
-              top: '-20px',
-              width: `${10 + (i % 4) * 5}px`,
-              height: `${10 + (i % 4) * 5}px`,
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 100%)',
-              borderRadius: '50% 0 50% 50%',
-              animation: `introPetalFall ${8 + (i % 5) * 2}s linear ${i * 0.4}s infinite`,
-              transform: `rotate(${i * 30}deg)`,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* 봉투 */}
-      <div className="relative mt-[50px]" style={{ animation: 'introEnvelopeDown 0.8s ease-in 3.5s forwards' }}>
-        <div className="relative w-[280px] h-[260px]">
-          <div className="absolute inset-0 shadow-lg" style={{ background: `linear-gradient(160deg, ${envLight} 0%, ${envelopeColor} 55%, ${envShade} 100%)`, zIndex: 1 }} />
-          <div
-            className="absolute left-[15px] right-[15px] h-[180px] bg-[#F8F6F3] rounded-md shadow-xl flex flex-col items-center justify-center p-4 text-center"
-            style={{ zIndex: 2, top: '80px', animation: 'introCardSlideOut 1.2s ease-out 1.5s forwards' }}
-          >
-            <p className="text-[8px] tracking-[2px] mb-0.5" style={{ color: hexToRgba(accentColor, 0.7) }}>{settings.subTitle || 'WEDDING INVITATION'}</p>
-            <p className="mb-3" style={{ ...titleStyle, color: cardTitleColor, fontSize: `${Math.min(parseInt(titleStyle.fontSize as string) || 24, 20)}px` }}>
-              {settings.mainTitle || '우리 결혼합니다'}
-            </p>
-            <div className="w-8 h-px mb-3" style={{ backgroundColor: accentColor }} />
-            <p className="text-sm text-gray-600">{settings.dateText}</p>
-          </div>
-          <div className="absolute inset-x-0 top-0 bottom-0 shadow-sm" style={{ background: `linear-gradient(155deg, ${envLight} 0%, ${envelopeColor} 52%, ${envShade} 100%)`, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4)', zIndex: 3, clipPath: 'polygon(0 0, 50% 40%, 100% 0, 100% 100%, 0 100%)' }} />
-          <div
-            className="absolute top-0 left-0 right-0 h-[104px] shadow-sm origin-top"
-            style={{ background: `linear-gradient(180deg, ${envLight} 0%, ${envelopeColor} 70%, ${envShade} 100%)`, zIndex: 4, clipPath: 'polygon(0 0, 50% 100%, 100% 0)', transformStyle: 'preserve-3d', animation: 'introFlapOpen 1s ease-in-out 0.6s forwards' }}
-          >
-            <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${darkerEnvelopeColor} 0%, ${shade(envelopeColor, -22)} 100%)`, clipPath: 'polygon(5% 5%, 50% 90%, 95% 5%)' }} />
-          </div>
-          {/* 왁스 씰 (밀랍 실링) */}
-          <div
-            className="absolute top-[58px] left-1/2 -translate-x-1/2"
-            style={{ zIndex: 5, animation: 'introSealBreak 0.5s ease-out 0.2s forwards' }}
-          >
-            <div
-              className="flex items-center justify-center"
-              style={{
-                width: 46,
-                height: 46,
-                borderRadius: '50%',
-                background: `radial-gradient(circle at 40% 32%, ${sealTop} 0%, ${sealMid} 55%, ${sealDeep} 100%)`,
-                boxShadow: 'inset 0 -2px 5px rgba(120,100,70,0.18), 0 2px 6px rgba(120,100,70,0.22)',
-              }}
-            >
-              {/* 얇은 안쪽 링 */}
-              <div style={{ position: 'absolute', inset: 5, borderRadius: '50%', boxShadow: `inset 0 0 0 1px ${sealRing}` }} />
-              <span
-                style={{
-                  fontFamily: "'Cormorant Garamond', 'Playfair Display', serif",
-                  fontSize: 22,
-                  fontWeight: 600,
-                  lineHeight: 1,
-                  position: 'relative',
-                  zIndex: 2,
-                  color: sealEmblem,
-                  textShadow: `0 1px 0.5px ${sealHi}`,
-                }}
-              >
-                &amp;
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 최종 카드 */}
-      <div
-        className="absolute w-[280px] h-[360px] bg-[#F8F6F3] rounded-lg shadow-2xl flex flex-col items-center justify-center p-6 text-center"
-        style={{ opacity: 0, zIndex: 10, animation: 'introCardExpand 1s ease-out 4s forwards' }}
-      >
-        <p className="text-[11px] tracking-[4px] mb-1" style={{ color: hexToRgba(accentColor, 0.7) }}>{settings.subTitle || 'WEDDING INVITATION'}</p>
-        <p className="mb-4" style={{ ...titleStyle, color: cardTitleColor }}>
-          {settings.mainTitle || '우리 결혼합니다'}
-        </p>
-        <div className="w-12 h-px mb-4" style={{ backgroundColor: accentColor }} />
-        <p className="text-lg text-gray-600">{settings.dateText}</p>
-        {settings.venueText && <p className="text-xs text-gray-400 mt-4">{settings.venueText}</p>}
-      </div>
-    </div>
-  )
-}
-
-// 꽃잎 인트로 (원형 윈도우 레이아웃)
-function PetalIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor, bgColor }: IntroComponentProps) {
-  // 밝은 배경이므로 흰색 텍스트면 어두운 색으로 변환 (titleStyle은 bodyTextColor 유지)
-  const adjustedTitleColor = titleStyle.color === '#ffffff' ? bodyTextColor : titleStyle.color
-
-  return (
-    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: bgColor }}>
-      {/* 꽃잎: 전체 영역에 걸쳐 떨어짐 */}
-      <FallingPetals count={10} />
-
-      {/* 서브타이틀 (원 위) */}
-      {settings.subTitle && (
-        <p className="text-[10px] tracking-[4px] mb-6 intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.8), opacity: 0, animationDelay: '1.1s' }}>
-          {settings.subTitle}
-        </p>
-      )}
-
-      {/* 원형 사진 윈도우 */}
-      <div className="relative w-[190px] h-[190px] rounded-full overflow-hidden intro-scale-up z-10" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)' }}>
-        <div className="absolute inset-0" style={backgroundStyle} />
-        <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${(settings.overlayOpacity ?? 10) / 100})` }} />
-      </div>
-
-      {/* 메인타이틀 (원 아래) */}
-      <p className="mt-6 intro-fade-in-up relative z-10" style={{ ...titleStyle, color: adjustedTitleColor, opacity: 0, animationDelay: '1.4s' }}>
-        {settings.mainTitle || '꽃잎처럼 아름다운 날'}
-      </p>
-      <div className="w-16 h-px my-4 intro-split-reveal relative z-10" style={{ backgroundColor: `${accentColor}66`, animationDelay: '1.7s', opacity: 0 }} />
-      {settings.dateText && (
-        <p className="text-xs intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.7), opacity: 0, animationDelay: '2.0s' }}>
-          {settings.dateText}
-        </p>
-      )}
-      {settings.venueText && (
-        <p className="text-[11px] mt-1.5 intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.6), opacity: 0, animationDelay: '2.3s' }}>
-          {settings.venueText}
-        </p>
-      )}
-    </div>
-  )
-}
-
-// 수채화 인트로 (아치 윈도우 레이아웃)
-function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor, bgColor }: IntroComponentProps) {
-  // 밝은 배경이므로 흰색 텍스트면 어두운 색으로 변환 (titleStyle은 bodyTextColor 유지)
-  const adjustedTitleColor = titleStyle.color === '#ffffff' ? bodyTextColor : titleStyle.color
-
-  return (
-    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: bgColor }}>
-      {/* 수채화 블롭 배경 (은은하게) */}
-      <div className="intro-watercolor-spread absolute inset-0">
-        <div
-          className="intro-watercolor-blob absolute inset-[-20%] opacity-[0.12]"
-          style={{ background: 'radial-gradient(ellipse at 30% 70%, #e0f2fe, #dbeafe, transparent 70%)' }}
-        />
-      </div>
-
-      {/* 아치 윈도우 */}
-      <div
-        className="relative overflow-hidden intro-fade-in z-10"
-        style={{
-          width: 210,
-          height: 280,
-          borderRadius: '105px 105px 4px 4px',
-          boxShadow: '0 10px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)',
-        }}
-      >
-        <div className="absolute inset-0" style={backgroundStyle} />
-        <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${(settings.overlayOpacity ?? 10) / 100})` }} />
-      </div>
-
-      {/* 텍스트 영역 (아치 아래) */}
-      <div
-        className="intro-text-spread mt-7 relative z-10"
-        style={{ opacity: 0, animationDelay: '1.2s' }}
-      >
-        <p className="text-center" style={{ ...titleStyle, color: adjustedTitleColor }}>{settings.mainTitle || 'A New Chapter Begins'}</p>
-      </div>
-      <div
-        className="w-14 h-px my-4 intro-text-spread relative z-10"
-        style={{ backgroundColor: `${accentColor}66`, opacity: 0, animationDelay: '1.6s' }}
-      />
-      {settings.subTitle && (
-        <p
-          className="text-[10px] tracking-[4px] intro-text-spread relative z-10"
-          style={{ color: hexToRgba(accentColor, 0.7), opacity: 0, animationDelay: '2s' }}
-        >
-          {settings.subTitle}
-        </p>
-      )}
-      {settings.dateText && (
-        <p
-          className="text-xs mt-4 intro-text-spread relative z-10"
-          style={{ color: hexToRgba(accentColor, 0.7), opacity: 0, animationDelay: '2.3s' }}
-        >
-          {settings.dateText}
-        </p>
-      )}
-      {settings.venueText && (
-        <p
-          className="text-[11px] mt-1.5 intro-text-spread relative z-10"
-          style={{ color: hexToRgba(accentColor, 0.6), opacity: 0, animationDelay: '2.6s' }}
-        >
-          {settings.venueText}
-        </p>
-      )}
-    </div>
-  )
-}
-
-// 빛의 커튼 인트로 (대각 분할 레이아웃)
-function LightrayIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor, bgColor }: IntroComponentProps) {
-  // 밝은 배경용 타이틀 색상 보정 (bodyTextColor 유지)
-  const adjustedTitleColor = titleStyle.color === '#ffffff' ? bodyTextColor : titleStyle.color
-
-  return (
-    <div className="relative h-full overflow-hidden" style={{ backgroundColor: bgColor }}>
-      {/* 대각선으로 잘린 사진 영역 */}
-      <div
-        className="absolute inset-0 intro-diagonal-reveal"
-        style={{ clipPath: 'polygon(0 0, 100% 0, 100% 50%, 0 68%)' }}
-      >
-        <div className="absolute inset-0 intro-slow-zoom" style={backgroundStyle} />
-        <div className="absolute inset-0" style={overlayStyle} />
-      </div>
-
-      {/* 하단 텍스트 영역 (좌측 정렬) */}
-      <div className="absolute bottom-0 left-0 right-0 flex flex-col items-start px-8 pb-16 z-20">
-        {settings.subTitle && (
-          <p className="text-[10px] tracking-[4px] mb-4 intro-slide-in-left" style={{ color: hexToRgba(accentColor, 0.8), opacity: 0, animationDelay: '0.8s' }}>
-            {settings.subTitle}
-          </p>
-        )}
-        <p className="intro-fade-in-up" style={{ ...titleStyle, color: adjustedTitleColor, opacity: 0, animationDelay: '1.2s' }}>
-          {settings.mainTitle || '영원을 약속하는 날'}
-        </p>
-        <div className="w-16 h-px my-4 intro-line-expand" style={{ backgroundColor: `${accentColor}4D`, animationDelay: '1.8s' }} />
-        {settings.dateText && (
-          <p className="text-xs intro-fade-in-up" style={{ color: hexToRgba(accentColor, 0.7), opacity: 0, animationDelay: '2.2s' }}>
-            {settings.dateText}
-          </p>
-        )}
-        {settings.venueText && (
-          <p className="text-[11px] mt-1.5 intro-fade-in-up" style={{ color: hexToRgba(accentColor, 0.6), opacity: 0, animationDelay: '2.5s' }}>
-            {settings.venueText}
-          </p>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// 필름 인트로 (폴라로이드 레이아웃)
-function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor, bgColor }: IntroComponentProps) {
-  // 밝은 배경이므로 밝은 텍스트면 어두운 색으로 변환 (titleStyle은 bodyTextColor 유지)
-  const adjustedTitleColor = (() => {
-    const c = titleStyle.color as string
-    if (c === '#ffffff' || c === '#fef3c7') return bodyTextColor
-    return c
-  })()
-
-  return (
-    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: bgColor }}>
-      {/* 미세한 노이즈 텍스처 */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-      }} />
-
-      {/* 폴라로이드 카드 */}
-      <div
-        className="relative bg-[#F8F6F3] p-[10px] pb-[42px] intro-polaroid-drop z-10"
-        style={{
-          width: 230,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06)',
-        }}
-      >
-        {/* 사진 영역 */}
-        <div className="relative w-full overflow-hidden" style={{ aspectRatio: '1 / 1' }}>
-          <div className="absolute inset-0 intro-slow-zoom" style={backgroundStyle} />
-          <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${(settings.overlayOpacity ?? 5) / 100})` }} />
-        </div>
-        {/* 폴라로이드 하단 캡션 */}
-        {settings.subTitle && (
-          <p
-            className="text-center mt-3 intro-fade-in-delay-2"
-            style={{
-              fontFamily: "'Gowun Batang', serif",
-              fontSize: '11px',
-              color: hexToRgba(accentColor, 0.7),
-              letterSpacing: '1px',
-            }}
-          >
-            {settings.subTitle}
-          </p>
-        )}
-      </div>
-
-      {/* 텍스트 영역 (폴라로이드 아래) */}
-      <p
-        className="mt-7 intro-fade-in-up relative z-10 text-center"
-        style={{ ...titleStyle, color: adjustedTitleColor, opacity: 0, animationDelay: '1.2s' }}
-      >
-        {settings.mainTitle || '우리의 순간에 초대합니다'}
-      </p>
-      <div className="w-14 h-px my-4 intro-split-reveal relative z-10" style={{ backgroundColor: `${accentColor}66`, animationDelay: '1.5s', opacity: 0 }} />
-      {settings.dateText && (
-        <p
-          className="text-xs intro-fade-in-up relative z-10"
-          style={{ color: hexToRgba(accentColor, 0.6), opacity: 0, animationDelay: '1.8s' }}
-        >
-          {settings.dateText}
-        </p>
-      )}
-      {settings.venueText && (
-        <p
-          className="text-[11px] mt-1.5 intro-fade-in-up relative z-10"
-          style={{ color: hexToRgba(accentColor, 0.5), opacity: 0, animationDelay: '2.1s' }}
-        >
-          {settings.venueText}
-        </p>
-      )}
-    </div>
-  )
-}
-
-// 필름 스트립 인트로
-function FilmstripIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, accentColor, bgColor }: IntroComponentProps) {
-  const sprocketCount = 12
-  const sprockets = Array.from({ length: sprocketCount }, (_, i) => i)
-
-  // bgColor에서 더 어두운 색 파생
-  const darkerBgColor = (() => {
-    const r = parseInt(bgColor.slice(1, 3), 16)
-    const g = parseInt(bgColor.slice(3, 5), 16)
-    const b = parseInt(bgColor.slice(5, 7), 16)
-    return `rgb(${Math.max(0, r - 15)}, ${Math.max(0, g - 15)}, ${Math.max(0, b - 15)})`
-  })()
-
-  return (
-    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: bgColor }}>
-      {/* 필름 스트립 프레임 */}
-      <div
-        className="relative intro-film-slide-in z-10"
-        style={{ width: 280 }}
-      >
-        {/* 필름 상단 바 + 스프로킷 홀 */}
-        <div className="relative h-[22px] flex items-center justify-between px-2" style={{ backgroundColor: darkerBgColor }}>
-          {sprockets.map((i) => (
-            <div key={`t${i}`} className="w-[10px] h-[7px] rounded-[1.5px]" style={{ backgroundColor: bgColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.06)' }} />
-          ))}
-        </div>
-
-        {/* 사진 영역 */}
-        <div className="relative px-[6px]" style={{ backgroundColor: darkerBgColor }}>
-          <div className="relative w-full overflow-hidden" style={{ aspectRatio: '3 / 2' }}>
-            <div className="absolute inset-0 intro-slow-zoom" style={backgroundStyle} />
-            <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${(settings.overlayOpacity ?? 5) / 100})` }} />
-          </div>
-        </div>
-
-        {/* 필름 하단 바 + 스프로킷 홀 */}
-        <div className="relative h-[22px] flex items-center justify-between px-2" style={{ backgroundColor: darkerBgColor }}>
-          {sprockets.map((i) => (
-            <div key={`b${i}`} className="w-[10px] h-[7px] rounded-[1.5px]" style={{ backgroundColor: bgColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.06)' }} />
-          ))}
-        </div>
-
-        {/* 필름 프레임 번호 */}
-        <div className="absolute bottom-[26px] right-[14px] text-[8px] text-amber-200/30 font-mono intro-fade-in-delay-2">
-          15A
-        </div>
-      </div>
-
-      {/* 텍스트 영역 */}
-      <p
-        className="mt-7 intro-cinema-reveal relative z-10 text-center"
-        style={{ ...titleStyle, opacity: 0, animationDelay: '1s' }}
-      >
-        {settings.mainTitle || '우리의 한 장면'}
-      </p>
-      <div className="w-14 h-px my-4 intro-line-expand relative z-10" style={{ backgroundColor: `${accentColor}26`, animationDelay: '1.8s', opacity: 0 }} />
-      {settings.subTitle && (
-        <p
-          className="text-[10px] tracking-[4px] intro-slide-in-right relative z-10"
-          style={{ color: hexToRgba(accentColor, 0.5), opacity: 0, animationDelay: '2.1s' }}
-        >
-          {settings.subTitle}
-        </p>
-      )}
-      {settings.dateText && (
-        <p
-          className="text-xs mt-3 intro-fade-in-up relative z-10"
-          style={{ color: hexToRgba(accentColor, 0.5), opacity: 0, animationDelay: '2.4s' }}
-        >
-          {settings.dateText}
-        </p>
-      )}
-      {settings.venueText && (
-        <p
-          className="text-[11px] mt-1.5 intro-fade-in-up relative z-10"
-          style={{ color: hexToRgba(accentColor, 0.4), opacity: 0, animationDelay: '2.7s' }}
-        >
-          {settings.venueText}
-        </p>
-      )}
     </div>
   )
 }

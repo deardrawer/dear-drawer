@@ -1,16 +1,21 @@
 // 인트로 애니메이션 프리셋 정의
 
-export type IntroPresetId =
-  | 'cinematic'
-  | 'typing'
-  | 'blur'
-  | 'zoom'
-  | 'letter'
-  | 'petal'
-  | 'watercolor'
-  | 'lightray'
-  | 'film'
-  | 'filmstrip'
+// 하객이 직접 여는 인터랙티브 인트로 스타일 (옵션 스키마는 introStyles.ts)
+export type IntroStyleId =
+  | 'vellum'    // 트레이싱지
+  | 'envelope'  // 포스터 봉투
+  | 'postcard'  // 엽서
+  | 'pieces'    // 두 장의 사진
+  | 'stars'     // 별자리 문장
+  | 'typed'     // 타자 오프닝
+  | 'dots'      // 도트 자수
+  | 'frost'     // 불투명 유리
+  | 'labels'    // 라벨 문구
+  | 'tiles'     // 글자 타일
+  | 'grid'      // 그리드 포스터
+
+// 'cinematic'·'blur'(포커스)는 4.5초 타임드 인트로(인트로 → 커버 → 초대글), 나머지는 인터랙티브(인트로 → 초대글)
+export type IntroPresetId = 'cinematic' | 'blur' | IntroStyleId
 
 // 편집 가능한 필드 타입
 export interface EditableTextField {
@@ -101,6 +106,8 @@ export interface IntroSettings {
   // 인트로 → 메인 넘김 안내 문구 (하단)
   guideEnabled?: boolean     // 안내 문구 표시 여부 (기본 미표시)
   guideText?: string         // 안내 문구 내용 (커스텀)
+  // 인터랙티브 스타일별 옵션 (스타일을 바꿔도 각 스타일 설정 유지)
+  styleOptions?: Partial<Record<IntroStyleId, Record<string, unknown>>>
 }
 
 // 사용 가능한 폰트 목록
@@ -124,14 +131,6 @@ export interface IntroPreset {
   defaults: Partial<IntroSettings>
   editableFields: EditableField[]
 }
-
-// 공통 편집 필드
-const commonTextFields: EditableField[] = [
-  { type: 'text', key: 'mainTitle', label: '메인 타이틀', placeholder: '예: 우리 결혼합니다', maxLength: 30 },
-  { type: 'text', key: 'subTitle', label: '서브 문구', placeholder: '예: 소중한 분들을 초대합니다', maxLength: 50 },
-  { type: 'text', key: 'dateText', label: '날짜', placeholder: '예: 2025. 05. 24', maxLength: 20 },
-  { type: 'text', key: 'venueText', label: '장소', placeholder: '예: 더채플앳청담', maxLength: 30 },
-]
 
 const commonStyleFields: EditableField[] = [
   { type: 'range', key: 'titleFontSize', label: '제목 크기', min: 16, max: 32, step: 1, unit: 'px' },
@@ -160,44 +159,28 @@ const accentColorField: EditableField = {
 }
 
 // 프리셋별 기본 커스텀 컬러 맵
-export const presetCustomColors: Record<IntroPresetId, {
+export const presetCustomColors: Partial<Record<IntroPresetId, {
   overlayColor?: string
   bodyTextColor?: string
   bgColor?: string
   waveColor?: string
   envelopeColor?: string
-}> = {
+}>> = {
   cinematic: { overlayColor: '#000000' },
-  typing: { bodyTextColor: '#2c2c2c', waveColor: '#FAF8F5' },
   blur: { overlayColor: '#000000' },
-  zoom: { bodyTextColor: '#2c2c2c', bgColor: '#F7F5F2' },
-  letter: { envelopeColor: '#f5f0e8', overlayColor: '#000000' },
-  petal: { bgColor: '#FDF6F4', bodyTextColor: '#374151' },
-  watercolor: { bodyTextColor: '#374151', bgColor: '#F8F6F3' },
-  lightray: { bodyTextColor: '#374151', bgColor: '#F8F6F3' },
-  film: { bgColor: '#F5F3F0', bodyTextColor: '#4a4a4a' },
-  filmstrip: { bgColor: '#1a1a1a' },
 }
 
 // 프리셋별 기본 accentColor 맵
-export const presetAccentColors: Record<IntroPresetId, string> = {
+export const presetAccentColors: Partial<Record<IntroPresetId, string>> = {
   cinematic: '#F8F6F3',    // 구분선 색상
-  typing: '#e0d5c8',       // 구분선/물결 색상
-  blur: '#F8F6F3',         // 구분선 색상
-  zoom: '#d1d5db',         // 구분선 색상
-  letter: '#d4a574',       // 봉투 씰/구분선 색상
-  petal: '#d4a0a0',        // 꽃잎 테마 색상
-  watercolor: '#0891b2',   // 수채화 포인트 색상
-  lightray: '#d4a574',     // 빛 커튼 구분선 색상
-  film: '#d1d5db',         // 폴라로이드 구분선 색상
-  filmstrip: '#F8F6F3',    // 필름 구분선 색상
+  blur: '#F8F6F3',
 }
 
 // 인트로 프리셋 목록
 export const introPresets: IntroPreset[] = [
   {
     id: 'cinematic',
-    name: '01 시네마틱',
+    name: '시네마틱',
     description: '영화 오프닝처럼 우아한 시네마틱 인트로',
     defaults: {
       mainTitle: 'Welcome to our wedding',
@@ -226,33 +209,8 @@ export const introPresets: IntroPreset[] = [
     ],
   },
   {
-    id: 'typing',
-    name: '02 타이핑',
-    description: '한 글자씩 타이핑되는 물결 인트로',
-    defaults: {
-      mainTitle: '소중한 분들을 초대합니다',
-      subTitle: 'WELCOME TO OUR WEDDING',
-      dateText: '',
-      venueText: '',
-      titleFontSize: 20,
-      titleLetterSpacing: 0,
-      titleFontFamily: "'Nanum Myeongjo', serif",
-      titleColor: '#2c2c2c',
-      subTitleColor: 'rgba(0,0,0,0.35)',
-      backgroundScale: 100,
-      backgroundPositionX: 50,
-      backgroundPositionY: 30,
-      backgroundBrightness: 100,
-      overlayOpacity: 0,
-      accentColor: presetAccentColors.typing,
-      bodyTextColor: '#2c2c2c',
-      waveColor: '#FAF8F5',
-    },
-    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
-  },
-  {
     id: 'blur',
-    name: '03 포커스',
+    name: '포커스',
     description: '흐릿함에서 선명하게, 포커스 인트로',
     defaults: {
       mainTitle: '우리 결혼합니다',
@@ -272,180 +230,25 @@ export const introPresets: IntroPreset[] = [
       accentColor: presetAccentColors.blur,
       overlayColor: '#000000',
     },
-    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
-  },
-  {
-    id: 'zoom',
-    name: '04 프레임',
-    description: '중앙 프레임 안에서 다가오는 줌 인트로',
-    defaults: {
-      mainTitle: '새로운 시작을 함께해주세요',
-      subTitle: 'OUR WEDDING DAY',
-      dateText: '',
-      venueText: '',
-      titleFontSize: 18,
-      titleLetterSpacing: 2,
-      titleFontFamily: "'Noto Serif KR', serif",
-      titleColor: '#2c2c2c',
-      subTitleColor: 'rgba(0,0,0,0.35)',
-      backgroundScale: 110,
-      backgroundPositionX: 50,
-      backgroundPositionY: 50,
-      backgroundBrightness: 100,
-      overlayOpacity: 10,
-      accentColor: presetAccentColors.zoom,
-      bodyTextColor: '#2c2c2c',
-    },
-    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
-  },
-  {
-    id: 'letter',
-    name: '05 레터',
-    description: '봉투에서 꺼내는 초대장 인트로',
-    defaults: {
-      mainTitle: '우리 결혼합니다',
-      subTitle: 'WEDDING INVITATION',
-      dateText: '',
-      venueText: '',
-      titleFontSize: 24,
-      titleLetterSpacing: 0,
-      titleFontFamily: "'NostalgicPoliceFairness', cursive",
-      titleColor: '#4a4a4a',
-      subTitleColor: '#9ca3af',
-      backgroundScale: 100,
-      backgroundPositionX: 50,
-      backgroundPositionY: 0,
-      backgroundBrightness: 60,
-      overlayOpacity: 50,
-      accentColor: presetAccentColors.letter,
-      envelopeColor: '#f5f0e8',
-      overlayColor: '#000000',
-    },
-    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
-  },
-  {
-    id: 'petal',
-    name: '06 써클',
-    description: '원형 윈도우와 꽃잎 인트로',
-    defaults: {
-      mainTitle: '꽃잎처럼 아름다운 날',
-      subTitle: 'SPRING WEDDING',
-      dateText: '봄날의 아름다운 약속',
-      venueText: '',
-      titleFontSize: 20,
-      titleLetterSpacing: 0,
-      titleFontFamily: "'Gowun Batang', serif",
-      titleColor: '#374151',
-      subTitleColor: '#d4a0a0',
-      backgroundScale: 100,
-      backgroundPositionX: 50,
-      backgroundPositionY: 50,
-      backgroundBrightness: 100,
-      overlayOpacity: 10,
-      accentColor: presetAccentColors.petal,
-      bgColor: '#FDF6F4',
-      bodyTextColor: '#374151',
-    },
-    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
-  },
-  {
-    id: 'watercolor',
-    name: '07 아치',
-    description: '아치 윈도우 프레임 인트로',
-    defaults: {
-      mainTitle: 'A New Chapter Begins',
-      subTitle: 'WELCOME TO OUR WEDDING',
-      dateText: 'You are warmly invited to share our special day.',
-      venueText: '우리의 새로운 이야기가 시작됩니다.',
-      titleFontSize: 16,
-      titleLetterSpacing: 0,
-      titleFontFamily: "'Cormorant Garamond', serif",
-      titleColor: '#374151',
-      subTitleColor: '#0891b2',
-      backgroundScale: 100,
-      backgroundPositionX: 50,
-      backgroundPositionY: 50,
-      backgroundBrightness: 100,
-      overlayOpacity: 10,
-      accentColor: presetAccentColors.watercolor,
-      bodyTextColor: '#374151',
-    },
-    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
-  },
-  {
-    id: 'lightray',
-    name: '08 대각선',
-    description: '대각선 분할 레이아웃 인트로',
-    defaults: {
-      mainTitle: '영원을 약속하는 날',
-      subTitle: 'BLESSED UNION',
-      dateText: '소중한 분들을 초대합니다',
-      venueText: '',
-      titleFontSize: 20,
-      titleLetterSpacing: 0,
-      titleFontFamily: "'Nanum Myeongjo', serif",
-      titleColor: '#374151',
-      subTitleColor: 'rgba(212,165,116,0.8)',
-      backgroundScale: 100,
-      backgroundPositionX: 50,
-      backgroundPositionY: 30,
-      backgroundBrightness: 100,
-      overlayOpacity: 15,
-      accentColor: presetAccentColors.lightray,
-      bodyTextColor: '#374151',
-    },
-    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
-  },
-  {
-    id: 'film',
-    name: '09 폴라로이드',
-    description: '폴라로이드 프레임 인트로',
-    defaults: {
-      mainTitle: '우리의 순간에 초대합니다',
-      subTitle: 'TIMELESS LOVE',
-      dateText: 'An invitation to our moment',
-      venueText: '',
-      titleFontSize: 18,
-      titleLetterSpacing: 0,
-      titleFontFamily: "'Nanum Myeongjo', serif",
-      titleColor: '#4a4a4a',
-      subTitleColor: '#9ca3af',
-      backgroundScale: 100,
-      backgroundPositionX: 50,
-      backgroundPositionY: 50,
-      backgroundBrightness: 100,
-      overlayOpacity: 5,
-      accentColor: presetAccentColors.film,
-      bgColor: '#F5F3F0',
-      bodyTextColor: '#4a4a4a',
-    },
-    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
-  },
-  {
-    id: 'filmstrip',
-    name: '10 필름',
-    description: '35mm 필름 프레임 인트로',
-    defaults: {
-      mainTitle: '우리의 한 장면',
-      subTitle: 'OUR MOMENT',
-      dateText: '',
-      venueText: '',
-      titleFontSize: 18,
-      titleLetterSpacing: 1,
-      titleFontFamily: "Pretendard",
-      titleColor: '#e8e0d4',
-      subTitleColor: 'rgba(232,224,212,0.5)',
-      backgroundScale: 100,
-      backgroundPositionX: 50,
-      backgroundPositionY: 50,
-      backgroundBrightness: 100,
-      overlayOpacity: 5,
-      accentColor: presetAccentColors.filmstrip,
-      bgColor: '#1a1a1a',
-    },
-    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
+    editableFields: [
+      { type: 'text', key: 'subTitle', label: '위 작은 문구', placeholder: 'SAVE THE DATE', maxLength: 30 },
+      { type: 'text', key: 'mainTitle', label: '제목', placeholder: '우리 결혼합니다', maxLength: 40 },
+      { type: 'text', key: 'dateText', label: '날짜', placeholder: '2025.05.24', maxLength: 20 },
+      ...commonStyleFields,
+      accentColorField,
+      ...commonBackgroundFields,
+    ],
   },
 ]
+
+// 알려진 스타일 id 목록 (삭제된 예전 프리셋 id는 시네마틱으로 취급 · 포커스(blur)는 유지)
+export const INTRO_STYLE_IDS: IntroStyleId[] = ['vellum', 'envelope', 'postcard', 'pieces', 'stars', 'typed', 'dots', 'frost', 'labels', 'tiles', 'grid']
+export function resolvePresetId(id: unknown): IntroPresetId {
+  return typeof id === 'string' && (id === 'cinematic' || id === 'blur' || (INTRO_STYLE_IDS as string[]).includes(id)) ? (id as IntroPresetId) : 'cinematic'
+}
+export function isInteractiveIntro(id: unknown): id is IntroStyleId {
+  return typeof id === 'string' && (INTRO_STYLE_IDS as string[]).includes(id)
+}
 
 // 기본 인트로 설정 생성
 export function getDefaultIntroSettings(presetId: IntroPresetId = 'cinematic'): IntroSettings {
@@ -496,6 +299,11 @@ export function mergeIntroSettings(
   currentSettings: IntroSettings,
   newPresetId: IntroPresetId
 ): IntroSettings {
+  // 인터랙티브 스타일로 바꾸거나 거기서 시네마틱으로 돌아올 때는 presetId만 바꾼다
+  // (시네마틱 설정과 스타일별 옵션을 모두 그대로 보존)
+  if (isInteractiveIntro(newPresetId) || isInteractiveIntro(currentSettings.presetId)) {
+    return { ...currentSettings, presetId: newPresetId }
+  }
   const newPreset = introPresets.find(p => p.id === newPresetId)
   if (!newPreset) return currentSettings
 
@@ -541,6 +349,7 @@ export function mergeIntroSettings(
     // 넘김 안내 문구는 프리셋과 무관하므로 사용자 설정 유지
     guideEnabled: currentSettings.guideEnabled,
     guideText: currentSettings.guideText,
+    styleOptions: currentSettings.styleOptions,
   }
 }
 

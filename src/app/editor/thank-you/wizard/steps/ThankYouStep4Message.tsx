@@ -75,7 +75,7 @@ export default function ThankYouStep4Message() {
           type="text"
           value={data.closingLines[4] || ''}
           onChange={(e) => updateClosingLine(4, e.target.value)}
-          placeholder="민준 & 서연 올림"
+          placeholder="지훈 & 서연 올림"
           className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A37E69] focus:ring-1 focus:ring-[#A37E69]/20 transition-colors"
         />
       </div>

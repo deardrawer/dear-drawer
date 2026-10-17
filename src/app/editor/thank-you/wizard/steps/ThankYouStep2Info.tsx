@@ -21,7 +21,7 @@ export default function ThankYouStep2Info() {
           type="text"
           value={data.coupleNames}
           onChange={(e) => updateField('coupleNames', e.target.value)}
-          placeholder="예: 민준 & 서연"
+          placeholder="예: 지훈 & 서연"
           className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A37E69] focus:ring-1 focus:ring-[#A37E69]/20 transition-colors"
         />
         <p className="text-xs text-gray-400 mt-1.5">&를 기준으로 신랑/신부 이름이 구분됩니다</p>

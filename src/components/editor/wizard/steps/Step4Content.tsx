@@ -583,10 +583,10 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   value={invitation.groom.profile.aboutLabel || ''}
                   onChange={(e) => updateNestedField('groom.profile.aboutLabel', e.target.value)}
                   onFocus={() => setActiveSection('couple-profile')}
-                  placeholder="ABOUT MINJUN"
+                  placeholder="ABOUT JIHOON"
                   className="bg-white"
                 />
-                <p className="text-[10px] text-gray-400">예: ABOUT MINJUN, ABOUT 민준</p>
+                <p className="text-[10px] text-gray-400">예: ABOUT JIHOON, ABOUT 지훈</p>
               </div>
 
               {/* 서브타이틀 */}
@@ -596,10 +596,10 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   value={invitation.groom.profile.subtitle || ''}
                   onChange={(e) => updateNestedField('groom.profile.subtitle', e.target.value)}
                   onFocus={() => setActiveSection('couple-profile')}
-                  placeholder="서연이가 소개하는 민준"
+                  placeholder="서연이가 소개하는 지훈"
                   className="bg-white"
                 />
-                <p className="text-[10px] text-gray-400">예: 서연이가 소개하는 민준</p>
+                <p className="text-[10px] text-gray-400">예: 서연이가 소개하는 지훈</p>
               </div>
 
               {/* 소개글 */}
@@ -700,10 +700,10 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   value={invitation.bride.profile.subtitle || ''}
                   onChange={(e) => updateNestedField('bride.profile.subtitle', e.target.value)}
                   onFocus={() => setActiveSection('couple-profile')}
-                  placeholder="민준이가 소개하는 서연"
+                  placeholder="지훈이가 소개하는 서연"
                   className="bg-white"
                 />
-                <p className="text-[10px] text-gray-400">예: 민준이가 소개하는 서연</p>
+                <p className="text-[10px] text-gray-400">예: 지훈이가 소개하는 서연</p>
               </div>
 
               {/* 소개글 */}

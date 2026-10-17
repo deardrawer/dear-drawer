@@ -1,5 +1,6 @@
 'use client'
 
+import { RecordDaysCover, RecordLpCover } from '@/components/invitation/record/RecordIntros'
 import { useState, useEffect, useRef, useCallback, createContext, useContext, Fragment } from 'react'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
@@ -2717,6 +2718,20 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     styleOverrides: (content as any).styleOverrides,
     mapButtons: (content as any).mapButtons,
     ddayPopup: normalizeDdayPopup(content.ddayPopup),
+    recordIntroStyle: (content as any).recordIntroStyle,
+    recordDaysLabel: (content as any).recordDaysLabel,
+    recordDaysStart: (content as any).recordDaysStart,
+    recordDaysTitle: (content as any).recordDaysTitle,
+    recordDaysImage: (content as any).recordDaysImage,
+    recordDaysImageSettings: (content as any).recordDaysImageSettings,
+    recordDaysTone: (content as any).recordDaysTone,
+    recordDaysSong: (content as any).recordDaysSong,
+    recordDaysArtist: (content as any).recordDaysArtist,
+    recordDaysMessage: (content as any).recordDaysMessage,
+    recordDaysBg: (content as any).recordDaysBg,
+    recordDaysInk: (content as any).recordDaysInk,
+    recordLpImage: (content as any).recordLpImage,
+    recordLpImageSettings: (content as any).recordLpImageSettings,
   }
 }
 
@@ -2814,6 +2829,13 @@ function InvitationClientRecordContent({
   }, [skipIntro])
 
   const audioRef = useRef<HTMLAudioElement>(null)
+  // 인트로를 누르는 순간 배경음악 시작 — 자동재생을 켠 청첩장만, 하객이 음악을 끈 적 있거나 에디터 미리보기면 그대로
+  const startBgm = () => {
+    const a = audioRef.current
+    if (!a || isPreview || !invitation?.bgm?.enabled || invitation.bgm.autoplay !== true) return
+    try { if (localStorage.getItem('musicEnabled') === 'false') return } catch {}
+    if (a.paused) a.play().catch(() => {})
+  }
 
   // BGM fade out/in when video plays
   const bgmWasPlayingRef = useRef(false)
@@ -3064,7 +3086,11 @@ function InvitationClientRecordContent({
                   fontFamily: fonts.body, color: tc.text
                 }}>
                   {currentPage === 'cover' ? (
-                    <VinylRecordCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} colorTheme={effectiveColorTheme} />
+                    invitation.recordIntroStyle === 'lp'
+                      ? <RecordLpCover invitation={invitation} onEnter={() => { startBgm(); setCurrentPage('main') }} isPreview={!!isPreview} />
+                      : invitation.recordIntroStyle === 'days'
+                      ? <RecordDaysCover invitation={invitation} onEnter={() => { startBgm(); setCurrentPage('main') }} isPreview={!!isPreview} />
+                      : <VinylRecordCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} colorTheme={effectiveColorTheme} />
                   ) : isPreview ? (
                     /* === Editor preview: scroll layout with unified track headers === */
                     <>

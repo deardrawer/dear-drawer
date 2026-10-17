@@ -368,6 +368,10 @@ const TV_CSS = `
     .tv-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
   @media (min-width: 1080px) { .tv-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  /* 카드 아래 정보: 넓으면 이름 | 분류 한 줄, 좁은 화면(2열 모바일)은 분류를 이름 위로 */
+  .tv-meta { display: grid; grid-template-columns: 1fr auto; column-gap: 10px; align-items: baseline; }
+  .tv-meta-cat { white-space: nowrap; }
+  @media (max-width: 759px) { .tv-meta { grid-template-columns: 1fr; } .tv-meta-cat { order: -1; margin-bottom: 5px; } }
   .tv-card .tv-img img { transition: transform 1.2s cubic-bezier(.2,.7,.2,1); }
   .tv-card:hover .tv-img img { transform: scale(1.025); }
   .tv-card .tv-act { opacity: 0; transition: opacity .3s ease; }
@@ -875,9 +879,9 @@ function TemplatesContent() {
                       </div>
                     )}
                   </div>
-                  <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr auto', columnGap: 10, alignItems: 'baseline' }}>
+                  <div className="tv-meta" style={{ marginTop: 16 }}>
                     <h3 style={{ margin: 0, fontSize: 'clamp(16px, 1.45vw, 19px)', fontWeight: 650, lineHeight: 1.2, letterSpacing: '-.005em' }}>{item.name}</h3>
-                    <span style={{ fontSize: 11.5, color: TV.ink3, letterSpacing: '-.01em' }}>{item.categoryLabel}</span>
+                    <span className="tv-meta-cat" style={{ fontSize: 11.5, color: TV.ink3, letterSpacing: '-.01em' }}>{item.categoryLabel}</span>
                     <p style={{ gridColumn: '1 / -1', margin: '7px 0 0', fontSize: 13, lineHeight: 1.6, letterSpacing: '-.015em', color: TV.ink2, wordBreak: 'keep-all' }}>{item.tagline}</p>
                   </div>
                 </article>

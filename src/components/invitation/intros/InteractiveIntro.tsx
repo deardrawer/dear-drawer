@@ -157,8 +157,9 @@ export default function InteractiveIntro({ styleId, settings, data, onNext, embe
         {measured && done && (
           <div className="absolute left-0 right-0 bottom-4 z-[61] flex flex-col items-center gap-2 pointer-events-none"
             style={{ opacity: nextReady ? 1 : 0, transition: 'opacity .8s ease' }}>
+            {/* 안내 알약: 흐림(backdrop-blur)은 일부 모바일 브라우저에서 아래 움직이는 화살표와 겹쳐 검은 띠가 생겨 단색 반투명으로 */}
             {settings.guideEnabled && (
-              <span className="px-3 py-1 rounded-full bg-black/30 text-white/90 text-[11px] backdrop-blur-sm" style={{ letterSpacing: '.04em' }}>
+              <span className="px-3 py-1 rounded-full bg-black/35 text-white/90 text-[11px]" style={{ letterSpacing: '.04em' }}>
                 {settings.guideText || '터치하거나 아래로 넘겨주세요'}
               </span>
             )}

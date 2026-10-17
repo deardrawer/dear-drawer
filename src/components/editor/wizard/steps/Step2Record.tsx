@@ -330,71 +330,71 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
 
       </section>
 
-      {/* 앨범 커버 이미지 */}
-      <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          앨범 커버 이미지
-        </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>바이닐 레코드 커버에 사용될 정사각형 이미지를 업로드하세요.</p>
-
-        {invitation.media.coverImage ? (
-          <div className="space-y-3">
-            <div className="relative w-48 h-48 mx-auto rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-              <img src={invitation.media.coverImage} alt="앨범 커버" className="w-full h-full object-cover" />
-              <button
-                onClick={() => {
-                  updateNestedField('media.coverImage', '')
-                  updateNestedField('media.coverImageSettings', undefined)
-                }}
-                className="absolute top-2 right-2 w-6 h-6 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg space-y-2">
-              <p className="text-[10px] font-medium text-gray-600">이미지 크롭 조정</p>
-              <InlineCropEditor
-                imageUrl={invitation.media.coverImage}
-                settings={invitation.media.coverImageSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
-                onUpdate={(s) => updateNestedField('media.coverImageSettings', { ...(invitation.media.coverImageSettings || {}), ...s })}
-                aspectRatio={1}
-                containerWidth={160}
-              />
-            </div>
-          </div>
-        ) : (
-          <label className="block cursor-pointer">
-            <div className="w-48 h-48 mx-auto border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-gray-400 hover:bg-gray-50 transition-colors">
-              {uploadingImages.has('cover') ? (
-                <div className="animate-spin w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full" />
-              ) : (
-                <>
-                  <Plus className="w-8 h-8 text-gray-400" />
-                  <span className="text-xs text-gray-500">1:1 정사각형</span>
-                </>
-              )}
-            </div>
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              disabled={uploadingImages.has('cover')}
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) {
-                  handleImageUpload(file, 'cover', (url) => {
-                    updateNestedField('media.coverImage', url)
-                  })
-                  e.target.value = ''
-                }
-              }}
-            />
-          </label>
-        )}
-      </section>
-
-      {/* 앨범 자켓·커버 타이틀: CD PLAYER 인트로에서만 */}
+      {/* 앨범 커버 이미지 · 앨범 자켓 · 커버 타이틀: CD PLAYER 인트로에서만 */}
       {(invitation.recordIntroStyle || 'cd') === 'cd' && (<>
+        {/* 앨범 커버 이미지 */}
+        <section className="space-y-4">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            앨범 커버 이미지
+          </h3>
+          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>바이닐 레코드 커버에 사용될 정사각형 이미지를 업로드하세요.</p>
+
+          {invitation.media.coverImage ? (
+            <div className="space-y-3">
+              <div className="relative w-48 h-48 mx-auto rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                <img src={invitation.media.coverImage} alt="앨범 커버" className="w-full h-full object-cover" />
+                <button
+                  onClick={() => {
+                    updateNestedField('media.coverImage', '')
+                    updateNestedField('media.coverImageSettings', undefined)
+                  }}
+                  className="absolute top-2 right-2 w-6 h-6 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg space-y-2">
+                <p className="text-[10px] font-medium text-gray-600">이미지 크롭 조정</p>
+                <InlineCropEditor
+                  imageUrl={invitation.media.coverImage}
+                  settings={invitation.media.coverImageSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
+                  onUpdate={(s) => updateNestedField('media.coverImageSettings', { ...(invitation.media.coverImageSettings || {}), ...s })}
+                  aspectRatio={1}
+                  containerWidth={160}
+                />
+              </div>
+            </div>
+          ) : (
+            <label className="block cursor-pointer">
+              <div className="w-48 h-48 mx-auto border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-gray-400 hover:bg-gray-50 transition-colors">
+                {uploadingImages.has('cover') ? (
+                  <div className="animate-spin w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full" />
+                ) : (
+                  <>
+                    <Plus className="w-8 h-8 text-gray-400" />
+                    <span className="text-xs text-gray-500">1:1 정사각형</span>
+                  </>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploadingImages.has('cover')}
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    handleImageUpload(file, 'cover', (url) => {
+                      updateNestedField('media.coverImage', url)
+                    })
+                    e.target.value = ''
+                  }
+                }}
+              />
+            </label>
+          )}
+        </section>
+
         {/* 앨범 자켓 이미지 (인사말 상단) */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">

@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation'
 import QRCode from 'qrcode'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
@@ -142,42 +141,66 @@ function getTemplateDisplayName(templateId: string, senderSide?: string) {
   }
 }
 
-// 템플릿 배지 색상
-function getTemplateBadgeColor(templateId: string, senderSide?: string) {
-  if (templateId === 'narrative-parents' || templateId === 'parents' || templateId === 'parents-formal') {
-    if (senderSide === 'groom') return 'bg-blue-100 text-blue-700'
-    if (senderSide === 'bride') return 'bg-pink-100 text-pink-700'
-    return 'bg-purple-100 text-purple-700'
+// 페이지 디자인 토큰 (/templates 와 같은 톤)
+const MI = { ink: '#1F1C19', ink2: '#5E5751', ink3: '#9A908C', line: 'rgba(31,28,25,.11)', img: '#F0E5E3', warn: '#B4533A' }
+const MI_FONT = "'Inter', 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif"
+const MI_CSS = `
+  .mi { -webkit-font-smoothing: antialiased; }
+  .mi a { color: inherit; text-decoration: none; }
+  .mi a.mi-btn-ink { color: #FFF9F8; }
+  .mi-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(12px, 1.8vw, 24px); }
+  .mi-head-title, .mi-head-side { grid-column: 1 / span 12; }
+  .mi-cards { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); column-gap: clamp(16px, 2vw, 28px); row-gap: clamp(44px, 5vw, 64px); }
+  /* 모바일: 사진 왼쪽 · 정보 오른쪽 · 동작은 아래 전체 폭 */
+  .mi-card { display: grid; grid-template-columns: 112px minmax(0, 1fr); column-gap: 16px; align-items: start; }
+  .mi-card .mi-act { grid-column: 1 / -1; }
+  .mi-card .mi-info { margin-top: 0; }
+  .mi-card .mi-note { display: none; }
+  .mi-card .mi-tpl { top: 6px !important; left: 6px !important; font-size: 8.5px !important; padding: 3px 5px !important; letter-spacing: .05em !important; }
+  .mi-card .mi-img > .mi-days { display: none; }
+  .mi-cards { row-gap: 36px; }
+  @media (min-width: 560px) {
+    .mi-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: clamp(44px, 5vw, 64px); }
+    .mi-card { display: block; }
+    .mi-card .mi-info { margin-top: 16px; }
+    .mi-card .mi-note { display: block; }
+    .mi-card .mi-short { display: none; }
+    .mi-card .mi-tpl { top: 10px !important; left: 10px !important; font-size: 10px !important; padding: 4px 7px !important; letter-spacing: .08em !important; }
+    .mi-card .mi-img > .mi-days { display: inline-block; }
   }
-  if (templateId === 'narrative-our' || templateId === 'our') {
-    return 'bg-rose-100 text-rose-700'
+  @media (min-width: 760px) {
+    .mi-head-title { grid-column: 1 / span 6; }
+    .mi-head-side { grid-column: 7 / span 6; justify-self: end; align-self: end; }
   }
-  if (templateId === 'narrative-family' || templateId === 'family') {
-    return 'bg-amber-100 text-amber-700'
+  @media (min-width: 1080px) { .mi-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .mi-img img { transition: transform 1.2s cubic-bezier(.2,.7,.2,1); }
+  .mi-card:hover .mi-img img { transform: scale(1.025); }
+  .mi-btn { display: inline-flex; align-items: center; justify-content: center; height: 42px; border-radius: 2px; font-size: 13px; font-weight: 500; letter-spacing: -.01em; cursor: pointer; font-family: inherit; transition: background .2s, border-color .2s; }
+  .mi-btn-ink { background: ${MI.ink}; color: #FFF9F8; border: 1px solid ${MI.ink}; }
+  .mi-btn-ink:hover { background: #3A342F; }
+  .mi-btn-line { background: transparent; color: ${MI.ink}; border: 1px solid ${MI.line}; }
+  .mi-btn-line:hover { border-color: rgba(31,28,25,.3); }
+  .mi-sub { display: flex; border-top: 1px solid ${MI.line}; margin-top: 12px; }
+  .mi-sub button { flex: 1; padding: 12px 0 0; background: none; border: 0; cursor: pointer; font-family: inherit; font-size: 12.5px; color: ${MI.ink2}; letter-spacing: -.01em; }
+  .mi-sub button:hover { color: ${MI.ink}; }
+  .mi-sub button + button { border-left: 1px solid ${MI.line}; }
+  .mi-link { background-image: linear-gradient(currentColor, currentColor); background-size: 100% 1px; background-repeat: no-repeat; background-position: 0 100%; padding-bottom: 2px; transition: background-size .3s ease; }
+  .mi-link:hover { background-size: 0 1px; background-position: 100% 100%; }
+  .mi-btn:disabled, .mi-sub button:disabled { opacity: .5; cursor: default; }
+  .mi-img:focus-visible { outline: 2px solid ${MI.ink} !important; outline-offset: 2px !important; }
+  /* 미리보기 위 문구: 모바일 작은 썸네일에선 작게 */
+  .mi-cover-title { margin: 0; font-size: 11px; font-weight: 300; letter-spacing: .02em; line-height: 1.4; word-break: keep-all; }
+  .mi-cover-sub { margin: 0; font-size: 7px; letter-spacing: .2em; }
+  .mi-env-text { margin: 0; font-size: 10px; }
+  .mi-seal { display: none; }
+  @media (min-width: 560px) {
+    .mi-cover-title { font-size: 17px; }
+    .mi-cover-sub { font-size: 11px; }
+    .mi-env-text { font-size: 15px; }
+    .mi-seal { display: block; }
   }
-  if (templateId === 'narrative-magazine' || templateId === 'magazine') {
-    return 'bg-slate-100 text-slate-700'
-  }
-  if (templateId === 'narrative-film' || templateId === 'film') {
-    return 'bg-gray-800 text-gray-100'
-  }
-  if (templateId === 'narrative-record' || templateId === 'record') {
-    return 'bg-orange-100 text-orange-700'
-  }
-  if (templateId === 'narrative-exhibit' || templateId === 'exhibit') {
-    return 'bg-violet-100 text-violet-700'
-  }
-  if (templateId === 'narrative-essay' || templateId === 'essay') {
-    return 'bg-amber-100 text-amber-800'
-  }
-  if (templateId === 'narrative-thankyou') {
-    return 'bg-amber-100 text-amber-600'
-  }
-  if (templateId === 'narrative-classic') {
-    return 'bg-stone-200 text-stone-700'
-  }
-  return 'bg-gray-100 text-gray-600'
-}
+  @keyframes miIn { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+`
 
 type RSVPData = {
   id: string
@@ -830,343 +853,238 @@ export default function MyInvitationsPage() {
 
   // 스켈레톤 카드 컴포넌트
   const SkeletonCard = () => (
-    <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 animate-pulse">
-      <div className="aspect-[9/16] bg-gray-200" />
-      <div className="p-4 space-y-3">
-        <div className="h-4 bg-gray-200 rounded w-3/4" />
-        <div className="h-3 bg-gray-100 rounded w-1/2" />
-        <div className="flex gap-2 mt-4">
-          <div className="h-8 bg-gray-100 rounded flex-1" />
-          <div className="h-8 bg-gray-100 rounded flex-1" />
-          <div className="h-8 bg-gray-100 rounded flex-1" />
-        </div>
+    <div className="mi-card animate-pulse">
+      <div className="mi-img" style={{ aspectRatio: '9 / 16', borderRadius: 3, background: MI.img }} />
+      <div className="mi-info" style={{ display: 'grid', gap: 10 }}>
+        <div style={{ height: 16, width: '70%', background: MI.img }} />
+        <div style={{ height: 12, width: '45%', background: MI.img }} />
       </div>
+      <div className="mi-act" style={{ marginTop: 16, height: 42, background: MI.img }} />
+    </div>
+  )
+
+  // 페이지 공통 바탕 (/templates 와 같은 톤: 산세리프 위계, 사진 중심, 둥근 모서리·그림자 최소)
+  const shell = (children: React.ReactNode) => (
+    <div className="mi min-h-screen bg-gradient-to-br from-rose-50 via-white to-blue-50" style={{ color: MI.ink, fontFamily: MI_FONT }}>
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+      <style>{MI_CSS}</style>
+      {children}
     </div>
   )
 
   if (status === 'loading' || isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        {/* 스켈레톤 헤더 */}
-        <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-6 mb-8 animate-pulse">
-          <div className="h-6 bg-white/50 rounded w-32 mb-2" />
-          <div className="h-4 bg-white/30 rounded w-48" />
-        </div>
-        {/* 스켈레톤 카드 그리드 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-        </div>
-      </div>
+    return shell(
+      <main className="container mx-auto px-4 sm:px-6" style={{ paddingBottom: 'clamp(80px, 10vw, 140px)' }}>
+        <section style={{ paddingTop: 'clamp(44px, 7vw, 88px)', paddingBottom: 'clamp(28px, 4vw, 44px)', borderBottom: `1px solid ${MI.line}` }}>
+          <h1 style={{ margin: 0, fontSize: 'clamp(26px, 3vw, 36px)', lineHeight: 1.25, letterSpacing: '-.035em', fontWeight: 600 }}>내 청첩장</h1>
+          <div className="animate-pulse" style={{ marginTop: 14, height: 14, width: 180, background: MI.img }} />
+        </section>
+        <section style={{ paddingTop: 'clamp(32px, 4.5vw, 52px)' }}>
+          <div className="mi-cards">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        </section>
+      </main>
     )
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      {/* 히어로 헤더 */}
-      <div className="bg-gradient-to-r from-rose-50 via-pink-50 to-purple-50 rounded-2xl p-6 md:p-8 mb-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">내 청첩장</h1>
-            {stats.total > 0 ? (
-              <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-rose-400 rounded-full" />
-                  총 {stats.total}개
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-green-400 rounded-full" />
-                  결제완료 {stats.paid}개
-                </span>
-                {stats.totalRsvp > 0 && (
-                  <span className="flex items-center gap-1">
-                    <span className="w-2 h-2 bg-blue-400 rounded-full" />
-                    RSVP {stats.totalRsvp}명
-                  </span>
-                )}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-500">아직 청첩장이 없습니다</p>
-            )}
+  return shell(
+    <>
+      <main className="container mx-auto px-4 sm:px-6" style={{ paddingBottom: 'clamp(80px, 10vw, 140px)' }}>
+        {/* 머리말 */}
+        <section className="mi-grid" style={{ paddingTop: 'clamp(44px, 7vw, 88px)', paddingBottom: 'clamp(28px, 4vw, 44px)', rowGap: 20, borderBottom: `1px solid ${MI.line}`, animation: 'miIn .8s ease both' }}>
+          <div className="mi-head-title">
+            <h1 style={{ margin: 0, fontSize: 'clamp(26px, 3vw, 36px)', lineHeight: 1.25, letterSpacing: '-.035em', fontWeight: 600 }}>내 청첩장</h1>
+            <p style={{ margin: '12px 0 0', fontSize: 13.5, color: MI.ink2, letterSpacing: '-.01em', fontVariantNumeric: 'tabular-nums' }}>
+              {stats.total === 0 ? '아직 만든 청첩장이 없어요' : <>
+                <span style={{ color: MI.ink, fontWeight: 600 }}>{stats.total}</span>개
+                <span style={{ color: MI.ink3, margin: '0 10px' }}>/</span>결제완료 <span style={{ color: MI.ink, fontWeight: 600 }}>{stats.paid}</span>
+                {stats.totalRsvp > 0 && <><span style={{ color: MI.ink3, margin: '0 10px' }}>/</span>참석 응답 <span style={{ color: MI.ink, fontWeight: 600 }}>{stats.totalRsvp}</span>명</>}
+              </>}
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            {invitations.length > 0 && (
-              <Link href="/rsvp">
-                <Button variant="outline" className="bg-white/70 border-gray-300 hover:bg-white">
-                  <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                  </svg>
-                  RSVP 통합관리
-                </Button>
-              </Link>
-            )}
-            <Link href="/templates">
-              <Button className="bg-black hover:bg-gray-800 shadow-lg hover:shadow-xl transition-all hover:scale-105">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                새 청첩장 만들기
-              </Button>
-            </Link>
+          <div className="mi-head-side" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            {invitations.length > 0 && <Link href="/rsvp" className="mi-link" style={{ fontSize: 13, fontWeight: 500 }}>RSVP 통합관리</Link>}
+            <Link href="/templates" className="mi-btn mi-btn-ink" style={{ padding: '0 20px' }}>새 청첩장 만들기</Link>
           </div>
-        </div>
-      </div>
+        </section>
 
-
-      {invitations.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-8 md:p-12">
-          {/* 감성 일러스트 */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-rose-100 to-pink-100 rounded-full mb-6">
-              <span className="text-5xl">💌</span>
+        {invitations.length === 0 ? (
+          /* 비어 있을 때: 세 단계 + 시작 */
+          <section className="mi-grid" style={{ paddingTop: 'clamp(48px, 8vw, 96px)', rowGap: 32 }}>
+            <div className="mi-head-title">
+              <p style={{ margin: 0, fontSize: 'clamp(22px, 2.4vw, 28px)', lineHeight: 1.4, letterSpacing: '-.035em', fontWeight: 300 }}>
+                세상에 하나뿐인<br /><span style={{ fontWeight: 600 }}>우리의 이야기를 담아보세요.</span>
+              </p>
             </div>
-            <h3 className="text-xl font-medium text-gray-900 mb-2">아직 청첩장이 없습니다</h3>
-            <p className="text-gray-500">세상에 하나뿐인 우리의 이야기를 담아보세요</p>
-          </div>
-
-          {/* 3단계 안내 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 max-w-3xl mx-auto">
-            <div className="text-center p-4 rounded-xl bg-gray-50">
-              <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-rose-600 font-semibold">1</span>
-              </div>
-              <h4 className="font-medium text-gray-900 mb-1">템플릿 선택</h4>
-              <p className="text-sm text-gray-500">OUR, FAMILY, PARENTS 중 선택</p>
+            <ol style={{ gridColumn: '1 / -1', margin: 0, padding: 0, listStyle: 'none', borderTop: `1px solid ${MI.ink}` }}>
+              {[['템플릿 고르기', '완성된 청첩장을 둘러보고 마음에 드는 이야기 형식을 골라요'], ['이야기 채우기', '질문에 답하면 초안을 써 드려요 · 사진과 문구는 언제든 고칠 수 있어요'], ['공유하기', '카카오톡, 문자로 링크를 보내고 참석 응답을 한곳에서 확인해요']].map(([t, d], i) => (
+                <li key={t} className="mi-grid" style={{ padding: '22px 0', borderBottom: `1px solid ${MI.line}`, alignItems: 'baseline', rowGap: 6 }}>
+                  <span style={{ gridColumn: 'span 1', fontSize: 12, color: MI.ink3, fontVariantNumeric: 'tabular-nums' }}>0{i + 1}</span>
+                  <span style={{ gridColumn: 'span 4', fontSize: 16, fontWeight: 600, letterSpacing: '-.02em' }}>{t}</span>
+                  <span style={{ gridColumn: 'span 7', fontSize: 14, lineHeight: 1.7, color: MI.ink2, letterSpacing: '-.015em', wordBreak: 'keep-all' }}>{d}</span>
+                </li>
+              ))}
+            </ol>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <Link href="/templates" className="mi-btn mi-btn-ink" style={{ padding: '0 26px', height: 48, fontSize: 14 }}>청첩장 만들기</Link>
             </div>
-            <div className="text-center p-4 rounded-xl bg-gray-50">
-              <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-rose-600 font-semibold">2</span>
-              </div>
-              <h4 className="font-medium text-gray-900 mb-1">스토리 초안 작성</h4>
-              <p className="text-sm text-gray-500">질문에 답하면 초안을 작성해드려요</p>
-            </div>
-            <div className="text-center p-4 rounded-xl bg-gray-50">
-              <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-rose-600 font-semibold">3</span>
-              </div>
-              <h4 className="font-medium text-gray-900 mb-1">공유하기</h4>
-              <p className="text-sm text-gray-500">카카오톡, 문자로 손쉽게 공유</p>
-            </div>
-          </div>
+          </section>
+        ) : filteredInvitations.length === 0 ? (
+          <section style={{ padding: 'clamp(48px, 8vw, 96px) 0', textAlign: 'center' }}>
+            <p style={{ margin: 0, fontSize: 14, color: MI.ink2 }}>해당 템플릿의 청첩장이 없어요</p>
+            <button type="button" onClick={() => setFilterType('all')} className="mi-link" style={{ marginTop: 14, background: 'none', border: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 500, color: MI.ink }}>
+              전체 보기
+            </button>
+          </section>
+        ) : (
+          <section style={{ paddingTop: 'clamp(32px, 4.5vw, 52px)' }}>
+            <div className="mi-cards">
+              {filteredInvitations.map((invitation, idx) => {
+                const daysInfo = calculateDaysLeft(invitation)
+                const { coverImage, introTitle, introSubTitle, senderSide, envelopeTheme } = parseInvitationContent(invitation.content)
+                const displayImage = coverImage || invitation.main_image
+                const templateName = getTemplateDisplayName(invitation.template_id, senderSide)
+                const isParentsTemplate = invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents' || invitation.template_id === 'parents-formal'
+                // 결제완료 + 예식 다음날(Day 1)부터 → 예식 종료. 카드 액션을 잠그고 POST DRAWER 바로가기만 노출
+                const isDrawerMode = !!invitation.is_paid && isPostDrawerActiveKST(invitation.wedding_date)
+                const days = daysInfo && daysInfo.days > 0 ? daysInfo.days : null
+                const daysText = days === null ? '' : invitation.is_paid ? `공개 종료까지 D-${days}` : `${days}일 후 자동 삭제`
+                const rsvpCount = invitation.rsvp_count || 0
+                const editorHref =
+                  invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents'
+                    ? `/editor/parents?id=${invitation.id}`
+                    : invitation.template_id === 'narrative-exhibit' || invitation.template_id === 'exhibit'
+                    ? `/editor/feed?id=${invitation.id}`
+                    : invitation.template_id === 'narrative-thankyou'
+                    ? `/editor/thank-you?id=${invitation.id}`
+                    : invitation.template_id === 'narrative-the-simple'
+                    ? `/editor/the-simple?id=${invitation.id}`
+                    : invitation.template_id === 'narrative-classic'
+                    ? `/editor/classic?id=${invitation.id}`
+                    : invitation.template_id === 'narrative-essay'
+                    ? `/editor/essay?id=${invitation.id}`
+                    : `/editor?id=${invitation.id}`
+                const secondary = !invitation.is_paid
+                  ? { href: `/dashboard/payment?invitationId=${invitation.id}&templateId=${invitation.template_id}`, label: '워터마크 제거' }
+                  : invitation.has_geunnal
+                  ? { href: `/g/${invitation.slug || invitation.id}-g`, label: '모임 관리' }
+                  : null
 
-          {/* CTA 버튼 */}
-          <div className="text-center">
-            <Link href="/templates">
-              <Button size="lg" className="bg-black hover:bg-gray-800 px-8 shadow-lg hover:shadow-xl transition-all hover:scale-105">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                청첩장 만들기
-              </Button>
-            </Link>
-          </div>
-        </div>
-      ) : filteredInvitations.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-          <div className="text-gray-400 mb-4">
-            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <p className="text-gray-500">해당 템플릿의 청첩장이 없습니다</p>
-          <button
-            onClick={() => setFilterType('all')}
-            className="mt-4 text-sm text-rose-600 hover:text-rose-700 font-medium"
-          >
-            전체 보기
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredInvitations.map((invitation) => {
-            const daysInfo = calculateDaysLeft(invitation)
-            const { coverImage, introTitle, introSubTitle, senderSide, envelopeTheme } = parseInvitationContent(invitation.content)
-            const displayImage = coverImage || invitation.main_image
-            const templateName = getTemplateDisplayName(invitation.template_id, senderSide)
-            const templateBadgeColor = getTemplateBadgeColor(invitation.template_id, senderSide)
-            const isParentsTemplate = invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents' || invitation.template_id === 'parents-formal'
-            // 결제완료 + 예식 다음날(Day 1)부터 → 예식 종료. 카드 액션을 잠그고 POST DRAWER 바로가기만 노출
-            const isDrawerMode = !!invitation.is_paid && isPostDrawerActiveKST(invitation.wedding_date)
-
-            return (
-              <Card key={invitation.id} className="overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <div
-                  className="aspect-[9/16] relative cursor-pointer hover:opacity-90 transition-opacity overflow-hidden"
-                  onClick={() => setPreviewInvitation(invitation)}
-                >
-                  {/* 혼주용 템플릿: 항상 봉투 스타일 미리보기 */}
-                  {isParentsTemplate ? (
+                return (
+                  <article key={invitation.id} className="mi-card" style={{ animation: `miIn .6s ease ${Math.min(idx, 8) * 0.05}s both` }}>
+                    {/* 미리보기 (누르면 미리보기 창) */}
                     <div
-                      className="absolute inset-0 flex flex-col items-center justify-center"
-                      style={{ backgroundColor: envelopeTheme || '#722F37' }}
+                      className="mi-img"
+                      role="button"
+                      tabIndex={0}
+                      aria-label="미리보기"
+                      onClick={() => setPreviewInvitation(invitation)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPreviewInvitation(invitation) } }}
+                      style={{ position: 'relative', aspectRatio: '9 / 16', borderRadius: 3, overflow: 'hidden', background: MI.img, outline: `1px solid ${MI.line}`, outlineOffset: -1, cursor: 'pointer' }}
                     >
-                      {/* 봉투 미리보기 */}
-                      <div className="w-[70%] aspect-[3/4] bg-gradient-to-b from-[#F7F4EF] to-[#EDE9E3] rounded-none shadow-lg flex flex-col items-center justify-center relative">
-                        {/* 실링 왁스 장식 */}
-                        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-8 h-8">
-                          <img src="/images/shilling2.png" alt="" className="w-full h-full object-contain" />
+                      {isParentsTemplate ? (
+                        /* 혼주용 템플릿: 항상 봉투 스타일 미리보기 */
+                        <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ backgroundColor: envelopeTheme || '#722F37' }}>
+                          <div className="w-[66%] aspect-[3/4] bg-gradient-to-b from-[#F7F4EF] to-[#EDE9E3] flex flex-col items-center justify-center relative">
+                            {/* 실링 왁스 장식 */}
+                            <div className="mi-seal absolute top-[8%] left-1/2 -translate-x-1/2 w-[22%] aspect-square">
+                              <img src="/images/shilling2.png" alt="" className="w-full h-full object-contain" />
+                            </div>
+                            <div className="w-[28%] h-px bg-[#C9A962] mb-[9%] mt-[22%]" />
+                            <p className="mi-env-text text-[#2C2C2C] tracking-wide">소중한분께</p>
+                            <div className="w-[28%] h-px bg-[#C9A962] mt-[9%]" />
+                          </div>
                         </div>
-                        {/* 구분선 */}
-                        <div className="w-10 h-px bg-[#C9A962] mb-3 mt-8" />
-                        {/* 받는 분 */}
-                        <p className="text-[#2C2C2C] text-base tracking-wide">소중한분께</p>
-                        {/* 구분선 */}
-                        <div className="w-10 h-px bg-[#C9A962] mt-3" />
-                      </div>
-                      {/* 힌트 텍스트 */}
-                      <p className="text-white/60 text-xs mt-4">터치하여 열기</p>
+                      ) : displayImage ? (
+                        /* 커버 이미지 + 인트로 문구 */
+                        <>
+                          <img src={displayImage} alt="청첩장 커버" className="absolute inset-0 w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/25 flex flex-col items-center justify-center text-center p-3">
+                            {introSubTitle && <p className="mi-cover-sub text-white/80 mb-2">{introSubTitle}</p>}
+                            {introTitle ? (
+                              <h3 className="mi-cover-title text-white">{introTitle}</h3>
+                            ) : !introSubTitle && (
+                              <h3 className="mi-cover-title text-white">{invitation.groom_name} & {invitation.bride_name}</h3>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        /* 사진이 없을 때 */
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-3" style={{ background: '#F7EFED' }}>
+                          <h3 className="mi-cover-title" style={{ color: MI.ink }}>{invitation.groom_name} & {invitation.bride_name}</h3>
+                          <p style={{ margin: '6px 0 0', fontSize: 11, color: MI.ink3 }}>{formatDate(invitation.wedding_date)}</p>
+                        </div>
+                      )}
+
+                      {/* 사진 위: 왼쪽 위 템플릿, 아래 남은 기간 — 글자 라벨만 */}
+                      <span className="mi-tpl" style={{ position: 'absolute', top: 10, left: 10, padding: '4px 7px', borderRadius: 2, background: 'rgba(255,250,249,.92)', color: MI.ink, fontSize: 10, fontWeight: 600, letterSpacing: '.08em', lineHeight: 1, whiteSpace: 'nowrap', maxWidth: 'calc(100% - 20px)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{templateName}</span>
+                      {!isDrawerMode && daysText && (
+                        <span className="mi-days" style={{ position: 'absolute', left: 10, bottom: 10, padding: '5px 8px', borderRadius: 2, background: 'rgba(31,28,25,.82)', color: '#FFF9F8', fontSize: 11, fontWeight: 500, letterSpacing: '-.01em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                          {daysText}
+                        </span>
+                      )}
                     </div>
-                  ) : displayImage ? (
-                    /* OUR/FAMILY: 커버 이미지 */
-                    <>
-                      <img
-                        src={displayImage}
-                        alt="청첩장 커버"
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                      {/* 인트로 텍스트 오버레이 */}
-                      <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-center p-4">
-                        {introSubTitle && (
-                          <p className="text-xs text-white/80 tracking-widest mb-2">{introSubTitle}</p>
-                        )}
-                        {introTitle && (
-                          <h3 className="text-white text-lg font-light tracking-wide">{introTitle}</h3>
-                        )}
-                        {!introTitle && !introSubTitle && (
-                          <h3 className="text-white text-lg font-light">
-                            {invitation.groom_name} & {invitation.bride_name}
-                          </h3>
-                        )}
+
+                    {/* 정보 */}
+                    <div className="mi-info">
+                      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
+                        <h3 style={{ margin: 0, fontSize: 'clamp(16px, 1.4vw, 18px)', fontWeight: 650, letterSpacing: '-.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {invitation.title || `${invitation.groom_name} & ${invitation.bride_name}`}
+                        </h3>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: invitation.is_paid ? MI.ink : MI.warn, whiteSpace: 'nowrap' }}>{invitation.is_paid ? '결제완료' : '미결제'}</span>
                       </div>
-                    </>
-                  ) : (
-                    /* 기본: 그라데이션 배경 */
-                    <div className="absolute inset-0 bg-gradient-to-b from-rose-50 to-white flex flex-col items-center justify-center text-center p-4">
-                      <h3 className="font-medium text-gray-900 text-lg">
-                        {invitation.groom_name} & {invitation.bride_name}
-                      </h3>
-                      <p className="text-sm text-gray-500 mt-1">{formatDate(invitation.wedding_date)}</p>
-                    </div>
-                  )}
-
-                  {/* 상단 배지 */}
-                  <div className="absolute top-2 left-2 flex flex-col gap-1">
-                    {/* 템플릿 타입 배지 */}
-                    <span className={`px-2 py-1 text-xs rounded-full font-medium ${templateBadgeColor}`}>
-                      {templateName}
-                    </span>
-                    {/* 결제 상태 배지 */}
-                    {invitation.is_paid ? (
-                      <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">결제완료</span>
-                    ) : (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">미결제</span>
-                    )}
-                  </div>
-
-                  {/* 하단 정보 */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-                    {daysInfo && daysInfo.days > 0 && (
-                      <div className={`px-2 py-1 rounded text-xs mb-2 inline-block ${invitation.is_paid ? 'bg-blue-500/80 text-white' : 'bg-orange-500/80 text-white'}`}>
-                        {invitation.is_paid ? `예식일 +30일 후 삭제 (D-${daysInfo.days})` : `${daysInfo.days}일 후 자동 삭제`}
-                      </div>
-                    )}
-                    <p className="text-xs text-white/90">클릭하여 미리보기</p>
-                  </div>
-                </div>
-
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <p className="text-xs sm:text-sm font-medium text-gray-900">
-                        {invitation.title || `${invitation.groom_name} & ${invitation.bride_name}`}
+                      <p style={{ margin: '6px 0 0', fontSize: 12, color: MI.ink3, letterSpacing: '-.01em', fontVariantNumeric: 'tabular-nums' }}>
+                        수정 {new Date(invitation.updated_at).toLocaleDateString('ko-KR')}
+                        {rsvpCount > 0 && <> · 참석 응답 <span style={{ color: MI.ink2, fontWeight: 500 }}>{rsvpCount}명</span></>}
                       </p>
-                      <p className="text-[10px] sm:text-xs text-gray-400">수정: {new Date(invitation.updated_at).toLocaleDateString('ko-KR')}</p>
+                      {/* 모바일: 사진 옆 한 줄 안내 */}
+                      {!isDrawerMode && daysText && (
+                        <p className="mi-short" style={{ margin: '10px 0 0', fontSize: 11.5, lineHeight: 1.55, color: invitation.is_paid ? MI.ink3 : MI.warn, letterSpacing: '-.015em' }}>
+                          {invitation.is_paid ? daysText : `${days}일 후 자동 삭제돼요`}
+                        </p>
+                      )}
+                      <p className="mi-note" style={{ margin: '10px 0 0', fontSize: 11.5, lineHeight: 1.6, color: MI.ink3, letterSpacing: '-.015em', wordBreak: 'keep-all' }}>
+                        {invitation.is_paid ? '예식일로부터 30일 후 링크 공개만 종료되고, 방명록·하객 사진·메시지는 POST DRAWER에 계속 보관돼요.' : '결제하지 않은 청첩장은 만든 날로부터 7일 후 자동 삭제돼요.'}
+                      </p>
                     </div>
-                    {invitation.rsvp_count !== undefined && invitation.rsvp_count > 0 && (
-                      <span className="text-xs px-2 py-1 bg-rose-50 text-rose-600 rounded-full">RSVP {invitation.rsvp_count}</span>
+
+                    {/* 동작 */}
+                    {isDrawerMode ? (
+                      /* 예식 종료(결제완료 + 예식 다음날~): 편집·복제·공유·관리·삭제 모두 숨기고 POST DRAWER 바로가기만 */
+                      <div className="mi-act" style={{ marginTop: 16 }}>
+                        <button type="button" className="mi-btn mi-btn-ink" style={{ width: '100%' }} onClick={() => handleOpenPostDrawer(invitation)} disabled={openingDrawerId === invitation.id}>
+                          {openingDrawerId === invitation.id ? '여는 중…' : 'POST DRAWER 열기'}
+                        </button>
+                        <p style={{ margin: '8px 0 0', fontSize: 11.5, color: MI.ink3 }}>예식이 끝나 편집·공유는 닫혔어요</p>
+                      </div>
+                    ) : (
+                      <div className="mi-act" style={{ marginTop: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: secondary ? '1fr 1fr' : '1fr', gap: 6 }}>
+                          <Link href={editorHref} className="mi-btn mi-btn-ink">편집하기</Link>
+                          {secondary && <Link href={secondary.href} className="mi-btn mi-btn-line">{secondary.label}</Link>}
+                        </div>
+                        <div className="mi-sub">
+                          <button type="button" onClick={() => setShareInvitation(invitation)}>공유</button>
+                          <button type="button" onClick={() => setManageInvitation(invitation)}>관리</button>
+                          <button type="button" onClick={() => handleDuplicate(invitation)} disabled={duplicatingId === invitation.id}>
+                            {duplicatingId === invitation.id ? '복제 중…' : '복제'}
+                          </button>
+                          <button type="button" onClick={() => setDeleteId(invitation.id)} style={{ color: MI.warn }}>삭제</button>
+                        </div>
+                      </div>
                     )}
-                  </div>
-
-                  <p className="text-[10px] sm:text-xs text-gray-400 mb-3">
-                    {invitation.is_paid ? '예식일로부터 30일 후 청첩장 링크 공개만 종료됩니다. 방명록·하객 사진·메시지 등 기록은 삭제되지 않고 POST DRAWER에 계속 보관됩니다.' : '결제하지 않은 청첩장은 생성일로부터 7일 후 자동 삭제됩니다'}
-                  </p>
-
-                  {isDrawerMode ? (
-                    /* 예식 종료(결제완료 + 예식 다음날~): 편집·복제·공유·관리·삭제 모두 숨기고 POST DRAWER 바로가기만 */
-                    <Button
-                      size="sm"
-                      className="w-full bg-violet-600 hover:bg-violet-700 text-white"
-                      onClick={() => handleOpenPostDrawer(invitation)}
-                      disabled={openingDrawerId === invitation.id}
-                    >
-                      {openingDrawerId === invitation.id ? '여는 중…' : 'POST DRAWER 바로가기'}
-                    </Button>
-                  ) : (
-                  <>
-                  {/* 상단: 주요 액션 (에디터 편집, 워터마크 제거/모임 관리) */}
-                  <div className="grid grid-cols-2 gap-2 mb-2">
-                    <Link href={
-                      invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents'
-                        ? `/editor/parents?id=${invitation.id}`
-                        : invitation.template_id === 'narrative-exhibit' || invitation.template_id === 'exhibit'
-                        ? `/editor/feed?id=${invitation.id}`
-                        : invitation.template_id === 'narrative-thankyou'
-                        ? `/editor/thank-you?id=${invitation.id}`
-                        : invitation.template_id === 'narrative-the-simple'
-                        ? `/editor/the-simple?id=${invitation.id}`
-                        : invitation.template_id === 'narrative-classic'
-                        ? `/editor/classic?id=${invitation.id}`
-                        : invitation.template_id === 'narrative-essay'
-                        ? `/editor/essay?id=${invitation.id}`
-                        : `/editor?id=${invitation.id}`
-                    }>
-                      <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-800 text-white">에디터 편집하기</Button>
-                    </Link>
-                    {!invitation.is_paid ? (
-                      <Link href={`/dashboard/payment?invitationId=${invitation.id}&templateId=${invitation.template_id}`}>
-                        <Button size="sm" className="w-full bg-rose-500 hover:bg-rose-600 text-white">워터마크 제거하기</Button>
-                      </Link>
-                    ) : invitation.has_geunnal ? (
-                      <Link href={`/g/${invitation.slug || invitation.id}-g`}>
-                        <Button size="sm" className="w-full bg-violet-500 hover:bg-violet-600 text-white text-xs">청첩장 모임관리</Button>
-                      </Link>
-                    ) : null}
-                  </div>
-                  {/* 하단: 보조 액션 (복제, 공유, 관리, 삭제) */}
-                  <div className="grid grid-cols-4 gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full text-xs"
-                      onClick={() => handleDuplicate(invitation)}
-                      disabled={duplicatingId === invitation.id}
-                    >
-                      {duplicatingId === invitation.id ? '...' : '복제'}
-                    </Button>
-                    <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => setShareInvitation(invitation)}>
-                      공유
-                    </Button>
-                    <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => setManageInvitation(invitation)}>
-                      관리
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setDeleteId(invitation.id)}
-                      className="w-full text-xs text-red-500 hover:text-red-600 hover:bg-red-50"
-                    >
-                      삭제
-                    </Button>
-                  </div>
-                  </>
-                  )}
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-      )}
+                  </article>
+                )
+              })}
+            </div>
+          </section>
+        )}
+      </main>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
@@ -1728,6 +1646,6 @@ export default function MyInvitationsPage() {
           </Button>
         </Link>
       </div>
-    </div>
+    </>
   )
 }

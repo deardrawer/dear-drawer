@@ -102,7 +102,15 @@ export default function MainLayout({
                 rel="noopener noreferrer"
                 className="text-sm transition-colors tracking-wide text-gray-500 hover:text-black"
               >
-                디어드로어
+                브랜드 홈
+              </a>
+              <a
+                href="https://mkt.shopping.naver.com/link/6ab51c57eeb8b60d4188f0e7"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm transition-colors tracking-wide text-gray-500 hover:text-black"
+              >
+                스마트스토어
               </a>
               <Link
                 href="/post-drawer"
@@ -170,7 +178,16 @@ export default function MainLayout({
                 className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                디어드로어
+                브랜드 홈
+              </a>
+              <a
+                href="https://mkt.shopping.naver.com/link/6ab51c57eeb8b60d4188f0e7"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                스마트스토어
               </a>
               <Link
                 href="/post-drawer"

@@ -297,7 +297,7 @@ const SHOWCASE_ITEMS: {
     badgeColor: 'text-stone-700',
     badgeBg: 'bg-stone-100',
     btnClass: 'bg-stone-800 hover:bg-stone-900',
-    badge: 'New',
+    badge: 'Best',
   },
   {
     id: 'the-classic',
@@ -311,7 +311,7 @@ const SHOWCASE_ITEMS: {
     badgeColor: 'text-stone-700',
     badgeBg: 'bg-stone-100',
     btnClass: 'bg-stone-800 hover:bg-stone-900',
-    badge: 'New',
+    badge: 'Best',
   },
   {
     id: 'parents',
@@ -350,10 +350,10 @@ const SHOWCASE_TABS: { id: ShowcaseFilter; label: string }[] = [
 ]
 // 형식별 소개 화면(selectCategory)으로 이어지는 목록
 const FORMAT_ROWS: { id: Exclude<TemplateCategory, null>; name: string; mood: string; desc: string; list: string }[] = [
-  { id: 'story', name: '스토리형', mood: '깊이 있는 이야기', desc: '우리의 사랑 이야기를 풍부하게 담는 청첩장', list: 'OUR · FAMILY' },
-  { id: 'mini', name: '미니 스토리형', mood: '감각적 디자인', desc: '감각적인 디자인에 이야기를 간결하게 담는 청첩장', list: 'MAGAZINE · MOVIE · RECORD' },
-  { id: 'parents', name: '혼주용', mood: '격식 있는', desc: '부모님이 지인분들께 보내는 격식 있는 청첩장', list: 'PARENTS' },
-  { id: 'the-series', name: 'THE 시리즈', mood: '프리미엄', desc: '우리만의 무드를 담고 싶다면', list: 'THE SIMPLE · THE CLASSIC' },
+  { id: 'story', name: '스토리형', mood: '깊이 있는 이야기', desc: '두 사람의 이야기를 천천히 전하는 청첩장', list: 'OUR · FAMILY' },
+  { id: 'mini', name: '미니 스토리형', mood: '감각적 디자인', desc: '짧지만 감각적으로 우리의 순간을 담는 청첩장', list: 'MAGAZINE · MOVIE · RECORD' },
+  { id: 'parents', name: '혼주용', mood: '격식 있는', desc: '부모님의 마음으로 정중하게 전하는 초대', list: 'PARENTS' },
+  { id: 'the-series', name: 'THE 시리즈', mood: '프리미엄', desc: '덜어낼수록 선명해지는 우리만의 취향', list: 'THE SIMPLE · THE CLASSIC' },
 ]
 const TV_CSS = `
   .tv-main { -webkit-font-smoothing: antialiased; }
@@ -831,7 +831,7 @@ function TemplatesContent() {
             <div className="tv-hero-title">
               <p style={{ margin: 0, fontSize: 12, fontWeight: 500, letterSpacing: '.02em', color: TV.ink3, fontVariantNumeric: 'tabular-nums' }}>Templates — {SHOWCASE_ITEMS.length}</p>
               <h1 style={{ margin: '18px 0 0', fontSize: 'clamp(26px, 3.1vw, 38px)', lineHeight: 1.32, letterSpacing: '-.035em', fontWeight: 300 }}>
-                어떤 이야기로<br /><span style={{ fontWeight: 600 }}>초대할까요?</span>
+                우리의 이야기를,<br /><span style={{ fontWeight: 600 }}>우리의 방식으로.</span>
               </h1>
             </div>
             <div className="tv-hero-side">
@@ -870,6 +870,9 @@ function TemplatesContent() {
                     ) : (
                       <Image src={item.thumbnail} alt={`${item.name} 샘플`} fill sizes="(max-width: 760px) 46vw, (max-width: 1080px) 30vw, 280px" className="object-cover object-top group-hover:animate-scroll-preview" />
                     )}
+                    {item.badge === 'Best' && (
+                      <span style={{ position: 'absolute', top: 10, left: 10, padding: '4px 7px', borderRadius: 2, background: 'rgba(31,28,25,.86)', color: '#FFF9F8', fontSize: 9.5, fontWeight: 600, letterSpacing: '.14em', lineHeight: 1, fontFamily: TV_FONT }}>BEST</span>
+                    )}
                     {!item.comingSoon && (
                       <div className="tv-act" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'rgba(255,250,249,.94)', backdropFilter: 'blur(6px)', borderTop: `1px solid ${TV.line}` }}>
                         <a href={item.sampleUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
@@ -893,7 +896,7 @@ function TemplatesContent() {
           <section className="tv-grid" style={{ marginTop: 'clamp(96px, 12vw, 160px)', rowGap: 24 }}>
             <div className="tv-hero-title">
               <h2 style={{ margin: 0, fontSize: 'clamp(22px, 2.3vw, 28px)', lineHeight: 1.36, letterSpacing: '-.035em', fontWeight: 300 }}>
-                어떤 청첩장을<br /><span style={{ fontWeight: 600 }}>원하세요?</span>
+                어떤 초대를<br /><span style={{ fontWeight: 600 }}>준비하고 있나요?</span>
               </h2>
             </div>
             <div className="tv-hero-side">
@@ -1535,7 +1538,7 @@ function TemplatesContent() {
             </div>
             <div className="sm:flex sm:flex-col sm:justify-between" style={{ flex: 1, minWidth: 0 }}>
               <div>
-                <p style={{ margin: '22px 0 0', fontSize: 12, color: TV.ink3, letterSpacing: '-.01em' }}>{sheet.categoryLabel}</p>
+                <p style={{ margin: '22px 0 0', fontSize: 12, color: TV.ink3, letterSpacing: '-.01em' }}>{sheet.categoryLabel}{sheet.badge === 'Best' && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, letterSpacing: '.14em', color: TV.ink }}>BEST</span>}</p>
                 <h2 style={{ margin: '8px 0 0', fontSize: 22, fontWeight: 600, letterSpacing: '.04em' }}>{sheet.name}</h2>
                 <p style={{ margin: '12px 0 0', fontSize: 14, lineHeight: 1.75, letterSpacing: '-.015em', color: TV.ink2, wordBreak: 'keep-all' }}>{sheet.tagline}</p>
               </div>

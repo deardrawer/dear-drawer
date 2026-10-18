@@ -389,7 +389,16 @@ const PV_CONFIG: Record<string, { intros?: PvOpt[]; colors?: PvColor[]; fonts?: 
 
 // 샘플 청첩장을 휴대폰 화면 크기(390px)로 그린 뒤 상자에 맞게 줄여 보여준다
 const PV_W = 390, PV_H = Math.round(390 * 16 / 9)
-function SamplePreview({ src, title }: { src: string; title: string }) {
+// 샘플 안에서 실제로 스크롤되는 칸(가장 많이 내려간 곳)의 위치
+function frameScroll(frame: HTMLIFrameElement | null): number {
+  try {
+    const doc = frame?.contentDocument; if (!doc) return 0
+    let y = doc.scrollingElement?.scrollTop || 0
+    doc.querySelectorAll<HTMLElement>('*').forEach((el) => { if (el.scrollTop > y) y = el.scrollTop })
+    return y
+  } catch { return 0 }
+}
+function SamplePreview({ src, title, frameRef, restoreY = 0 }: { src: string; title: string; frameRef?: React.MutableRefObject<HTMLIFrameElement | null>; restoreY?: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const [box, setBox] = useState({ w: 0, h: 0 })
   useEffect(() => {
@@ -398,10 +407,32 @@ function SamplePreview({ src, title }: { src: string; title: string }) {
     ro.observe(el); return () => ro.disconnect()
   }, [])
   const k = box.w ? Math.min(box.w / PV_W, box.h / PV_H) : 0
+  // 다시 그린 샘플이 준비되면 가장 긴 스크롤 칸을 보던 위치로 (내용이 늦게 그려질 수 있어 몇 번 더 시도)
+  const onLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
+    if (!restoreY) return
+    const frame = e.currentTarget
+    // 청첩장이 처음 그린 직후 스스로 맨 위로 되돌리기도 해서, 넣은 뒤 3초쯤은 0으로 돌아가면 다시 넣는다
+    let tries = 0, placedAt = 0
+    const tick = () => {
+      try {
+        const doc = frame.contentDocument; if (!doc) return
+        let best: Element | null = doc.scrollingElement, room = best ? best.scrollHeight - best.clientHeight : 0
+        doc.querySelectorAll('*').forEach((el) => { const r = el.scrollHeight - el.clientHeight; if (r > room && /(auto|scroll)/.test(getComputedStyle(el).overflowY)) { best = el; room = r } })
+        if (best && room >= restoreY) {
+          const el = best as Element
+          if (!placedAt) { el.scrollTop = restoreY; placedAt = Date.now() }
+          else if (el.scrollTop < 5) el.scrollTop = restoreY
+          if (Date.now() - placedAt > 3000) return
+        }
+      } catch { return }
+      if (++tries < 60) setTimeout(tick, 150)
+    }
+    tick()
+  }
   return (
     <div ref={ref} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
       {k > 0 && (
-        <iframe key={src} src={src} title={title}
+        <iframe key={src} src={src} title={title} ref={frameRef} onLoad={onLoad}
           style={{ position: 'absolute', left: (box.w - PV_W * k) / 2, top: 0, width: PV_W, height: PV_H, border: 0, transform: `scale(${k})`, transformOrigin: '0 0', background: '#fff' }} />
       )}
     </div>
@@ -421,24 +452,29 @@ function TemplateSheet({ item, onClose, onStart }: { item: (typeof SHOWCASE_ITEM
   const cfg = PV_CONFIG[item.id]
   const [pv, setPv] = useState<{ intro?: string; color?: string; font?: string }>({})
   const [replay, setReplay] = useState(0)
+  // 컬러·폰트만 바꿨을 땐 인트로를 건너뛰고 보던 위치를 이어서 보여준다 (인트로를 고르거나 '처음부터 다시 보기'를 누르면 처음부터)
+  const [keep, setKeep] = useState<{ on: boolean; y: number }>({ on: false, y: 0 })
+  const frameRef = useRef<HTMLIFrameElement | null>(null)
+  const restyle = (patch: { color?: string; font?: string }) => { setKeep({ on: true, y: frameScroll(frameRef.current) }); setPv((p) => ({ ...p, ...patch })) }
   const cur = { ...cfg?.def, ...pv }
   const q = new URLSearchParams()
   if (pv.intro) q.set('intro', pv.intro)
   if (pv.color) q.set('colorTheme', pv.color)
   if (pv.font) q.set('fontStyle', pv.font)
+  if (keep.on) q.set('skipIntro', 'true')
   const src = item.sampleUrl + (q.toString() ? `?${q}` : '')
   const chip = (on: boolean): React.CSSProperties => ({ height: 30, padding: '0 11px', borderRadius: 2, border: `1px solid ${on ? TV.ink : TV.line}`, background: on ? TV.ink : 'transparent', color: on ? '#FFF9F8' : TV.ink, fontSize: 12.5, letterSpacing: '-.01em', cursor: 'pointer', fontFamily: TV_FONT })
   return (
     <div onClick={onClose} className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" style={{ background: 'rgba(31,28,25,.38)', fontFamily: TV_FONT, color: TV.ink }}>
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-h-[94vh] overflow-y-auto rounded-t-[10px] px-5 pt-5 pb-7 sm:rounded-[4px] sm:max-w-[860px] sm:flex sm:gap-10 sm:p-10"
+      <div onClick={(e) => e.stopPropagation()} className="w-full max-h-[94dvh] overflow-y-auto rounded-t-[10px] px-5 pt-5 pb-7 sm:rounded-[4px] sm:max-w-[920px] sm:max-h-[92dvh] sm:flex sm:gap-10 sm:p-10"
         style={{ background: TV.paper, animation: 'tvSheet .4s cubic-bezier(.2,.7,.2,1) both' }}>
         {/* 모바일: 아래 선택지를 눌러도 샘플이 보이도록 위에 붙여 둔다 */}
         <div className="sticky -top-5 z-10 -mx-5 -mt-5 px-5 pt-5 pb-3 sm:static sm:m-0 sm:p-0 sm:flex-shrink-0" style={{ background: TV.paper }}>
-          <div className="relative mx-auto h-[44vh] sm:h-auto sm:w-[320px]" style={{ aspectRatio: '9 / 16', borderRadius: 3, overflow: 'hidden', background: TV.img, outline: `1px solid ${TV.line}`, outlineOffset: -1 }}>
-            <SamplePreview key={replay} src={src} title={`${item.name} 샘플 청첩장`} />
+          <div className="relative mx-auto h-[56dvh] sm:h-auto sm:w-[min(380px,calc((92dvh_-_150px)*9/16))]" style={{ aspectRatio: '9 / 16', borderRadius: 3, overflow: 'hidden', background: TV.img, outline: `1px solid ${TV.line}`, outlineOffset: -1 }}>
+            <SamplePreview key={replay} src={src} title={`${item.name} 샘플 청첩장`} frameRef={frameRef} restoreY={keep.on ? keep.y : 0} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 10 }}>
-            <button type="button" onClick={() => setReplay((n) => n + 1)} style={{ background: 'none', border: 0, padding: 0, fontSize: 12, fontWeight: 500, color: TV.ink2, cursor: 'pointer', fontFamily: TV_FONT, textDecoration: 'underline', textUnderlineOffset: 3 }}>처음부터 다시 보기</button>
+            <button type="button" onClick={() => { setKeep({ on: false, y: 0 }); setReplay((n) => n + 1) }} style={{ background: 'none', border: 0, padding: 0, fontSize: 12, fontWeight: 500, color: TV.ink2, cursor: 'pointer', fontFamily: TV_FONT, textDecoration: 'underline', textUnderlineOffset: 3 }}>처음부터 다시 보기</button>
             <a href={src} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, fontWeight: 500, color: TV.ink2, textDecoration: 'underline', textUnderlineOffset: 3 }}>새 창으로 크게 보기</a>
           </div>
         </div>
@@ -456,20 +492,20 @@ function TemplateSheet({ item, onClose, onStart }: { item: (typeof SHOWCASE_ITEM
                 )}
                 {cfg.intros && (
                   <PvRow label="인트로">
-                    {cfg.intros.map((o) => <button key={o.id} type="button" aria-pressed={cur.intro === o.id} onClick={() => setPv((p) => ({ ...p, intro: o.id }))} style={chip(cur.intro === o.id)}>{o.label}</button>)}
+                    {cfg.intros.map((o) => <button key={o.id} type="button" aria-pressed={cur.intro === o.id} onClick={() => { setKeep({ on: false, y: 0 }); setPv((p) => ({ ...p, intro: o.id })) }} style={chip(cur.intro === o.id)}>{o.label}</button>)}
                   </PvRow>
                 )}
                 {cfg.colors && (
                   <PvRow label="컬러">
                     {cfg.colors.map((o) => (
-                      <button key={o.id} type="button" title={o.label} aria-label={o.label} aria-pressed={cur.color === o.id} onClick={() => setPv((p) => ({ ...p, color: o.id }))}
+                      <button key={o.id} type="button" title={o.label} aria-label={o.label} aria-pressed={cur.color === o.id} onClick={() => restyle({ color: o.id })}
                         style={{ width: 28, height: 28, borderRadius: '50%', background: o.c, cursor: 'pointer', border: '1px solid rgba(31,28,25,.18)', outline: cur.color === o.id ? `1.5px solid ${TV.ink}` : 'none', outlineOffset: 3 }} />
                     ))}
                   </PvRow>
                 )}
                 {cfg.fonts && (
                   <PvRow label="폰트">
-                    {cfg.fonts.map((o) => <button key={o.id} type="button" aria-pressed={cur.font === o.id} onClick={() => setPv((p) => ({ ...p, font: o.id }))} style={chip(cur.font === o.id)}>{o.label}</button>)}
+                    {cfg.fonts.map((o) => <button key={o.id} type="button" aria-pressed={cur.font === o.id} onClick={() => restyle({ font: o.id })} style={chip(cur.font === o.id)}>{o.label}</button>)}
                   </PvRow>
                 )}
               </div>
@@ -1014,11 +1050,9 @@ function TemplatesContent() {
                       <span style={{ position: 'absolute', top: 10, left: 10, padding: '4px 7px', borderRadius: 2, background: 'rgba(31,28,25,.86)', color: '#FFF9F8', fontSize: 9.5, fontWeight: 600, letterSpacing: '.14em', lineHeight: 1, fontFamily: TV_FONT }}>BEST</span>
                     )}
                     {!item.comingSoon && (
-                      <div className="tv-act" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'rgba(255,250,249,.94)', backdropFilter: 'blur(6px)', borderTop: `1px solid ${TV.line}` }}>
-                        <a href={item.sampleUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-                          style={{ padding: '13px 0', textAlign: 'center', fontSize: 12.5, fontWeight: 500, color: TV.ink2, borderRight: `1px solid ${TV.line}` }}>미리보기</a>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); handleTemplateSelect(item.templateId) }}
-                          style={{ padding: '13px 0', background: 'none', border: 0, cursor: 'pointer', fontFamily: TV_FONT, fontSize: 12.5, fontWeight: 600, color: TV.ink }}>시작하기</button>
+                      <div className="tv-act" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, display: 'grid', gridTemplateColumns: '1fr', background: 'rgba(255,250,249,.94)', backdropFilter: 'blur(6px)', borderTop: `1px solid ${TV.line}` }}>
+                        <button type="button" onClick={(e) => { e.stopPropagation(); setSheet(item) }}
+                          style={{ padding: '13px 0', background: 'none', border: 0, cursor: 'pointer', fontFamily: TV_FONT, textAlign: 'center', fontSize: 12.5, fontWeight: 600, color: TV.ink }}>미리보기</button>
                       </div>
                     )}
                   </div>

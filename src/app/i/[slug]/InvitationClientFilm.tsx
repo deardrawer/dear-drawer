@@ -2410,6 +2410,15 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, zoomEnabled = 
     <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center" onClick={() => { if (zoomed) return; onClose() }}>
       <button onClick={onClose} className="absolute top-4 right-4 text-white text-2xl z-10 w-10 h-10 flex items-center justify-center">&times;</button>
       <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm opacity-60">{idx + 1} / {resolved.length}</div>
+      {/* 좌우 화살표 (확대 중엔 숨김 · 사진을 눌러도 다음으로 넘어감) */}
+      {!zoomed && resolved.length > 1 && (
+        <>
+          <button type="button" aria-label="이전 사진" onClick={e => { e.stopPropagation(); setIdx((idx - 1 + resolved.length) % resolved.length) }}
+            className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-11 h-16 flex items-center justify-center text-white/85 hover:text-white" style={{ filter: "drop-shadow(0 1px 4px rgba(0,0,0,.6))" }}><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg></button>
+          <button type="button" aria-label="다음 사진" onClick={e => { e.stopPropagation(); setIdx((idx + 1) % resolved.length) }}
+            className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-11 h-16 flex items-center justify-center text-white/85 hover:text-white" style={{ filter: "drop-shadow(0 1px 4px rgba(0,0,0,.6))" }}><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></button>
+        </>
+      )}
       {resolved[idx] && <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); if (zoomed) return; setIdx((idx + 1) % resolved.length) }}>{zoomEnabled ? <ZoomableImage src={resolved[idx]} alt="" className="film-zoomable-box" onZoomChange={setZoomed} /> : <img src={resolved[idx]} alt="" className="max-w-full max-h-full object-contain" style={{ pointerEvents: 'none', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties} />}</div>}
     </div>
   )

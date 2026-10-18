@@ -2261,6 +2261,15 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, zoomEnabled = 
       <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm opacity-60">
         {currentIndex + 1} / {resolvedImages.length}
       </div>
+      {/* 좌우 화살표 (확대 중엔 숨김 · 사진을 눌러도 다음으로 넘어감) */}
+      {!zoomed && resolvedImages.length > 1 && (
+        <>
+          <button type="button" aria-label="이전 사진" onClick={e => { e.stopPropagation(); setCurrentIndex((currentIndex - 1 + resolvedImages.length) % resolvedImages.length) }}
+            className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-11 h-16 flex items-center justify-center text-white/85 hover:text-white" style={{ filter: "drop-shadow(0 1px 4px rgba(0,0,0,.6))" }}><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg></button>
+          <button type="button" aria-label="다음 사진" onClick={e => { e.stopPropagation(); setCurrentIndex((currentIndex + 1) % resolvedImages.length) }}
+            className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-11 h-16 flex items-center justify-center text-white/85 hover:text-white" style={{ filter: "drop-shadow(0 1px 4px rgba(0,0,0,.6))" }}><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></button>
+        </>
+      )}
       {resolvedImages[currentIndex] && (
         <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); if (!zoomed && resolvedImages.length > 1) setCurrentIndex((currentIndex + 1) % resolvedImages.length) }}>
           {zoomEnabled ? (

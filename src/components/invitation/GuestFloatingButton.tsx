@@ -444,7 +444,9 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
     <>
       {/* === 햄버거 모드 === */}
       {navStyle === 'hamburger' && (
-        <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
+        <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2" style={{ pointerEvents: 'none' }}>
+          {/* 감싸는 영역은 말풍선 폭만큼 넓어서, 터치는 통과시키고 메뉴 버튼만 받는다 (바로 옆 본문 버튼이 안 눌리던 문제)
+              · 템플릿의 .mobile-frame-fixed-ui > * { pointer-events: auto } 를 이기도록 인라인으로 */}
           {/* Speech Bubble Tooltip */}
           <div
             className="transition-all duration-300"
@@ -484,7 +486,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
           <button
             onClick={handleOpenBottomSheet}
             className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95"
-            style={{ background: '#FFFFFF', boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
+            style={{ background: '#FFFFFF', boxShadow: '0 4px 12px rgba(0,0,0,0.12)', pointerEvents: 'auto' }}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#777" strokeWidth={2}>
               <line x1="4" y1="6" x2="20" y2="6" strokeLinecap="round" />

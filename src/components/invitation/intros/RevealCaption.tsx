@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { type IntroData, lines, str } from './shared'
 import FitLine from './FitLine'
+import { whenFontReady } from '@/lib/fontReady'
 
 const SCRIPT = "'Pinyon Script', 'Snell Roundhand', cursive"
 const SERIF = "'Noto Serif KR', 'Nanum Myeongjo', serif"
@@ -111,8 +112,8 @@ export default function RevealCaption({ w, h, opts, data, open, instant }: { w: 
       })
     }
     const go = () => requestAnimationFrame(measure)
-    if (document.fonts?.load) document.fonts.load(`${Math.round(NF)}px '${edFont.family}'`).then(go, go)
-    else go()
+    // 글꼴이 실제로 받아진 뒤 글자 폭을 잰다 (기본 글꼴로 재면 장식 곡선 위치가 어긋난다)
+    whenFontReady(edFont.family).then(go)
     return () => { alive = false }
   }, [mode, w, h, NF, edLines[0], edLines[1], edFont.family]) // eslint-disable-line react-hooks/exhaustive-deps
   const write = (delay: number): React.CSSProperties => ({

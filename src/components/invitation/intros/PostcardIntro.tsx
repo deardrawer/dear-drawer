@@ -5,6 +5,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { type IntroStyleProps, PAPER_TEXTURE, cropOf, lines, photoOf, str } from './shared'
 import IntroPhoto from './IntroPhoto'
+import { whenFontReady } from '@/lib/fontReady'
 import { POSTCARD_DEFAULT_PHOTO } from '@/lib/introStyles'
 
 // 손글씨 (눈누 무료 글꼴): 어른 = 교보 손글씨 2020 박도연, 아이 = 어비 마이센체
@@ -137,7 +138,7 @@ export default function PostcardIntro({ w, opts, data, finished, reduced, signal
     let alive = true
     const go = () => { if (alive) setFontReady(true) }
     const t = setTimeout(go, 1800)
-    document.fonts?.load(`20px '${hand.family}'`, noteKey).then(go, go)
+    whenFontReady(hand.family, noteKey, 1800).then(go)
     return () => { alive = false; clearTimeout(t) }
   }, [flipped, fontReady, hand.family, noteKey])
   const lineMs = (i: number) => Math.max(380, Array.from(rows[i] || '').length * 110)
@@ -171,7 +172,8 @@ export default function PostcardIntro({ w, opts, data, finished, reduced, signal
   const ease = instant ? 'none' : undefined
 
   return (
-    <div className="absolute inset-0 overflow-hidden" style={{ background: '#9BBCCB' }}>
+    <div className="absolute inset-0 overflow-hidden" style={{ background: '#1a1a1a' }}>
+      {/* 바탕색은 사진이 뜨기 전 잠깐 보이는 색 — 인트로 바깥 틀과 같은 짙은 검정 (예전 하늘색은 로딩 중 튀어 보였다) */}
       {/* 배경: 필름 느낌 (부드러운 초점, 빠진 색, 들뜬 검정, 고운 입자) */}
       <IntroPhoto src={bg} crop={cropOf(opts, 'bgPhoto')} className="absolute inset-0"
         style={{ filter: 'blur(1.4px) saturate(.78) contrast(.86) brightness(1.06)', transform: 'scale(1.04)' }} />

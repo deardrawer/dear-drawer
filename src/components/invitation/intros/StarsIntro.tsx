@@ -28,6 +28,8 @@ function textWidth(t: string, font: string) {
 }
 
 export default function StarsIntro({ w: W, h: H, opts, data, finished, reduced, signal, onComplete }: IntroStyleProps) {
+  // 안내 팝업 축소 비율 (375px 보다 좁은 칸에서만)
+  const popK = W > 0 ? Math.min(1, W / 375) : 1
   const bg = str(opts.bg, '#F4D9DE')
   const ink = str(opts.ink, '#7A3B45')
   const soft = isDark(bg) ? 'rgba(255,255,255,.12)' : 'rgba(255,255,255,.72)'
@@ -175,9 +177,10 @@ export default function StarsIntro({ w: W, h: H, opts, data, finished, reduced, 
         )}
       </svg>
 
-      {/* 시작 전 안내 팝업 — 이 하늘이 무엇인지 먼저 알려준다 */}
+      {/* 시작 전 안내 팝업 — 이 하늘이 무엇인지 먼저 알려준다
+          · 휴대폰 화면(375px) 기준으로 그리고, 에디터 미리보기처럼 작은 칸에선 통째로 줄인다 */}
       {open && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 9%' }}>
+        <div style={{ position: 'absolute', left: 0, top: 0, width: W / popK, height: H / popK, transform: `scale(${popK})`, transformOrigin: '0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 9%' }}>
           <div style={{ width: '100%', padding: '28px 22px 26px', borderRadius: 20, background: soft, backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', boxShadow: '0 16px 40px rgba(0,0,0,.08)', border: `1px solid ${ink}1f`, color: ink, textAlign: 'center', animation: 'stPop .9s cubic-bezier(.2,.7,.2,1) .2s both' }}>
             <svg viewBox="0 0 24 24" width="30" height="30" fill={ink} aria-hidden style={{ display: 'block', margin: '0 auto', animation: 'stSpark 4s ease-in-out infinite' }}>
               <path d={COMPASS} />

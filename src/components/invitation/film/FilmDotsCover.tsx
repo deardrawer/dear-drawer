@@ -4,6 +4,7 @@
 // 다 놓이면 화면 아래 문구가 나오며 누르면 넘어간다.
 import { useEffect, useMemo, useRef, useState } from 'react'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
+import { whenFontReady } from '@/lib/fontReady'
 
 function useFontLink(id: string, href: string) {
   useEffect(() => {
@@ -58,18 +59,9 @@ export function FilmDotsCover({ invitation, onEnter, isPreview }: { invitation: 
   const line2 = latin(invitation.filmDotsBrideEn) || latin(invitation.bride?.nameEn) || 'Bride'
   const [fontOk, setFontOk] = useState(false)
   useEffect(() => {
-    // 글꼴 링크(CSS)가 늦게 붙으면 load() 가 바로 끝나버리므로, 실제로 쓸 수 있을 때까지 다시 확인한다 (최대 4초)
-    let alive = true, tries = 0
-    const fam = '"Pinyon Script"'
-    const check = () => {
-      if (!alive) return
-      document.fonts?.load(`100px ${fam}`).then(() => {
-        if (!alive) return
-        if (document.fonts.check(`100px ${fam}`) || ++tries > 20) setFontOk(true)
-        else setTimeout(check, 200)
-      }, () => alive && setFontOk(true))
-    }
-    check()
+    // 필기체가 실제로 받아진 뒤에 수놓기 시작 (예전엔 글꼴 CSS가 붙기 전 check() 가 '준비됨'을 돌려줘 처음 열 때 기본 글꼴로 수놓아졌다)
+    let alive = true
+    whenFontReady('Pinyon Script', 'JihoonSeoyeon&', 6000).then(() => { if (alive) setFontOk(true) })
     return () => { alive = false }
   }, [])
 

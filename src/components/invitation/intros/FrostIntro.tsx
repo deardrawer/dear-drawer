@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { type IntroStyleProps, cropOf, lines, photoOf } from './shared'
 import IntroPhoto from './IntroPhoto'
 import RevealCaption from './RevealCaption'
+import { whenFontReady } from '@/lib/fontReady'
 
 const COLS = 12, ROWS = 20, CLEAR_RATIO = 0.3
 // 샘플과 같은 손글씨 글꼴
@@ -122,8 +123,8 @@ export default function FrostIntro({ w, h, opts, data, finished, reduced, signal
       if (cancelled) return
       paintFog(img)
       const go = () => { if (!cancelled) timers.push(window.setTimeout(writeNames, 500)) }
-      if (document.fonts?.load) document.fonts.load(`40px ${GLASS_FONT}`).then(go, go)
-      else go()
+      // 유리에 쓰는 필기체가 실제로 받아진 뒤 쓰기 시작 (처음 열 때 기본 글꼴로 써지던 문제)
+      whenFontReady(GLASS_FONT).then(go)
       timers.push(window.setTimeout(() => setHint(true), 3400))
     }
     if (photo) {

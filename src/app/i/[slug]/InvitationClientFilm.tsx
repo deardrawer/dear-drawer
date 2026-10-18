@@ -559,7 +559,7 @@ function ChapterOne({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
               return (
                 <div key={`n-${i}`} className="film-text-reveal" style={{ overflow: 'hidden', textAlign: 'center' }}>
                   <p style={{
-                    fontFamily: fonts.body, fontSize: '13px', lineHeight: 2.2,
+                    fontFamily: fonts.body, fontSize: '13px', lineHeight: 1.8,
                     color: tc.text,
                     fontWeight: 400, marginBottom: '2px',
                     opacity: isVisible ? 1 : 0,
@@ -578,7 +578,7 @@ function ChapterOne({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
                   return (
                     <div key={`d-${i}`} className="film-text-reveal" style={{ overflow: 'hidden', textAlign: 'center' }}>
                       <p style={{
-                        fontFamily: fonts.displayKr, fontSize: '15px', lineHeight: 2.2,
+                        fontFamily: fonts.displayKr, fontSize: '15px', lineHeight: 1.8,
                         color: tc.accent, fontStyle: 'italic', fontWeight: 400, marginBottom: '2px',
                         opacity: isVisible ? 1 : 0,
                         filter: isVisible ? 'blur(0)' : 'blur(6px)',
@@ -601,7 +601,7 @@ function ChapterOne({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
                 <p style={{
                   fontFamily: dialogue ? fonts.displayKr : fonts.body,
                   fontSize: dialogue ? '15px' : '13px',
-                  lineHeight: 2.2,
+                  lineHeight: 1.8,
                   color: dialogue ? tc.accent : (i < 3 ? tc.text : tc.gray),
                   fontStyle: dialogue ? 'italic' : 'normal',
                   fontWeight: 400, marginBottom: '2px',
@@ -625,7 +625,7 @@ function ChapterOne({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
           transition: `all 1.2s ease ${0.5 + totalLineCount * 0.15 + 0.3}s`,
         }}>
           <div style={{ width: '1px', height: '24px', background: tc.accent, margin: '0 auto 16px', opacity: 0.5 }} />
-          <p style={{ fontFamily: fonts.displayKr, fontSize: '11px', fontStyle: 'italic', lineHeight: 2, color: tc.accent, opacity: 0.7, whiteSpace: 'pre-line' }}>
+          <p style={{ fontFamily: fonts.displayKr, fontSize: '11px', fontStyle: 'italic', lineHeight: 1.7, color: tc.accent, opacity: 0.7, whiteSpace: 'pre-line' }}>
             {invitation.content.quote.text}
           </p>
           {invitation.content.quote.author && (
@@ -808,7 +808,7 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
           {text.split('\n').map((line: string, i: number) =>
             line.trim().length === 0
               ? <div key={i} style={{ height: '12px' }} />
-              : <p key={i} style={{ fontFamily: fonts.body, fontSize: '13px', lineHeight: 1.8, color: cg, marginBottom: '4px' }}>{line}</p>
+              : <p key={i} style={{ fontFamily: fonts.body, fontSize: '13px', lineHeight: 1.6, color: cg, marginBottom: '2px' }}>{line}</p>
           )}
         </div>
       )
@@ -824,7 +824,7 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
           {text.split('\n').map((line: string, i: number) =>
             line.trim().length === 0
               ? <div key={i} style={{ height: '12px' }} />
-              : <p key={i} style={{ fontFamily: fonts.body, fontSize: '14px', lineHeight: 1.8, color: ct }}>{line}</p>
+              : <p key={i} style={{ fontFamily: fonts.body, fontSize: '14px', lineHeight: 1.6, color: ct }}>{line}</p>
           )}
         </div>
       )
@@ -840,7 +840,7 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
           {text.split('\n').map((line: string, i: number) =>
             line.trim().length === 0
               ? <div key={i} style={{ height: '12px' }} />
-              : <p key={i} style={{ fontFamily: fonts.body, fontSize: '14px', lineHeight: 1.8, color: ct }}>{line}</p>
+              : <p key={i} style={{ fontFamily: fonts.body, fontSize: '14px', lineHeight: 1.6, color: ct }}>{line}</p>
           )}
         </div>
       )
@@ -874,7 +874,7 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
               if (i === firstNonEmpty) displayLine = `\u201C${displayLine}`
               if (i === lastNonEmpty) displayLine = `${displayLine}\u201D`
             }
-            return <span key={i} style={{ fontFamily: fonts.body, fontSize: '12px', fontWeight: 300, lineHeight: 1.8, color: ct, letterSpacing: '0.3px' }}>{displayLine}<br /></span>
+            return <span key={i} style={{ fontFamily: fonts.body, fontSize: '12px', fontWeight: 300, lineHeight: 1.6, color: ct, letterSpacing: '0.3px' }}>{displayLine}<br /></span>
           })
         })()}
       </div>
@@ -917,7 +917,7 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
                     {text.split('\n').map((line: string, li: number) =>
                       line.trim().length === 0
                         ? <div key={li} style={{ height: '8px' }} />
-                        : <p key={li} style={{ fontFamily: fonts.body, fontSize: '12px', fontWeight: 300, lineHeight: 1.8, color: cg, letterSpacing: '0.3px' }}>{line}</p>
+                        : <p key={li} style={{ fontFamily: fonts.body, fontSize: '12px', fontWeight: 300, lineHeight: 1.6, color: cg, letterSpacing: '0.3px' }}>{line}</p>
                     )}
                   </div>
                 )
@@ -931,7 +931,7 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
               {linesParsed.filter((line: string) => !(line.startsWith('"') || line.startsWith('\u201C') || line.startsWith("'"))).length > 0 && (
                 <div style={{ marginBottom: '8px' }}>
                   {linesParsed.filter((line: string) => !(line.startsWith('"') || line.startsWith('\u201C') || line.startsWith("'"))).map((line: string, i: number) => (
-                    <p key={`action-${i}`} style={{ fontFamily: fonts.body, fontSize: '12px', fontWeight: 300, lineHeight: 1.8, color: cg, letterSpacing: '0.3px' }}>{line}</p>
+                    <p key={`action-${i}`} style={{ fontFamily: fonts.body, fontSize: '12px', fontWeight: 300, lineHeight: 1.6, color: cg, letterSpacing: '0.3px' }}>{line}</p>
                   ))}
                 </div>
               )}
@@ -1304,7 +1304,7 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
               <div className="text-center" style={{ flex: 1 }}>
                 {invitation.sectionVisibility?.parentNames !== false && (groom.father?.name || groom.mother?.name) && (
                   <>
-                    <p style={{ fontFamily: fonts.body, fontSize: '11px', color: cg, lineHeight: 1.8 }}>
+                    <p style={{ fontFamily: fonts.body, fontSize: '11px', color: cg, lineHeight: 1.6 }}>
                       {groom.father?.name && <>{(groom.father as any)?.deceased ? (invitation.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{groom.father.name} &middot; </>}
                       {groom.mother?.name && <>{(groom.mother as any)?.deceased ? (invitation.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{groom.mother.name}</>}
                     </p>
@@ -1321,7 +1321,7 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
               <div className="text-center" style={{ flex: 1 }}>
                 {invitation.sectionVisibility?.parentNames !== false && (bride.father?.name || bride.mother?.name) && (
                   <>
-                    <p style={{ fontFamily: fonts.body, fontSize: '11px', color: cg, lineHeight: 1.8 }}>
+                    <p style={{ fontFamily: fonts.body, fontSize: '11px', color: cg, lineHeight: 1.6 }}>
                       {bride.father?.name && <>{(bride.father as any)?.deceased ? (invitation.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{bride.father.name} &middot; </>}
                       {bride.mother?.name && <>{(bride.mother as any)?.deceased ? (invitation.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{bride.mother.name}</>}
                     </p>
@@ -1444,31 +1444,31 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
             {w.directions.car && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
                 <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>By Car</div>
-                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.car}</p>
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.6, color: cg, whiteSpace: 'pre-line' }}>{w.directions.car}</p>
               </div>
             )}
             {w.directions.publicTransport && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
                 <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Public Transit</div>
-                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.publicTransport}</p>
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.6, color: cg, whiteSpace: 'pre-line' }}>{w.directions.publicTransport}</p>
               </div>
             )}
             {w.directions.train && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
                 <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Train</div>
-                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{typeof w.directions.train === 'string' ? w.directions.train : ''}</p>
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.6, color: cg, whiteSpace: 'pre-line' }}>{typeof w.directions.train === 'string' ? w.directions.train : ''}</p>
               </div>
             )}
             {w.directions.expressBus && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
                 <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Express Bus</div>
-                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{typeof w.directions.expressBus === 'string' ? w.directions.expressBus : ''}</p>
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.6, color: cg, whiteSpace: 'pre-line' }}>{typeof w.directions.expressBus === 'string' ? w.directions.expressBus : ''}</p>
               </div>
             )}
             {w.directions.extraInfoEnabled && w.directions.extraInfoText && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
                 <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>{(w.directions.extraInfoTitle || 'Info').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}</div>
-                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.extraInfoText}</p>
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.6, color: cg, whiteSpace: 'pre-line' }}>{w.directions.extraInfoText}</p>
               </div>
             )}
           </div>
@@ -1690,7 +1690,7 @@ function GuidanceSection({ invitation, fonts, tc, bgOverride }: { invitation: an
                   <div style={{ fontFamily: fonts.body, fontSize: '10px', fontWeight: 500, letterSpacing: '3px', color: tc.accent, marginBottom: '10px', textTransform: 'uppercase' as const }}>
                     {item.title?.toUpperCase()}
                   </div>
-                  <p style={{ fontFamily: fonts.body, fontSize: '12px', fontWeight: 300, lineHeight: 1.8, color: isDark ? tc.text : (tc.cardGray || tc.gray), whiteSpace: 'pre-line', letterSpacing: '0.3px' }}>{item.content}</p>
+                  <p style={{ fontFamily: fonts.body, fontSize: '12px', fontWeight: 300, lineHeight: 1.6, color: isDark ? tc.text : (tc.cardGray || tc.gray), whiteSpace: 'pre-line', letterSpacing: '0.3px' }}>{item.content}</p>
                   {item.buttonText && item.url && (
                     <a
                       href={item.url}
@@ -1770,7 +1770,7 @@ function CreditsSection({ invitation, fonts, tc, bgOverride }: { invitation: any
                     fontSize: isRole ? '9px' : '14px',
                     fontStyle: isRole ? undefined : 'italic',
                     letterSpacing: isRole ? '6px' : '1px',
-                    lineHeight: isRole ? 3.5 : 2,
+                    lineHeight: isRole ? 2.8 : 1.7,
                     color: isRole ? tc.accent : tc.text,
                   }}>{line}</p>
                 )
@@ -1954,7 +1954,7 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOver
         ))}
       </div>
       {invitation.content?.guestbookShowQuestion !== false && msg.question && <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginBottom: '6px', opacity: 0.7 }}>Q. {msg.question}</p>}
-      <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: isDark ? tc.text : (tc.cardText || tc.text), marginBottom: '8px', whiteSpace: 'pre-line' }}>{msg.message}</p>
+      <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.6, color: isDark ? tc.text : (tc.cardText || tc.text), marginBottom: '8px', whiteSpace: 'pre-line' }}>{msg.message}</p>
       <div className="flex items-center justify-between">
         <span style={{ fontFamily: fonts.body, fontSize: '11px', fontWeight: 500, color: tc.gray }}>&mdash; {msg.guest_name}</span>
         <span style={{ fontFamily: fonts.display, fontSize: dfs(10), color: tc.gray, opacity: 0.5 }}>{msg.created_at ? new Date(msg.created_at).toLocaleDateString() : ''}</span>
@@ -1974,7 +1974,7 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOver
       </div>
       <div className="text-center mb-6">
         <p key={qIdx} className={`gb-question-highlight ${isVisible ? 'highlight-visible' : ''}`}
-          style={{ fontFamily: fonts.displayKr, fontSize: '14px', fontWeight: 400, lineHeight: 1.7, color: tc.text }}>{currentQ}</p>
+          style={{ fontFamily: fonts.displayKr, fontSize: '14px', fontWeight: 400, lineHeight: 1.6, color: tc.text }}>{currentQ}</p>
         {questions.length > 1 && (
           <button onClick={() => setQIdx((qIdx + 1) % questions.length)}
             style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, background: 'none', border: 'none', cursor: 'pointer', marginTop: '12px', display: 'block', width: '100%' }}>
@@ -2040,7 +2040,7 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOver
           {(showAllMessages ? messages : messages.slice(0, 5)).map((msg: any, i: number) => (
             <div key={msg.id || i} style={{ padding: '14px', border: `1px solid ${cdiv}`, background: tc.cardBg }}>
               {invitation.content?.guestbookShowQuestion !== false && msg.question && <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.cardGray || tc.gray, marginBottom: '6px', opacity: 0.6 }}>Q. {msg.question}</p>}
-              <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.cardText || tc.text, marginBottom: '8px', whiteSpace: 'pre-line' }}>{msg.message}</p>
+              <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.6, color: tc.cardText || tc.text, marginBottom: '8px', whiteSpace: 'pre-line' }}>{msg.message}</p>
               <div className="flex items-center justify-between">
                 <span style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.cardGray || tc.gray }}>&mdash; {msg.guest_name}</span>
                 <span style={{ fontFamily: fonts.display, fontSize: dfs(9), color: tc.cardGray || tc.gray, opacity: 0.4 }}>{msg.created_at ? new Date(msg.created_at).toLocaleDateString() : ''}</span>

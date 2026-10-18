@@ -186,9 +186,9 @@ export function FilmDotsCover({ invitation, onEnter, isPreview }: { invitation: 
 
   return (
     <div ref={ref} className="relative w-full select-none" style={{ height: coverHeight(isPreview), overflow: 'hidden', background: '#2a2520', cursor: 'pointer' }} onClick={() => { if (done) onEnter() }}>
-      {/* 사진은 크게 흐려서 천처럼 차분하게 — 실 땀이 또렷이 보이도록 (가장자리 번짐은 밖으로 밀어낸다) */}
+      {/* 사진은 흐리지 않고 또렷하게 — 살짝만 어둡게 해 흰 실 땀이 묻히지 않게 한다 */}
       {photo && (
-        <div style={{ position: 'absolute', inset: -6, filter: 'blur(1.5px) saturate(1.05) brightness(.92)' }}>
+        <div style={{ position: 'absolute', inset: 0, filter: 'saturate(1.05) brightness(.92)' }}>
           <CroppedImageDiv src={photo} crop={crop} className="absolute inset-0" style={crop.cropWidth ? undefined : { backgroundSize: 'cover', backgroundPosition: 'center' }} />
         </div>
       )}

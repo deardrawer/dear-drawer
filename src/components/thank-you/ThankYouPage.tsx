@@ -15,7 +15,7 @@ import { SAMPLE_DATA } from "./types";
 
 /* ───────── font mapping ───────── */
 
-export type ThankYouFontStyle = "classic" | "modern" | "romantic" | "contemporary" | "luxury" | "gulim" | "adulthand" | "neathand" | "roundhand" | "roundgothic" | "suit" | "myungjo";
+export type ThankYouFontStyle = "classic" | "modern" | "romantic" | "contemporary" | "luxury" | "gulim" | "adulthand" | "neathand" | "roundhand" | "roundgothic" | "suit" | "myungjo" | "dandi";
 
 const FONT_MAP: Record<ThankYouFontStyle, { korean: string; english: string }> = {
   classic: {
@@ -64,6 +64,10 @@ const FONT_MAP: Record<ThankYouFontStyle, { korean: string; english: string }> =
   },
   myungjo: {
     korean: "'ChosunIlboMyungjo', serif",
+    english: "var(--font-montserrat), sans-serif",
+  },
+  dandi: {
+    korean: "'BusanDandiMyeongjo', serif",
     english: "var(--font-montserrat), sans-serif",
   },
 };

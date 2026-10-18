@@ -167,6 +167,7 @@ export default function FeedStep1BasicInfo({
             { id: 'roundgothic', name: '둥근고딕', sample: '우리 결혼합니다', fontFamily: "'NanumSquareRound', sans-serif", desc: '나눔스퀘어라운드' },
             { id: 'suit', name: 'SUIT', sample: '우리 결혼합니다', fontFamily: "'Suit', sans-serif", desc: 'SUIT' },
             { id: 'myungjo', name: '명조', sample: '우리 결혼합니다', fontFamily: "'ChosunIlboMyungjo', serif", desc: '조선일보명조체' },
+            { id: 'dandi', name: '감성 명조', sample: '우리 결혼합니다', fontFamily: "'BusanDandiMyeongjo', serif", desc: '부산단디명조' },
           ] as const).map((font) => {
             const isSelected = (data.fontStyle || 'modern') === font.id
             return (

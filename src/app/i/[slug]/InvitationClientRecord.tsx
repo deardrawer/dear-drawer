@@ -101,7 +101,7 @@ const colorThemes: Record<ColorTheme, ColorConfig> = {
   'custom': { primary: '#C41050', secondary: '#C41050', accent: '#C41050', background: '#FFFFFF', sectionBg: '#D5D8DC', cardBg: '#FFFFFF', divider: '#E0E0E0', text: '#3d3d3d', gray: '#555555' },
 }
 
-type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
+type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo' | 'dandi'
 interface FontConfig { display: string; displayKr: string; body: string; scale?: number; isScript?: boolean }
 
 const fontStyles: Record<FontStyle, FontConfig> = {
@@ -117,6 +117,7 @@ const fontStyles: Record<FontStyle, FontConfig> = {
   roundgothic: { display: "'Montserrat', sans-serif", displayKr: "'NanumSquareRound', sans-serif", body: "'NanumSquareRound', sans-serif" },
   suit: { display: "'Montserrat', sans-serif", displayKr: "'Suit', sans-serif", body: "'Suit', sans-serif" },
   myungjo: { display: "'Montserrat', sans-serif", displayKr: "'ChosunIlboMyungjo', serif", body: "'ChosunIlboMyungjo', serif" },
+  dandi: { display: "'Montserrat', sans-serif", displayKr: "'BusanDandiMyeongjo', serif", body: "'BusanDandiMyeongjo', serif" },
 }
 
 interface GuestInfo { id: string; name: string; relation: string | null; honorific: string; customMessage: string | null }

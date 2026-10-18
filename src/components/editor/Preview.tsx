@@ -55,7 +55,7 @@ function getAccentTint(hex: string, whiteMix: number): string {
   return `#${tr.toString(16).padStart(2, '0')}${tg.toString(16).padStart(2, '0')}${tb.toString(16).padStart(2, '0')}`
 }
 
-type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
+type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo' | 'dandi'
 interface FontConfig { display: string; displayKr: string; body: string }
 
 const fontStyles: Record<FontStyle, FontConfig> = {
@@ -71,6 +71,7 @@ const fontStyles: Record<FontStyle, FontConfig> = {
   roundgothic: { display: "'Montserrat', sans-serif", displayKr: "'NanumSquareRound', sans-serif", body: "'NanumSquareRound', sans-serif" },
   suit: { display: "'Montserrat', sans-serif", displayKr: "'Suit', sans-serif", body: "'Suit', sans-serif" },
   myungjo: { display: "'Montserrat', sans-serif", displayKr: "'ChosunIlboMyungjo', serif", body: "'ChosunIlboMyungjo', serif" },
+  dandi: { display: "'Montserrat', sans-serif", displayKr: "'BusanDandiMyeongjo', serif", body: "'BusanDandiMyeongjo', serif" },
 }
 
 // Record Preview Wrapper - Zustand data → InvitationClientRecord props

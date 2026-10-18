@@ -161,7 +161,7 @@ export interface EssayInvitationData {
   deceasedDisplayStyle: 'hidden' | 'flower' | 'text'
 
   // Design
-  fontStyle: 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
+  fontStyle: 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo' | 'dandi'
   fontSizeLevel: number // -2 ~ +2 (0=기본)
   lineHeightLevel: number // -2 ~ +2 (0=기본)
   colorTheme: 'essay-ivory' | 'essay-blush' | 'essay-sage' | 'essay-mono' | 'essay-sky' | 'essay-coral' | 'essay-custom'

@@ -25,6 +25,7 @@ const FONT_STYLE_OPTIONS: { id: ThankYouFontStyle; name: string; fontFamily: str
   { id: 'roundgothic', name: '나눔스퀘어라운드', fontFamily: "'NanumSquareRound', sans-serif", sample: '감사합니다' },
   { id: 'suit', name: 'SUIT', fontFamily: "'Suit', sans-serif", sample: '감사합니다' },
   { id: 'myungjo', name: '조선일보명조체', fontFamily: "'ChosunIlboMyungjo', serif", sample: '감사합니다' },
+  { id: 'dandi', name: '부산단디명조', fontFamily: "'BusanDandiMyeongjo', serif", sample: '감사합니다' },
 ]
 
 const SEAL_PRESETS = [

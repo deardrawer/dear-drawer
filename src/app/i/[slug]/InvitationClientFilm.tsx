@@ -67,7 +67,7 @@ function getAccentTint(hex: string, whiteMix: number): string {
 }
 
 
-type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo' | 'film'
+type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo' | 'dandi' | 'film'
 interface FontConfig { display: string; displayKr: string; body: string; scale?: number; ds?: number }
 
 const fontStyles: Record<FontStyle, FontConfig> = {
@@ -83,6 +83,7 @@ const fontStyles: Record<FontStyle, FontConfig> = {
   roundgothic: { display: "'Montserrat', sans-serif", displayKr: "'NanumSquareRound', sans-serif", body: "'NanumSquareRound', sans-serif" },
   suit: { display: "'Montserrat', sans-serif", displayKr: "'Suit', sans-serif", body: "'Suit', sans-serif" },
   myungjo: { display: "'Montserrat', sans-serif", displayKr: "'ChosunIlboMyungjo', serif", body: "'ChosunIlboMyungjo', serif" },
+  dandi: { display: "'Montserrat', sans-serif", displayKr: "'BusanDandiMyeongjo', serif", body: "'BusanDandiMyeongjo', serif" },
   film: { display: "'Playfair Display', serif", displayKr: "'Inter', sans-serif", body: "'Inter', sans-serif" },
 }
 

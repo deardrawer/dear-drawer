@@ -11,7 +11,7 @@ export interface ImageCropData {
 }
 
 // 폰트 스타일 타입 (한글 중심)
-export type FontStyleId = 'elegant' | 'soft' | 'classic' | 'brush' | 'modern' | 'friendly' | 'ridibatang' | 'gangwon' | 'okticon' | 'pretendard' | 'contemporary' | 'luxury' | 'gulim' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
+export type FontStyleId = 'elegant' | 'soft' | 'classic' | 'brush' | 'modern' | 'friendly' | 'ridibatang' | 'gangwon' | 'okticon' | 'pretendard' | 'contemporary' | 'luxury' | 'gulim' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo' | 'dandi'
 
 // 폰트 스타일 정의
 export interface FontStyle {
@@ -149,6 +149,13 @@ export const FONT_STYLES: Record<FontStyleId, FontStyle> = {
     fontName: '조선일보명조체',
     className: 'font-parents-myungjo',
     cssVariable: "'ChosunIlboMyungjo', serif",
+  },
+  dandi: {
+    id: 'dandi',
+    name: '감성 명조',
+    fontName: '부산단디명조',
+    className: 'font-parents-dandi',
+    cssVariable: "'BusanDandiMyeongjo', serif",
   },
 }
 

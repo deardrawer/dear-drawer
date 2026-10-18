@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo, Suspense } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -345,6 +345,146 @@ const SHOWCASE_ITEMS: {
 // 산세리프(한글 Pretendard · 영문 Inter)만, 굵기·크기·자간·행간으로 위계. 사진 중심 그리드, 둥근 모서리·그림자 최소, 장식 없음.
 const TV = { ink: '#1F1C19', ink2: '#5E5751', ink3: '#9A908C', line: 'rgba(31,28,25,.11)', paper: '#FFFAF9', img: '#F0E5E3' }
 const TV_FONT = "'Inter', 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif"
+
+// ===== 템플릿 시트: 샘플 청첩장을 직접 바꿔 보는 미리보기 =====
+// 샘플 주소가 받는 값: ?intro= (샘플 전용) · ?colorTheme= · ?fontStyle=
+type PvOpt = { id: string; label: string }
+type PvColor = { id: string; label: string; c: string }
+const PV_FONTS: PvOpt[] = [
+  { id: 'modern', label: '모던' }, { id: 'myungjo', label: '명조' }, { id: 'dandi', label: '감성 명조' }, { id: 'classic', label: '클래식' },
+  { id: 'luxury', label: '포멀' }, { id: 'contemporary', label: '컨템포러리' }, { id: 'suit', label: 'SUIT' }, { id: 'roundgothic', label: '둥근고딕' },
+  { id: 'gulim', label: '굴림' }, { id: 'romantic', label: '손글씨' }, { id: 'neathand', label: '또박또박' }, { id: 'roundhand', label: '둥근손글씨' }, { id: 'adulthand', label: '어른손글씨' },
+]
+const PV_BASIC_COLORS: PvColor[] = [
+  { id: 'classic-rose', label: '클래식 로즈', c: '#C41050' }, { id: 'modern-black', label: '모던 블랙', c: '#1A1A1A' }, { id: 'romantic-blush', label: '로맨틱 블러시', c: '#D4A5A5' },
+  { id: 'nature-green', label: '네이처 그린', c: '#6B8E6B' }, { id: 'luxury-navy', label: '럭셔리 네이비', c: '#1E3A5F' }, { id: 'sunset-coral', label: '선셋 코럴', c: '#E8846B' },
+]
+const PV_OUR_INTROS: PvOpt[] = [
+  { id: 'cinematic', label: '시네마틱' }, { id: 'blur', label: '포커스' }, { id: 'vellum', label: '트레이싱지' }, { id: 'envelope', label: '포스터 봉투' },
+  { id: 'postcard', label: '엽서' }, { id: 'pieces', label: '두 장의 사진' }, { id: 'stars', label: '별자리 문장' }, { id: 'typed', label: '타자 오프닝' },
+  { id: 'frost', label: '불투명 유리' }, { id: 'labels', label: '라벨 문구' }, { id: 'tiles', label: '글자 타일' }, { id: 'grid', label: '그리드 포스터' },
+]
+const PV_CONFIG: Record<string, { intros?: PvOpt[]; colors?: PvColor[]; fonts?: PvOpt[]; note?: string; def: { intro?: string; color?: string; font?: string } }> = {
+  our: { intros: PV_OUR_INTROS, colors: PV_BASIC_COLORS, fonts: PV_FONTS, def: { intro: 'cinematic', color: 'classic-rose', font: 'modern' } },
+  family: { intros: PV_OUR_INTROS, colors: PV_BASIC_COLORS, fonts: PV_FONTS, def: { intro: 'cinematic', color: 'classic-rose', font: 'contemporary' } },
+  magazine: { intros: [{ id: 'cover', label: '커버' }, { id: 'clean', label: '미니멀' }, { id: 'editorial', label: '에디토리얼' }], colors: PV_BASIC_COLORS, fonts: PV_FONTS, def: { intro: 'cover', color: 'modern-black', font: 'modern' } },
+  movie: {
+    intros: [{ id: 'frame', label: '프레임' }, { id: 'booth', label: '포토부스' }, { id: 'dots', label: '도트 자수' }, { id: 'ott', label: 'OTT' }, { id: 'ticket', label: '티켓' }],
+    colors: [{ id: 'film-light', label: '라이트', c: '#FFFFFF' }, { id: 'film-dark', label: '다크', c: '#1C1C1E' }],
+    fonts: PV_FONTS, def: { intro: 'frame', color: 'film-light', font: 'suit' },
+  },
+  feed: { fonts: PV_FONTS, def: { font: 'modern' } },
+  // THE 시리즈는 샘플이 한 가지 구성이라, 만들 때 고를 수 있는 것을 글로 안내한다
+  'the-simple': { note: '만들 때 다양한 폰트와 섹션을 골라 우리만의 구성으로 완성할 수 있어요. 필요한 섹션만 켜고 순서를 바꿔 보세요.', def: {} },
+  'the-classic': { note: '만들 때 다양한 폰트와 섹션을 골라 우리만의 구성으로 완성할 수 있어요. 필요한 섹션만 켜고 순서를 바꿔 보세요.', def: {} },
+  record: {
+    intros: [{ id: 'cd', label: 'CD PLAYER' }, { id: 'days', label: '함께한 날' }, { id: 'lp', label: 'LP 커버' }],
+    colors: [
+      { id: 'record-coral', label: '코랄', c: '#D4766A' }, { id: 'record-rose', label: '솜사탕', c: '#D4848C' }, { id: 'record-peach', label: '스카이', c: '#8BAEBF' },
+      { id: 'record-bw', label: '모노', c: '#1A1A1A' }, { id: 'record-lilac', label: '진주', c: '#B8B0B8' }, { id: 'record-mint', label: '포레스트', c: '#9CAF88' },
+    ],
+    fonts: PV_FONTS, def: { intro: 'cd', color: 'record-coral', font: 'modern' },
+  },
+}
+
+// 샘플 청첩장을 휴대폰 화면 크기(390px)로 그린 뒤 상자에 맞게 줄여 보여준다
+const PV_W = 390, PV_H = Math.round(390 * 16 / 9)
+function SamplePreview({ src, title }: { src: string; title: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [box, setBox] = useState({ w: 0, h: 0 })
+  useEffect(() => {
+    const el = ref.current; if (!el) return
+    const ro = new ResizeObserver(([e]) => setBox({ w: e.contentRect.width, h: e.contentRect.height }))
+    ro.observe(el); return () => ro.disconnect()
+  }, [])
+  const k = box.w ? Math.min(box.w / PV_W, box.h / PV_H) : 0
+  return (
+    <div ref={ref} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+      {k > 0 && (
+        <iframe key={src} src={src} title={title}
+          style={{ position: 'absolute', left: (box.w - PV_W * k) / 2, top: 0, width: PV_W, height: PV_H, border: 0, transform: `scale(${k})`, transformOrigin: '0 0', background: '#fff' }} />
+      )}
+    </div>
+  )
+}
+
+function PvRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p style={{ margin: '0 0 8px', fontSize: 11.5, fontWeight: 600, letterSpacing: '.02em', color: TV.ink2 }}>{label}</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>{children}</div>
+    </div>
+  )
+}
+
+function TemplateSheet({ item, onClose, onStart }: { item: (typeof SHOWCASE_ITEMS)[number]; onClose: () => void; onStart: (templateId: string) => void }) {
+  const cfg = PV_CONFIG[item.id]
+  const [pv, setPv] = useState<{ intro?: string; color?: string; font?: string }>({})
+  const [replay, setReplay] = useState(0)
+  const cur = { ...cfg?.def, ...pv }
+  const q = new URLSearchParams()
+  if (pv.intro) q.set('intro', pv.intro)
+  if (pv.color) q.set('colorTheme', pv.color)
+  if (pv.font) q.set('fontStyle', pv.font)
+  const src = item.sampleUrl + (q.toString() ? `?${q}` : '')
+  const chip = (on: boolean): React.CSSProperties => ({ height: 30, padding: '0 11px', borderRadius: 2, border: `1px solid ${on ? TV.ink : TV.line}`, background: on ? TV.ink : 'transparent', color: on ? '#FFF9F8' : TV.ink, fontSize: 12.5, letterSpacing: '-.01em', cursor: 'pointer', fontFamily: TV_FONT })
+  return (
+    <div onClick={onClose} className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" style={{ background: 'rgba(31,28,25,.38)', fontFamily: TV_FONT, color: TV.ink }}>
+      <div onClick={(e) => e.stopPropagation()} className="w-full max-h-[94vh] overflow-y-auto rounded-t-[10px] px-5 pt-5 pb-7 sm:rounded-[4px] sm:max-w-[860px] sm:flex sm:gap-10 sm:p-10"
+        style={{ background: TV.paper, animation: 'tvSheet .4s cubic-bezier(.2,.7,.2,1) both' }}>
+        {/* 모바일: 아래 선택지를 눌러도 샘플이 보이도록 위에 붙여 둔다 */}
+        <div className="sticky -top-5 z-10 -mx-5 -mt-5 px-5 pt-5 pb-3 sm:static sm:m-0 sm:p-0 sm:flex-shrink-0" style={{ background: TV.paper }}>
+          <div className="relative mx-auto h-[44vh] sm:h-auto sm:w-[320px]" style={{ aspectRatio: '9 / 16', borderRadius: 3, overflow: 'hidden', background: TV.img, outline: `1px solid ${TV.line}`, outlineOffset: -1 }}>
+            <SamplePreview key={replay} src={src} title={`${item.name} 샘플 청첩장`} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 10 }}>
+            <button type="button" onClick={() => setReplay((n) => n + 1)} style={{ background: 'none', border: 0, padding: 0, fontSize: 12, fontWeight: 500, color: TV.ink2, cursor: 'pointer', fontFamily: TV_FONT, textDecoration: 'underline', textUnderlineOffset: 3 }}>처음부터 다시 보기</button>
+            <a href={src} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, fontWeight: 500, color: TV.ink2, textDecoration: 'underline', textUnderlineOffset: 3 }}>새 창으로 크게 보기</a>
+          </div>
+        </div>
+        <div className="sm:flex sm:flex-col sm:justify-between" style={{ flex: 1, minWidth: 0 }}>
+          <div>
+            <p style={{ margin: '22px 0 0', fontSize: 12, color: TV.ink3, letterSpacing: '-.01em' }}>{item.categoryLabel}{item.badge === 'Best' && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, letterSpacing: '.14em', color: TV.ink }}>BEST</span>}</p>
+            <h2 style={{ margin: '8px 0 0', fontSize: 22, fontWeight: 600, letterSpacing: '.04em' }}>{item.name}</h2>
+            <p style={{ margin: '12px 0 0', fontSize: 14, lineHeight: 1.75, letterSpacing: '-.015em', color: TV.ink2, wordBreak: 'keep-all' }}>{item.tagline}</p>
+            {cfg && (
+              <div style={{ display: 'grid', gap: 18, marginTop: 26, paddingTop: 22, borderTop: `1px solid ${TV.line}` }}>
+                {cfg.note ? (
+                  <p style={{ margin: 0, fontSize: 13, lineHeight: 1.75, color: TV.ink2, letterSpacing: '-.015em', wordBreak: 'keep-all' }}>{cfg.note}</p>
+                ) : (
+                  <p style={{ margin: 0, fontSize: 12, color: TV.ink3, letterSpacing: '-.01em', wordBreak: 'keep-all' }}>바꿔 보면 샘플이 바로 달라져요. 만들 때 모두 다시 고를 수 있어요.</p>
+                )}
+                {cfg.intros && (
+                  <PvRow label="인트로">
+                    {cfg.intros.map((o) => <button key={o.id} type="button" aria-pressed={cur.intro === o.id} onClick={() => setPv((p) => ({ ...p, intro: o.id }))} style={chip(cur.intro === o.id)}>{o.label}</button>)}
+                  </PvRow>
+                )}
+                {cfg.colors && (
+                  <PvRow label="컬러">
+                    {cfg.colors.map((o) => (
+                      <button key={o.id} type="button" title={o.label} aria-label={o.label} aria-pressed={cur.color === o.id} onClick={() => setPv((p) => ({ ...p, color: o.id }))}
+                        style={{ width: 28, height: 28, borderRadius: '50%', background: o.c, cursor: 'pointer', border: '1px solid rgba(31,28,25,.18)', outline: cur.color === o.id ? `1.5px solid ${TV.ink}` : 'none', outlineOffset: 3 }} />
+                    ))}
+                  </PvRow>
+                )}
+                {cfg.fonts && (
+                  <PvRow label="폰트">
+                    {cfg.fonts.map((o) => <button key={o.id} type="button" aria-pressed={cur.font === o.id} onClick={() => setPv((p) => ({ ...p, font: o.id }))} style={chip(cur.font === o.id)}>{o.label}</button>)}
+                  </PvRow>
+                )}
+              </div>
+            )}
+          </div>
+          <div style={{ display: 'grid', gap: 8, marginTop: 28 }}>
+            <button type="button" onClick={() => onStart(item.templateId)}
+              style={{ height: 50, borderRadius: 2, background: TV.ink, color: '#FFF9F8', border: 0, fontSize: 14, fontWeight: 500, letterSpacing: '-.01em', cursor: 'pointer', fontFamily: TV_FONT }}>이 스타일로 시작하기</button>
+            <button type="button" onClick={onClose} style={{ marginTop: 6, background: 'none', border: 0, fontSize: 12.5, color: TV.ink3, cursor: 'pointer', fontFamily: TV_FONT }}>닫기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 const SHOWCASE_TABS: { id: ShowcaseFilter; label: string }[] = [
   { id: 'all', label: '전체' }, { id: 'story', label: '스토리형' }, { id: 'mini', label: '미니스토리형' }, { id: 'parents', label: '혼주용' }, { id: 'thankyou', label: '감사장' },
 ]
@@ -1528,31 +1668,8 @@ function TemplatesContent() {
       </main>
       )}
 
-      {/* 템플릿 시트: 모바일은 아래에서, 데스크톱은 가운데 */}
-      {sheet && (
-        <div onClick={() => setSheet(null)} className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" style={{ background: 'rgba(31,28,25,.38)', fontFamily: TV_FONT, color: TV.ink }}>
-          <div onClick={(e) => e.stopPropagation()} className="w-full max-h-[92vh] overflow-y-auto rounded-t-[10px] px-5 pt-5 pb-7 sm:rounded-[4px] sm:max-w-[720px] sm:flex sm:gap-10 sm:p-10"
-            style={{ background: TV.paper, animation: 'tvSheet .4s cubic-bezier(.2,.7,.2,1) both' }}>
-            <div className="relative mx-auto max-h-[50vh] sm:max-h-none sm:w-[270px] sm:flex-shrink-0 sm:mx-0" style={{ aspectRatio: '9 / 16', borderRadius: 3, overflow: 'hidden', background: TV.img, outline: `1px solid ${TV.line}`, outlineOffset: -1 }}>
-              <Image src={sheet.thumbnail} alt={`${sheet.name} 샘플`} fill sizes="300px" className="object-cover object-top animate-scroll-preview" />
-            </div>
-            <div className="sm:flex sm:flex-col sm:justify-between" style={{ flex: 1, minWidth: 0 }}>
-              <div>
-                <p style={{ margin: '22px 0 0', fontSize: 12, color: TV.ink3, letterSpacing: '-.01em' }}>{sheet.categoryLabel}{sheet.badge === 'Best' && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, letterSpacing: '.14em', color: TV.ink }}>BEST</span>}</p>
-                <h2 style={{ margin: '8px 0 0', fontSize: 22, fontWeight: 600, letterSpacing: '.04em' }}>{sheet.name}</h2>
-                <p style={{ margin: '12px 0 0', fontSize: 14, lineHeight: 1.75, letterSpacing: '-.015em', color: TV.ink2, wordBreak: 'keep-all' }}>{sheet.tagline}</p>
-              </div>
-              <div style={{ display: 'grid', gap: 8, marginTop: 28 }}>
-                <button type="button" onClick={() => handleTemplateSelect(sheet.templateId)}
-                  style={{ height: 50, borderRadius: 2, background: TV.ink, color: '#FFF9F8', border: 0, fontSize: 14, fontWeight: 500, letterSpacing: '-.01em', cursor: 'pointer', fontFamily: TV_FONT }}>이 스타일로 시작하기</button>
-                <a href={sheet.sampleUrl} target="_blank" rel="noopener noreferrer"
-                  style={{ height: 50, borderRadius: 2, border: `1px solid ${TV.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 500, letterSpacing: '-.01em', color: TV.ink, textDecoration: 'none' }}>샘플 청첩장 열어보기</a>
-                <button type="button" onClick={() => setSheet(null)} style={{ marginTop: 6, background: 'none', border: 0, fontSize: 12.5, color: TV.ink3, cursor: 'pointer', fontFamily: TV_FONT }}>닫기</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 템플릿 시트: 모바일은 아래에서, 데스크톱은 가운데 · 샘플을 직접 바꿔 보는 미리보기 */}
+      {sheet && <TemplateSheet key={sheet.id} item={sheet} onClose={() => setSheet(null)} onStart={handleTemplateSelect} />}
     </div>
   )
 }

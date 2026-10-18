@@ -14,12 +14,13 @@ import InvitationClientClassic from "./InvitationClientClassic";
 import type { Invitation } from "@/types/invitation";
 import type { Viewport } from "next";
 import { isUUID } from "@/lib/slug";
-import { createSampleInvitation, ourSampleContent, familySampleContent, theSimpleSampleContent, classicSampleContent } from "@/lib/sample-data";
+import { createSampleInvitation, ourSampleContent, familySampleContent, theSimpleSampleContent, classicSampleContent, filmTicketSamplePhoto } from "@/lib/sample-data";
 import GuestShareFab from "./GuestShareFab";
 import { getCoupleGuestShareByUser } from "@/lib/postDrawer";
 import { isPublicViewClosed } from "@/lib/weddingLifecycle";
 import { isAdminViewer } from "@/lib/adminCookie";
 import PublicClosedNotice from "@/components/invitation/PublicClosedNotice";
+import { resolvePresetId } from "@/lib/introPresets";
 
 // 핀치 줌 비활성화를 위한 viewport 설정
 export const viewport: Viewport = {
@@ -31,12 +32,12 @@ export const viewport: Viewport = {
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ preview?: string; colorTheme?: string; fontStyle?: string; skipIntro?: string; guest?: string }>;
+  searchParams: Promise<{ preview?: string; colorTheme?: string; fontStyle?: string; skipIntro?: string; guest?: string; intro?: string }>;
 }
 
 export default async function InvitationPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const { preview, colorTheme, fontStyle, skipIntro, guest: guestId } = await searchParams;
+  const { preview, colorTheme, fontStyle, skipIntro, guest: guestId, intro: introParam } = await searchParams;
   const isPreview = preview === 'true';
   const shouldSkipIntro = skipIntro === 'true';
 
@@ -161,6 +162,21 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const isThankYou = invitation.template_id === 'narrative-thankyou';
   const isTheSimple = invitation.template_id === 'narrative-the-simple';
   const isClassic = invitation.template_id === 'narrative-classic';
+
+  // 샘플 청첩장만: ?intro= 로 인트로를 바꿔 본다 (/templates 미리보기용 · 실제 고객 청첩장에서는 무시)
+  if (isSampleInvitation && introParam && invitationContent) {
+    if (isFilm) {
+      if (['frame', 'booth', 'dots', 'ott', 'ticket'].includes(introParam)) invitationContent.filmIntroStyle = introParam;
+      // 티켓은 OTT 와 같은 사진 칸을 써서, 샘플에선 티켓용 사진으로 바꿔 끼운다
+      if (introParam === 'ticket') { invitationContent.filmDaysImage = filmTicketSamplePhoto.image; invitationContent.filmDaysImageSettings = filmTicketSamplePhoto.settings; }
+    } else if (isRecord) {
+      if (['cd', 'days', 'lp'].includes(introParam)) invitationContent.recordIntroStyle = introParam;
+    } else if (isMagazine) {
+      if (['cover', 'clean', 'editorial'].includes(introParam)) invitationContent.magazineIntroStyle = introParam;
+    } else if (invitation.template_id === 'narrative-our' || isFamily) {
+      if (resolvePresetId(introParam) === introParam) invitationContent.intro = { ...invitationContent.intro, presetId: introParam };
+    }
+  }
 
   // 하객 사진 공유 진입 FAB — 공유 활성 + 실제 청첩장(프리뷰/샘플 제외)일 때만
   // (샘플은 union 타입이라 guest_share_* 미보유 → 실제 청첩장일 때만 접근하도록 캐스팅)

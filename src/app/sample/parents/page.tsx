@@ -125,7 +125,7 @@ const sampleData: ParentsInvitationContent = {
 // 유효한 컬러 테마 ID 목록
 const validColorThemes: ColorThemeId[] = ['burgundy', 'navy', 'sage', 'dustyRose', 'emerald', 'slateBlue']
 // 유효한 폰트 스타일 ID 목록
-const validFontStyles: FontStyleId[] = ['elegant', 'soft', 'classic', 'brush', 'modern', 'friendly', 'ridibatang', 'gangwon', 'okticon', 'pretendard', 'contemporary', 'luxury', 'gulim', 'neathand', 'roundhand', 'roundgothic', 'suit', 'myungjo']
+const validFontStyles: FontStyleId[] = ['elegant', 'soft', 'classic', 'brush', 'modern', 'friendly', 'ridibatang', 'gangwon', 'okticon', 'pretendard', 'contemporary', 'luxury', 'gulim', 'neathand', 'roundhand', 'roundgothic', 'suit', 'myungjo', 'dandi']
 
 function ParentsSampleContent() {
   const searchParams = useSearchParams()

@@ -195,9 +195,12 @@ export function RecordDaysCover({ invitation, onEnter, isPreview, variant }: { i
               {V.player === 'lp' && (
                 <div style={{ position: 'absolute', top: '4%', right: 0, width: '92%', aspectRatio: '1', animation: 'rdSlide 1.4s cubic-bezier(.2,.7,.2,1) 2.5s both' }}>{disc(3.6)}</div>
               )}
-              <div style={{ position: 'relative', width: '100%', aspectRatio: '1', borderRadius: 3, overflow: 'hidden', background: '#ddd', boxShadow: '0 10px 26px rgba(0,0,0,.18)', animation: 'rdDev 2s ease-out 1.75s both' }}>
-                {photo && <CroppedImageDiv src={photo} crop={crop} className="absolute inset-0"
-                  style={{ ...(crop.cropWidth ? {} : { backgroundSize: 'cover', backgroundPosition: 'center' }), filter: mono ? 'grayscale(1) contrast(1.06)' : undefined }} />}
+              {/* 현상 효과(흐림)는 사진에만 — 커버 칸까지 흐리면 가장자리가 비쳐 뒤의 LP 판이 미리 보인다 */}
+              <div style={{ position: 'relative', width: '100%', aspectRatio: '1', borderRadius: 3, overflow: 'hidden', background: '#ddd', boxShadow: '0 10px 26px rgba(0,0,0,.18)' }}>
+                <div className="absolute inset-0" style={{ animation: 'rdDev 2s ease-out 1.75s both' }}>
+                  {photo && <CroppedImageDiv src={photo} crop={crop} className="absolute inset-0"
+                    style={{ ...(crop.cropWidth ? {} : { backgroundSize: 'cover', backgroundPosition: 'center' }), filter: mono ? 'grayscale(1) contrast(1.06)' : undefined }} />}
+                </div>
               </div>
               {tag && (
                 <div style={{ position: 'absolute', ...(V.player === 'lp' ? { left: -14, bottom: -12 } : { right: -14, top: -14 }), width: 52, height: 52, borderRadius: '50%', background: point, color: isDarkHex(point) ? '#FFF8F0' : '#1c1c1c', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,.18)', fontFamily: serif, ...nums, animation: 'rdSticker .8s cubic-bezier(.2,.7,.2,1) 2.9s both' }}>

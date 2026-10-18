@@ -3221,6 +3221,7 @@ const FONT_MAP: Record<string, string> = {
   roundgothic: "'NanumSquareRound', sans-serif",
   suit: "'Suit', sans-serif",
   myungjo: "'ChosunIlboMyungjo', serif",
+  dandi: "'BusanDandiMyeongjo', serif",
 }
 
 // ============================================================
@@ -3233,6 +3234,7 @@ function InvitationClientExhibitContent({
   isPreview,
   guestInfo,
   isSample,
+  overrideFontStyle,
 }: InvitationClientProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -3505,7 +3507,8 @@ function InvitationClientExhibitContent({
   const guestbookQuestions = content?.content?.guestbookQuestions || ['축하 메시지를 남겨주세요']
 
   // Font style
-  const fontFamily = FONT_MAP[content?.fontStyle || 'modern'] || FONT_MAP.modern
+  // ?fontStyle= 로 폰트를 바꿔 볼 수 있다 (다른 템플릿과 같은 방식 · /templates 미리보기)
+  const fontFamily = FONT_MAP[(overrideFontStyle && overrideFontStyle in FONT_MAP) ? overrideFontStyle : (content?.fontStyle || 'modern')] || FONT_MAP.modern
 
   // Section visibility
   const showGuestbook = content?.sectionVisibility?.guestbook !== false

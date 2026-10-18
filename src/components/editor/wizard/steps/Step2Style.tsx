@@ -53,6 +53,7 @@ const FONT_STYLES = [
   { id: 'roundgothic', name: '둥근고딕', sample: '우리 결혼합니다', fontFamily: "'NanumSquareRound', sans-serif", desc: '나눔스퀘어라운드', recommended: false },
   { id: 'suit', name: 'SUIT', sample: '우리 결혼합니다', fontFamily: "'Suit', sans-serif", desc: 'SUIT', recommended: false },
   { id: 'myungjo', name: '명조', sample: '우리 결혼합니다', fontFamily: "'ChosunIlboMyungjo', serif", desc: '조선일보명조체', recommended: false },
+  { id: 'dandi', name: '감성 명조', sample: '우리 결혼합니다', fontFamily: "'BusanDandiMyeongjo', serif", desc: '부산단디명조', recommended: false },
 ] as const
 
 // BGM 프리셋은 @/lib/bgmPresets에서 import

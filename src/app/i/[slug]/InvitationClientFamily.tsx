@@ -3668,7 +3668,7 @@ const colorThemes: Record<ColorTheme, ColorConfig> = {
 }
 
 // Font styles
-type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
+type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo' | 'dandi'
 interface FontConfig { display: string; displayKr: string; body: string }
 
 const fontStyles: Record<FontStyle, FontConfig> = {
@@ -3684,6 +3684,7 @@ const fontStyles: Record<FontStyle, FontConfig> = {
   roundgothic: { display: "'Montserrat', sans-serif", displayKr: "'NanumSquareRound', sans-serif", body: "'NanumSquareRound', sans-serif" },
   suit: { display: "'Montserrat', sans-serif", displayKr: "'Suit', sans-serif", body: "'Suit', sans-serif" },
   myungjo: { display: "'Montserrat', sans-serif", displayKr: "'ChosunIlboMyungjo', serif", body: "'ChosunIlboMyungjo', serif" },
+  dandi: { display: "'Montserrat', sans-serif", displayKr: "'BusanDandiMyeongjo', serif", body: "'BusanDandiMyeongjo', serif" },
 }
 
 // Mock invitation data

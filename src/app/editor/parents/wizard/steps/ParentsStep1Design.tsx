@@ -36,6 +36,7 @@ const FONT_STYLE_OPTIONS = [
   { id: 'roundgothic', name: '둥근고딕', desc: '나눔스퀘어라운드', preview: '둥글고 부드러운' },
   { id: 'suit', name: 'SUIT', desc: 'SUIT', preview: '깔끔하고 모던한' },
   { id: 'myungjo', name: '명조', desc: '조선일보명조체', preview: '격조있는 명조' },
+  { id: 'dandi', name: '감성 명조', desc: '부산단디명조', preview: '따뜻한 손맛 명조' },
 ] as const
 
 // 틴트 적용 섹션 목록 (키는 ParentsInvitationView의 secTinted 키와 일치)

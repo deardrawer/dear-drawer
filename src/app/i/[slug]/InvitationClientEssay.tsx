@@ -13,7 +13,7 @@ import '@/components/dday/dday-popup.css'
 // ===== Types =====
 type EssayColorTheme = 'essay-ivory' | 'essay-blush' | 'essay-sage' | 'essay-mono' | 'essay-sky' | 'essay-coral'
 type DesignConcept = 'default' | 'paper' | 'book'
-type EssayFontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
+type EssayFontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo' | 'dandi'
 interface EssayFontConfig { display: string; displayKr: string; body: string }
 
 const essayFontStyles: Record<EssayFontStyle, EssayFontConfig> = {
@@ -29,6 +29,7 @@ const essayFontStyles: Record<EssayFontStyle, EssayFontConfig> = {
   roundgothic: { display: "'Montserrat', sans-serif", displayKr: "'NanumSquareRound', sans-serif", body: "'NanumSquareRound', sans-serif" },
   suit: { display: "'Montserrat', sans-serif", displayKr: "'Suit', sans-serif", body: "'Suit', sans-serif" },
   myungjo: { display: "'Montserrat', sans-serif", displayKr: "'ChosunIlboMyungjo', serif", body: "'ChosunIlboMyungjo', serif" },
+  dandi: { display: "'Montserrat', sans-serif", displayKr: "'BusanDandiMyeongjo', serif", body: "'BusanDandiMyeongjo', serif" },
 }
 
 interface ThemeConfig {

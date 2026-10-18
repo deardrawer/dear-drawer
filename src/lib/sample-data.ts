@@ -797,6 +797,11 @@ export const filmSampleContent = {
   "decision": "",
   "invitation": "",
   "filmIntroStyle": "frame",
+  // 인트로별 샘플 사진 (/templates 미리보기에서 인트로를 바꿔 볼 때 · 프레임은 커버 사진)
+  "filmBoothImages": ["/sample/movie/romance-booth1_web.webp", "/sample/movie/romance-booth2_web.webp", "/sample/movie/romance-booth3_web.webp"],
+  "filmBoothImageSettings": [{ "cropX": 0, "cropY": 0, "cropWidth": 1, "cropHeight": 0.78 }, { "cropX": 0, "cropY": 0, "cropWidth": 1, "cropHeight": 0.78 }, { "cropX": 0, "cropY": 0.1, "cropWidth": 1, "cropHeight": 0.78 }],
+  "filmDotsImage": "/sample/movie/romance-dots_web.webp",
+  "filmDaysImage": "/sample/movie/romance-ott_web.webp",
   "filmFrameId": "8",
   "filmFrameImage2": "/sample/movie/3b4ca0a9-84bd-408d-ac46-079d81992729_web.webp",
   "filmFrameImage2Settings": {
@@ -820,6 +825,9 @@ export const filmSampleContent = {
 
 export const recordSampleContent = {
   ...ourSampleContent,
+  // 함께한 날: 세로 커버 사진에서 두 사람 얼굴이 있는 위쪽을 가로로 잘라 쓴다
+  recordDaysImage: '/sample/cover3.png',
+  recordDaysImageSettings: { cropX: 0, cropY: 0.01, cropWidth: 1, cropHeight: 0.388 },
   templateId: 'record',
   colorTheme: 'record-coral' as const,
   fontStyle: 'modern' as const,
@@ -1333,6 +1341,9 @@ export const theSimpleSampleContent = {
 }
 
 // 샘플 청첩장 객체 생성 함수
+// 무비 티켓 인트로 샘플 사진 (OTT 와 같은 사진 칸을 쓰므로 미리보기에서 티켓을 고를 때만 바꿔 끼운다)
+export const filmTicketSamplePhoto = { image: '/sample/movie/romance-ticket_web.webp', settings: { cropX: 0, cropY: 0.12, cropWidth: 1, cropHeight: 0.43 } }
+
 export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' | 'the-simple' | 'classic', essayConcept?: string) {
   // the-simple 타입은 별도 처리 (독자 스키마)
   if (type === 'the-simple') {

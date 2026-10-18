@@ -1175,6 +1175,12 @@
   font-family: 'ChosunIlboMyungjo', serif !important;
 }
 
+/* 감성 명조 - 부산단디명조 */
+.font-parents-dandi,
+.font-parents-dandi * {
+  font-family: 'BusanDandiMyeongjo', serif !important;
+}
+
 /* =====================
    Gallery Page - 모바일 헤더 숨김
    ===================== */

@@ -75,3 +75,25 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* 부산단디명조 — 부산광역시 전용서체 (무료·허가 불필요, 폰트 판매만 금지 · 공공누리 제1유형 출처표시) */
+@font-face {
+  font-family: 'BusanDandiMyeongjo';
+  src: url('/fonts/BusanDandi/BusanDandiMyeongjo-L.woff2') format('woff2');
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'BusanDandiMyeongjo';
+  src: url('/fonts/BusanDandi/BusanDandiMyeongjo-M.woff2') format('woff2');
+  font-weight: 400 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'BusanDandiMyeongjo';
+  src: url('/fonts/BusanDandi/BusanDandiMyeongjo-B.woff2') format('woff2');
+  font-weight: 600 900;
+  font-display: swap;
+}

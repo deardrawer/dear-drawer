@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import ColorField from '@/components/editor/ColorField'
-import ImageUploader from '@/components/editor/ImageUploader'
 import ClassicPhotoField from '../../ClassicPhotoField'
 import { DISPLAY_FONTS, KOREAN_FONTS } from '@/app/editor/the-simple/fontOptions'
 import ClassicBgmEditor from '../../ClassicBgmEditor'
@@ -89,7 +88,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             ] as const).map((opt) => {
               const active = (data.content.classicOpeningFrame || 'frame1') === opt.id
               return (
-                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicOpeningFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicOpeningFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                   {opt.label}
                 </button>
               )
@@ -157,7 +156,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
                 max={100}
                 value={op}
                 onChange={(e) => updateNestedData('content.classicInfoPhotoOpacity', Number(e.target.value) / 100)}
-                className="w-full accent-gray-900"
+                className="w-full accent-[color:var(--ed-accent)]"
               />
             </div>
           </div>
@@ -192,7 +191,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
                 max={75}
                 value={ty}
                 onChange={(e) => updateNestedData('content.classicTraceTextY', Number(e.target.value))}
-                className="flex-1 accent-gray-900"
+                className="flex-1 accent-[color:var(--ed-accent)]"
               />
               <span className="text-[11px] text-gray-500">아래</span>
             </div>
@@ -215,7 +214,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
                 max={100}
                 value={op}
                 onChange={(e) => updateNestedData('content.classicTraceVeilOpacity', Number(e.target.value) / 100)}
-                className="w-full accent-gray-900"
+                className="w-full accent-[color:var(--ed-accent)]"
               />
             </div>
           </div>
@@ -274,7 +273,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
                 max={100}
                 value={ovOp}
                 onChange={(e) => updateNestedData('content.classicInfoOverlayOpacity', Number(e.target.value) / 100)}
-                className="w-full accent-gray-900"
+                className="w-full accent-[color:var(--ed-accent)]"
               />
             </div>
           </div>
@@ -318,7 +317,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
                   key={t.name}
                   type="button"
                   onClick={() => applyColorTheme(t)}
-                  className={`flex flex-col items-center gap-1 rounded-lg border px-2 py-1.5 transition-colors ${active ? 'border-gray-900 ring-1 ring-gray-900/20' : 'border-gray-200 hover:border-gray-300'}`}
+                  className={`flex flex-col items-center gap-1 rounded-lg border px-2 py-1.5 transition-colors ${active ? 'border-[color:var(--ed-accent)] ring-1 ring-[color:var(--ed-accent-weak)]' : 'border-gray-200 hover:border-gray-300'}`}
                 >
                   <span className="flex overflow-hidden rounded-full">
                     <span className="w-4 h-4" style={{ background: t.accent }} />
@@ -425,7 +424,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
                 {DISPLAY_FONTS.map((font) => {
                   const active = font.id === displayFont
                   return (
-                    <button key={font.id} type="button" onClick={() => updateNestedData('content.classicDisplayFont', font.id)} className={`px-2 py-2 rounded-md border text-sm text-center transition-colors ${active ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'}`} style={{ fontFamily: font.fontFamily }}>
+                    <button key={font.id} type="button" onClick={() => updateNestedData('content.classicDisplayFont', font.id)} className={`px-2 py-2 rounded-md border text-sm text-center transition-colors ${active ? 'border-[color:var(--ed-accent)] bg-[color:var(--ed-accent)] text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'}`} style={{ fontFamily: font.fontFamily }}>
                       {font.name}
                     </button>
                   )
@@ -442,7 +441,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
               ] as const).map((opt) => {
                 const active = (data.content.classicNameCase || 'upper') === opt.id
                 return (
-                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicNameCase', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicNameCase', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                     {opt.label}
                   </button>
                 )
@@ -462,7 +461,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
                 {KOREAN_FONTS.map((font) => {
                   const active = font.id === bodyFont
                   return (
-                    <button key={font.id} type="button" onClick={() => updateNestedData('content.classicBodyFont', font.id)} className={`px-2 py-2 rounded-md border text-sm text-center transition-colors ${active ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'}`} style={{ fontFamily: font.fontFamily }}>
+                    <button key={font.id} type="button" onClick={() => updateNestedData('content.classicBodyFont', font.id)} className={`px-2 py-2 rounded-md border text-sm text-center transition-colors ${active ? 'border-[color:var(--ed-accent)] bg-[color:var(--ed-accent)] text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'}`} style={{ fontFamily: font.fontFamily }}>
                       {font.name}
                     </button>
                   )
@@ -483,7 +482,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
                 <input
                   type="range" min={85} max={130} value={fontPct}
                   onChange={(e) => updateNestedData('content.classicFontScale', parseInt(e.target.value, 10) / 100)}
-                  className="w-full accent-gray-900"
+                  className="w-full accent-[color:var(--ed-accent)]"
                 />
               </div>
               <div>
@@ -492,7 +491,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
                 <input
                   type="range" min={85} max={130} value={eyebrowPct}
                   onChange={(e) => updateNestedData('content.classicEyebrowScale', parseInt(e.target.value, 10) / 100)}
-                  className="w-full accent-gray-900"
+                  className="w-full accent-[color:var(--ed-accent)]"
                 />
               </div>
             </div>
@@ -524,7 +523,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
                   key={opt.id}
                   type="button"
                   onClick={() => updateNestedData('content.classicOpeningNameLang', opt.id)}
-                  className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
+                  className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
                 >
                   {opt.label}
                 </button>
@@ -581,13 +580,13 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
           <div className="space-y-1.5">
             <span className="text-sm font-medium text-gray-700">배경 이미지 (선택)</span>
             <p className="text-[10px] text-gray-400 leading-tight">업로드하면 오프닝 배경으로 사용됩니다. 비우면 배경 색상이 적용됩니다.</p>
-            <ImageUploader
-              value={data.content.classicOpeningBgImage || ''}
-              onChange={(url) => updateNestedData('content.classicOpeningBgImage', url)}
+            {/* 크롭·확대 가능한 사진 필드 (예전에 문자열로 저장된 사진도 그대로 불러온다) */}
+            <ClassicPhotoField
+              value={typeof data.content.classicOpeningBgImage === 'string' ? (data.content.classicOpeningBgImage ? { url: data.content.classicOpeningBgImage } : null) : data.content.classicOpeningBgImage}
+              onChange={(p) => updateNestedData('content.classicOpeningBgImage', p || '')}
               invitationId={invitationId || undefined}
-              placeholder="오프닝 배경 이미지 업로드"
-              aspectRatio="aspect-[3/4]"
-              className="max-w-[200px]"
+              aspectRatio={9 / 16}
+              containerWidth={200}
             />
           </div>
 

@@ -161,7 +161,7 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
             />
             <div className="flex-1">
               <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>오버레이 투명도</span><span>{infoOp}%</span></div>
-              <input type="range" min={0} max={100} value={infoOp} onChange={(e) => updateNestedData('content.classicInfoSectionOverlayOpacity', Number(e.target.value) / 100)} className="w-full accent-gray-900" />
+              <input type="range" min={0} max={100} value={infoOp} onChange={(e) => updateNestedData('content.classicInfoSectionOverlayOpacity', Number(e.target.value) / 100)} className="w-full accent-[color:var(--ed-accent)]" />
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -310,15 +310,15 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
               <span className={`flex-1 text-sm ${isHidden(key) ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{labelOf(key)}</span>
               {TINTABLE.has(key) && !isHidden(key) && (
                 <div className="flex rounded-md border border-gray-200 overflow-hidden text-[11px] shrink-0">
-                  <button type="button" onClick={() => setBgMode(key, false)} className={`px-2 py-1 transition-colors ${!isTintedMode(key) ? 'bg-gray-900 text-white' : 'bg-white text-gray-500'}`}>기본</button>
-                  <button type="button" onClick={() => setBgMode(key, true)} className={`px-2 py-1 transition-colors ${isTintedMode(key) ? 'bg-gray-900 text-white' : 'bg-white text-gray-500'}`}>틴티드</button>
+                  <button type="button" onClick={() => setBgMode(key, false)} className={`px-2 py-1 transition-colors ${!isTintedMode(key) ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500'}`}>기본</button>
+                  <button type="button" onClick={() => setBgMode(key, true)} className={`px-2 py-1 transition-colors ${isTintedMode(key) ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500'}`}>틴티드</button>
                 </div>
               )}
               <button
                 type="button"
                 onClick={() => toggleSection(key)}
                 aria-label={isHidden(key) ? '표시' : '숨김'}
-                className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${isHidden(key) ? 'bg-gray-300' : 'bg-gray-900'}`}
+                className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${isHidden(key) ? 'bg-gray-300' : 'bg-[color:var(--ed-accent)]'}`}
               >
                 <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${isHidden(key) ? '' : 'translate-x-4'}`} />
               </button>

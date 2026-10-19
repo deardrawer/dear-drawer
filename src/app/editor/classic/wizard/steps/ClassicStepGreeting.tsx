@@ -54,7 +54,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             ] as const).map((opt) => {
               const active = (data.content.classicLetterFrame || 'wave') === opt.id
               return (
-                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicLetterFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicLetterFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                   {opt.label}
                 </button>
               )
@@ -75,7 +75,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               type="range" min={0.8} max={1.2} step={0.02}
               value={data.content.classicLetterScale ?? 1}
               onChange={(e) => updateNestedData('content.classicLetterScale', parseFloat(e.target.value))}
-              className="w-full accent-gray-900"
+              className="w-full accent-[color:var(--ed-accent)]"
             />
             <p className="text-[10px] text-gray-400 leading-tight mt-1">인사말 카드의 좌우 너비(크기)를 조절합니다.</p>
           </div>
@@ -133,7 +133,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               ] as const).map((opt) => {
                 const active = (data.content.classicLetterSign || 'parents') === opt.id
                 return (
-                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicLetterSign', opt.id)} className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${active ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600 hover:text-gray-900'}`}>
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicLetterSign', opt.id)} className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${active ? 'border-[color:var(--ed-accent)] bg-[color:var(--ed-accent)] text-white' : 'border-gray-200 bg-white text-gray-600 hover:text-gray-900'}`}>
                     {opt.label}
                   </button>
                 )
@@ -150,7 +150,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 ] as const).map((opt) => {
                   const active = (data.content.classicHostSide || 'groom') === opt.id
                   return (
-                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicHostSide', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicHostSide', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                       {opt.label}
                     </button>
                   )
@@ -180,7 +180,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               ] as const).map((opt) => {
                 const active = (data.content.classicDeceasedStyle || 'flower') === opt.id
                 return (
-                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDeceasedStyle', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDeceasedStyle', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                     {opt.label}
                   </button>
                 )
@@ -217,7 +217,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 max={100}
                 value={greetingOp}
                 onChange={(e) => updateNestedData('content.classicGreetingOverlayOpacity', Number(e.target.value) / 100)}
-                className="w-full accent-gray-900"
+                className="w-full accent-[color:var(--ed-accent)]"
               />
             </div>
           </div>
@@ -248,7 +248,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               ] as const).map((opt) => {
                 const active = (data.content.classicIntroTitleStyle || 'kicker') === opt.id
                 return (
-                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroTitleStyle', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroTitleStyle', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                     {opt.label}
                   </button>
                 )
@@ -265,7 +265,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           ] as const).map((opt) => {
             const active = (data.content.classicIntroMode || 'each') === opt.id
             return (
-              <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroMode', opt.id)} className={`px-6 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+              <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroMode', opt.id)} className={`px-6 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                 {opt.label}
               </button>
             )
@@ -302,7 +302,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                   ] as const).map((opt) => {
                     const active = (data.content.classicDeceasedStyle || 'flower') === opt.id
                     return (
-                      <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDeceasedStyle', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                      <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDeceasedStyle', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                         {opt.label}
                       </button>
                     )
@@ -325,7 +325,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 ] as const).map((opt) => {
                   const active = (data.content.classicIntroEachFrame || 'plaque') === opt.id
                   return (
-                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroEachFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroEachFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                       {opt.label}
                     </button>
                   )
@@ -341,7 +341,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                     ] as const).map((opt) => {
                       const active = (data.content.classicIntroEachBoxLayout || 'v') === opt.id
                       return (
-                        <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroEachBoxLayout', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                        <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroEachBoxLayout', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                           {opt.label}
                         </button>
                       )
@@ -407,7 +407,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 ] as const).map((opt) => {
                   const active = (data.content.classicIntroTogetherFrame || 'pearl') === opt.id
                   return (
-                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroTogetherFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroTogetherFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                       {opt.label}
                     </button>
                   )
@@ -455,7 +455,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             <ColorField label="오버레이 색상" value={data.content.classicIntroSectionOverlayColor || '#1C100D'} onChange={(hex) => updateNestedData('content.classicIntroSectionOverlayColor', hex)} />
             <div className="flex-1">
               <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>오버레이 투명도</span><span>{introSecOp}%</span></div>
-              <input type="range" min={0} max={100} value={introSecOp} onChange={(e) => updateNestedData('content.classicIntroSectionOverlayOpacity', Number(e.target.value) / 100)} className="w-full accent-gray-900" />
+              <input type="range" min={0} max={100} value={introSecOp} onChange={(e) => updateNestedData('content.classicIntroSectionOverlayOpacity', Number(e.target.value) / 100)} className="w-full accent-[color:var(--ed-accent)]" />
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -493,7 +493,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                   key={opt.id}
                   type="button"
                   onClick={() => updateNestedData('content.classicGalleryType', opt.id)}
-                  className={`px-2 py-2 rounded-lg border text-[11px] transition-colors ${active ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600 hover:text-gray-900'}`}
+                  className={`px-2 py-2 rounded-lg border text-[11px] transition-colors ${active ? 'border-[color:var(--ed-accent)] bg-[color:var(--ed-accent)] text-white' : 'border-gray-200 bg-white text-gray-600 hover:text-gray-900'}`}
                 >
                   {opt.label}
                 </button>
@@ -519,7 +519,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                   key={opt.id}
                   type="button"
                   onClick={() => updateNestedData('content.classicGalleryMoreLayout', opt.id)}
-                  className={`flex flex-col items-start gap-0.5 px-3 py-2 rounded-lg border text-left transition-colors ${active ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600 hover:text-gray-900'}`}
+                  className={`flex flex-col items-start gap-0.5 px-3 py-2 rounded-lg border text-left transition-colors ${active ? 'border-[color:var(--ed-accent)] bg-[color:var(--ed-accent)] text-white' : 'border-gray-200 bg-white text-gray-600 hover:text-gray-900'}`}
                 >
                   <span className="text-[12px] font-medium">{opt.label}</span>
                   <span className={`text-[10px] ${active ? 'text-white/70' : 'text-gray-400'}`}>{opt.desc}</span>
@@ -575,7 +575,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                   key={opt.id}
                   type="button"
                   onClick={() => updateNestedData('content.classicLightboxVariant', opt.id)}
-                  className={`px-2 py-2 rounded-lg border text-[11px] transition-colors ${active ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600 hover:text-gray-900'}`}
+                  className={`px-2 py-2 rounded-lg border text-[11px] transition-colors ${active ? 'border-[color:var(--ed-accent)] bg-[color:var(--ed-accent)] text-white' : 'border-gray-200 bg-white text-gray-600 hover:text-gray-900'}`}
                 >
                   {opt.label}
                 </button>
@@ -616,7 +616,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             ] as const).map((opt) => {
               const active = (data.content.classicDateStyle || 'classic') === opt.id
               return (
-                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDateStyle', opt.id)} className={`px-2 py-2 rounded-md border text-xs transition-colors ${active ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'}`}>
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDateStyle', opt.id)} className={`px-2 py-2 rounded-md border text-xs transition-colors ${active ? 'border-[color:var(--ed-accent)] bg-[color:var(--ed-accent)] text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'}`}>
                   {opt.label}
                 </button>
               )
@@ -657,7 +657,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               ] as const).map((opt) => {
                 const active = (data.content.classicDateNumFont || 'display') === opt.id
                 return (
-                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDateNumFont', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDateNumFont', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                     {opt.label}
                   </button>
                 )
@@ -692,7 +692,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 ] as const).map((opt) => {
                   const active = (data.content.classicDateFrame || 'heart') === opt.id
                   return (
-                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDateFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDateFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                       {opt.label}
                     </button>
                   )
@@ -732,7 +732,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               ] as const).map((opt) => {
                 const active = (data.content.classicDirectionsMapPosition || 'top') === opt.id
                 return (
-                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDirectionsMapPosition', opt.id)} className={`px-5 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDirectionsMapPosition', opt.id)} className={`px-5 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                     {opt.label}
                   </button>
                 )
@@ -748,7 +748,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               ] as const).map((opt) => {
                 const active = (data.content.classicMapProvider || 'kakao') === opt.id
                 return (
-                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicMapProvider', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicMapProvider', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                     {opt.label}
                   </button>
                 )
@@ -780,7 +780,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                   max={100}
                   value={Math.round((data.content.classicDirectionsOverlayOpacity ?? 0) * 100)}
                   onChange={(e) => updateNestedData('content.classicDirectionsOverlayOpacity', Number(e.target.value) / 100)}
-                  className="w-full accent-gray-900"
+                  className="w-full accent-[color:var(--ed-accent)]"
                 />
               </div>
             </div>
@@ -894,7 +894,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             ] as const).map((opt) => {
               const active = (data.content.classicThanksFrame || 'none') === opt.id
               return (
-                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                   {opt.label}
                 </button>
               )
@@ -913,7 +913,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             ] as const).map((opt) => {
               const active = (data.content.classicThanksAnim || 'typing') === opt.id
               return (
-                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksAnim', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksAnim', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                   {opt.label}
                 </button>
               )
@@ -932,7 +932,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             ] as const).map((opt) => {
               const active = (data.content.classicThanksLayout || 'center') === opt.id
               return (
-                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksLayout', opt.id)} className={`px-3 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksLayout', opt.id)} className={`px-3 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                   {opt.label}
                 </button>
               )
@@ -956,7 +956,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             <ColorField label="오버레이 색상" value={data.content.classicThanksSectionOverlayColor || '#1C100D'} onChange={(hex) => updateNestedData('content.classicThanksSectionOverlayColor', hex)} />
             <div className="flex-1">
               <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>오버레이 투명도</span><span>{thanksSecOp}%</span></div>
-              <input type="range" min={0} max={100} value={thanksSecOp} onChange={(e) => updateNestedData('content.classicThanksSectionOverlayOpacity', Number(e.target.value) / 100)} className="w-full accent-gray-900" />
+              <input type="range" min={0} max={100} value={thanksSecOp} onChange={(e) => updateNestedData('content.classicThanksSectionOverlayOpacity', Number(e.target.value) / 100)} className="w-full accent-[color:var(--ed-accent)]" />
             </div>
           </div>
           <div className="flex items-center gap-3">

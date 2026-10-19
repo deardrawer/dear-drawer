@@ -287,7 +287,7 @@ export default function ClassicStepPublish({ data, invitationId, slug, onSave, o
       <Button
         onClick={handlePublish}
         disabled={isPublishing || isPublished}
-        className="w-full h-14 text-lg font-semibold bg-gray-900 hover:bg-gray-800"
+        className="w-full h-14 text-lg font-semibold bg-[color:var(--ed-accent)] hover:opacity-90"
       >
         {isPublishing ? (
           <div className="flex items-center gap-2">

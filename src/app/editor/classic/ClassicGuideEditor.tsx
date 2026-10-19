@@ -15,7 +15,7 @@ interface Props {
 
 function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${on ? 'bg-gray-900' : 'bg-gray-300'}`}>
+    <button type="button" onClick={onClick} className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${on ? 'bg-[color:var(--ed-accent)]' : 'bg-gray-300'}`}>
       <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${on ? 'translate-x-4' : ''}`} />
     </button>
   )

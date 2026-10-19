@@ -235,7 +235,7 @@ function SortableThumb({
         type="button"
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => { e.stopPropagation(); onToggleEdit() }}
-        className={`w-full text-[11px] rounded px-1.5 py-0.5 border transition-colors ${isEditing ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+        className={`w-full text-[11px] rounded px-1.5 py-0.5 border transition-colors ${isEditing ? 'border-[color:var(--ed-accent)] bg-[color:var(--ed-accent)] text-white' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
       >
         {isEditing ? '닫기' : '조정'}
       </button>

@@ -272,7 +272,7 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
                 {RATIO_OPTIONS.map((opt) => {
                   const active = kakaoRatio === opt.value
                   return (
-                    <button key={opt.value} type="button" onClick={() => updateNestedData('meta.kakaoThumbnailRatio', opt.value)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    <button key={opt.value} type="button" onClick={() => updateNestedData('meta.kakaoThumbnailRatio', opt.value)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                       {opt.label}
                     </button>
                   )

@@ -9,7 +9,9 @@ export type ClassicInter = {
   type: 'photo2' | 'photo1' | 'photoText'
   photos?: ClassicPhoto[]
   text?: string
+  source?: string // 인용구: 인용문 출처 (예: 작가 - 작품명)
   body?: string // 인용구: 인용문 아래 본문 (따옴표 없이)
+  bodySize?: number // 인용구: 본문 글자 크기 (기본 = 인용문 크기의 82%)
   caption?: string
   bg?: ClassicPhoto
   overlayColor?: string
@@ -77,7 +79,7 @@ export default function ClassicInterstitialEditor({ value, onChange, invitationI
                     key={t.id}
                     type="button"
                     onClick={() => update(i, { type: t.id })}
-                    className={`px-3 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
+                    className={`px-3 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
                   >
                     {t.label}
                   </button>
@@ -108,6 +110,12 @@ export default function ClassicInterstitialEditor({ value, onChange, invitationI
                   placeholder={it.type === 'photoText' ? '함께한 모든 순간이\n우리의 이야기가 되었습니다.' : '사진 위에 얹을 짧은 문구\n(줄바꿈 반영됩니다)'}
                   rows={3}
                 />
+                {it.type === 'photoText' && (
+                  <div className="space-y-1">
+                    <span className="text-[11px] text-gray-500">인용문 출처 (선택)</span>
+                    <Input value={it.source || ''} onChange={(e) => update(i, { source: e.target.value })} placeholder="작가 - 작품명" />
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <div className="flex-1">
                     <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>글자 크기</span><span>{it.textSize ?? meta.textBase}px</span></div>
@@ -117,7 +125,7 @@ export default function ClassicInterstitialEditor({ value, onChange, invitationI
                       max={36}
                       value={it.textSize ?? meta.textBase}
                       onChange={(e) => update(i, { textSize: Number(e.target.value) })}
-                      className="w-full accent-gray-900"
+                      className="w-full accent-[color:var(--ed-accent)]"
                     />
                   </div>
                   <div className="flex flex-col gap-1">
@@ -134,7 +142,7 @@ export default function ClassicInterstitialEditor({ value, onChange, invitationI
                             key={opt.id}
                             type="button"
                             onClick={() => update(i, { textAlign: opt.id })}
-                            className={`px-2.5 py-1 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
+                            className={`px-2.5 py-1 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
                           >
                             {opt.label}
                           </button>
@@ -148,18 +156,29 @@ export default function ClassicInterstitialEditor({ value, onChange, invitationI
             {it.type === 'photoText' && (
               <div className="space-y-1.5">
                 <span className="text-sm font-medium text-gray-700">본문 (선택)</span>
-                <p className="text-[10px] text-gray-400 leading-tight">인용문 아래에 따옴표 없이 이어지는 글이에요. 글자 크기·정렬은 인용문과 같이 맞춰져요.</p>
+                <p className="text-[10px] text-gray-400 leading-tight">인용문 아래에 따옴표 없이 이어지는 글이에요. 정렬은 인용문과 같이 맞춰져요.</p>
                 <Textarea
                   value={it.body || ''}
                   onChange={(e) => update(i, { body: e.target.value })}
                   placeholder={'평생을 함께하기로 약속한 저희 두 사람,\n작은 결혼식을 올립니다.'}
                   rows={4}
                 />
+                <div>
+                  <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>본문 글자 크기</span><span>{it.bodySize ?? Math.round((it.textSize ?? meta.textBase) * 0.82)}px</span></div>
+                  <input
+                    type="range"
+                    min={11}
+                    max={26}
+                    value={it.bodySize ?? Math.round((it.textSize ?? meta.textBase) * 0.82)}
+                    onChange={(e) => update(i, { bodySize: Number(e.target.value) })}
+                    className="w-full accent-[color:var(--ed-accent)]"
+                  />
+                </div>
               </div>
             )}
             {meta.hasCaption && (
               <div className="space-y-1.5">
-                <span className="text-sm font-medium text-gray-700">출처 / 서명 (선택)</span>
+                <span className="text-sm font-medium text-gray-700">{it.type === 'photoText' ? '서명 (선택)' : '출처 / 서명 (선택)'}</span>
                 <Input value={it.caption || ''} onChange={(e) => update(i, { caption: e.target.value })} placeholder="신랑 & 신부" />
               </div>
             )}
@@ -191,7 +210,7 @@ export default function ClassicInterstitialEditor({ value, onChange, invitationI
                       max={100}
                       value={Math.round((it.overlayOpacity ?? 0.4) * 100)}
                       onChange={(e) => update(i, { overlayOpacity: Number(e.target.value) / 100 })}
-                      className="w-full accent-gray-900"
+                      className="w-full accent-[color:var(--ed-accent)]"
                     />
                   </div>
                 </div>

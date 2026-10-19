@@ -355,6 +355,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const introDone = openingStyle === '실링' ? ribbon : openingStyle === '트레이싱지' ? frost : true
   // ===== 오프닝(인트로) 커스텀: 배경이미지 / 배경색 / 텍스트색 =====
   const openBgImg = extractUrl(cc.classicOpeningBgImage)
+  // 크롭 정보가 있는 오프닝 배경(에디터에서 위치·확대 조절) — 예전 문자열 값은 기존 위치 그대로
+  const openBgCropped = !!cc.classicOpeningBgImage && typeof cc.classicOpeningBgImage === 'object'
   const openBg = cc.classicOpeningBgColor || IVORY
   const openInk = cc.classicOpeningTextColor || INK
   const openInkA = (a: number) => `rgba(${hexToRgb(openInk, '53,23,20')},${a})`
@@ -1188,7 +1190,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const rInkA = (a: number) => fgA('rsvp', a)
 
   // 간지(interstitial) 동적 섹션: 타입별(사진2 / FULL사진 / 인용구). 사진은 크롭(ClassicPhoto)
-  type Inter = { type: 'photo2' | 'photo1' | 'photoText'; photos?: unknown[]; images?: string[]; text?: string; body?: string; caption?: string; bg?: unknown; overlayColor?: string; overlayOpacity?: number; textSize?: number; textAlign?: 'left' | 'center' | 'right' }
+  type Inter = { type: 'photo2' | 'photo1' | 'photoText'; photos?: unknown[]; images?: string[]; text?: string; source?: string; body?: string; bodySize?: number; caption?: string; bg?: unknown; overlayColor?: string; overlayOpacity?: number; textSize?: number; textAlign?: 'left' | 'center' | 'right' }
   const interstitials: Inter[] = (Array.isArray(cc.classicInterstitials) && cc.classicInterstitials.length)
     ? cc.classicInterstitials
     : [
@@ -1263,10 +1265,12 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {interOverlay(item)}
           <div className="cl-reveal cl-clip" data-delay="120" style={{ position: 'relative', zIndex: 1, margin: '0 auto 0 0', width: '82%', aspectRatio: '4/5', ...cropBg(interSrc(item, 0), { background: DEEP_BEIGE }), filter: 'saturate(.68)' }} />
           <div className="cl-reveal cl-blur" data-delay="380" style={{ position: 'relative', zIndex: 2, margin: '-58px 30px 0 auto', width: '78%', background: PAPER, padding: '34px 26px 30px', boxShadow: '0 26px 44px -36px rgba(53,23,20,.7)' }}>
-            <blockquote style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: fs, lineHeight: 1.5, color: INK, textAlign: ta, whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>“{item.text || ''}”</blockquote>
-            {/* 인용문 아래 본문 — 따옴표 없이, 인용문과 같은 글꼴·정렬로 한 단계 작게 */}
-            {item.body ? <p style={{ margin: '26px 0 0', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: Math.round(fs * 0.82), lineHeight: 1.65, color: inkA(0.88), textAlign: ta, whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{item.body}</p> : null}
-            {item.caption ? <p style={{ margin: '20px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55), textAlign: ta }}>{item.caption}</p> : null}
+            <blockquote style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: fs, lineHeight: 1.5, color: INK, textAlign: ta, whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>“{item.text || ''}”</blockquote>
+            {/* 인용문 출처 — 인용문 바로 아래 작게 */}
+            {item.source ? <p style={{ margin: '10px 0 0', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: Math.max(11, Math.round(fs * 0.62)), color: inkA(0.6), textAlign: ta, whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>{item.source}</p> : null}
+            {/* 인용문 아래 본문 — 따옴표 없이, 인용문과 같은 글꼴·정렬 · 크기는 따로 (기본 인용문의 82%) */}
+            {item.body ? <p style={{ margin: '26px 0 0', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: typeof item.bodySize === 'number' ? item.bodySize : Math.round(fs * 0.82), lineHeight: 1.65, color: inkA(0.88), textAlign: ta, whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>{item.body}</p> : null}
+            {item.caption ? <p style={{ margin: '20px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55), textAlign: ta, overflowWrap: 'anywhere' }}>{item.caption}</p> : null}
           </div>
         </section>
       )
@@ -1510,7 +1514,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         {/* ===== I. Opening (인트로: 실링/리본/트레이싱지/접힌편지/사진뒤집기) ===== */}
         {page === 'intro' && (
         <section data-scene="opening" style={{ position: 'relative', minHeight: isPreview ? '100%' : '100svh', height: isPreview ? '100%' : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '56px 30px', background: isDarkOpening ? DARK_PHOTO : openBg, overflow: 'hidden', opacity: introLeaving ? 0 : 1, transition: 'opacity .55s ease' }}>
-          {openBgImg && openingStyle !== '프레임' && <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${openBgImg})`, backgroundSize: 'cover', backgroundPosition: 'center', pointerEvents: 'none' }} />}
+          {openBgImg && openingStyle !== '프레임' && <div style={{ position: 'absolute', inset: 0, ...(openBgCropped ? cropBg(cc.classicOpeningBgImage, {}) : { backgroundImage: `url(${openBgImg})`, backgroundSize: 'cover', backgroundPosition: 'center' }), pointerEvents: 'none' }} />}
           {/* 엠보스 프레임 — 프레임(바로시작) 전용 · 배경색 위 multiply 오버레이 (frame1/frame2) */}
           {openingStyle === '프레임' && openFrame !== 'none' && <div style={{ position: 'absolute', inset: 0, backgroundImage: `url('/classic/${openFrame}.webp')`, backgroundSize: '100% 100%', mixBlendMode: 'multiply', pointerEvents: 'none', animation: 'cl-frame-in 1.6s cubic-bezier(.22,.61,.36,1) .1s both' }} />}
 
@@ -1524,7 +1528,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
           {openingStyle === '트레이싱지' ? (
             <div data-intro-inner onClick={() => setFrost(true)} style={{ position: 'absolute', inset: 0, cursor: 'pointer', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', inset: 0, ...(openBgImg ? bgOf(openBgImg, { backgroundPosition: '52% 38%' }) : { background: DARK_PHOTO }), animation: 'cl-kenburns 7s ease-out .2s both', willChange: 'transform' }} />
+              <div style={{ position: 'absolute', inset: 0, ...(openBgImg ? (openBgCropped ? cropBg(cc.classicOpeningBgImage, { background: DARK_PHOTO }) : bgOf(openBgImg, { backgroundPosition: '52% 38%' })) : { background: DARK_PHOTO }), animation: 'cl-kenburns 7s ease-out .2s both', willChange: 'transform' }} />
               {traceVeilOp > 0 && <div style={{ position: 'absolute', inset: 0, background: traceVeil, opacity: traceVeilOp, pointerEvents: 'none' }} />}
               <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', transform: traceTextY !== 50 ? `translateY(${traceTextY - 50}%)` : undefined }}>
                 <p style={{ ...label(9.5, 0.46, ivoryA(0.85)), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft .9s ease .35s both' : undefined }}>{nameCase('WE INVITE YOU')}</p>
@@ -2114,7 +2118,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               {extractUrl(g.photo) && <div style={{ aspectRatio: '4/3', margin: '0 0 20px', ...cropBg(g.photo, { background: DEEP_BEIGE }), filter: 'saturate(.75)' }} />}
               <p style={{ margin: 0, textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: T_SUBTITLE, color: INK }}>{g.title}</p>
               <div style={{ width: 22, height: 1, background: inkA(0.25), margin: '13px auto' }} />
-              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{g.body}</p>
+              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.9, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{g.body}</p>
             </div>
           ))}
         </section>
@@ -2171,11 +2175,12 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           return (<>
           {/* 도일리: 기본은 원본 타원 비율(894:711), 글이 길면 도일리가 글 높이만큼 위아래로 늘어난다.
               예전엔 aspect-ratio 로 비율을 잡았는데, 아이폰 사파리는 글이 넘쳐도 상자를 키우지 않아 글이 테두리에 닿았다.
-              → 비율용 빈 칸과 글을 같은 격자 칸에 겹쳐, 둘 중 큰 쪽이 높이가 되게 (모든 브라우저 동일) */}
+              → 비율용 빈 칸과 글을 같은 격자 칸에 겹쳐, 둘 중 큰 쪽이 높이가 되게 (모든 브라우저 동일)
+              · 글 폭은 에디터 미리보기(390px 화면)와 같은 258px 로 고정 — 430px 아이폰 등 넓은 화면에서도 에디터와 같은 줄바꿈 */}
           {thanksFrame === 'doily' ? (
             <div className={thanksAnim === 'static' ? undefined : 'cl-reveal cl-fade'} style={{ position: 'relative', backgroundImage: "url('/classic/thanks-frame.webp')", backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', display: 'grid' }}>
               <div aria-hidden style={{ gridArea: '1 / 1', paddingTop: '79.53%' }} />
-              <div style={{ gridArea: '1 / 1', alignSelf: 'center', textAlign: 'center', padding: '16% 10%' }}>{thanksBody(fgC('links'), (a) => fgA('links', a))}</div>
+              <div style={{ gridArea: '1 / 1', alignSelf: 'center', justifySelf: 'center', textAlign: 'center', padding: '16% 0', width: 'min(80%, 258px)' }}>{thanksBody(fgC('links'), (a) => fgA('links', a))}</div>
             </div>
           ) : (
             <div className={thanksAnim === 'static' ? undefined : 'cl-reveal cl-blur'} style={{ position: 'relative', textAlign: 'center' }}>{thanksBody(INK, inkA)}</div>

@@ -74,7 +74,7 @@ export interface ClassicInvitationData {
     classicDisplayFont?: string // 영문 디스플레이 폰트 id (DISPLAY_FONTS)
     classicBodyFont?: string // 한글 본문 폰트 id (KOREAN_FONTS)
     // 오프닝(인트로) 커스텀
-    classicOpeningBgImage?: string // 오프닝 배경 이미지 URL
+    classicOpeningBgImage?: string | ClassicPhoto // 오프닝 배경 이미지 (예전: URL 문자열 / 지금: 크롭 정보 포함 {url,scale,positionX,positionY})
     classicOpeningBgColor?: string // 오프닝 배경 색상 (미설정 시 전체 배경색)
     classicOpeningTextColor?: string // 오프닝 텍스트 색상 (미설정 시 포인트 컬러)
     classicOpeningFrame?: 'frame1' | 'frame2' | 'none' // 프레임(바로시작) 엠보스 프레임 (배경색 위 오버레이)
@@ -120,7 +120,7 @@ export interface ClassicInvitationData {
     classicBridePhoto?: ClassicPhoto // 신부 사진 (각자)
     classicTogetherPhoto?: ClassicPhoto // 함께 사진
     // 본문 · 간지 (사진2 / FULL / 인용구)
-    classicInterstitials?: { type: 'photo2' | 'photo1' | 'photoText'; photos?: ClassicPhoto[]; text?: string; body?: string; caption?: string }[]
+    classicInterstitials?: { type: 'photo2' | 'photo1' | 'photoText'; photos?: ClassicPhoto[]; text?: string; source?: string; body?: string; bodySize?: number; caption?: string }[]
     // 본문 · 예식 일정 사진
     classicDatePhoto?: ClassicPhoto
     classicDatePhotoEnabled?: boolean // 예식 일정 폴라로이드 사진 표시 여부 (기본 true)
@@ -690,7 +690,7 @@ function ClassicEditorContent() {
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setIsExitModalOpen(false)} className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">계속 편집</button>
-              <button onClick={() => { setIsDirty(false); setIsExitModalOpen(false); if (pendingNavigation) router.push(pendingNavigation); else router.back() }} className="flex-1 px-4 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium">저장 안 함</button>
+              <button onClick={() => { setIsDirty(false); setIsExitModalOpen(false); if (pendingNavigation) router.push(pendingNavigation); else router.back() }} className="flex-1 px-4 py-2.5 bg-[color:var(--ed-accent)] text-white rounded-lg hover:bg-gray-800 transition-colors font-medium">저장 안 함</button>
             </div>
           </div>
         </div>

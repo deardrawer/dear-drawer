@@ -842,10 +842,12 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                         <span className="text-xs font-medium text-gray-500">안내 {i + 1}</span>
                         <button type="button" onClick={() => write(extras.filter((_, j) => j !== i))} className="text-[11px] text-red-500 hover:text-red-700">삭제</button>
                       </div>
-                      <Input
+                      <Textarea
                         value={ex.title || ''}
                         onChange={(e) => write(extras.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))}
-                        placeholder="예: 주차 안내 / 셔틀버스 운행"
+                        placeholder="예: 주차 안내 / 셔틀버스 운행 (줄바꿈 반영)"
+                        rows={1}
+                        className="resize-none min-h-9"
                       />
                       <Textarea
                         value={ex.body || ''}

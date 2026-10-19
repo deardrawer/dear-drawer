@@ -1259,10 +1259,17 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 인트로(오프닝)용: '본문 글자 크기'·'상단문구 크기' 조절에 영향받지 않는 고정 크기 라벨
   const labelFixed = (size: number, ls: number, color: string): React.CSSProperties => ({ ...label(size, ls, color), fontSize: size })
   // 안내 글: 점(·•-*※ 등)으로 시작하는 줄은 다음 줄이 점 뒤 글자에 맞춰 들어가게(내어쓰기) — 줄마다 따로 그려 줄바꿈 유지
-  const bulletText = (text: string): React.ReactNode => text.split('\n').map((ln, i) => {
-    const m = ln.match(/^\s*([•·・∙‧*※▪◦-])\s*/)
+  const BULLET_RE = /^\s*([•·・∙‧*※▪◦-])\s*/
+  const bulletText = (text: string): React.ReactNode => text.split('\n').map((ln, i, all) => {
+    const m = ln.match(BULLET_RE)
     if (!ln.trim()) return <span key={i} style={{ display: 'block', height: '0.9em' }} />
-    if (!m) return <span key={i} style={{ display: 'block' }}>{ln}</span>
+    if (!m) {
+      // 점 항목 바로 아래 줄을 공백으로 시작하면 이어지는 줄로 보고 점 뒤 글 위치에 맞춘다
+      let k = i - 1
+      while (k >= 0 && /^\s/.test(all[k]) && all[k].trim() && !BULLET_RE.test(all[k])) k--
+      const cont = /^\s/.test(ln) && k >= 0 && BULLET_RE.test(all[k])
+      return <span key={i} style={{ display: 'block', paddingLeft: cont ? '0.85em' : 0 }}>{cont ? ln.trim() : ln}</span>
+    }
     // 점은 고정 폭 칸에, 글은 오른쪽 칸에 → 둘째 줄부터 글 시작 위치에 정확히 맞는다
     // 점 글자(•·・ 등)는 글꼴마다 모양·위치가 달라 삐뚤어 보여서, 모두 같은 작은 원으로 그린다 (※·- 는 글자 그대로)
     const dot = /[•·・∙‧▪◦]/.test(m[1])
@@ -2106,10 +2113,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <div className="cl-reveal cl-zoom" data-delay="120" style={{ position: 'relative', zIndex: 2, margin: dirMapBottom ? '0 26px' : '-34px 26px 0', background: '#FFFFFF', padding: '34px 28px 30px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
             <p style={{ margin: 0, textAlign: 'center', ...label(T_EYEBROW, 0.44, inkA(0.62)) }}>{nameCase('LOCATION')}</p>
             <h2 className="cl-reveal cl-up" data-delay="300" style={{ margin: '16px 0 0', lineHeight: 1.35, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(18), fontWeight: 500, letterSpacing: '.01em', color: INK }}>{venueName}</h2>
-            {venueHall && <p className="cl-reveal cl-rise" data-delay="400" style={{ margin: '6px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11.5), color: inkA(0.88) }}>{venueHall}</p>}
-            <div className="cl-reveal cl-rise" data-delay="480" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '6px 0 0' }}>
-              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: INK }}>{venueAddress}</p>
-              <button onClick={() => doCopy(venueAddress, 'addr')} style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(9.5), cursor: 'pointer', background: inkA(0.62), border: 0, color: IVORY, borderRadius: 20, padding: '3px 9px', lineHeight: 1.4, whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '주소 복사'}</button>
+            {venueHall && <p className="cl-reveal cl-rise" data-delay="400" style={{ margin: '7px 0 0', lineHeight: 1.4, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(13), letterSpacing: '.02em', color: INK }}>{venueHall}</p>}
+            <div className="cl-reveal cl-rise" data-delay="480" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', columnGap: 8, rowGap: 8, margin: '10px 0 0' }}>
+              {/* 주소가 한 줄에 버튼과 같이 안 들어가면 버튼이 아래 줄 가운데로 내려간다 */}
+              <p style={{ margin: 0, maxWidth: '100%', lineHeight: 1.6, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11.5), color: inkA(0.72), wordBreak: 'keep-all' }}>{venueAddress}</p>
+              <button onClick={() => doCopy(venueAddress, 'addr')} aria-label="주소 복사" style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(9.5), cursor: 'pointer', background: inkA(0.62), border: 0, color: IVORY, borderRadius: 20, padding: '3px 9px', lineHeight: 1.4, whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '복사'}</button>
             </div>
             {dirDisplay.length > 0 && (
               <>
@@ -2130,7 +2138,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 {dirExtras.map((ex, i) => (
                   <div key={i}>
                     {/* 앞의 짧은 선은 본문 점과 같은 폭의 칸에 → 제목 글자 시작 = 본문 글자 시작 */}
-                    {ex.title && <p style={{ margin: 0, display: 'flex', alignItems: 'baseline', fontFamily: F_BODY, fontSize: bfs(13.5), letterSpacing: '.04em', color: INK }}><span aria-hidden style={{ flex: `0 0 ${bfs(12) * 0.85}px`, alignSelf: 'center', display: 'flex' }}><span style={{ width: 7, height: 1, background: inkA(0.5) }} /></span><span style={{ flex: 1, minWidth: 0 }}>{ex.title}</span></p>}
+                    {ex.title && <p style={{ margin: 0, display: 'flex', alignItems: 'flex-start', fontFamily: F_BODY, fontSize: bfs(13.5), lineHeight: 1.5, letterSpacing: '.04em', color: INK }}><span aria-hidden style={{ flex: `0 0 ${bfs(12) * 0.85}px`, height: '1.5em', alignItems: 'center', display: 'flex' }}><span style={{ width: 7, height: 1, background: inkA(0.5) }} /></span><span style={{ flex: 1, minWidth: 0, whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{ex.title}</span></p>}
                     {ex.body && <p style={{ margin: ex.title ? '10px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.8, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{bulletText(ex.body)}</p>}
                   </div>
                 ))}

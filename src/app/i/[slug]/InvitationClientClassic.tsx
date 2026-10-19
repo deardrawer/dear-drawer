@@ -312,6 +312,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const [infoIdx, setInfoIdx] = useState(0)
   // 갤러리 '스와이프' 레이아웃 전용: 현재 표시 중인 사진 인덱스
   const [galSwipeIdx, setGalSwipeIdx] = useState(0)
+  const [galSwipeTick, setGalSwipeTick] = useState(0) // 직접 조작 시 자동 넘김 타이머 재시작용 (같은 사진을 다시 눌러도)
+  const galGo = (next: (i: number) => number) => { setGalSwipeIdx(next); setGalSwipeTick((t) => t + 1) }
   // 스와이프 갤러리 썸네일 스트립: 좌우 스크롤 가능 여부(끝단 페이드 힌트용)
   const galThumbRef = useRef<HTMLDivElement>(null)
   const [galThumbEdge, setGalThumbEdge] = useState({ l: false, r: false })
@@ -1035,12 +1037,13 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     (['fill', 'justified', 'twocol', 'fullbleed'] as const).includes(cc.classicGalleryMoreLayout)
       ? cc.classicGalleryMoreLayout : 'fill'
 
-  // 스와이프 갤러리: 자동 전환 (약 3.4초 간격) — 썸네일/버튼으로 선택해도 계속 자동 전환
+  // 스와이프 갤러리: 자동 전환 (3.4초) — 사진이 바뀔 때마다(자동·Prev/Next·썸네일) 타이머를 새로 시작해,
+  // 직접 넘긴 사진도 같은 시간 동안 보여준 뒤 넘어간다. 연속으로 눌러도 마지막 변경 시점부터 · 타이머는 항상 1개
   useEffect(() => {
     if (galType !== 'swipe' || galCount <= 1) return
-    const id = window.setInterval(() => setGalSwipeIdx((i) => (i + 1) % galCount), 3400)
-    return () => window.clearInterval(id)
-  }, [galType, galCount])
+    const id = window.setTimeout(() => setGalSwipeIdx((i) => (i + 1) % galCount), 3400)
+    return () => window.clearTimeout(id)
+  }, [galType, galCount, galSwipeIdx, galSwipeTick])
 
   // 썸네일 스트립 끝단 페이드 힌트 초기 측정 (갤러리 렌더/개수 변경 시)
   useEffect(() => {
@@ -1865,7 +1868,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         </div>
 
         {/* ===== VI. Gallery ===== */}
-        <section style={{ order: orderOf('gallery'), padding: '82px 0', background: IVORY, ...hide('gallery'), ...tintBg('gallery') }}>
+        {/* 갤러리는 종이 질감(grain) 위로 올려 사진·배경에 질감이 얹히지 않게 */}
+        <section style={{ order: orderOf('gallery'), position: 'relative', zIndex: 21, padding: '82px 0', background: IVORY, ...hide('gallery'), ...tintBg('gallery') }}>
           {galType === 'default' && (() => { const inkA = (a: number) => fgA('gallery', a); return (<>
           <p className="cl-reveal cl-up" style={{ ...label(T_EYEBROW, 0.44, inkA(0.45)), margin: '0 30px 32px' }}>{nameCase('GALLERY')}</p>
           {galParallaxPhoto(0, { margin: '0 30px', aspectRatio: '3/4' }, { backgroundPosition: '50% 36%' })}
@@ -1950,8 +1954,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 ))}
               </div>
               <div style={{ display: 'flex', gap: 10, margin: '18px 0 0' }}>
-                <button type="button" onClick={() => setGalSwipeIdx((i) => (i + galCount - 1) % galCount)} style={{ flex: 1, padding: '11px 0', border: `1px solid ${fgA('gallery', 0.35)}`, background: 'transparent', fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: fgC('gallery'), cursor: 'pointer' }}>{nameCase('PREV')}</button>
-                <button type="button" onClick={() => setGalSwipeIdx((i) => (i + 1) % galCount)} style={{ flex: 1, padding: '11px 0', border: 'none', background: INK, fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: IVORY, cursor: 'pointer' }}>{nameCase('NEXT')}</button>
+                <button type="button" onClick={() => galGo((i) => (i + galCount - 1) % galCount)} style={{ flex: 1, padding: '11px 0', border: `1px solid ${fgA('gallery', 0.35)}`, background: 'transparent', fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: fgC('gallery'), cursor: 'pointer' }}>{nameCase('PREV')}</button>
+                <button type="button" onClick={() => galGo((i) => (i + 1) % galCount)} style={{ flex: 1, padding: '11px 0', border: 'none', background: INK, fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: IVORY, cursor: 'pointer' }}>{nameCase('NEXT')}</button>
               </div>
               {gallery.length > 0 && (
                 <div style={{ position: 'relative', margin: '18px 0 0' }}>
@@ -1962,7 +1966,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', cursor: 'grab', scrollBehavior: 'smooth' }}
                   >
                     {gallery.map((_, i) => (
-                      <div key={i} onClick={() => setGalSwipeIdx(i)} style={{ flex: '0 0 54px', aspectRatio: '1/1', cursor: 'pointer', opacity: i === galSwipeIdx ? 1 : 0.45, transition: 'opacity 0.3s', ...cropBg(galItem(i), { background: DEEP_BEIGE }) }} />
+                      <div key={i} onClick={() => galGo(() => i)} style={{ flex: '0 0 54px', aspectRatio: '1/1', cursor: 'pointer', opacity: i === galSwipeIdx ? 1 : 0.45, transition: 'opacity 0.3s', ...cropBg(galItem(i), { background: DEEP_BEIGE }) }} />
                     ))}
                   </div>
                   {/* 좌측 페이드 (오른쪽으로 스크롤된 상태에서만) */}
@@ -2092,11 +2096,12 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               </>
             )}
             {dirExtras.length > 0 && (
-              <div className="cl-reveal cl-rise" style={{ marginTop: 20, paddingTop: 18, borderTop: `1px solid ${inkA(0.14)}`, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div className="cl-reveal cl-rise" style={{ marginTop: 20, paddingTop: 18, borderTop: `1px solid ${inkA(0.14)}`, display: 'flex', flexDirection: 'column', gap: 26 }}>
+                {/* 제목은 크게·진하게 + 앞에 짧은 선, 본문은 한 톤 연하게 → 굵기에 기대지 않고 어떤 글꼴에서도 위계가 보이게 */}
                 {dirExtras.map((ex, i) => (
                   <div key={i}>
-                    {ex.title && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(11.5), letterSpacing: '.04em', color: INK }}>{ex.title}</p>}
-                    {ex.body && <p style={{ margin: ex.title ? '8px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.8, color: inkA(0.92), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{ex.body}</p>}
+                    {ex.title && <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8, fontFamily: F_BODY, fontSize: bfs(13.5), letterSpacing: '.04em', color: INK }}><span aria-hidden style={{ width: 10, height: 1, background: inkA(0.5), flexShrink: 0 }} />{ex.title}</p>}
+                    {ex.body && <p style={{ margin: ex.title ? '10px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.8, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{ex.body}</p>}
                   </div>
                 ))}
               </div>
@@ -2125,7 +2130,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none', backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.05) 0 1px,transparent 1px 9px)' }} />
           <div className="cl-reveal cl-up" style={{ position: 'relative', textAlign: 'center', marginBottom: 6 }}>
             <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), lineHeight: 1.15, letterSpacing: '.02em', color: infoFgC }}>{nameCase('Information')}</h2>
-            <p style={{ margin: '6px 0 0', fontFamily: F_BODY, fontSize: bfs(14), fontWeight: 500, letterSpacing: '.08em', paddingLeft: '.08em', color: infoFgAf(0.85) }}>결혼식 안내</p>
+            <p style={{ margin: '8px 0 0', fontFamily: F_BODY, fontSize: lfs(12.5), fontWeight: 500, letterSpacing: '.16em', paddingLeft: '.16em', color: infoFgAf(0.85) }}>결혼식 안내</p>
           </div>
           {guideList.map((g, i) => (
             <div key={i} className="cl-reveal cl-up" data-delay={i * 130} style={{ position: 'relative', background: '#FFFFFF', padding: extractUrl(g.photo) ? '14px 14px 26px' : '26px 24px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
@@ -2175,13 +2180,13 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <>
               <p style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), color: col }}>{nameCase('Thank You')}</p>
               {thanksAnim !== 'typing' ? (
-                <p style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{cc.classicThankYou || '귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.'}</p>
+                <p style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{cc.classicThankYou || '귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.'}</p>
               ) : (
                 <TypeText
                   text={cc.classicThankYou || '귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.'}
                   caretColor={colA(0.5)}
                   speed={125}
-                  style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}
+                  style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}
                 />
               )}
             </>

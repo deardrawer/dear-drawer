@@ -325,6 +325,18 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const [galExpanded, setGalExpanded] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const infoRef = useRef<HTMLDivElement>(null)
+  // 신랑신부 소개 카드 축소 비율: 에디터 미리보기(390px) 기준. 폭이 좁은 폰에선 카드 전체를 같은 비율로 줄여 에디터와 똑같이 보이게
+  const [cardFit, setCardFit] = useState(1)
+  useEffect(() => {
+    const el = rootRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(() => {
+      const w = el.clientWidth
+      if (w > 0) setCardFit(Math.max(0.8, Math.min(1, Math.round((w / 390) * 1000) / 1000)))
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   const c = (content || {}) as Record<string, any>
   const groom = c.groom || {}
@@ -1246,6 +1258,23 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const label = (size: number, ls: number, color: string): React.CSSProperties => ({ margin: 0, fontFamily: F_LABEL, fontSize: Math.round(size * labelScale * 10) / 10, letterSpacing: `${ls}em`, color, paddingLeft: `${ls}em`, whiteSpace: 'nowrap' })
   // 인트로(오프닝)용: '본문 글자 크기'·'상단문구 크기' 조절에 영향받지 않는 고정 크기 라벨
   const labelFixed = (size: number, ls: number, color: string): React.CSSProperties => ({ ...label(size, ls, color), fontSize: size })
+  // 안내 글: 점(·•-*※ 등)으로 시작하는 줄은 다음 줄이 점 뒤 글자에 맞춰 들어가게(내어쓰기) — 줄마다 따로 그려 줄바꿈 유지
+  const bulletText = (text: string): React.ReactNode => text.split('\n').map((ln, i) => {
+    const m = ln.match(/^\s*([•·・∙‧*※▪◦-])\s*/)
+    if (!ln.trim()) return <span key={i} style={{ display: 'block', height: '0.9em' }} />
+    if (!m) return <span key={i} style={{ display: 'block' }}>{ln}</span>
+    // 점은 고정 폭 칸에, 글은 오른쪽 칸에 → 둘째 줄부터 글 시작 위치에 정확히 맞는다
+    // 점 글자(•·・ 등)는 글꼴마다 모양·위치가 달라 삐뚤어 보여서, 모두 같은 작은 원으로 그린다 (※·- 는 글자 그대로)
+    const dot = /[•·・∙‧▪◦]/.test(m[1])
+    return (
+      <span key={i} style={{ display: 'flex' }}>
+        <span aria-hidden style={{ flex: '0 0 0.85em', display: 'flex', alignItems: 'flex-start' }}>
+          {dot ? <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'currentColor', marginTop: '0.85em', marginLeft: 1 }} /> : m[1]}
+        </span>
+        <span style={{ flex: 1, minWidth: 0 }}>{ln.slice(m[0].length)}</span>
+      </span>
+    )
+  })
 
   // 간지 풀화면 배경 오버레이 (사진2 / 인용구)
   const interOverlay = (item: Inter): React.ReactNode => {
@@ -1772,7 +1801,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           ) : !introTogether ? (
             (() => { const INK = eachInk; const inkA = eachInkA;
             if (eachHoriz) {
-              const boxSt = { position: 'relative' as const, display: 'flex', flexDirection: 'column' as const, gap: 14, padding: '18px 18px 20px', background: PAPER, border: `1px solid ${inkA(0.24)}`, boxShadow: `inset 0 0 0 3px ${PAPER}, inset 0 0 0 4px ${inkA(0.12)}` }
+              const boxSt = { position: 'relative' as const, zoom: cardFit, display: 'flex', flexDirection: 'column' as const, gap: 14, padding: '18px 18px 20px', background: PAPER, border: `1px solid ${inkA(0.24)}`, boxShadow: `inset 0 0 0 3px ${PAPER}, inset 0 0 0 4px ${inkA(0.12)}` }
               const photoSt = { width: '100%', aspectRatio: '4 / 3', borderRadius: 2, filter: 'saturate(.85)' }
               return (
               <>
@@ -1803,7 +1832,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             }
             return (
             <>
-              <div className="cl-reveal cl-l" data-delay="180" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 16, ...(eachBox ? { padding: '22px 22px', background: PAPER, border: `1px solid ${inkA(0.24)}`, boxShadow: `inset 0 0 0 3px ${PAPER}, inset 0 0 0 4px ${inkA(0.12)}` } : eachNoFrame ? { padding: '2px 4px' } : { aspectRatio: eachFrame.aspect, padding: eachFrame.pad, backgroundImage: `url(${eachFrame.img})`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', filter: 'drop-shadow(0 14px 18px rgba(53,23,20,.12))' }) }}>
+              <div className="cl-reveal cl-l" data-delay="180" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 16, zoom: cardFit, ...(eachBox ? { padding: '22px 22px', background: PAPER, border: `1px solid ${inkA(0.24)}`, boxShadow: `inset 0 0 0 3px ${PAPER}, inset 0 0 0 4px ${inkA(0.12)}` } : eachNoFrame ? { padding: '2px 4px' } : { aspectRatio: eachFrame.aspect, padding: eachFrame.pad, backgroundImage: `url(${eachFrame.img})`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', filter: 'drop-shadow(0 14px 18px rgba(53,23,20,.12))' }) }}>
                 <div style={{ flex: '0 0 84px', height: 106, borderRadius: 2, ...cropBg(introA.photo, { background: DEEP_BEIGE }), filter: 'saturate(.85)' }} />
                 <div className="cl-reveal cl-up" data-delay="380" style={{ flex: 1, minWidth: 0 }}>
                   {!(cc.classicIntroShowParents !== false && parentsJsx(introA.side.father, introA.side.mother)) && <p style={label(T_ROLE, 0.4, inkA(0.45))}>{nameCase(introA.label)}</p>}
@@ -1814,7 +1843,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                   {introA.intro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: bfs(12), fontWeight: 400, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{introA.intro}</p>}
                 </div>
               </div>
-              <div className="cl-reveal cl-r" data-delay="340" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 16, ...(eachBox ? { padding: '22px 22px', background: PAPER, border: `1px solid ${inkA(0.24)}`, boxShadow: `inset 0 0 0 3px ${PAPER}, inset 0 0 0 4px ${inkA(0.12)}` } : eachNoFrame ? { padding: '2px 4px' } : { aspectRatio: eachFrame.aspect, padding: eachFrame.pad, backgroundImage: `url(${eachFrame.img})`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', filter: 'drop-shadow(0 14px 18px rgba(53,23,20,.12))' }) }}>
+              <div className="cl-reveal cl-r" data-delay="340" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 16, zoom: cardFit, ...(eachBox ? { padding: '22px 22px', background: PAPER, border: `1px solid ${inkA(0.24)}`, boxShadow: `inset 0 0 0 3px ${PAPER}, inset 0 0 0 4px ${inkA(0.12)}` } : eachNoFrame ? { padding: '2px 4px' } : { aspectRatio: eachFrame.aspect, padding: eachFrame.pad, backgroundImage: `url(${eachFrame.img})`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', filter: 'drop-shadow(0 14px 18px rgba(53,23,20,.12))' }) }}>
                 <div className="cl-reveal cl-up" data-delay="520" style={{ flex: 1, minWidth: 0, textAlign: 'right' }}>
                   {!(cc.classicIntroShowParents !== false && parentsJsx(introB.side.father, introB.side.mother)) && <p style={label(T_ROLE, 0.4, inkA(0.45))}>{nameCase(introB.label)}</p>}
                   <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{introB.ko}</p>
@@ -2089,7 +2118,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                   {dirDisplay.map((r, i) => (
                     <div key={i} className="cl-reveal cl-rise" data-delay={200 + i * 90} style={{ display: 'flex', gap: 14 }}>
                       <span style={{ flex: '0 0 56px', fontFamily: F_BODY, fontSize: bfs(11.5), letterSpacing: '.02em', color: INK, paddingTop: 1 }}>{r.label}</span>
-                      <p style={{ margin: 0, flex: 1, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.8, color: inkA(0.92), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{r.text}</p>
+                      <p style={{ margin: 0, flex: 1, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.8, color: inkA(0.92), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{bulletText(r.text)}</p>
                     </div>
                   ))}
                 </div>
@@ -2100,8 +2129,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 {/* 제목은 크게·진하게 + 앞에 짧은 선, 본문은 한 톤 연하게 → 굵기에 기대지 않고 어떤 글꼴에서도 위계가 보이게 */}
                 {dirExtras.map((ex, i) => (
                   <div key={i}>
-                    {ex.title && <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8, fontFamily: F_BODY, fontSize: bfs(13.5), letterSpacing: '.04em', color: INK }}><span aria-hidden style={{ width: 10, height: 1, background: inkA(0.5), flexShrink: 0 }} />{ex.title}</p>}
-                    {ex.body && <p style={{ margin: ex.title ? '10px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.8, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{ex.body}</p>}
+                    {/* 앞의 짧은 선은 본문 점과 같은 폭의 칸에 → 제목 글자 시작 = 본문 글자 시작 */}
+                    {ex.title && <p style={{ margin: 0, display: 'flex', alignItems: 'baseline', fontFamily: F_BODY, fontSize: bfs(13.5), letterSpacing: '.04em', color: INK }}><span aria-hidden style={{ flex: `0 0 ${bfs(12) * 0.85}px`, alignSelf: 'center', display: 'flex' }}><span style={{ width: 7, height: 1, background: inkA(0.5) }} /></span><span style={{ flex: 1, minWidth: 0 }}>{ex.title}</span></p>}
+                    {ex.body && <p style={{ margin: ex.title ? '10px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.8, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{bulletText(ex.body)}</p>}
                   </div>
                 ))}
               </div>

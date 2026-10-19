@@ -114,6 +114,11 @@ const CLASSIC_STYLES = `
   .cl-reveal.cl-poof.is-in { transform: none; transition: opacity .7s ease, transform .8s cubic-bezier(.22,.61,.36,1); }
   /* 뿅 (달력 예식일 동그라미/말풍선): 살짝 오버슛하며 팝 */
   .cl-reveal.cl-boop { transform: scale(.4); }
+  /* 예식일 원 테두리: 숫자가 나타난 뒤 펜으로 그리듯 이어진다 */
+  /* 숫자는 짧게 먼저 나타나고(0.5초), 그다음 원이 펜으로 한 바퀴 그려진다 (숫자 페이드와 겹치면 그려지는 게 안 보였다) */
+  .cl-reveal.cl-ringday.is-in { transition: opacity .5s ease, transform .6s cubic-bezier(.22,.61,.36,1); }
+  .cl-ring circle { stroke-dasharray: 100; stroke-dashoffset: 100; }
+  .cl-reveal.is-in .cl-ring circle { stroke-dashoffset: 0; transition: stroke-dashoffset 1.4s cubic-bezier(.45,.05,.35,1) .65s; }
   .cl-reveal.cl-boop.is-in { transform: none; transition: opacity .3s ease, transform .5s cubic-bezier(.34,1.56,.64,1); }
   /* 예식일 마커: 링이 도장처럼 안착(+펄스 1회), 라벨이 아래로 톡 내려앉음.
      ※ cl-reveal(JS 스크롤 관찰자) 대신 CSS 애니메이션으로 처리 → 관찰자 미발동 시 opacity:0에
@@ -123,6 +128,7 @@ const CLASSIC_STYLES = `
   @keyframes cl-mk-pulse { 0% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } 22% { box-shadow: 0 0 0 5px var(--mk-pulse, rgba(192,106,91,.28)); } 100% { box-shadow: 0 0 0 11px rgba(0,0,0,0); } }
   @keyframes cl-mk-label-in { 0% { opacity: 0; transform: translateY(-7px) scale(.72); } 100% { opacity: 1; transform: none; } }
   .cl-mk-label { transform-origin: top center; animation: cl-mk-label-in .6s cubic-bezier(.34,1.56,.64,1) 1.15s both; }
+  @media (prefers-reduced-motion: reduce) { .cl-ring circle { stroke-dashoffset: 0 !important; transition: none !important; } }
   @media (prefers-reduced-motion: reduce) { .cl-mk-ring, .cl-mk-label { animation: none !important; opacity: 1 !important; transform: none !important; } }
   /* RSVP: 카드가 봉투 뒤에서 차분히 솟아오르는 시그니처 (거리 줄여 안정적으로) */
   .cl-reveal.cl-env { transform: translateY(30px) scale(.995); }
@@ -660,11 +666,17 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <div className="cl-reveal cl-up" data-delay="120" style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', paddingTop: 14 }}>{wk(dTxA(0.5))}</div>
             <div className="cl-reveal cl-linex" data-delay="160" style={{ height: 1, background: dTxA(0.16), transformOrigin: 'center' }} />
             <div className="cl-reveal cl-up" data-delay="200" style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', paddingTop: 6 }}>
+              {/* 다른 날짜가 왼쪽부터 차례로 나오고, 예식일은 맨 마지막에 나타나 원이 그려진다 */}
               {weekDays.map((n, i) => (
                 <div key={i} style={{ height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: 7, borderRight: i < 6 ? `1px solid ${dTxA(0.1)}` : 'none' }}>
                   {n === null ? null : n === day
-                    ? <span className="cl-reveal cl-boop" data-delay="260" style={{ fontFamily: F_NUM, fontWeight: 500, fontSize: 23, color: datePoint, lineHeight: 1 }}>{n}</span>
-                    : <span style={{ fontFamily: F_NUM, fontWeight: 300, fontSize: 17, color: dTxA(0.68) }}>{n}</span>}
+                    ? <span className="cl-reveal cl-up cl-ringday" data-delay={260 + 7 * 110} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, fontFamily: F_NUM, fontWeight: 500, fontSize: 21, color: datePoint, lineHeight: 1 }}>
+                        <svg className="cl-ring" width="38" height="38" viewBox="0 0 38 38" aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'visible', transform: 'rotate(-100deg)' }}>
+                          <circle cx="19" cy="19" r="17" pathLength={100} fill="none" stroke={datePoint} strokeWidth="1.2" strokeLinecap="round" />
+                        </svg>
+                        {n}
+                      </span>
+                    : <span className="cl-reveal cl-up" data-delay={260 + i * 110} style={{ fontFamily: F_NUM, fontWeight: 300, fontSize: 17, color: dTxA(0.68) }}>{n}</span>}
                 </div>
               ))}
             </div>
@@ -2058,11 +2070,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           )}
           <div className="cl-reveal cl-zoom" data-delay="120" style={{ position: 'relative', zIndex: 2, margin: dirMapBottom ? '0 26px' : '-34px 26px 0', background: '#FFFFFF', padding: '34px 28px 30px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
             <p style={{ margin: 0, textAlign: 'center', ...label(T_EYEBROW, 0.44, inkA(0.62)) }}>{nameCase('LOCATION')}</p>
-            <h2 className="cl-reveal cl-up" data-delay="300" style={{ margin: '12px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(18), fontWeight: 500, letterSpacing: '.01em', color: INK }}>{venueName}</h2>
+            <h2 className="cl-reveal cl-up" data-delay="300" style={{ margin: '16px 0 0', lineHeight: 1.35, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(18), fontWeight: 500, letterSpacing: '.01em', color: INK }}>{venueName}</h2>
             {venueHall && <p className="cl-reveal cl-rise" data-delay="400" style={{ margin: '6px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11.5), color: inkA(0.88) }}>{venueHall}</p>}
-            <div className="cl-reveal cl-rise" data-delay="480" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '10px 0 0' }}>
+            <div className="cl-reveal cl-rise" data-delay="480" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '6px 0 0' }}>
               <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: INK }}>{venueAddress}</p>
-              <button onClick={() => doCopy(venueAddress, 'addr')} style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(9.5), cursor: 'pointer', background: INK, border: `1px solid ${INK}`, color: '#FFFFFF', borderRadius: 0, padding: '4px 9px', letterSpacing: '.02em', whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '주소 복사'}</button>
+              <button onClick={() => doCopy(venueAddress, 'addr')} style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(9.5), cursor: 'pointer', background: inkA(0.62), border: 0, color: IVORY, borderRadius: 20, padding: '3px 9px', lineHeight: 1.4, whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '주소 복사'}</button>
             </div>
             {dirDisplay.length > 0 && (
               <>
@@ -2110,8 +2122,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {infoSecOverlayOp > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(${hexToRgb(infoSecOverlay, '28,16,13')},${infoSecOverlayOp})`, pointerEvents: 'none', zIndex: -1 }} />}
           <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none', backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.05) 0 1px,transparent 1px 9px)' }} />
           <div className="cl-reveal cl-up" style={{ position: 'relative', textAlign: 'center', marginBottom: 6 }}>
-            <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), letterSpacing: '.02em', color: infoFgC }}>{nameCase('Information')}</h2>
-            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(14), letterSpacing: '.08em', paddingLeft: '.08em', color: infoFgAf(0.62) }}>결혼식 안내</p>
+            <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), lineHeight: 1.15, letterSpacing: '.02em', color: infoFgC }}>{nameCase('Information')}</h2>
+            <p style={{ margin: '6px 0 0', fontFamily: F_BODY, fontSize: bfs(14), fontWeight: 500, letterSpacing: '.08em', paddingLeft: '.08em', color: infoFgAf(0.85) }}>결혼식 안내</p>
           </div>
           {guideList.map((g, i) => (
             <div key={i} className="cl-reveal cl-up" data-delay={i * 130} style={{ position: 'relative', background: '#FFFFFF', padding: extractUrl(g.photo) ? '14px 14px 26px' : '26px 24px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>

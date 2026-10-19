@@ -1259,6 +1259,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 인트로(오프닝)용: '본문 글자 크기'·'상단문구 크기' 조절에 영향받지 않는 고정 크기 라벨
   const labelFixed = (size: number, ls: number, color: string): React.CSSProperties => ({ ...label(size, ls, color), fontSize: size })
   // 안내 글: 점(·•-*※ 등)으로 시작하는 줄은 다음 줄이 점 뒤 글자에 맞춰 들어가게(내어쓰기) — 줄마다 따로 그려 줄바꿈 유지
+  // 본문 빈 줄(엔터 두 번)은 한 줄 전체 대신 반 줄 높이로 → 문단 사이가 제목 아래 간격보다 넓어지지 않게
+  const paraText = (text: string): React.ReactNode => !text.includes('\n') ? text : text.split('\n').map((ln, i) =>
+    ln.trim() ? <span key={i} style={{ display: 'block' }}>{ln}</span> : <span key={i} aria-hidden style={{ display: 'block', height: '0.85em' }} />)
   const BULLET_RE = /^\s*([•·・∙‧*※▪◦-])\s*/
   const bulletText = (text: string): React.ReactNode => text.split('\n').map((ln, i, all) => {
     const m = ln.match(BULLET_RE)
@@ -1891,7 +1894,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     )}
                   </div>
                 </div>
-                <p style={{ margin: '18px 0 0', padding: '0 12px', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: introFgAf(0.7), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{coupleTogetherText}</p>
+                <p style={{ margin: '18px 0 0', padding: '0 12px', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: introFgAf(0.7), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{paraText(coupleTogetherText)}</p>
               </div>
             </>
             ) })()
@@ -2175,7 +2178,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               {extractUrl(g.photo) && <div style={{ aspectRatio: '4/3', margin: '0 0 20px', ...cropBg(g.photo, { background: DEEP_BEIGE }), filter: 'saturate(.75)' }} />}
               <p style={{ margin: 0, textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: T_SUBTITLE, color: INK }}>{g.title}</p>
               <div style={{ width: 22, height: 1, background: inkA(0.25), margin: '13px auto' }} />
-              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.7, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{g.body}</p>
+              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.7, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{paraText(g.body)}</p>
             </div>
           ))}
         </section>
@@ -2186,7 +2189,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         <section style={{ order: orderOf('accounts'), position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 22, padding: '84px 30px', background: IVORY, backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.035) 0 1px,transparent 1px 9px)', ...tintBg('accounts') }}>
           <div className="cl-reveal cl-up" style={{ textAlign: 'center' }}>
             <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), color: fgC('accounts') }}>{nameCase('From the Heart')}</h2>
-            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: fgA('accounts', 0.65), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{(typeof cc.classicAccountMessage === 'string' && cc.classicAccountMessage.trim()) ? cc.classicAccountMessage : '참석이 어려우신 분들을 위해\n마음 전하실 곳을 안내드립니다.'}</p>
+            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: fgA('accounts', 0.65), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{paraText((typeof cc.classicAccountMessage === 'string' && cc.classicAccountMessage.trim()) ? cc.classicAccountMessage : '참석이 어려우신 분들을 위해\n마음 전하실 곳을 안내드립니다.')}</p>
           </div>
           {acctSides.map((grp, gi) => (
             <div key={gi} className="cl-reveal cl-up" data-delay={gi * 150} style={{ background: '#FFFFFF', padding: '24px 22px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
@@ -2218,7 +2221,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <>
               <p style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), color: col }}>{nameCase('Thank You')}</p>
               {thanksAnim !== 'typing' ? (
-                <p style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{cc.classicThankYou || '귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.'}</p>
+                <p style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{paraText(cc.classicThankYou || '귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.')}</p>
               ) : (
                 <TypeText
                   text={cc.classicThankYou || '귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.'}
@@ -2267,7 +2270,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         <section style={{ order: orderOf('rsvp'), position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 30, padding: '84px 30px', background: IVORY, ...hide('rsvp'), ...tintBg('rsvp') }}>
           <div className="cl-reveal cl-up" style={{ textAlign: 'center' }}>
             <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), color: rInk }}>R.S.V.P</h2>
-            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: rInkA(0.62), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{cc.classicRsvpNotice || '참석 여부를 알려주시면\n정성껏 준비하겠습니다.'}</p>
+            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: rInkA(0.62), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{paraText(cc.classicRsvpNotice || '참석 여부를 알려주시면\n정성껏 준비하겠습니다.')}</p>
           </div>
 
           {rsvpAttend === 'attending' ? (

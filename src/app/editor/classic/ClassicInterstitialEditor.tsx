@@ -160,7 +160,7 @@ export default function ClassicInterstitialEditor({ value, onChange, invitationI
                 <Textarea
                   value={it.body || ''}
                   onChange={(e) => update(i, { body: e.target.value })}
-                  placeholder={'평생을 함께하기로 약속한 저희 두 사람,\n작은 결혼식을 올립니다.'}
+                  placeholder={'계절이 몇 번 바뀌는 동안\n서로의 가장 편한 자리가 되어 준 두 사람이\n이제 같은 길을 함께 걸어가려 합니다.'}
                   rows={4}
                 />
                 <div>

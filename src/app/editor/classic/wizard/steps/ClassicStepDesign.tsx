@@ -579,7 +579,10 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
 
           <div className="space-y-1.5">
             <span className="text-sm font-medium text-gray-700">배경 이미지 (선택)</span>
-            <p className="text-[10px] text-gray-400 leading-tight">업로드하면 오프닝 배경으로 사용됩니다. 비우면 배경 색상이 적용됩니다.</p>
+            <div className="text-[10px] text-gray-400 leading-snug pb-1">
+              <p>업로드하면 오프닝 배경으로 사용됩니다. 비우면 배경 색상이 적용됩니다.</p>
+              <p>휴대폰마다 화면 비율이 조금씩 달라 사진의 위아래·양옆이 미리보기와 살짝 다르게 잘릴 수 있어요. 얼굴 등 중요한 부분은 가운데 쪽에 오도록 맞춰 주세요.</p>
+            </div>
             {/* 크롭·확대 가능한 사진 필드 (예전에 문자열로 저장된 사진도 그대로 불러온다) */}
             <ClassicPhotoField
               value={typeof data.content.classicOpeningBgImage === 'string' ? (data.content.classicOpeningBgImage ? { url: data.content.classicOpeningBgImage } : null) : data.content.classicOpeningBgImage}

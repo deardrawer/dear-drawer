@@ -324,15 +324,18 @@ function ClassicEditorContent() {
   const [isExitModalOpen, setIsExitModalOpen] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
 
-  // 모바일 감지 + 데스크톱 사이드 미리보기 스케일 (고정 390×780 렌더 → 화면 높이에 맞춰 균일 축소)
+  // 미리보기 기준 화면: 390×693 (9:16) — 실제 휴대폰 브라우저(주소창·하단바 포함)의 보이는 영역과 비슷한 비율.
+  //  예전 390×780(1:2)은 전체화면 비율이라, 오프닝 사진 잘림·글자 위치가 실제 휴대폰과 달라 보였다
+  const PV_H = 693
+  // 모바일 감지 + 데스크톱 사이드 미리보기 스케일 (고정 390×PV_H 렌더 → 화면 높이에 맞춰 균일 축소)
   const [sideScale, setSideScale] = useState(1)
   useEffect(() => {
     const check = () => {
       const w = window.innerWidth
       setViewportW(w)
       setIsMobile(w < 640) // 640px 미만만 모바일. 태블릿은 데스크톱 2단
-      // 사이드 프레임 가용 높이 = 100vh - 88(헤더/여백). 780 기준으로 축소 (확대는 안 함)
-      setSideScale(Math.min(1, (window.innerHeight - 88) / 780))
+      // 사이드 프레임 가용 높이 = 100vh - 88(헤더/여백). PV_H 기준으로 축소 (확대는 안 함)
+      setSideScale(Math.min(1, (window.innerHeight - 88) / PV_H))
     }
     check()
     window.addEventListener('resize', check)
@@ -552,9 +555,9 @@ function ClassicEditorContent() {
             {/* Preview - 왼쪽 sticky 고정, 카드형 디바이스 프리뷰 (데스크탑) */}
             {!isMobile && (
               <div className="sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ width: `${previewColW}px`, minWidth: `${previewColW}px`, height: 'calc(100vh - 88px)' }}>
-                {/* 고정 390×780으로 렌더 후 균일 scale → 창 비율과 무관하게 프레임 왜곡 없음 */}
-                <div className="shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ width: 390 * frameScale, height: 780 * frameScale, borderRadius: 10 }}>
-                  <div className="absolute top-0 left-0 bg-white" style={{ width: 390, height: 780, transform: `scale(${frameScale})`, transformOrigin: 'top left' }}>
+                {/* 고정 390×PV_H(9:16)로 렌더 후 균일 scale → 창 비율과 무관하게 프레임 왜곡 없음 */}
+                <div className="shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ width: 390 * frameScale, height: PV_H * frameScale, borderRadius: 10 }}>
+                  <div className="absolute top-0 left-0 bg-white" style={{ width: 390, height: PV_H, transform: `scale(${frameScale})`, transformOrigin: 'top left' }}>
                     <div className="w-full h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                       <ClassicPreview data={data} />
                     </div>
@@ -585,10 +588,10 @@ function ClassicEditorContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                 </button>
-                {/* 실제 폰 크기(390×780)로 렌더 후 CSS scale로 축소 (THE SIMPLE 방식)
+                {/* 실제 폰 크기(390×PV_H)로 렌더 후 CSS scale로 축소 (THE SIMPLE 방식)
                     → 인트로가 짧은 프레임에 눌려 겹치던 문제 해결. 창은 고정 뷰포트, 내용은 내부 스크롤 */}
-                <div className="relative h-full overflow-hidden shadow-2xl bg-white border border-gray-200" style={{ width: 190, borderRadius: 10 }}>
-                  <div className="absolute top-0 left-0 bg-white" style={{ width: 390, height: 780, transform: 'scale(0.4872)', transformOrigin: 'top left' }}>
+                <div className="relative overflow-hidden shadow-2xl bg-white border border-gray-200" style={{ width: 190, height: Math.round(PV_H * 0.4872), maxHeight: '100%', borderRadius: 10 }}>
+                  <div className="absolute top-0 left-0 bg-white" style={{ width: 390, height: PV_H, transform: 'scale(0.4872)', transformOrigin: 'top left' }}>
                     <div className="w-full h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                       <ClassicPreview key={previewKey} data={data} />
                     </div>
@@ -649,7 +652,7 @@ function ClassicEditorContent() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <div className="relative overflow-y-auto bg-white shadow-2xl" style={isMobile ? { width: '100%', height: '100dvh' } : { height: 'min(780px, calc(100vh - 40px))', aspectRatio: '9 / 18', maxWidth: 'calc(100vw - 32px)', borderRadius: 8 }}>
+          <div className="relative overflow-y-auto bg-white shadow-2xl" style={isMobile ? { width: '100%', height: '100dvh' } : { height: 'min(693px, calc(100vh - 40px))', aspectRatio: '9 / 16', maxWidth: 'calc(100vw - 32px)', borderRadius: 8 }}>
             <ClassicPreview data={data} fullscreen />
           </div>
         </div>

@@ -3,7 +3,7 @@
 // 두 장의 사진: 따로 놓인 두 사람의 사진을 끌어 붙이면 한 장의 커플 사진으로 합쳐지고,
 // 이름과 초대 문구가 나타난다.
 import { useEffect, useRef, useState } from 'react'
-import { type IntroStyleProps, cropOf, paperLayer, isDark, nameFont, lines, photoOf, str, type PhotoCrop } from './shared'
+import { type IntroStyleProps, cropOf, paperLayer, isDark, nameFont, lines, photoOf, str, stageScale, type PhotoCrop } from './shared'
 import { PIECES_GROOM_DEFAULT, PIECES_BRIDE_DEFAULT } from '@/lib/introStyles'
 import IntroPhoto from './IntroPhoto'
 
@@ -80,21 +80,21 @@ export default function PiecesIntro({ w, h, opts, data, finished, reduced, signa
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [instant]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const drag = useRef<{ k: 'a' | 'b'; sx: number; sy: number; lx: number; moved: boolean } | null>(null)
+  const drag = useRef<{ k: 'a' | 'b'; sx: number; sy: number; lx: number; moved: boolean; sc: number } | null>(null)
   const down = (k: 'a' | 'b') => (e: React.PointerEvent) => {
     if (joined) return
     touched.current = true
     ;[aRef.current, bRef.current].forEach(el => el?.getAnimations?.().forEach(a => a.cancel()))
-    drag.current = { k, sx: e.clientX, sy: e.clientY, lx: e.clientX, moved: false }
+    drag.current = { k, sx: e.clientX, sy: e.clientY, lx: e.clientX, moved: false, sc: stageScale(e.currentTarget as Element) }
     setLift(k)
     ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
   }
   const move = (e: React.PointerEvent) => {
     const d = drag.current
     if (!d || joined) return
-    const dx = e.clientX - d.sx, dy = e.clientY - d.sy
+    const dx = (e.clientX - d.sx) / d.sc, dy = (e.clientY - d.sy) / d.sc
     if (Math.abs(dx) + Math.abs(dy) > 6) d.moved = true
-    setTilt(t => Math.max(-6, Math.min(6, t * 0.7 + (e.clientX - d.lx) * 0.27)))
+    setTilt(t => Math.max(-6, Math.min(6, t * 0.7 + (e.clientX - d.lx) / d.sc * 0.27)))
     d.lx = e.clientX
     const next = { ...off, [d.k]: { x: dx, y: dy } }
     setOff(next)

@@ -46,10 +46,10 @@ export interface IntroStyleMeta {
 // 이름 글꼴 6종 (시네마틱과 같은 한글 글꼴) — 두 장의 사진·라벨 문구
 const NAME_FONT_CHOICES = [{ value: 'pretendard', label: '프리텐다드' }, { value: 'notoserif', label: '노토 세리프' }, { value: 'myeongjo', label: '나눔명조' }, { value: 'nanumgothic', label: '나눔고딕' }, { value: 'gowun', label: '고운바탕' }, { value: 'handwriting', label: '손글씨(폴페어니스)' }]
 /** 엽서 앞면·배경 기본 사진 */
-export const POSTCARD_DEFAULT_PHOTO = '/images/intro/postcard-default.webp'
+export const POSTCARD_DEFAULT_PHOTO = '/images/intro/postcard-default.jpg'
 // 두 장의 사진 기본 사진 (두 사람의 어린 시절 느낌)
-export const PIECES_GROOM_DEFAULT = '/images/intro/pieces-groom-default.webp'
-export const PIECES_BRIDE_DEFAULT = '/images/intro/pieces-bride-default.webp'
+export const PIECES_GROOM_DEFAULT = '/images/intro/pieces-groom-default.jpg'
+export const PIECES_BRIDE_DEFAULT = '/images/intro/pieces-bride-default.jpg'
 const POINT_SWATCHES = ['#F2B53A', '#F190AC', '#A8C1D7', '#8FA98B', '#C9A27E', '#1F1F1F']
 const BG_SWATCHES = ['#EDEBE7', '#FFFFFF', '#F6F1E7', '#F3E6E8', '#E6ECF1', '#2B2A28']
 

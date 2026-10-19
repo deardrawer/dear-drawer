@@ -4,7 +4,7 @@
 // 띠의 오른쪽 끝을 왼쪽으로 당기면 절취선 구멍이 하나씩 '도도도독' 뜯기며 그 자리로 사진이 보이고,
 // 끝까지 뜯으면 태그라인이 나타난 뒤 봉투가 사라지며 화면 가득 사진과 이름이 드러난다.
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { type IntroStyleProps, cropOf, paperLayer, isDark, photoOf, str, tint, weekdayEn } from './shared'
+import { type IntroStyleProps, cropOf, paperLayer, isDark, photoOf, str, tint, weekdayEn, stageScale } from './shared'
 import IntroPhoto from './IntroPhoto'
 import RevealCaption from './RevealCaption'
 import FitLine from './FitLine'
@@ -84,7 +84,7 @@ export default function EnvelopeIntro({ w, h, opts, data, finished, reduced, sig
     if (instant) { finish(); return () => { alive = false } }
 
     const K0 = 14
-    let kk = K0, opened = false, touched = false, drag = false, moved = false, x0 = 0, ks = 0, last = 0, lastT = 0, v = 0, lastSnap = -1
+    let kk = K0, opened = false, touched = false, drag = false, moved = false, x0 = 0, ks = 0, last = 0, lastT = 0, v = 0, lastSnap = -1, sc = 1
     const canBuzz = typeof navigator !== 'undefined' && 'vibrate' in navigator
     const setK = (n: number) => {
       const Lw = tape.offsetWidth
@@ -139,14 +139,14 @@ export default function EnvelopeIntro({ w, h, opts, data, finished, reduced, sig
       down: (e) => {
         if (opened) return
         touched = true; setHint(false); cancelAnimationFrame(raf)
-        drag = true; moved = false; x0 = last = e.clientX; lastT = e.timeStamp; ks = kk; v = 0
+        drag = true; moved = false; x0 = last = e.clientX; lastT = e.timeStamp; ks = kk; v = 0; sc = stageScale(tape)
         tape.setPointerCapture?.(e.pointerId)
       },
       move: (e) => {
         if (!drag) return
-        const dist = x0 - e.clientX
+        const dist = (x0 - e.clientX) / sc
         if (Math.abs(dist) > 6) moved = true
-        const dt = Math.max(1, e.timeStamp - lastT); v = (last - e.clientX) / dt; last = e.clientX; lastT = e.timeStamp
+        const dt = Math.max(1, e.timeStamp - lastT); v = (last - e.clientX) / sc / dt; last = e.clientX; lastT = e.timeStamp
         setK(Math.max(K0, ks + dist / 2))
       },
       up: () => {

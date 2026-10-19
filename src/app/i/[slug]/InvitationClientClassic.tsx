@@ -385,6 +385,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 트레이싱지 걷어낸 사진 위 오버레이 (색상 + 투명도, 0=자연 사진)
   const traceVeil: string = cc.classicTraceVeilColor || '#141008'
   const traceVeilOp: number = typeof cc.classicTraceVeilOpacity === 'number' ? Math.max(0, Math.min(1, cc.classicTraceVeilOpacity)) : 0
+  // 걷어낸 뒤 글자 묶음 높이 (50=가운데) — 화면 높이 기준으로 위아래 이동
+  const traceTextY: number = typeof cc.classicTraceTextY === 'number' ? Math.max(20, Math.min(75, cc.classicTraceTextY)) : 50
   // 접힌편지·사진뒤집기 배경 오버레이 색상 + 첫 사진 배경 투명도
   const infoOverlay: string = cc.classicInfoOverlayColor || '#1C100D'
   const infoPhotoOp: number = typeof cc.classicInfoPhotoOpacity === 'number' ? Math.max(0, Math.min(1, cc.classicInfoPhotoOpacity)) : 0
@@ -1186,7 +1188,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const rInkA = (a: number) => fgA('rsvp', a)
 
   // 간지(interstitial) 동적 섹션: 타입별(사진2 / FULL사진 / 인용구). 사진은 크롭(ClassicPhoto)
-  type Inter = { type: 'photo2' | 'photo1' | 'photoText'; photos?: unknown[]; images?: string[]; text?: string; caption?: string; bg?: unknown; overlayColor?: string; overlayOpacity?: number; textSize?: number; textAlign?: 'left' | 'center' | 'right' }
+  type Inter = { type: 'photo2' | 'photo1' | 'photoText'; photos?: unknown[]; images?: string[]; text?: string; body?: string; caption?: string; bg?: unknown; overlayColor?: string; overlayOpacity?: number; textSize?: number; textAlign?: 'left' | 'center' | 'right' }
   const interstitials: Inter[] = (Array.isArray(cc.classicInterstitials) && cc.classicInterstitials.length)
     ? cc.classicInterstitials
     : [
@@ -1262,6 +1264,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <div className="cl-reveal cl-clip" data-delay="120" style={{ position: 'relative', zIndex: 1, margin: '0 auto 0 0', width: '82%', aspectRatio: '4/5', ...cropBg(interSrc(item, 0), { background: DEEP_BEIGE }), filter: 'saturate(.68)' }} />
           <div className="cl-reveal cl-blur" data-delay="380" style={{ position: 'relative', zIndex: 2, margin: '-58px 30px 0 auto', width: '78%', background: PAPER, padding: '34px 26px 30px', boxShadow: '0 26px 44px -36px rgba(53,23,20,.7)' }}>
             <blockquote style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: fs, lineHeight: 1.5, color: INK, textAlign: ta, whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>“{item.text || ''}”</blockquote>
+            {/* 인용문 아래 본문 — 따옴표 없이, 인용문과 같은 글꼴·정렬로 한 단계 작게 */}
+            {item.body ? <p style={{ margin: '26px 0 0', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: Math.round(fs * 0.82), lineHeight: 1.65, color: inkA(0.88), textAlign: ta, whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{item.body}</p> : null}
             {item.caption ? <p style={{ margin: '20px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55), textAlign: ta }}>{item.caption}</p> : null}
           </div>
         </section>
@@ -1522,7 +1526,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <div data-intro-inner onClick={() => setFrost(true)} style={{ position: 'absolute', inset: 0, cursor: 'pointer', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', inset: 0, ...(openBgImg ? bgOf(openBgImg, { backgroundPosition: '52% 38%' }) : { background: DARK_PHOTO }), animation: 'cl-kenburns 7s ease-out .2s both', willChange: 'transform' }} />
               {traceVeilOp > 0 && <div style={{ position: 'absolute', inset: 0, background: traceVeil, opacity: traceVeilOp, pointerEvents: 'none' }} />}
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', transform: traceTextY !== 50 ? `translateY(${traceTextY - 50}%)` : undefined }}>
                 <p style={{ ...label(9.5, 0.46, ivoryA(0.85)), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft .9s ease .35s both' : undefined }}>{nameCase('WE INVITE YOU')}</p>
                 <h1 style={{ margin: '22px 0 0', fontFamily: nameFont, fontSize: 42, lineHeight: 1.12, color: IVORY, textShadow: '0 2px 14px rgba(20,10,8,.55)', animation: frost ? 'cl-emerge 1.2s cubic-bezier(.22,.61,.36,1) .55s both' : undefined }}>{nameGroom}<br />{nameBride}</h1>
                 {sdCl && <p style={{ margin: '26px 0 0', fontFamily: F_BODY, fontSize: bfs(14), letterSpacing: '.04em', color: ivoryA(0.92), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft 1s ease 1.15s both' : undefined }}>{dateFullKo}</p>}
@@ -1786,7 +1790,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                   {cc.classicIntroShowParents !== false && parentsJsx(introA.side.father, introA.side.mother) && (
                     <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55), whiteSpace: 'nowrap' }}>{parentsJsx(introA.side.father, introA.side.mother)} 의 {introA.title}</p>
                   )}
-                  {introA.intro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: bfs(12), fontWeight: 600, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{introA.intro}</p>}
+                  {introA.intro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: bfs(12), fontWeight: 400, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{introA.intro}</p>}
                 </div>
               </div>
               <div className="cl-reveal cl-r" data-delay="340" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 16, ...(eachBox ? { padding: '22px 22px', background: PAPER, border: `1px solid ${inkA(0.24)}`, boxShadow: `inset 0 0 0 3px ${PAPER}, inset 0 0 0 4px ${inkA(0.12)}` } : eachNoFrame ? { padding: '2px 4px' } : { aspectRatio: eachFrame.aspect, padding: eachFrame.pad, backgroundImage: `url(${eachFrame.img})`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', filter: 'drop-shadow(0 14px 18px rgba(53,23,20,.12))' }) }}>
@@ -1796,7 +1800,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                   {cc.classicIntroShowParents !== false && parentsJsx(introB.side.father, introB.side.mother) && (
                     <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55), whiteSpace: 'nowrap' }}>{parentsJsx(introB.side.father, introB.side.mother)} 의 {introB.title}</p>
                   )}
-                  {introB.intro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: bfs(12), fontWeight: 600, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{introB.intro}</p>}
+                  {introB.intro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: bfs(12), fontWeight: 400, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{introB.intro}</p>}
                 </div>
                 <div style={{ flex: '0 0 84px', height: 106, borderRadius: 2, ...cropBg(introB.photo, { background: DEEP_BEIGE }), filter: 'saturate(.85)' }} />
               </div>
@@ -2120,7 +2124,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         {acctSides.length > 0 && !hiddenSet.has('accounts') && (
         <section style={{ order: orderOf('accounts'), position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 22, padding: '84px 30px', background: IVORY, backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.035) 0 1px,transparent 1px 9px)', ...tintBg('accounts') }}>
           <div className="cl-reveal cl-up" style={{ textAlign: 'center' }}>
-            <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: T_TITLE, color: fgC('accounts') }}>{nameCase('With Your Heart')}</h2>
+            <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: T_TITLE, color: fgC('accounts') }}>{nameCase('From the Heart')}</h2>
             <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.9, color: fgA('accounts', 0.65), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{(typeof cc.classicAccountMessage === 'string' && cc.classicAccountMessage.trim()) ? cc.classicAccountMessage : '참석이 어려우신 분들을 위해\n마음 전하실 곳을 안내드립니다.'}</p>
           </div>
           {acctSides.map((grp, gi) => (
@@ -2165,16 +2169,34 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             </>
           )
           return (<>
+          {/* 도일리: 기본은 원본 타원 비율(894:711), 글이 길면 도일리가 글 높이만큼 위아래로 늘어난다.
+              예전엔 aspect-ratio 로 비율을 잡았는데, 아이폰 사파리는 글이 넘쳐도 상자를 키우지 않아 글이 테두리에 닿았다.
+              → 비율용 빈 칸과 글을 같은 격자 칸에 겹쳐, 둘 중 큰 쪽이 높이가 되게 (모든 브라우저 동일) */}
           {thanksFrame === 'doily' ? (
-            <div className={thanksAnim === 'static' ? undefined : 'cl-reveal cl-fade'} style={{ position: 'relative', backgroundImage: "url('/classic/thanks-frame.webp')", backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', aspectRatio: '894 / 711', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16% 10%', boxSizing: 'border-box' }}>
-              <div style={{ textAlign: 'center' }}>{thanksBody(fgC('links'), (a) => fgA('links', a))}</div>
+            <div className={thanksAnim === 'static' ? undefined : 'cl-reveal cl-fade'} style={{ position: 'relative', backgroundImage: "url('/classic/thanks-frame.webp')", backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', display: 'grid' }}>
+              <div aria-hidden style={{ gridArea: '1 / 1', paddingTop: '79.53%' }} />
+              <div style={{ gridArea: '1 / 1', alignSelf: 'center', textAlign: 'center', padding: '16% 10%' }}>{thanksBody(fgC('links'), (a) => fgA('links', a))}</div>
             </div>
           ) : (
             <div className={thanksAnim === 'static' ? undefined : 'cl-reveal cl-blur'} style={{ position: 'relative', textAlign: 'center' }}>{thanksBody(INK, inkA)}</div>
           )}
           <div className="cl-reveal cl-up" data-delay="200" style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 12, marginTop: thanksLayout === 'top' ? 'auto' : undefined }}>
-            <button onClick={doShare} style={{ fontFamily: F_BODY, fontSize: bfs(13), letterSpacing: '.02em', padding: '15px 0', cursor: 'pointer', background: '#FEE500', border: '1px solid #FEE500', color: '#3C1E1E', whiteSpace: 'nowrap' }}>카카오톡 공유</button>
-            <button onClick={() => doCopy(shareUrl, 'link')} style={{ fontFamily: F_BODY, fontSize: bfs(13), letterSpacing: '.02em', padding: '15px 0', cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.35)}`, color: INK, whiteSpace: 'nowrap' }}>{copied === 'link' ? '링크 복사됨' : '링크 복사'}</button>
+            {/* 공유: 원 없이 가는 아이콘 + 글자 한 줄 — 도일리(타원)와 둥근 모양이 겹치지 않게, 장식은 도일리에 맡기고 링크는 조용히 */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 18, marginTop: 10 }}>
+              {[
+                { key: 'kakao', label: '카카오톡 공유', run: doShare, icon: <path d="M12 5C7.6 5 4 7.8 4 11.2c0 2.2 1.5 4.1 3.7 5.2l-.8 2.9 3.3-2.1c.6.1 1.2.1 1.8.1 4.4 0 8-2.8 8-6.1S16.4 5 12 5z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /> },
+                { key: 'link', label: copied === 'link' ? '복사되었어요' : '링크 복사', run: () => doCopy(shareUrl, 'link'), icon: <><path d="M10 13.5a4 4 0 0 0 5.66.34l2.5-2.5a4 4 0 0 0-5.66-5.66l-1.2 1.2" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /><path d="M14 10.5a4 4 0 0 0-5.66-.34l-2.5 2.5a4 4 0 0 0 5.66 5.66l1.2-1.2" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></> },
+              ].map((o, i) => (
+                <span key={o.key} style={{ display: 'contents' }}>
+                  {i > 0 && <span aria-hidden style={{ width: 1, height: 12, background: inkA(0.22) }} />}
+                  <button type="button" onClick={o.run}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: 0, padding: '8px 2px', cursor: 'pointer', fontFamily: F_BODY, fontSize: bfs(12.5), letterSpacing: '.03em', color: inkA(0.68), whiteSpace: 'nowrap' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden>{o.icon}</svg>
+                    {o.label}
+                  </button>
+                </span>
+              ))}
+            </div>
           </div>
           </>) })()}
         </section>

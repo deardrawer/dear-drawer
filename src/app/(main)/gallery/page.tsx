@@ -177,7 +177,7 @@ export default function GalleryPage() {
                 샘플보기 · 무료로 시작하기
               </Link>
               <p className="text-[10px] sm:text-sm text-white/70">
-                모바일 청첩장 12,900원부터 · 완성 후 결제
+                완성 후 결제
               </p>
             </div>
           </div>
@@ -470,7 +470,7 @@ export default function GalleryPage() {
               무료로 청첩장 만들기
             </Link>
             <p className="text-[9px] sm:text-xs text-gray-500 mt-4 sm:mt-6">
-              완성 후 결제 (12,900원부터)
+              완성 후 결제
             </p>
             <WeeklyCounter />
           </div>

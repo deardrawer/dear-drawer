@@ -178,6 +178,14 @@ export const PAPER_TEXTURE = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://w
 
 export type { IntroStyleId }
 
+/** 인트로 화면이 실제로 몇 배로 보이는지 — 에디터 미리보기는 휴대폰 크기로 그린 뒤 통째로 줄여서(transform) 보여주므로,
+ *  손가락 좌표·이동 거리를 이 값으로 나눠 인트로 안의 좌표로 되돌린다. 실제 청첩장에선 1 */
+export function stageScale(el: Element | null | undefined): number {
+  const f = el?.closest?.('[data-intro-frame]') as HTMLElement | null
+  if (!f || !f.offsetWidth) return 1
+  return f.getBoundingClientRect().width / f.offsetWidth || 1
+}
+
 export interface PhotoCrop { cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number; scale?: number; positionX?: number; positionY?: number }
 
 /** 사진 필드의 실제 사진: 직접 고른 사진 > 대체 사진 (대표 사진 또는 갤러리 n번) */

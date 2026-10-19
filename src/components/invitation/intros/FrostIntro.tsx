@@ -3,7 +3,7 @@
 // 불투명 유리: 흐린 유리 위에 두 사람의 영문 이름이 손가락으로 쓴 듯 맑게 드러나고,
 // 하객이 하트를 그리듯 문지르면 유리가 걷히며 사진이 드러난다.
 import { useEffect, useRef, useState } from 'react'
-import { type IntroStyleProps, cropOf, lines, photoOf } from './shared'
+import { type IntroStyleProps, cropOf, lines, photoOf, stageScale } from './shared'
 import IntroPhoto from './IntroPhoto'
 import RevealCaption from './RevealCaption'
 import { whenFontReady } from '@/lib/fontReady'
@@ -177,8 +177,8 @@ export default function FrostIntro({ w, h, opts, data, finished, reduced, signal
   const last = useRef<[number, number] | null>(null)
   const moved = useRef(false)
   const pos = (e: React.PointerEvent): [number, number] => {
-    const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
-    return [e.clientX - r.left, e.clientY - r.top]
+    const el = e.currentTarget as HTMLElement, r = el.getBoundingClientRect(), k = stageScale(el)
+    return [(e.clientX - r.left) / k, (e.clientY - r.top) / k]
   }
 
   return (

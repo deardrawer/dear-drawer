@@ -85,6 +85,7 @@ export interface ClassicInvitationData {
     classicTraceVeilColor?: string // 트레이싱지 걷어낸 사진 위 오버레이 색상
     classicTraceVeilOpacity?: number // 트레이싱지 오버레이 투명도 0~1 (0=없음, 자연 사진)
     classicTraceStartText?: string // 트레이싱지 시작 전 문구 (기본 '화면을 누르세요')
+    classicTraceTextY?: number // 트레이싱지 걷어낸 뒤 글자 묶음 세로 위치 20~75 (50=가운데, 기본) — 사진 속 얼굴과 겹치지 않게
     classicInfoStartText?: string // 접힌편지·사진뒤집기 안내 문구 (기본 '예식 정보 빠르게 확인하기')
     classicInfoOverlayColor?: string // 접힌편지·사진뒤집기 배경 오버레이 색상
     classicInfoOverlayOpacity?: number // 접힌편지·사진뒤집기 처음(어두운 상태) 오버레이 투명도 0~1 (기본 0.42)
@@ -119,7 +120,7 @@ export interface ClassicInvitationData {
     classicBridePhoto?: ClassicPhoto // 신부 사진 (각자)
     classicTogetherPhoto?: ClassicPhoto // 함께 사진
     // 본문 · 간지 (사진2 / FULL / 인용구)
-    classicInterstitials?: { type: 'photo2' | 'photo1' | 'photoText'; photos?: ClassicPhoto[]; text?: string; caption?: string }[]
+    classicInterstitials?: { type: 'photo2' | 'photo1' | 'photoText'; photos?: ClassicPhoto[]; text?: string; body?: string; caption?: string }[]
     // 본문 · 예식 일정 사진
     classicDatePhoto?: ClassicPhoto
     classicDatePhotoEnabled?: boolean // 예식 일정 폴라로이드 사진 표시 여부 (기본 true)

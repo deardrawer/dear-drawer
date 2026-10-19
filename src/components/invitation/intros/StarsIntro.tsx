@@ -4,7 +4,7 @@
 // 예식 그 시각·그 자리 위의 실제 하늘(밝은 별)이 둥근 별지도로 펼쳐지고,
 // 단어마다 별이 하나씩 이어져 두 사람의 문장이 된다. 다 이어지면 이름 · 그날의 하늘 · 좌표.
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { type IntroStyleProps, isDark, lines, str } from './shared'
+import { type IntroStyleProps, isDark, lines, str, stageScale } from './shared'
 import { skyCity, skyStars, coordText } from '@/lib/skyMap'
 
 // 단어 8개까지의 별 자리 (화면 비율) — 왼쪽 위에서 흘러내리는 손잡이(1~4) + 오른쪽 아래 국자(4~8)
@@ -28,8 +28,9 @@ function textWidth(t: string, font: string) {
 }
 
 export default function StarsIntro({ w: W, h: H, opts, data, finished, reduced, signal, onComplete }: IntroStyleProps) {
-  // 안내 팝업 축소 비율 (375px 보다 좁은 칸에서만)
-  const popK = W > 0 ? Math.min(1, W / 375) : 1
+  // 안내 팝업 축소 비율 — 아주 좁은 칸(320px 미만)에서만. 실제 휴대폰(320px 이상)은 원래 크기 그대로
+  // (에디터 미리보기는 이제 390px 화면으로 그린 뒤 통째로 줄이므로 여기선 1)
+  const popK = W > 0 ? Math.min(1, W / 320) : 1
   const bg = str(opts.bg, '#F4D9DE')
   const ink = str(opts.ink, '#7A3B45')
   const soft = isDark(bg) ? 'rgba(255,255,255,.12)' : 'rgba(255,255,255,.72)'
@@ -98,7 +99,7 @@ export default function StarsIntro({ w: W, h: H, opts, data, finished, reduced, 
   const [band, setBand] = useState<[number, number] | null>(null)
   const ref = useRef<HTMLDivElement>(null)
   const down = useRef<{ x: number; y: number; moved: boolean } | null>(null)
-  const pos = (e: React.PointerEvent): [number, number] => { const r = ref.current!.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top] }
+  const pos = (e: React.PointerEvent): [number, number] => { const r = ref.current!.getBoundingClientRect(), k = stageScale(ref.current); return [(e.clientX - r.left) / k, (e.clientY - r.top) / k] }
   const advance = () => setIdx(i => Math.min(n - 1, i + 1))
 
   const nameLine = str(opts.sign) || (data.groomEn && data.brideEn ? `${data.groomEn.toUpperCase()} & ${data.brideEn.toUpperCase()}` : `${data.groomName} & ${data.brideName}`)

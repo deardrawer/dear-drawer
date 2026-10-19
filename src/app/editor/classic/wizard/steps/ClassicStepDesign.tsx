@@ -166,6 +166,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
     }
     if (id === '트레이싱지') {
       const op = Math.round((data.content.classicTraceVeilOpacity ?? 0) * 100)
+      const ty = data.content.classicTraceTextY ?? 50
       return (
         <div className="mt-2 space-y-3 rounded-lg border border-gray-200 p-4 bg-white">
           <div>
@@ -176,6 +177,25 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
               placeholder="소중한 분을 초대합니다."
               className="mt-1 w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-gray-600"
             />
+          </div>
+          <div>
+            <div className="flex items-baseline justify-between">
+              <p className="text-sm font-medium text-gray-700">글자 높이</p>
+              {ty !== 50 && <button type="button" onClick={() => updateNestedData('content.classicTraceTextY', 50)} className="text-[11px] text-gray-500 underline underline-offset-2">가운데로</button>}
+            </div>
+            <p className="text-[10px] text-gray-400 leading-tight">걷어낸 뒤 나오는 이름·날짜 묶음을 위아래로 옮겨요. 사진 속 얼굴과 겹칠 때 써 주세요 (미리보기를 눌러 걷어낸 뒤 조절하면 바로 보여요)</p>
+            <div className="mt-2 flex items-center gap-3">
+              <span className="text-[11px] text-gray-500">위</span>
+              <input
+                type="range"
+                min={20}
+                max={75}
+                value={ty}
+                onChange={(e) => updateNestedData('content.classicTraceTextY', Number(e.target.value))}
+                className="flex-1 accent-gray-900"
+              />
+              <span className="text-[11px] text-gray-500">아래</span>
+            </div>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-700">사진 오버레이</p>

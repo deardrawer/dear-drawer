@@ -9,6 +9,7 @@ export type ClassicInter = {
   type: 'photo2' | 'photo1' | 'photoText'
   photos?: ClassicPhoto[]
   text?: string
+  body?: string // 인용구: 인용문 아래 본문 (따옴표 없이)
   caption?: string
   bg?: ClassicPhoto
   overlayColor?: string
@@ -142,6 +143,18 @@ export default function ClassicInterstitialEditor({ value, onChange, invitationI
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+            {it.type === 'photoText' && (
+              <div className="space-y-1.5">
+                <span className="text-sm font-medium text-gray-700">본문 (선택)</span>
+                <p className="text-[10px] text-gray-400 leading-tight">인용문 아래에 따옴표 없이 이어지는 글이에요. 글자 크기·정렬은 인용문과 같이 맞춰져요.</p>
+                <Textarea
+                  value={it.body || ''}
+                  onChange={(e) => update(i, { body: e.target.value })}
+                  placeholder={'평생을 함께하기로 약속한 저희 두 사람,\n작은 결혼식을 올립니다.'}
+                  rows={4}
+                />
               </div>
             )}
             {meta.hasCaption && (

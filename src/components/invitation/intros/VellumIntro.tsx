@@ -4,7 +4,7 @@
 // 테이프 오른쪽 끝을 왼쪽으로 당겨 떼면 종이가 휘며 위아래로 열리고, 꽉 찬 사진 아래쪽에 이름이 써진다.
 // 종이가 휘는 효과는 얇은 띠 여러 장을 중첩해 각각 rotateX 하는 방식 (샘플과 동일).
 import { useEffect, useRef, useState } from 'react'
-import { type IntroStyleProps, cropOf, photoOf, str } from './shared'
+import { type IntroStyleProps, cropOf, photoOf, str, stageScale } from './shared'
 import IntroPhoto from './IntroPhoto'
 import RevealCaption from './RevealCaption'
 import FitLine from './FitLine'
@@ -182,7 +182,7 @@ export default function VellumIntro({ w, h, opts, data, finished, reduced, signa
 
     // ── 테이프 떼기: 오른쪽 끝에서 k만큼 뒤집혀 접힌다
     const K0 = 12
-    let k = K0, opened = false, touched = false, drag = false, moved = false, x0 = 0, ks = 0, last = 0, lastT = 0, v = 0
+    let k = K0, opened = false, touched = false, drag = false, moved = false, x0 = 0, ks = 0, last = 0, lastT = 0, v = 0, sc = 1
     const setK = (nk: number) => {
       const Lw = tape.offsetWidth
       k = Math.max(0, Math.min(Lw, nk))
@@ -245,14 +245,14 @@ export default function VellumIntro({ w, h, opts, data, finished, reduced, signa
       down: (e) => {
         if (opened) return
         touched = true; setHint(false); cancelAnimationFrame(raf)
-        drag = true; moved = false; x0 = last = e.clientX; lastT = e.timeStamp; ks = k; v = 0
+        drag = true; moved = false; x0 = last = e.clientX; lastT = e.timeStamp; ks = k; v = 0; sc = stageScale(tape)
         tape.setPointerCapture?.(e.pointerId)
       },
       move: (e) => {
         if (!drag) return
-        const dist = x0 - e.clientX
+        const dist = (x0 - e.clientX) / sc
         if (Math.abs(dist) > 6) moved = true
-        const dt = Math.max(1, e.timeStamp - lastT); v = (last - e.clientX) / dt; last = e.clientX; lastT = e.timeStamp
+        const dt = Math.max(1, e.timeStamp - lastT); v = (last - e.clientX) / sc / dt; last = e.clientX; lastT = e.timeStamp
         setK(Math.max(K0, ks + dist / 2))
       },
       up: () => {

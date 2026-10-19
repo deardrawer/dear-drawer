@@ -60,8 +60,35 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
+// 미리보기는 휴대폰 화면(폭 390px) 기준으로 그린 뒤 칸 크기에 맞춰 통째로 줄인다.
+// 칸이 좁다고 글자 크기·줄바꿈·요소 배치가 달라지지 않아, 실제 청첩장과 같은 구도로 보인다.
+const STAGE_W = 390
+function PreviewStage({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [box, setBox] = useState({ w: 0, h: 0 })
+  useEffect(() => {
+    const el = ref.current; if (!el) return
+    const ro = new ResizeObserver(([e]) => setBox({ w: e.contentRect.width, h: e.contentRect.height }))
+    ro.observe(el); return () => ro.disconnect()
+  }, [])
+  const k = box.w / STAGE_W
+  return (
+    <div ref={ref} className="relative w-full h-full overflow-hidden bg-black">
+      {box.w > 0 && (
+        <div style={{ position: 'absolute', left: 0, top: 0, width: STAGE_W, height: box.h / k, transform: `scale(${k})`, transformOrigin: '0 0' }}>
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // 인터랙티브 스타일은 실제 하객 화면과 같은 컴포넌트로 미리보기한다
 export default function IntroPreview(props: IntroPreviewProps) {
+  return <PreviewStage><IntroPreviewInner {...props} /></PreviewStage>
+}
+
+function IntroPreviewInner(props: IntroPreviewProps) {
   const { settings } = props
   const [round, setRound] = useState(0)
   // 스타일 설정을 바꾸면 바로 결과가 보이도록 완료 화면으로 (다 보고 넘기면 다시 처음부터)

@@ -144,7 +144,7 @@ export default function InteractiveIntro({ styleId, settings, data, onNext, embe
       onTouchEnd={onTouchEnd}
       style={{ opacity: fading ? 0 : 1, transition: 'opacity .5s ease' }}
     >
-      <div ref={frameRef} className={`relative overflow-hidden ${embedded ? 'w-full h-full' : 'dd-intro-frame'}`} style={{ overflow: 'clip', userSelect: 'none', WebkitUserSelect: 'none' }}>
+      <div ref={frameRef} data-intro-frame className={`relative overflow-hidden ${embedded ? 'w-full h-full' : 'dd-intro-frame'}`} style={{ overflow: 'clip', userSelect: 'none', WebkitUserSelect: 'none' }}>
         {Style && measured && (
           <Style w={size.w} h={size.h} opts={opts} data={withStyleNames(data, opts)} finished={finished} reduced={reduced} signal={signal} onComplete={handleComplete} />
         )}

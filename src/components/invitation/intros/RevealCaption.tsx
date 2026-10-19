@@ -123,7 +123,8 @@ export default function RevealCaption({ w, h, opts, data, open, instant }: { w: 
   const later = (delay: number): React.CSSProperties => ({ opacity: open ? 1 : 0, transition: instant ? 'none' : `opacity .9s ease ${delay}s` })
 
   return (
-    <>
+    // 보여주기만 하는 문구 — 터치는 아래 인트로(유리 그리기·띠 뜯기 등)로 그대로 통과시킨다
+    <div className="absolute inset-0 pointer-events-none">
       {/* 열린 뒤: 사진 전체를 살짝 가라앉혀 흰 글씨가 읽히게 */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: mode === 'poster' ? 'linear-gradient(rgba(10,10,10,0) 45%, rgba(10,10,10,.62))' : mode === 'editorial' ? 'rgba(10,12,9,.34)' : 'radial-gradient(ellipse 90% 60% at 50% 58%, rgba(15,12,10,.34), rgba(15,12,10,.14) 70%, rgba(15,12,10,.08))', opacity: open ? 1 : 0, transition: instant ? 'none' : 'opacity 1.4s ease .4s' }} />
       {/* 가운데 조금 아래: THE STORY OF / 손글씨 이름 / 날짜 */}
@@ -201,6 +202,6 @@ export default function RevealCaption({ w, h, opts, data, open, instant }: { w: 
           </>
         )}
       </div>}
-    </>
+    </div>
   )
 }

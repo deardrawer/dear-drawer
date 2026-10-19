@@ -3,7 +3,7 @@
 // 넘겨 읽는 엽서: 필름 느낌 배경 위로 가로형 엽서가 도착하고 소인이 쾅 찍힌다.
 // 옆으로 넘기면 뒷면 왼쪽 절반을 채운 사진과 오른쪽 손글씨 메모가 펜으로 쓰듯 한 줄씩 써지고, 마지막에 하트를 그린다.
 import { useEffect, useId, useRef, useState } from 'react'
-import { type IntroStyleProps, PAPER_TEXTURE, cropOf, lines, photoOf, str } from './shared'
+import { type IntroStyleProps, PAPER_TEXTURE, cropOf, lines, photoOf, str, stageScale } from './shared'
 import IntroPhoto from './IntroPhoto'
 import { whenFontReady } from '@/lib/fontReady'
 import { POSTCARD_DEFAULT_PHOTO } from '@/lib/introStyles'
@@ -166,7 +166,7 @@ export default function PostcardIntro({ w, opts, data, finished, reduced, signal
   }
 
   // 옆으로 넘기기: 손가락을 따라 돌아가고, 충분히 넘기거나 누르면 뒤집힌다
-  const start = useRef<{ x: number; moved: boolean } | null>(null)
+  const start = useRef<{ x: number; moved: boolean; sc: number } | null>(null)
   const angle = flipped ? -180 : drag ?? 0
   const springBack = drag === null && !flipped
   const ease = instant ? 'none' : undefined
@@ -188,17 +188,17 @@ export default function PostcardIntro({ w, opts, data, finished, reduced, signal
         }}>
           <div className={stamped && !instant && !flipped ? 'dd-pc-thud' : flipped && !instant ? 'dd-pc-lift' : undefined}>
             <div data-intro-gesture className="relative" style={{ width: cw, height: ch, touchAction: 'pan-y' }}
-              onPointerDown={(e) => { if (flipped) return; setHint(false); start.current = { x: e.clientX, moved: false }; (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId) }}
+              onPointerDown={(e) => { if (flipped) return; setHint(false); start.current = { x: e.clientX, moved: false, sc: stageScale(e.currentTarget as Element) }; (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId) }}
               onPointerMove={(e) => {
                 if (!start.current || flipped) return
-                const dx = e.clientX - start.current.x
+                const dx = (e.clientX - start.current.x) / start.current.sc
                 if (Math.abs(dx) > 6) start.current.moved = true
                 if (start.current.moved) setDrag(Math.max(-120, Math.min(0, dx / w * 200)))
               }}
               onPointerUp={(e) => {
                 const s = start.current; start.current = null
                 if (!s || flipped) return
-                const dx = e.clientX - s.x
+                const dx = (e.clientX - s.x) / s.sc
                 if (!s.moved || dx < -w * 0.25) flip(); else setDrag(null)
               }}>
               <div className="absolute inset-0" style={{

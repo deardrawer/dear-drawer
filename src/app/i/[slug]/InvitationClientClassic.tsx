@@ -673,7 +673,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <div className="cl-reveal cl-up" data-delay="380" style={{ marginTop: 22, fontFamily: F_BODY, fontSize: 12, letterSpacing: '.22em', paddingLeft: '.22em', color: dTxA(0.72) }}>{year}년 {monthIdx0 + 1}월 · {WEEK_KO[dow]}요일</div>
           </div>
           {dateCustomMsg('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다').trim() && (
-            <p className="cl-reveal cl-blur" data-delay="240" style={{ margin: '40px 0 36px', textAlign: 'center', fontFamily: F_BODY, fontSize: 13.5, lineHeight: 2, letterSpacing: '.02em', color: dTxA(0.82), whiteSpace: 'pre-line' }}>{dateCustomMsg('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다')}</p>
+            <p className="cl-reveal cl-blur" data-delay="240" style={{ margin: '40px 0 36px', textAlign: 'center', fontFamily: F_BODY, fontSize: 13.5, lineHeight: 1.7, letterSpacing: '.02em', color: dTxA(0.82), whiteSpace: 'pre-line' }}>{dateCustomMsg('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다')}</p>
           )}
           <div style={{ marginTop: 'auto' }}>
             <div className="cl-reveal cl-linex" data-delay="80" style={{ height: 1, background: dTxA(0.24), transformOrigin: 'center' }} />
@@ -767,7 +767,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {dday !== null && dday >= 0 && <span className="cl-reveal cl-boop" data-delay="920" style={{ fontFamily: F_NUM, fontWeight: 400, fontSize: 30, lineHeight: 1, color: datePoint, whiteSpace: 'nowrap' }}>{dday === 0 ? '오늘' : `D-${dday}`}</span>}
         </div>
         {dateCustomMsg('함께 걸어온 시간을\n같은 이름으로 이어가고자 합니다.').trim() && (
-          <p className="cl-reveal cl-blur" data-delay="1040" style={{ margin: '34px 0 0', fontFamily: F_BODY, fontSize: 15, lineHeight: 2, color: '#5b5449', whiteSpace: 'pre-line' }}>{dateCustomMsg('함께 걸어온 시간을\n같은 이름으로 이어가고자 합니다.')}</p>
+          <p className="cl-reveal cl-blur" data-delay="1040" style={{ margin: '34px 0 0', fontFamily: F_BODY, fontSize: 15, lineHeight: 1.7, color: '#5b5449', whiteSpace: 'pre-line' }}>{dateCustomMsg('함께 걸어온 시간을\n같은 이름으로 이어가고자 합니다.')}</p>
         )}
         <div className="cl-reveal cl-place" data-delay="1200" style={{ marginTop: 'auto', marginLeft: -22, marginRight: -22, background: '#FFFFFF', border: '1px solid rgba(43,39,36,.1)', padding: '22px 22px 20px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
           <div style={{ paddingBottom: 18, borderBottom: '1px solid rgba(43,39,36,.18)' }}>
@@ -1891,7 +1891,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     )}
                   </div>
                 </div>
-                <p style={{ margin: '18px 0 0', padding: '0 12px', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: introFgAf(0.7), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{coupleTogetherText}</p>
+                <p style={{ margin: '18px 0 0', padding: '0 12px', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: introFgAf(0.7), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{coupleTogetherText}</p>
               </div>
             </>
             ) })()
@@ -2175,7 +2175,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               {extractUrl(g.photo) && <div style={{ aspectRatio: '4/3', margin: '0 0 20px', ...cropBg(g.photo, { background: DEEP_BEIGE }), filter: 'saturate(.75)' }} />}
               <p style={{ margin: 0, textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: T_SUBTITLE, color: INK }}>{g.title}</p>
               <div style={{ width: 22, height: 1, background: inkA(0.25), margin: '13px auto' }} />
-              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.9, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{g.body}</p>
+              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.7, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{g.body}</p>
             </div>
           ))}
         </section>
@@ -2186,7 +2186,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         <section style={{ order: orderOf('accounts'), position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 22, padding: '84px 30px', background: IVORY, backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.035) 0 1px,transparent 1px 9px)', ...tintBg('accounts') }}>
           <div className="cl-reveal cl-up" style={{ textAlign: 'center' }}>
             <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), color: fgC('accounts') }}>{nameCase('From the Heart')}</h2>
-            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: fgA('accounts', 0.65), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{(typeof cc.classicAccountMessage === 'string' && cc.classicAccountMessage.trim()) ? cc.classicAccountMessage : '참석이 어려우신 분들을 위해\n마음 전하실 곳을 안내드립니다.'}</p>
+            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: fgA('accounts', 0.65), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{(typeof cc.classicAccountMessage === 'string' && cc.classicAccountMessage.trim()) ? cc.classicAccountMessage : '참석이 어려우신 분들을 위해\n마음 전하실 곳을 안내드립니다.'}</p>
           </div>
           {acctSides.map((grp, gi) => (
             <div key={gi} className="cl-reveal cl-up" data-delay={gi * 150} style={{ background: '#FFFFFF', padding: '24px 22px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
@@ -2267,7 +2267,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         <section style={{ order: orderOf('rsvp'), position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 30, padding: '84px 30px', background: IVORY, ...hide('rsvp'), ...tintBg('rsvp') }}>
           <div className="cl-reveal cl-up" style={{ textAlign: 'center' }}>
             <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), color: rInk }}>R.S.V.P</h2>
-            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: rInkA(0.62), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{cc.classicRsvpNotice || '참석 여부를 알려주시면\n정성껏 준비하겠습니다.'}</p>
+            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: rInkA(0.62), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{cc.classicRsvpNotice || '참석 여부를 알려주시면\n정성껏 준비하겠습니다.'}</p>
           </div>
 
           {rsvpAttend === 'attending' ? (

@@ -406,7 +406,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // ===== THE CLASSIC 타이포 스케일 (역할별 통일 · base 값, *Scale 적용 전) =====
   const T_EYEBROW = 10.5   // 섹션 킥커 (GALLERY, LOCATION, INVITATION 등 대문자 라벨)
   const T_ROLE = 8.5       // 소형 역할 라벨 (GROOM / BRIDE / 부모 / 신랑측·신부측)
-  const T_TITLE = 30       // 섹션 제목 (스크립트 이탤릭: Thank You, R.S.V.P, 예식장명 등)
+  const T_TITLE = 30       // 섹션 제목 (스크립트 이탤릭: Information, Thank You, R.S.V.P 등) — '상단문구 크기'(lfs) 를 따른다
   const T_SUBTITLE = 18    // 소제목 (안내 항목 제목 등)
   // 오프닝 이름 언어 (영문/한글) — 5종 공통
   const nameLang: string = cc.classicOpeningNameLang === 'ko' ? 'ko' : 'en'
@@ -1730,7 +1730,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {introHasBg && introSecOverlayOp > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(${hexToRgb(introSecOverlay, '28,16,13')},${introSecOverlayOp})`, pointerEvents: 'none', zIndex: -1 }} />}
           {cc.classicIntroTitle && (
             cc.classicIntroTitleStyle === 'title' ? (
-              <h2 className="cl-reveal cl-up" style={{ margin: 0, textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: T_TITLE, letterSpacing: '.02em', color: introFgC }}>{nameCase(cc.classicIntroTitle)}</h2>
+              <h2 className="cl-reveal cl-up" style={{ margin: 0, textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), letterSpacing: '.02em', color: introFgC }}>{nameCase(cc.classicIntroTitle)}</h2>
             ) : (
               <p className="cl-reveal cl-up" style={{ ...label(T_EYEBROW, 0.44, introFgAf(0.5)), textAlign: 'center', whiteSpace: 'normal' }}>{nameCase(cc.classicIntroTitle)}</p>
             )
@@ -1834,7 +1834,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     )}
                   </div>
                 </div>
-                <p style={{ margin: '18px 0 0', padding: '0 12px', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 2, color: introFgAf(0.7), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{coupleTogetherText}</p>
+                <p style={{ margin: '18px 0 0', padding: '0 12px', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: introFgAf(0.7), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{coupleTogetherText}</p>
               </div>
             </>
             ) })()
@@ -2053,12 +2053,12 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           </div>
           )}
           <div className="cl-reveal cl-zoom" data-delay="120" style={{ position: 'relative', zIndex: 2, margin: dirMapBottom ? '0 26px' : '-34px 26px 0', background: '#FFFFFF', padding: '34px 28px 30px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
-            <p style={{ margin: 0, textAlign: 'center', ...label(T_EYEBROW, 0.44, inkA(0.45)) }}>{nameCase('LOCATION')}</p>
+            <p style={{ margin: 0, textAlign: 'center', ...label(T_EYEBROW, 0.44, inkA(0.62)) }}>{nameCase('LOCATION')}</p>
             <h2 className="cl-reveal cl-up" data-delay="300" style={{ margin: '12px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(18), fontWeight: 500, letterSpacing: '.01em', color: INK }}>{venueName}</h2>
-            {venueHall && <p className="cl-reveal cl-rise" data-delay="400" style={{ margin: '6px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11.5), color: inkA(0.6) }}>{venueHall}</p>}
+            {venueHall && <p className="cl-reveal cl-rise" data-delay="400" style={{ margin: '6px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11.5), color: inkA(0.88) }}>{venueHall}</p>}
             <div className="cl-reveal cl-rise" data-delay="480" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '10px 0 0' }}>
-              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.7) }}>{venueAddress}</p>
-              <button onClick={() => doCopy(venueAddress, 'addr')} style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(9.5), cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.3)}`, color: inkA(0.7), borderRadius: 4, padding: '3px 8px', whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '주소 복사'}</button>
+              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: INK }}>{venueAddress}</p>
+              <button onClick={() => doCopy(venueAddress, 'addr')} style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(9.5), cursor: 'pointer', background: INK, border: `1px solid ${INK}`, color: '#FFFFFF', borderRadius: 0, padding: '4px 9px', letterSpacing: '.02em', whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '주소 복사'}</button>
             </div>
             {dirDisplay.length > 0 && (
               <>
@@ -2066,8 +2066,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   {dirDisplay.map((r, i) => (
                     <div key={i} className="cl-reveal cl-rise" data-delay={200 + i * 90} style={{ display: 'flex', gap: 14 }}>
-                      <span style={{ flex: '0 0 50px', fontFamily: F_BODY, fontSize: bfs(10.5), fontWeight: 600, color: inkA(0.55), paddingTop: 2 }}>{r.label}</span>
-                      <p style={{ margin: 0, flex: 1, fontFamily: F_BODY, fontSize: bfs(11), lineHeight: 1.8, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{r.text}</p>
+                      <span style={{ flex: '0 0 56px', fontFamily: F_BODY, fontSize: bfs(11.5), letterSpacing: '.02em', color: INK, paddingTop: 1 }}>{r.label}</span>
+                      <p style={{ margin: 0, flex: 1, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.8, color: inkA(0.92), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{r.text}</p>
                     </div>
                   ))}
                 </div>
@@ -2077,8 +2077,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               <div className="cl-reveal cl-rise" style={{ marginTop: 20, paddingTop: 18, borderTop: `1px solid ${inkA(0.14)}`, display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {dirExtras.map((ex, i) => (
                   <div key={i}>
-                    {ex.title && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(11), fontWeight: 600, letterSpacing: '.04em', color: inkA(0.55) }}>{ex.title}</p>}
-                    {ex.body && <p style={{ margin: ex.title ? '8px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(11), lineHeight: 1.8, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{ex.body}</p>}
+                    {ex.title && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(11.5), letterSpacing: '.04em', color: INK }}>{ex.title}</p>}
+                    {ex.body && <p style={{ margin: ex.title ? '8px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.8, color: inkA(0.92), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{ex.body}</p>}
                   </div>
                 ))}
               </div>
@@ -2091,9 +2091,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             )}
             {!isGoogleMap && (
             <div style={{ display: 'flex', gap: 7, margin: '22px 0 0' }}>
-              <a href={`https://map.naver.com/p/search/${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#03C75A', flexShrink: 0 }} />네이버지도</a>
-              <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FEE500', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)', flexShrink: 0 }} />카카오맵</a>
-              <a href={`tmap://search?name=${encodeURIComponent(venueName)}`} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#00C7B1', flexShrink: 0 }} />티맵</a>
+              <a href={`https://map.naver.com/p/search/${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '7px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: INK, borderRadius: 0, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#03C75A', flexShrink: 0 }} />네이버지도</a>
+              <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '7px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: INK, borderRadius: 0, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FEE500', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)', flexShrink: 0 }} />카카오맵</a>
+              <a href={`tmap://search?name=${encodeURIComponent(venueName)}`} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '7px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: INK, borderRadius: 0, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#00C7B1', flexShrink: 0 }} />티맵</a>
             </div>
             )}
           </div>
@@ -2106,8 +2106,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {infoSecOverlayOp > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(${hexToRgb(infoSecOverlay, '28,16,13')},${infoSecOverlayOp})`, pointerEvents: 'none', zIndex: -1 }} />}
           <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none', backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.05) 0 1px,transparent 1px 9px)' }} />
           <div className="cl-reveal cl-up" style={{ position: 'relative', textAlign: 'center', marginBottom: 6 }}>
-            <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: T_TITLE, letterSpacing: '.02em', color: infoFgC }}>{nameCase('Information')}</h2>
-            <p style={{ margin: '10px 0 0', fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.02em', color: infoFgAf(0.6) }}>결혼식 안내</p>
+            <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), letterSpacing: '.02em', color: infoFgC }}>{nameCase('Information')}</h2>
+            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(14), letterSpacing: '.08em', paddingLeft: '.08em', color: infoFgAf(0.62) }}>결혼식 안내</p>
           </div>
           {guideList.map((g, i) => (
             <div key={i} className="cl-reveal cl-up" data-delay={i * 130} style={{ position: 'relative', background: '#FFFFFF', padding: extractUrl(g.photo) ? '14px 14px 26px' : '26px 24px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
@@ -2124,8 +2124,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         {acctSides.length > 0 && !hiddenSet.has('accounts') && (
         <section style={{ order: orderOf('accounts'), position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 22, padding: '84px 30px', background: IVORY, backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.035) 0 1px,transparent 1px 9px)', ...tintBg('accounts') }}>
           <div className="cl-reveal cl-up" style={{ textAlign: 'center' }}>
-            <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: T_TITLE, color: fgC('accounts') }}>{nameCase('From the Heart')}</h2>
-            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.9, color: fgA('accounts', 0.65), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{(typeof cc.classicAccountMessage === 'string' && cc.classicAccountMessage.trim()) ? cc.classicAccountMessage : '참석이 어려우신 분들을 위해\n마음 전하실 곳을 안내드립니다.'}</p>
+            <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), color: fgC('accounts') }}>{nameCase('From the Heart')}</h2>
+            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: fgA('accounts', 0.65), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{(typeof cc.classicAccountMessage === 'string' && cc.classicAccountMessage.trim()) ? cc.classicAccountMessage : '참석이 어려우신 분들을 위해\n마음 전하실 곳을 안내드립니다.'}</p>
           </div>
           {acctSides.map((grp, gi) => (
             <div key={gi} className="cl-reveal cl-up" data-delay={gi * 150} style={{ background: '#FFFFFF', padding: '24px 22px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
@@ -2155,7 +2155,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {(() => { const INK = thanksFgC; const inkA = (a: number) => thanksFgAf(a)
           const thanksBody = (col: string, colA: (a: number) => string) => (
             <>
-              <p style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: T_TITLE, color: col }}>{nameCase('Thank You')}</p>
+              <p style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), color: col }}>{nameCase('Thank You')}</p>
               {thanksAnim !== 'typing' ? (
                 <p style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{cc.classicThankYou || '귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.'}</p>
               ) : (
@@ -2204,8 +2204,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         {/* ===== XIII. RSVP (봉투 → 참석 클릭 시 상세 폼) ===== */}
         <section style={{ order: orderOf('rsvp'), position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 30, padding: '84px 30px', background: IVORY, ...hide('rsvp'), ...tintBg('rsvp') }}>
           <div className="cl-reveal cl-up" style={{ textAlign: 'center' }}>
-            <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: T_TITLE, color: rInk }}>R.S.V.P</h2>
-            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.9, color: rInkA(0.62), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{cc.classicRsvpNotice || '참석 여부를 알려주시면\n정성껏 준비하겠습니다.'}</p>
+            <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), color: rInk }}>R.S.V.P</h2>
+            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: rInkA(0.62), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{cc.classicRsvpNotice || '참석 여부를 알려주시면\n정성껏 준비하겠습니다.'}</p>
           </div>
 
           {rsvpAttend === 'attending' ? (

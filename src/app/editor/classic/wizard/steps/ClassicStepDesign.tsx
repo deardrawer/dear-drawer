@@ -488,6 +488,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
               </div>
               <div>
                 <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span className="font-medium text-gray-700">상단문구 크기</span><span>{eyebrowPct}%</span></div>
+                <p className="text-[10px] text-gray-400 leading-tight mb-1">GALLERY 같은 작은 라벨과 INFORMATION · THANK YOU · R.S.V.P 같은 섹션 제목에 함께 적용돼요</p>
                 <input
                   type="range" min={85} max={130} value={eyebrowPct}
                   onChange={(e) => updateNestedData('content.classicEyebrowScale', parseInt(e.target.value, 10) / 100)}

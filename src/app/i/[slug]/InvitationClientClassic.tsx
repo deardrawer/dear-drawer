@@ -2119,7 +2119,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             {venueHall && <p className="cl-reveal cl-rise" data-delay="400" style={{ margin: '7px 0 0', lineHeight: 1.4, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(13), letterSpacing: '.02em', color: INK }}>{venueHall}</p>}
             <div className="cl-reveal cl-rise" data-delay="480" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', columnGap: 8, rowGap: 8, margin: '10px 0 0' }}>
               {/* 주소가 한 줄에 버튼과 같이 안 들어가면 버튼이 아래 줄 가운데로 내려간다 */}
-              <p style={{ margin: 0, maxWidth: '100%', lineHeight: 1.6, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11.5), color: inkA(0.72), wordBreak: 'keep-all' }}>{venueAddress}</p>
+              <p style={{ margin: 0, maxWidth: '100%', lineHeight: 1.6, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11.5), color: inkA(0.72), wordBreak: 'keep-all', textWrapStyle: 'balance' }}>{venueAddress}</p>
               <button onClick={() => doCopy(venueAddress, 'addr')} aria-label="주소 복사" style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(9.5), cursor: 'pointer', background: inkA(0.62), border: 0, color: IVORY, borderRadius: 20, padding: '3px 9px', lineHeight: 1.4, whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '복사'}</button>
             </div>
             {dirDisplay.length > 0 && (
@@ -2128,8 +2128,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   {dirDisplay.map((r, i) => (
                     <div key={i} className="cl-reveal cl-rise" data-delay={200 + i * 90} style={{ display: 'flex', gap: 14 }}>
-                      <span style={{ flex: '0 0 56px', fontFamily: F_BODY, fontSize: bfs(11.5), letterSpacing: '.02em', color: INK, paddingTop: 1 }}>{r.label}</span>
-                      <p style={{ margin: 0, flex: 1, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.8, color: inkA(0.92), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{bulletText(r.text)}</p>
+                      <span style={{ flex: `0 0 ${Math.max(56, Math.round(bfs(11.5) * 4.9))}px`, whiteSpace: 'nowrap', fontFamily: F_BODY, fontSize: bfs(11.5), letterSpacing: '.02em', color: INK, paddingTop: 1 }}>{r.label}</span>
+                      <p style={{ margin: 0, flex: 1, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.8, color: inkA(0.92), wordBreak: 'keep-all', whiteSpace: 'pre-line', textWrapStyle: 'pretty' }}>{bulletText(r.text)}</p>
                     </div>
                   ))}
                 </div>
@@ -2142,7 +2142,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                   <div key={i}>
                     {/* 앞의 짧은 선은 본문 점과 같은 폭의 칸에 → 제목 글자 시작 = 본문 글자 시작 */}
                     {ex.title && <p style={{ margin: 0, display: 'flex', alignItems: 'flex-start', fontFamily: F_BODY, fontSize: bfs(13.5), lineHeight: 1.5, letterSpacing: '.04em', color: INK }}><span aria-hidden style={{ flex: `0 0 ${bfs(12) * 0.85}px`, height: '1.5em', alignItems: 'center', display: 'flex' }}><span style={{ width: 7, height: 1, background: inkA(0.5) }} /></span><span style={{ flex: 1, minWidth: 0, whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{ex.title}</span></p>}
-                    {ex.body && <p style={{ margin: ex.title ? '10px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.8, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{bulletText(ex.body)}</p>}
+                    {ex.body && <p style={{ margin: ex.title ? '10px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.8, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line', textWrapStyle: 'pretty' }}>{bulletText(ex.body)}</p>}
                   </div>
                 ))}
               </div>

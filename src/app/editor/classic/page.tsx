@@ -85,6 +85,7 @@ export interface ClassicInvitationData {
     classicTraceVeilColor?: string // 트레이싱지 걷어낸 사진 위 오버레이 색상
     classicTraceVeilOpacity?: number // 트레이싱지 오버레이 투명도 0~1 (0=없음, 자연 사진)
     classicTraceStartText?: string // 트레이싱지 시작 전 문구 (기본 '화면을 누르세요')
+    classicTraceGap?: number // 트레이싱지 이름 위아래 간격 배율 0.3~1.3 (기본 1)
     classicTraceTextY?: number // 트레이싱지 걷어낸 뒤 글자 묶음 세로 위치 20~75 (50=가운데, 기본) — 사진 속 얼굴과 겹치지 않게
     classicInfoStartText?: string // 접힌편지·사진뒤집기 안내 문구 (기본 '예식 정보 빠르게 확인하기')
     classicInfoOverlayColor?: string // 접힌편지·사진뒤집기 배경 오버레이 색상

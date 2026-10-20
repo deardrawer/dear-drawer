@@ -408,6 +408,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const traceVeil: string = cc.classicTraceVeilColor || '#141008'
   const traceVeilOp: number = typeof cc.classicTraceVeilOpacity === 'number' ? Math.max(0, Math.min(1, cc.classicTraceVeilOpacity)) : 0
   // 걷어낸 뒤 글자 묶음 높이 (50=가운데) — 화면 높이 기준으로 위아래 이동
+  // 트레이싱지: 이름 위아래(WE INVITE YOU·날짜와의) 간격 배율 0.3~1.3 (기본 1 = 22px / 26px / 12px)
+  const traceGap: number = typeof cc.classicTraceGap === 'number' ? Math.max(0.3, Math.min(1.3, cc.classicTraceGap)) : 1
   const traceTextY: number = typeof cc.classicTraceTextY === 'number' ? Math.max(20, Math.min(75, cc.classicTraceTextY)) : 50
   // 접힌편지·사진뒤집기 배경 오버레이 색상 + 첫 사진 배경 투명도
   const infoOverlay: string = cc.classicInfoOverlayColor || '#1C100D'
@@ -1588,9 +1590,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               {traceVeilOp > 0 && <div style={{ position: 'absolute', inset: 0, background: traceVeil, opacity: traceVeilOp, pointerEvents: 'none' }} />}
               <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', transform: traceTextY !== 50 ? `translateY(${traceTextY - 50}%)` : undefined }}>
                 <p style={{ ...labelFixed(9.5, 0.46, ivoryA(0.85)), fontFamily: F_BODY, textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft .9s ease .35s both' : undefined }}>{nameCase('WE INVITE YOU')}</p>
-                <h1 style={{ margin: '22px 0 0', fontFamily: nameFont, fontSize: 42, lineHeight: 1.12, color: IVORY, textShadow: '0 2px 14px rgba(20,10,8,.55)', animation: frost ? 'cl-emerge 1.2s cubic-bezier(.22,.61,.36,1) .55s both' : undefined }}>{nameGroom}<br />{nameBride}</h1>
-                {sdCl && <p style={{ margin: '26px 0 0', fontFamily: F_BODY, fontSize: 14, letterSpacing: '.04em', color: ivoryA(0.92), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft 1s ease 1.15s both' : undefined }}>{dateFullKo}</p>}
-                {(sdCl || svCl) && <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: 12, letterSpacing: '.02em', color: ivoryA(0.85), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft 1s ease 1.3s both' : undefined }}>{[sdCl ? timeDisplay : null, svCl ? venueName : null].filter(Boolean).join(' · ')}</p>}
+                <h1 style={{ margin: `${Math.round(22 * traceGap)}px 0 0`, fontFamily: nameFont, fontSize: 42, lineHeight: 1.12, color: IVORY, textShadow: '0 2px 14px rgba(20,10,8,.55)', animation: frost ? 'cl-emerge 1.2s cubic-bezier(.22,.61,.36,1) .55s both' : undefined }}>{nameGroom}<br />{nameBride}</h1>
+                {sdCl && <p style={{ margin: `${Math.round(26 * traceGap)}px 0 0`, fontFamily: F_BODY, fontSize: 14, letterSpacing: '.04em', color: ivoryA(0.92), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft 1s ease 1.15s both' : undefined }}>{dateFullKo}</p>}
+                {(sdCl || svCl) && <p style={{ margin: `${Math.round(12 * traceGap)}px 0 0`, fontFamily: F_BODY, fontSize: 12, letterSpacing: '.02em', color: ivoryA(0.85), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft 1s ease 1.3s both' : undefined }}>{[sdCl ? timeDisplay : null, svCl ? venueName : null].filter(Boolean).join(' · ')}</p>}
               </div>
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(244,241,233,.78)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', opacity: frost ? 0 : 1, transition: 'opacity 1.2s ease', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
                 <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 15, letterSpacing: '.02em', color: inkA(0.62), minHeight: '1.4em' }}>{traceText.slice(0, traceTyped)}<span style={{ display: 'inline-block', marginLeft: 1, color: inkA(0.5), animation: 'cl-caret 1s step-end infinite' }}>|</span></p>

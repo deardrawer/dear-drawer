@@ -166,6 +166,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
     if (id === '트레이싱지') {
       const op = Math.round((data.content.classicTraceVeilOpacity ?? 0) * 100)
       const ty = data.content.classicTraceTextY ?? 50
+      const tg = data.content.classicTraceGap ?? 1
       return (
         <div className="mt-2 space-y-3 rounded-lg border border-gray-200 p-4 bg-white">
           <div>
@@ -194,6 +195,26 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
                 className="flex-1 accent-[color:var(--ed-accent)]"
               />
               <span className="text-[11px] text-gray-500">아래</span>
+            </div>
+          </div>
+          <div>
+            <div className="flex items-baseline justify-between">
+              <p className="text-sm font-medium text-gray-700">글자 위아래 간격</p>
+              <span className="text-[11px] text-gray-500">{Math.round(tg * 100)}%{tg !== 1 && <button type="button" onClick={() => updateNestedData('content.classicTraceGap', 1)} className="ml-2 underline underline-offset-2">기본값</button>}</span>
+            </div>
+            <p className="text-[10px] text-gray-400 leading-tight">이름 위(WE INVITE YOU)와 아래(날짜·장소) 간격을 함께 줄이거나 늘려요</p>
+            <div className="mt-2 flex items-center gap-3">
+              <span className="text-[11px] text-gray-500">좁게</span>
+              <input
+                type="range"
+                min={0.3}
+                max={1.3}
+                step={0.05}
+                value={tg}
+                onChange={(e) => updateNestedData('content.classicTraceGap', Number(e.target.value))}
+                className="flex-1 accent-[color:var(--ed-accent)]"
+              />
+              <span className="text-[11px] text-gray-500">넓게</span>
             </div>
           </div>
           <div>

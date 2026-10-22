@@ -8,6 +8,7 @@ import { type IntroStyleProps, cropOf, photoOf, str, stageScale } from './shared
 import IntroPhoto from './IntroPhoto'
 import RevealCaption from './RevealCaption'
 import FitLine from './FitLine'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 const IVORY = '#F4F1EA', INK = '#3D2F2A', INKSUB = '#7B6A60'
 const SCRIPT = "'Pinyon Script', 'Snell Roundhand', cursive"
@@ -31,7 +32,7 @@ function torn(seed: number) {
 }
 const CLIP = torn(19)
 const dayMonthYear = (iso: string) => {
-  const d = new Date(iso)
+  const d = parseDateOnly(iso)
   return isNaN(d.getTime()) ? '' : `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`
 }
 

@@ -8,6 +8,7 @@ import { type IntroStyleProps, cropOf, paperLayer, isDark, photoOf, str, tint, w
 import IntroPhoto from './IntroPhoto'
 import RevealCaption from './RevealCaption'
 import FitLine from './FitLine'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 const GRAIN = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='51'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .14 0'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>\")"
 const FIBER = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.06 .9' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .22 -.04'/></filter><rect width='100%25' height='100%25' filter='url(%23f)'/></svg>\")"
@@ -53,7 +54,7 @@ export default function EnvelopeIntro({ w, h, opts, data, finished, reduced, sig
   const en = !!(data.groomEn && data.brideEn)
   // 포스터 제목: 직접 쓴 문구가 있으면 그대로, 없으면 두 사람 이름
   const title = (str(opts.posterTitle).trim() || (en ? `${data.groomEn} & ${data.brideEn}` : `${data.groomName} & ${data.brideName}`)).toUpperCase()
-  const d = data.date ? new Date(data.date) : null
+  const d = data.date ? parseDateOnly(data.date) : null
   const dateOk = !!d && !isNaN(d.getTime())
   const credits = [
     `${(en ? data.groomEn : data.groomName).toUpperCase()} AND ${(en ? data.brideEn : data.brideName).toUpperCase()} REQUEST THE PLEASURE OF YOUR COMPANY`,

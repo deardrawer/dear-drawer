@@ -10,6 +10,7 @@ import { uploadImage } from '@/lib/imageUpload'
 import { X, Plus, Upload, AlertTriangle } from 'lucide-react'
 import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
 import { DEFAULT_DDAY_POPUP } from '@/lib/ddayPopupTypes'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 interface StepProps {
   data: EssayInvitationData
@@ -21,7 +22,7 @@ interface StepProps {
 
 function generateKakaoDescription(date: string, timeDisplay: string, venueName: string): string {
   if (!date) return ''
-  const dateObj = new Date(date)
+  const dateObj = parseDateOnly(date)
   const year = dateObj.getFullYear()
   const month = dateObj.getMonth() + 1
   const day = dateObj.getDate()
@@ -71,7 +72,7 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
 
   const getDayOfWeek = (dateStr: string) => {
     if (!dateStr) return ''
-    const d = new Date(dateStr)
+    const d = parseDateOnly(dateStr)
     return ['일', '월', '화', '수', '목', '금', '토'][d.getDay()] + '요일'
   }
 

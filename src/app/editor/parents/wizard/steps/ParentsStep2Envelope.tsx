@@ -11,6 +11,7 @@ import { uploadImage } from '@/lib/imageUpload'
 import type { ParentsInvitationData } from '../../page'
 import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
 import { DEFAULT_DDAY_POPUP } from '@/lib/ddayPopupTypes'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 interface ParentsStep2EnvelopeProps {
   data: ParentsInvitationData
@@ -292,7 +293,7 @@ export default function ParentsStep2Envelope({
           <Input
             value={data.meta?.description || ''}
             onChange={(e) => updateNestedData('meta.description', e.target.value)}
-            placeholder={data.wedding.date ? new Date(data.wedding.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }) : '2025년 3월 15일 토요일 오후 2시'}
+            placeholder={data.wedding.date ? parseDateOnly(data.wedding.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }) : '2025년 3월 15일 토요일 오후 2시'}
             className="text-sm"
           />
           <p className="text-[11px] text-gray-400">비워두면 결혼식 날짜가 표시됩니다.</p>

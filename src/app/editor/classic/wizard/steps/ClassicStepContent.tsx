@@ -191,6 +191,14 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
             />
           </div>
           <div className="space-y-1.5">
+            <Label className="text-sm font-medium">축하 메시지 칸 제목</Label>
+            <Input
+              value={data.content.classicRsvpMessageLabel || ''}
+              onChange={(e) => updateNestedData('content.classicRsvpMessageLabel', e.target.value)}
+              placeholder={data.content.classicLanguage === 'en' ? 'Wishes for the Couple (Optional)' : '축하 메시지 (선택)'}
+            />
+          </div>
+          <div className="space-y-1.5">
             <Label className="text-sm font-medium">축하 메시지 안내문구 (placeholder)</Label>
             <Input
               value={data.content.classicRsvpMessagePlaceholder || ''}

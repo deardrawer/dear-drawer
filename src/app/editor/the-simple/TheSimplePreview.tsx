@@ -13,6 +13,7 @@ import { YouTubeLite } from '@/components/invitation/YouTubeLite'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
 import './the-simple-preview.css'
 import '@/components/dday/dday-popup.css'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 /* ── AutoFitGroup + AutoFitText: 양가 부모님 이름 넘침 방지 (모듈 레벨) ── */
 function AutoFitGroup({ children, className, style }: {
@@ -2519,7 +2520,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
   }
 
   const weddingMeta = useMemo(() => {
-    const date = data.wedding.date ? new Date(data.wedding.date) : new Date('2026-05-16')
+    const date = data.wedding.date ? parseDateOnly(data.wedding.date) : parseDateOnly('2026-05-16')
     const y = date.getFullYear()
     const m = date.getMonth() + 1
     const d = date.getDate()
@@ -2530,7 +2531,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
 
   // Variant 1 · 달력 생성 (전체 월)
   const calendar = useMemo(() => {
-    const date = data.wedding.date ? new Date(data.wedding.date) : new Date('2026-05-16')
+    const date = data.wedding.date ? parseDateOnly(data.wedding.date) : parseDateOnly('2026-05-16')
     const year = date.getFullYear()
     const month = date.getMonth()
     const target = date.getDate()
@@ -3564,7 +3565,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
       // V3 · Week Strip (주간 캘린더 스트립)
       if (v === 3) {
         // 예식일이 속한 주(일~토) 추출
-        const wDate = data.wedding.date ? new Date(data.wedding.date) : new Date('2026-05-16')
+        const wDate = data.wedding.date ? parseDateOnly(data.wedding.date) : parseDateOnly('2026-05-16')
         const dayOfWeek = wDate.getDay()
         const weekStart = new Date(wDate)
         weekStart.setDate(wDate.getDate() - dayOfWeek)
@@ -3663,7 +3664,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
 
       // V5 · Countdown Hero (D-Day 카운트다운 + 정보 행)
       if (v === 5) {
-        const target = data.wedding.date ? new Date(data.wedding.date) : new Date('2026-05-16')
+        const target = data.wedding.date ? parseDateOnly(data.wedding.date) : parseDateOnly('2026-05-16')
         // 날짜 기준 계산 (시/분/초 무시)
         const todayMid = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
         const targetMid = new Date(target.getFullYear(), target.getMonth(), target.getDate())

@@ -6,6 +6,7 @@
 // 두 스타일은 처음 만난 날·사진·제목·색을 함께 쓴다 (filmDays*)
 import { useEffect, useMemo, useRef, useState } from 'react'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 type Crop = { cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number; scale?: number; positionX?: number; positionY?: number }
 /** 인트로가 쓰는 청첩장 필드만 */
@@ -92,7 +93,7 @@ function common(inv: FilmDaysData, together: number | null, count: number) {
     : '서로를 만나 같은 장면을 함께 보며 웃고 울던 두 사람이\n이제 가장 긴 이야기를 시작하려 합니다.'
   const photo = inv.filmDaysImage || inv.media?.coverImage || ''
   const crop: Crop = inv.filmDaysImage ? (inv.filmDaysImageSettings || {}) : (inv.media?.coverImageSettings || {})
-  const wd = inv.wedding?.date ? new Date(inv.wedding.date) : null
+  const wd = inv.wedding?.date ? parseDateOnly(inv.wedding.date) : null
   const okDate = !!wd && !isNaN(wd.getTime()) && inv.wedding?.showDate !== false
   return { g, b, title, message, photo, crop, wd: okDate ? wd : null }
 }

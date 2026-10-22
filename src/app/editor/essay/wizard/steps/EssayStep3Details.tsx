@@ -11,6 +11,7 @@ import { MultiImageUploader } from '@/components/editor/ImageUploader'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import SharedRsvpLinkField from '@/components/editor/SharedRsvpLinkField'
 import type { EssayInvitationData } from '../../page'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 interface StepProps {
   data: EssayInvitationData
@@ -61,9 +62,9 @@ const sectionLabels: Record<string, string> = {
 export default function EssayStep3Details({ data, updateData, updateNestedData, invitationId }: StepProps) {
   const getDefaultRsvpDeadline = () => {
     if (data.wedding.date) {
-      const d = new Date(data.wedding.date)
+      const d = parseDateOnly(data.wedding.date)
       d.setDate(d.getDate() - 7)
-      return d.toISOString().split('T')[0]
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
     }
     return ''
   }

@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch'
 import { Play, Pause, Upload, X, Loader2, AlertTriangle } from 'lucide-react'
 import { bgmPresets } from '@/lib/bgmPresets'
 import ColorField from '@/components/editor/ColorField'
+import { BG_TEXTURES, textureLayers, texBg, type BgTextureKind } from '@/lib/bgTexture'
 
 // 색상 테마 옵션
 const COLOR_THEMES = [
@@ -100,6 +101,8 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
   const isFilm = templateId === 'narrative-film' || invitation.templateId === 'narrative-film'
   const isRecord = templateId === 'narrative-record' || invitation.templateId === 'narrative-record'
   const isMagazine = templateId === 'narrative-magazine' || invitation.templateId === 'narrative-magazine'
+  // 배경 재질은 OUR · FAMILY 만
+  const isOurFamily = ['narrative-our', 'narrative-family'].includes(templateId || invitation.templateId || '')
   const { colorTheme, fontStyle, bgm, accentTextColor, bodyTextColor } = invitation
 
   // Movie 전용 상태
@@ -797,6 +800,52 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             )}
           </div>
         )}
+
+        {/* 배경 재질 (OUR/FAMILY) — 배경색 부분에만 깔리고 사진·팝업에는 안 들어간다 */}
+        {isOurFamily && (() => {
+          const tex = ((invitation as any).bgTexture || 'none') as BgTextureKind
+          const strength = typeof (invitation as any).bgTextureStrength === 'number' ? (invitation as any).bgTextureStrength : 1
+          const swatchBg = (colorTheme === 'custom' && (invitation as any).customSectionBgColor) || '#E9E4DD'
+          return (
+            <div className="mt-5 space-y-3">
+              <div>
+                <h4 className="text-sm font-medium text-gray-800">배경 재질</h4>
+                <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>배경색 위에 종이 결을 은은하게 깔아요. 사진에는 들어가지 않아요</p>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {BG_TEXTURES.map((t) => {
+                  const on = tex === t.id
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => updateField('bgTexture' as any, (t.id === 'none' ? undefined : t.id) as unknown as string)}
+                      className={`rounded-lg border p-1.5 text-center transition-colors ${on ? 'border-[color:var(--ed-accent)] ring-1 ring-[color:var(--ed-accent)]' : 'border-gray-200 hover:border-gray-300'}`}
+                      aria-pressed={on}
+                    >
+                      <span className="block h-10 rounded-md" style={texBg(textureLayers(t.id, 1.4), swatchBg)} />
+                      <span className="mt-1 block text-[11px] text-gray-700">{t.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+              {tex !== 'none' && (
+                <div>
+                  <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>진하기</span><span>{Math.round(strength * 100)}%</span></div>
+                  <input
+                    type="range"
+                    min={0.5}
+                    max={1.5}
+                    step={0.1}
+                    value={strength}
+                    onChange={(e) => updateField('bgTextureStrength' as any, Number(e.target.value) as unknown as string)}
+                    className="w-full accent-[color:var(--ed-accent)]"
+                  />
+                </div>
+              )}
+            </div>
+          )
+        })()}
 
         {/* Magazine 포인트 컬러 */}
         {isMagazine && (

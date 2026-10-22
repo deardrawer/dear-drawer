@@ -5,6 +5,7 @@ import { Plus, X, Loader2 } from 'lucide-react'
 import type { DdayPopupData, DdayPopupPage, ImageWithSettings, ImageSettings } from '@/lib/ddayPopupTypes'
 import { uploadImage } from '@/lib/imageUpload'
 import ColorField from '@/components/editor/ColorField'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 interface DdayPopupEditorProps {
   value: DdayPopupData
@@ -14,9 +15,9 @@ interface DdayPopupEditorProps {
 }
 
 function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr)
+  const d = parseDateOnly(dateStr)
   d.setDate(d.getDate() + days)
-  return d.toISOString().slice(0, 10)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 const DEFAULT_SETTINGS: ImageSettings = { scale: 1, positionX: 0, positionY: 0 }

@@ -9,6 +9,7 @@ import { isInteractiveIntro } from '@/lib/introPresets'
 import { BlurIntro } from '@/components/invitation/BlurIntro'
 import InteractiveIntro, { hasInteractiveRenderer } from '@/components/invitation/intros/InteractiveIntro'
 import { buildIntroData, type IntroData } from '@/components/invitation/intros/shared'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 interface IntroPreviewProps {
   settings: IntroSettings
@@ -35,7 +36,7 @@ interface IntroPreviewProps {
 
 function formatDate(dateString: string): string {
   if (!dateString) return ''
-  const date = new Date(dateString)
+  const date = parseDateOnly(dateString)
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const month = months[date.getMonth()]
   const day = date.getDate()
@@ -46,7 +47,7 @@ function formatDate(dateString: string): string {
 // 한글 날짜 포맷 (2026년 10월 10일 토요일) — 게스트 커버와 동일
 function formatDateKo(dateString: string): string {
   if (!dateString) return ''
-  const date = new Date(dateString)
+  const date = parseDateOnly(dateString)
   if (isNaN(date.getTime())) return ''
   const w = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()]
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 ${w}요일`

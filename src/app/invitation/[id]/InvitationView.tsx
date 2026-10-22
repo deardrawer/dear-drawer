@@ -15,6 +15,7 @@ import { Navigation, Pagination, Autoplay } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 // 갤러리 라이트박스 컴포넌트 (무한 루프 슬라이더)
 interface GalleryLightboxProps {
@@ -329,16 +330,16 @@ const fontStyles: Record<FontStyle, FontConfig> = {
 // 날짜 포맷
 function formatDateDisplay(d: string): string {
   if (!d) return '2024.11.04'
-  const date = new Date(d), y = date.getFullYear(), m = date.getMonth() + 1, day = date.getDate()
+  const date = parseDateOnly(d), y = date.getFullYear(), m = date.getMonth() + 1, day = date.getDate()
   const w = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()]
   return y + '.' + m + '.' + day + ' ' + w
 }
 
 function calculateDday(d: string): string {
   if (!d) return 'D-000'
-  const wedding = new Date(d), today = new Date()
+  const wedding = parseDateOnly(d), today = new Date()
   today.setHours(0, 0, 0, 0); wedding.setHours(0, 0, 0, 0)
-  const diff = Math.ceil((wedding.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  const diff = Math.round((wedding.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
   return diff > 0 ? 'D-' + diff : diff === 0 ? 'D-Day' : 'D+' + Math.abs(diff)
 }
 

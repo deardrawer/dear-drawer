@@ -17,6 +17,7 @@ import ZoomableImage from '@/components/invitation/ZoomableImage'
 import { FRAME_EN_FONTS, FRAME_KO_FONTS, FRAME_FONTS_HREF } from '@/lib/filmFrameFonts'
 import { FilmDotsCover } from '@/components/invitation/film/FilmDotsCover'
 import { FilmOttCover, FilmTicketCover } from '@/components/invitation/film/FilmDaysCovers'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'film-dark' | 'film-light'
@@ -280,7 +281,7 @@ function FilmFrameCover({ invitation, fonts, tc, onEnter, isPreview }: {
   const slotSettings = [cs, invitation.filmFrameImage2Settings || {}]
 
   const w = invitation.wedding
-  const weddingDate = w?.date ? new Date(w.date) : new Date()
+  const weddingDate = w?.date ? parseDateOnly(w.date) : new Date()
   const dateStr = `${weddingDate.getFullYear()}.${String(weddingDate.getMonth() + 1).padStart(2, '0')}.${String(weddingDate.getDate()).padStart(2, '0')}`
   const groomName = invitation.groom?.nameEn || invitation.groom?.name || ''
   const brideName = invitation.bride?.nameEn || invitation.bride?.name || ''
@@ -424,7 +425,7 @@ function FilmBoothCover({ invitation, onEnter, isPreview }: {
   const lead = ((invitation.filmBoothLead as string) || 'Please join us\nin celebration of our\nupcoming wedding.').split('\n').slice(0, 4)
 
   const w = invitation.wedding
-  const d = w?.date ? new Date(w.date) : null
+  const d = w?.date ? parseDateOnly(w.date) : null
   const dateOk = !!d && !isNaN(d.getTime()) && w?.showDate !== false
   const [hh, mm] = String(w?.time || '').split(':').map(Number)
   const timeEn = dateOk && !isNaN(hh) ? `${hh % 12 || 12}:${String(mm || 0).padStart(2, '0')} ${hh < 12 ? 'AM' : 'PM'}` : ''
@@ -1260,7 +1261,7 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
   const cg = tc.cardGray || tc.gray
   const { ref, isVisible } = useScrollReveal()
   const w = invitation.wedding || {}
-  const date = w.date ? new Date(w.date) : null
+  const date = w.date ? parseDateOnly(w.date) : null
   const dayNamesKr = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
   const groom = invitation.groom || {}
   const bride = invitation.bride || {}
@@ -1363,7 +1364,7 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
                     today.setHours(0, 0, 0, 0)
                     const wDate = new Date(date)
                     wDate.setHours(0, 0, 0, 0)
-                    const diff = Math.ceil((wDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+                    const diff = Math.round((wDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
                     const label = diff > 0 ? `결혼식까지 ${diff}일 남았어요.` : diff === 0 ? '오늘 결혼합니다' : `결혼한 지 ${Math.abs(diff)}일`
                     return (
                       <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.accent, letterSpacing: '1px' }}>
@@ -2143,7 +2144,7 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
   }
 
   const w = invitation.wedding || {}
-  const date = w.date ? new Date(w.date) : null
+  const date = w.date ? parseDateOnly(w.date) : null
   const revealedClass = isVisible ? 'rsvp-section-revealed' : ''
 
   return (

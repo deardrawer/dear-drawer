@@ -9,6 +9,7 @@ import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 import { YouTubeLite } from '@/components/invitation/YouTubeLite'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 // ============================================================
 // Types
@@ -545,7 +546,7 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fo
 
   const formattedDate = useMemo(() => {
     if (!date) return ''
-    const d = new Date(date)
+    const d = parseDateOnly(date)
     const y = d.getFullYear()
     const m = String(d.getMonth() + 1).padStart(2, '0')
     const day = String(d.getDate()).padStart(2, '0')
@@ -692,7 +693,7 @@ function ProfileSection({
 
   const dDay = useMemo(() => {
     if (!date) return ''
-    const target = new Date(date)
+    const target = parseDateOnly(date)
     const now = new Date()
     const diff = Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
     if (diff === 0) return 'D-Day'
@@ -702,7 +703,7 @@ function ProfileSection({
 
   const formattedDate = useMemo(() => {
     if (!date) return ''
-    const d = new Date(date)
+    const d = parseDateOnly(date)
     const y = d.getFullYear()
     const m = d.getMonth() + 1
     const day = d.getDate()
@@ -1551,7 +1552,7 @@ function WeddingInfoPost({
   // Parse date
   const dateObj = useMemo(() => {
     if (!date) return null
-    return new Date(date)
+    return parseDateOnly(date)
   }, [date])
 
   const formattedDate = useMemo(() => {
@@ -2783,7 +2784,7 @@ function RsvpSection({
 
   const formattedDeadline = useMemo(() => {
     if (!rsvpDeadline) return ''
-    const d = new Date(rsvpDeadline)
+    const d = parseDateOnly(rsvpDeadline)
     return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일까지`
   }, [rsvpDeadline])
 

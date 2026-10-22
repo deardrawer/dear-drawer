@@ -17,6 +17,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 type InvitationSummary = {
   id: string
@@ -537,7 +538,7 @@ export default function MyInvitationsPage() {
 
     if (typeof window !== 'undefined' && kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
       const formattedDate = shareInvitation.wedding_date
-        ? new Date(shareInvitation.wedding_date).toLocaleDateString('ko-KR', {
+        ? parseDateOnly(shareInvitation.wedding_date).toLocaleDateString('ko-KR', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -581,7 +582,7 @@ export default function MyInvitationsPage() {
     const url = getInvitationUrl(shareInvitation)
     const { shareTitle, shareDescription } = parseInvitationContent(shareInvitation.content)
     const formattedDate = shareInvitation.wedding_date
-      ? new Date(shareInvitation.wedding_date).toLocaleDateString('ko-KR', {
+      ? parseDateOnly(shareInvitation.wedding_date).toLocaleDateString('ko-KR', {
           year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
         })
       : ''
@@ -755,7 +756,7 @@ export default function MyInvitationsPage() {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString('ko-KR', {
+    return parseDateOnly(dateString).toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -766,7 +767,7 @@ export default function MyInvitationsPage() {
     const now = new Date()
     if (invitation.is_paid) {
       if (!invitation.wedding_date) return null
-      const weddingDate = new Date(invitation.wedding_date)
+      const weddingDate = parseDateOnly(invitation.wedding_date)
       const deleteDate = new Date(weddingDate.getTime() + 30 * 24 * 60 * 60 * 1000)
       const daysLeft = Math.ceil((deleteDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
       return { days: daysLeft, type: 'wedding' as const }

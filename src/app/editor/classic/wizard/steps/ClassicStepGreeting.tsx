@@ -887,8 +887,30 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           rows={3}
           className="resize-none"
         />
+        {(() => {
+          const shareMode = data.content.classicShareMode || (data.content.classicLanguage === 'en' ? 'native' : 'kakao')
+          return (
+            <div className="space-y-2 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
+              <span className="block text-sm font-medium text-gray-700">공유 버튼</span>
+              <p className="text-[10px] text-gray-400 leading-tight">카카오톡 공유는 카카오톡 공유창을, 일반 공유는 휴대폰 기본 공유창(문자·메신저·인스타그램 등)을 열어요. 해외 하객이 많다면 일반 공유를 추천해요.</p>
+              <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+                {([
+                  { id: 'kakao', label: '카카오톡 공유' },
+                  { id: 'native', label: '일반 공유' },
+                ] as const).map((opt) => {
+                  const active = shareMode === opt.id
+                  return (
+                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicShareMode', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`} aria-pressed={active}>
+                      {opt.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()}
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
-          <span className="text-sm font-medium text-gray-700">감사 인사 프레임</span>
+          <span className="block text-sm font-medium text-gray-700">감사 인사 프레임</span>
           <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
             {([
               { id: 'none', label: '없음' },

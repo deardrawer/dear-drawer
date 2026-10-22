@@ -5,12 +5,13 @@ import { useEditorStore } from '@/store/editorStore'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import ImageUploader from '@/components/editor/ImageUploader'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 // 공유 설명 자동 생성 헬퍼 함수
 function generateKakaoDescription(date: string, time: string, venueName: string): string {
   if (!date) return ''
 
-  const dateObj = new Date(date)
+  const dateObj = parseDateOnly(date)
   const year = dateObj.getFullYear()
   const month = dateObj.getMonth() + 1
   const day = dateObj.getDate()

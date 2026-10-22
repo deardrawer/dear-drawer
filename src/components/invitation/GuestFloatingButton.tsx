@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getButtonBgLightColor } from '@/lib/colorUtils'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 type ModalType = 'none' | 'contact' | 'rsvp' | 'location' | 'account' | 'share'
 type DirectionsTab = 'car' | 'publicTransport' | 'bus' | 'subway' | 'train' | 'expressBus' | 'extraInfo' | `extraInfo-${number}`
@@ -328,7 +329,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
 
       // 날짜 포맷팅
       const formattedDate = invitation.weddingDate
-        ? new Date(invitation.weddingDate).toLocaleDateString('ko-KR', {
+        ? parseDateOnly(invitation.weddingDate).toLocaleDateString('ko-KR', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',

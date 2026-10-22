@@ -11,11 +11,12 @@ import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import ShareSettingsSection from '@/components/editor/ShareSettingsSection'
 import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
 import { DEFAULT_DDAY_POPUP } from '@/lib/ddayPopupTypes'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 // 카카오 설명 자동 생성
 function generateKakaoDescription(date: string, time: string, venueName: string): string {
   if (!date) return ''
-  const dateObj = new Date(date)
+  const dateObj = parseDateOnly(date)
   const year = dateObj.getFullYear()
   const month = dateObj.getMonth() + 1
   const day = dateObj.getDate()

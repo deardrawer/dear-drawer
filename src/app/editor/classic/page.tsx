@@ -196,6 +196,9 @@ export interface ClassicInvitationData {
     classicRsvpSideDetailOptions?: Record<string, boolean> // 표시할 하객 구분 항목 (신랑/신랑아버지/신랑어머니/신부/신부아버지/신부어머니)
     classicRsvpNotice?: string // 상단 안내문구
     classicRsvpMessagePlaceholder?: string // 축하메시지 placeholder
+    classicRsvpMessageLabel?: string // 축하메시지 칸 제목 (비우면 언어별 기본: 축하 메시지 (선택) / Wishes for the Couple (Optional))
+    classicShareMode?: 'kakao' | 'native' // 마무리 공유 버튼: 카카오톡 공유 / 일반 공유(폰 공유창). 미설정 시 한국어=카카오톡, 영문=일반
+    classicLanguage?: 'ko' | 'en' // 화면 언어: 안내 문구·버튼·날짜/시간 형식·RSVP 라벨 (기본 한국어)
     classicRsvpInviteText?: string // RSVP 카드 제목 (기본 '초대합니다')
     classicRsvpAttendText?: string // 참석 버튼 텍스트 (기본 '참석합니다')
     classicRsvpDeclineText?: string // 불참 버튼 텍스트 (기본 '참석 어렵습니다')

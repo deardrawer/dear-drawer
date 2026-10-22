@@ -71,3 +71,88 @@ export function getButtonBgLightColor(sectionBg: string): string {
   const { h, s } = hexToHSL(sectionBg)
   return hslToHex(h, s, 0.88)
 }
+
+// ─── 배경 대비 자동 보정 (OUR / FAMILY 섹션 배경이 어두울 때 본문 글자를 밝게) ───
+
+function toHex6(hex: string): string | null {
+  if (typeof hex !== 'string') return null
+  const m = hex.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)
+  if (!m) return null
+  const h = m[1].length === 3 ? m[1].split('').map((c) => c + c).join('') : m[1]
+  return `#${h.toLowerCase()}`
+}
+
+function luminance(hex6: string): number {
+  const ch = [1, 3, 5].map((i) => parseInt(hex6.slice(i, i + 2), 16) / 255)
+  const lin = ch.map((c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)))
+  return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+}
+
+function contrast(a: string, b: string): number {
+  const la = luminance(a), lb = luminance(b)
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
+}
+
+/** 배경색이 어두운지 (흰 글자가 검은 글자보다 잘 읽히는 색) */
+export function isDarkColor(hex: string): boolean {
+  const h = toHex6(hex)
+  if (!h) return false
+  return contrast(h, '#ffffff') > contrast(h, '#000000')
+}
+
+const LIGHT_TEXT = '#f4f1ec'
+const LIGHT_SUB = '#cfc8bf'
+const DARK_TEXT = '#3d3d3d'
+const DARK_SUB = '#555555'
+
+// 포인트 색은 색상(hue)은 살리고 밝기만 옮겨 배경 위에서 보이게
+function shiftForBg(color: string, bg: string, min: number): string {
+  const c = toHex6(color)
+  if (!c || contrast(c, bg) >= min) return color
+  const { h, s } = hexToHSL(c)
+  const dark = isDarkColor(bg)
+  for (let i = 0; i <= 10; i++) {
+    const l = dark ? 0.6 + i * 0.035 : 0.4 - i * 0.03
+    const next = hslToHex(h, s, l)
+    if (contrast(next, bg) >= min) return next
+  }
+  return dark ? LIGHT_TEXT : DARK_TEXT
+}
+
+/**
+ * 배경(bg) 위에서 읽히도록 테마 글자색을 보정한다. (OUR / FAMILY)
+ * - 어두운 배경: 대비가 부족한 본문·보조·포인트 색을 밝게
+ * - 밝은 배경: 사용자가 본문색을 밝게 골라 안 보일 때만 본문·보조 색을 어둡게 (포인트 색은 그대로)
+ * 이미 대비가 충분한 색은 그대로 둔다 → 기본 테마는 아무것도 바뀌지 않는다.
+ * 한 번 보정된 색을 다른 배경에 다시 보정할 때는 사용자가 고른 원래 색부터 다시 따진다.
+ */
+type Readable = { text: string; gray: string; primary: string; secondary: string; accent: string; highlight?: string; divider: string }
+type RawKeep = { __raw?: Readable }
+export function readableOn<T extends Readable>(tc: T, bg: string): T {
+  const b = toHex6(bg)
+  if (!b) return tc
+  const src: Readable = (tc as T & RawKeep).__raw || tc
+  const dark = isDarkColor(b)
+  const ok = (c: string | undefined, min: number) => { const h = c ? toHex6(c) : null; return !h || contrast(h, b) >= min }
+  let next: Readable
+  if (dark) {
+    next = {
+      text: ok(src.text, 4.5) ? src.text : LIGHT_TEXT,
+      gray: ok(src.gray, 3) ? src.gray : LIGHT_SUB,
+      primary: shiftForBg(src.primary, b, 2.5),
+      secondary: shiftForBg(src.secondary, b, 2.5),
+      accent: shiftForBg(src.accent, b, 2.5),
+      highlight: src.highlight ? shiftForBg(src.highlight, b, 2.5) : src.highlight,
+      divider: ok(src.divider, 1.4) ? src.divider : '#6b645c',
+    }
+  } else {
+    next = {
+      text: ok(src.text, 3) ? src.text : DARK_TEXT,
+      gray: ok(src.gray, 2.5) ? src.gray : DARK_SUB,
+      primary: src.primary, secondary: src.secondary, accent: src.accent, highlight: src.highlight, divider: src.divider,
+    }
+  }
+  const same = (Object.keys(next) as (keyof Readable)[]).every((k) => next[k] === tc[k])
+  if (same) return tc
+  return { ...tc, ...next, __raw: src } as T
+}

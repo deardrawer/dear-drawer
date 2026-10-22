@@ -7,10 +7,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import ImageUploader from '@/components/editor/ImageUploader'
 import { uploadImage } from '@/lib/imageUpload'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 function generateKakaoDescription(date: string, time: string, venueName: string): string {
   if (!date) return ''
-  const dateObj = new Date(date)
+  const dateObj = parseDateOnly(date)
   const year = dateObj.getFullYear()
   const month = dateObj.getMonth() + 1
   const day = dateObj.getDate()

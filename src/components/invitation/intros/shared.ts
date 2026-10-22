@@ -1,6 +1,7 @@
 // 인터랙티브 인트로 공용 타입과 도우미
 import type { CSSProperties } from 'react'
 import type { IntroSettings, IntroStyleId } from '@/lib/introPresets'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 export interface IntroData {
   groomName: string
@@ -103,14 +104,14 @@ export const hasHangul = (s: string) => /[ㄱ-ㆎ가-힣]/.test(s)
 
 export function dateDots(iso: string) {
   if (!iso) return ''
-  const d = new Date(iso)
+  const d = parseDateOnly(iso)
   if (isNaN(d.getTime())) return ''
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
 }
 
 export function weekdayEn(iso: string) {
   if (!iso) return ''
-  const d = new Date(iso)
+  const d = parseDateOnly(iso)
   return isNaN(d.getTime()) ? '' : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.getDay()]
 }
 

@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react'
 import { type IntroData, lines, str } from './shared'
 import FitLine from './FitLine'
 import { whenFontReady } from '@/lib/fontReady'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 const SCRIPT = "'Pinyon Script', 'Snell Roundhand', cursive"
 const SERIF = "'Noto Serif KR', 'Nanum Myeongjo', serif"
@@ -63,7 +64,7 @@ export default function RevealCaption({ w, h, opts, data, open, instant }: { w: 
   const storyFont = opts.storyFont && opts.storyFont !== 'pinyon' && ED_FONTS[str(opts.storyFont)]
     ? { family: `'${ED_FONTS[str(opts.storyFont)].family}', cursive`, scale: ED_FONTS[str(opts.storyFont)].scale }
     : { family: SCRIPT, scale: 1 }
-  const sd = data.date ? new Date(data.date) : null
+  const sd = data.date ? parseDateOnly(data.date) : null
   const storyDate = sd && !isNaN(sd.getTime()) ? `${MONTHS[sd.getMonth()]} ${sd.getDate()}, ${sd.getFullYear()}`.toUpperCase() : ''
   // 모노그램: 이니셜 + ES TD / 20 26 (결혼한 해를 '설립 연도'처럼)
   const monoOwn = str(opts.monoInitials).replace(/[^A-Za-z]/g, '').toUpperCase()

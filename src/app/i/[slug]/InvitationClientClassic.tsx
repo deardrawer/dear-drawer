@@ -10,6 +10,7 @@ import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 import PinchZoomGuard from '@/components/invitation/PinchZoomGuard'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 /**
  * THE CLASSIC (혼주용) — 클래식 스테이셔너리 청첩장
@@ -344,6 +345,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const wedding = c.wedding || {}
   const venue = wedding.venue || {}
   const cc = c.content || {}
+  // 화면 언어 (한국어 / English) — 안내 문구·버튼·날짜·시간 형식만 바뀌고, 사용자가 직접 쓴 문구는 그대로
+  const isEn = cc.classicLanguage === 'en'
+  const tr = (ko: string, en: string) => (isEn ? en : ko)
   const directions = wedding.directions || c.directions || {}
 
   // D-Day 팝업 (THE CLASSIC 전용 필드: content.classicDdayPopup — 다른 템플릿의 ddayPopup과 분리)
@@ -385,7 +389,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const frameInkA = (a: number) => `rgba(${hexToRgb(frameInk, '53,23,20')},${a})`
   // 실링·접힌편지·사진뒤집기: 어두운 배경 오프닝 → 배경을 테마(틴티드/기본)와 무관한 고정 다크로
   const isDarkOpening = openingStyle === '실링' || openingStyle === '접힌 편지' || openingStyle === '사진 뒤집기'
-  const traceText: string = cc.classicTraceStartText || '소중한 분을 초대합니다.'
+  const traceText: string = cc.classicTraceStartText || tr('소중한 분을 초대합니다.', 'You are cordially invited.')
   // 프레임(바로시작) 엠보스 프레임 (frame1/frame2/none) — multiply 블렌드로 배경색 위에 오버레이
   const openFrame: string = ['frame1', 'frame2', 'none'].includes(cc.classicOpeningFrame) ? cc.classicOpeningFrame : 'frame1'
   // 실링 인장 색상 (리본 매듭 인장에 적용, 미설정 시 기본 은색) + 각인 이니셜 자동 대비색
@@ -438,6 +442,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const nameSwap = cc.classicNameSwap === true
   const firstKo = nameSwap ? brideKo : groomKo
   const secondKo = nameSwap ? groomKo : brideKo
+  // 날짜 섹션 등 본문 속 커플 이름 — 영문 화면이면 영문 이름
+  const firstBody = isEn ? (nameSwap ? (bride.nameEn || brideKo) : (groom.nameEn || groomKo)) : (nameSwap ? brideKo : groomKo)
+  const secondBody = isEn ? (nameSwap ? (groom.nameEn || groomKo) : (bride.nameEn || brideKo)) : (nameSwap ? groomKo : brideKo)
   const firstEn = nameSwap ? brideEn : groomEn
   const secondEn = nameSwap ? groomEn : brideEn
   // 오프닝 표시 이름(표시 순서 1/2) — nameSwap 시 신랑↔신부 자리 교체
@@ -448,12 +455,14 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 혼주 (호칭 · 고인표시)
   const letterSign: string = ['parents', 'couple', 'hosts', 'none'].includes(cc.classicLetterSign) ? cc.classicLetterSign : 'parents'
   const hostSide: string = ['both', 'groom', 'bride'].includes(cc.classicHostSide) ? cc.classicHostSide : 'groom'
-  const groomTitle = cc.classicGroomTitle ?? '아들'
-  const brideTitle = cc.classicBrideTitle ?? '딸'
+  const groomTitle = cc.classicGroomTitle ?? tr('아들', 'son')
+  const brideTitle = cc.classicBrideTitle ?? tr('딸', 'daughter')
   const decStyle: string = cc.classicDeceasedStyle === 'hanja' ? 'hanja' : 'flower'
   const decMark = (d?: boolean): React.ReactNode => !d ? null : (decStyle === 'hanja'
     ? <span style={{ fontFamily: F_BODY }}>故&nbsp;</span>
     : <span aria-label="故" role="img" style={{ display: 'inline-block', width: '0.82em', height: '0.82em', marginRight: 3, verticalAlign: '-0.06em', opacity: 0.85, backgroundColor: 'currentColor', WebkitMaskImage: "url('/icons/chrysanthemum.svg')", maskImage: "url('/icons/chrysanthemum.svg')", WebkitMaskSize: 'contain', maskSize: 'contain', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat', WebkitMaskPosition: 'center', maskPosition: 'center' }} />)
+  // 부모 + 관계: 한국어 "○○ · ○○ 의 아들" / 영문 "Son of ○○ · ○○"
+  const ofParents = (parents: React.ReactNode, title: string): React.ReactNode => isEn ? <>{title.charAt(0).toUpperCase() + title.slice(1)} of {parents}</> : <>{parents} 의 {title}</>
   const parentsJsx = (f?: { name?: string; deceased?: boolean }, m?: { name?: string; deceased?: boolean }): React.ReactNode[] | null => {
     const items: React.ReactNode[] = []
     if (f?.name) items.push(<span key="f">{decMark(f.deceased)}{f.name}</span>)
@@ -461,7 +470,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     if (!items.length) return null
     return items.reduce<React.ReactNode[]>((acc, el, i) => (i === 0 ? [el] : [...acc, <span key={'d' + i}> · </span>, el]), [])
   }
-  const coupleTogetherText: string = cc.coupleTogetherText || groom.profile?.tag || '오랜 시간 함께 걸어온 두 사람이\n이제 같은 이름으로 살아가려 합니다.'
+  const coupleTogetherText: string = cc.coupleTogetherText || groom.profile?.tag || tr('오랜 시간 함께 걸어온 두 사람이\n이제 같은 이름으로 살아가려 합니다.', 'Two people who have walked together for years\nare now beginning a life as one.')
   // 신랑·신부 소개: 에디터에서 각자/함께/이름만 선택 + 각자 소개 한마디 + 크롭 사진
   const introMode: string = cc.classicIntroMode === 'together' ? 'together' : cc.classicIntroMode === 'nameOnly' ? 'nameOnly' : 'each'
   const introTogether = introMode === 'together'
@@ -478,14 +487,14 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 오벌 프레임 색상 (선택 시 프레임을 multiply로 틴트 — 엠보스 유지)
   const togetherFrameColor: string = cc.classicIntroTogetherFrameColor || ''
   // 소개 한마디: 미설정 시 미리보기에서는 샘플 문구 노출(위치 확인용), 실제 페이지에서는 숨김
-  const groomIntro: string = cc.classicGroomIntro || (isPreview ? '다정하고 든든한 사람입니다.' : '')
-  const brideIntro: string = cc.classicBrideIntro || (isPreview ? '따뜻하고 밝은 사람입니다.' : '')
+  const groomIntro: string = cc.classicGroomIntro || (isPreview ? tr('다정하고 든든한 사람입니다.', 'Kind, warm and steady.') : '')
+  const brideIntro: string = cc.classicBrideIntro || (isPreview ? tr('따뜻하고 밝은 사람입니다.', 'Bright, gentle and full of warmth.') : '')
   // 신랑↔신부 순서 — 커플소개(intro)는 독립 옵션 유지, 서명(letter)은 기본정보 이름 순서(nameSwap)를 따름
   // (레거시 호환: 새 옵션 미설정 청첩장은 기존 classicLetterSwap 값을 그대로 존중)
   const introSwap = cc.classicIntroSwap === true
   const letterSwap = cc.classicNameSwap !== undefined ? nameSwap : (cc.classicLetterSwap === true)
-  const pGroom = { side: groom, ko: groomKo, title: groomTitle, label: 'GROOM' as const, photo: cc.classicGroomPhoto, intro: groomIntro }
-  const pBride = { side: bride, ko: brideKo, title: brideTitle, label: 'BRIDE' as const, photo: cc.classicBridePhoto, intro: brideIntro }
+  const pGroom = { side: groom, ko: isEn ? (groom.nameEn || groomKo) : groomKo, title: groomTitle, label: 'GROOM' as const, photo: cc.classicGroomPhoto, intro: groomIntro }
+  const pBride = { side: bride, ko: isEn ? (bride.nameEn || brideKo) : brideKo, title: brideTitle, label: 'BRIDE' as const, photo: cc.classicBridePhoto, intro: brideIntro }
   const introA = introSwap ? pBride : pGroom
   const introB = introSwap ? pGroom : pBride
   const letterA = letterSwap ? pBride : pGroom
@@ -519,18 +528,26 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const thanksJustify = thanksLayout === 'top' ? 'flex-start' : thanksLayout === 'bottom' ? 'flex-end' : 'center'
 
   // 날짜
-  const wdate = wedding.date ? new Date(wedding.date) : new Date('2027-06-21')
+  // 날짜는 시간대와 무관한 달력 날짜로 (해외에서 열어도 하루 밀리지 않게)
+  const wdate = parseDateOnly(wedding.date || '2027-06-21')
   const monthEn = MONTHS_EN[wdate.getMonth()]
   const day = wdate.getDate()
   const year = wdate.getFullYear()
   const mm = String(wdate.getMonth() + 1).padStart(2, '0')
   const dd = String(day).padStart(2, '0')
   const dow = wdate.getDay() // 0=Sun
-  const timeDisplay = wedding.timeDisplay || wedding.time || '오후 두 시'
+  // 영문: "14:00" → "2:00 PM"
+  const enTime = (t?: string): string | null => { const m = (t || '').match(/^(\d{1,2}):(\d{2})/); if (!m) return null; const h = Number(m[1]); return `${h % 12 || 12}:${m[2]} ${h >= 12 ? 'PM' : 'AM'}` }
+  const timeDisplay = isEn ? (enTime(wedding.time) || wedding.timeDisplay || '2:00 PM') : (wedding.timeDisplay || wedding.time || '오후 두 시')
   const dateFullEn = `${dd} ${monthEn} ${year}`
   const WEEK_KO = ['일', '월', '화', '수', '목', '금', '토']
-  const dateFullKo = `${year}년 ${wdate.getMonth() + 1}월 ${day}일 ${WEEK_KO[dow]}요일`
-  const dateDotKo = `${year}.${mm}.${dd} ${WEEK_KO[dow]}요일`
+  // 달력 머리 요일 (영문: S M T W T F S)
+  const WEEK_HDR = isEn ? ['S', 'M', 'T', 'W', 'T', 'F', 'S'] : WEEK_KO
+  const WEEK_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const monthTitle = monthEn.charAt(0) + monthEn.slice(1).toLowerCase()
+  // 영문: Saturday, January 9, 2027 (변수 이름은 기존 그대로 둔다)
+  const dateFullKo = isEn ? `${WEEK_EN[dow]}, ${monthTitle} ${day}, ${year}` : `${year}년 ${wdate.getMonth() + 1}월 ${day}일 ${WEEK_KO[dow]}요일`
+  const dateDotKo = isEn ? `${year}.${mm}.${dd} ${WEEK_EN[dow]}` : `${year}.${mm}.${dd} ${WEEK_KO[dow]}요일`
 
   // 장소
   const venueName = venue.name || '더 클래식 하우스'
@@ -596,13 +613,15 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 디데이 문구 (모든 변형 공통)
   const ddayLine = (color: string, numColor: string): React.ReactNode => {
     if (dday === null || dday < 0) return null
-    if (dday === 0) return <span style={{ color }}>오늘입니다</span>
-    return <span style={{ color }}>예식까지 <span style={{ fontFamily: F_NUM, fontSize: '1.3em', color: numColor }}>{dday}</span>일</span>
+    if (dday === 0) return <span style={{ color }}>{tr('오늘입니다', 'Today is the day')}</span>
+    return isEn
+      ? <span style={{ color }}><span style={{ fontFamily: F_NUM, fontSize: '1.3em', color: numColor }}>{dday}</span> {dday === 1 ? 'day' : 'days'} to go</span>
+      : <span style={{ color }}>예식까지 <span style={{ fontFamily: F_NUM, fontSize: '1.3em', color: numColor }}>{dday}</span>일</span>
   }
 
   const renderDateVariant = (): React.ReactNode => {
     const sec = (bg: string, pad: string, extra?: React.CSSProperties): React.CSSProperties => ({ order: orderOf('date'), background: bg, padding: pad, display: 'flex', flexDirection: 'column', minHeight: '100dvh', overflow: 'hidden', ...hide('date'), ...extra })
-    const wk = (color: string) => WEEK_KO.map((w, i) => <span key={i} style={{ fontFamily: F_META, fontSize: 11, color, letterSpacing: '.04em', textAlign: 'center', paddingBottom: 18 }}>{w}</span>)
+    const wk = (color: string) => WEEK_HDR.map((w, i) => <span key={i} style={{ fontFamily: F_META, fontSize: 11, color, letterSpacing: '.04em', textAlign: 'center', paddingBottom: 18 }}>{w}</span>)
     // 다크(2c)는 기본 달력처럼 테마 틴티드 색상을 따름
     const dTx = fgC('date'); const dTxA = (a: number) => fgA('date', a); const dBg = secBg('date')
 
@@ -623,7 +642,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <div style={{ padding: '0 28px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center' }}>
             <p className="cl-reveal cl-up" style={{ margin: '10px 0 0', textAlign: 'center', fontFamily: F_META, fontSize: 11, letterSpacing: '.24em', paddingLeft: '.24em', color: '#9a917f' }}>{cc.classicDateHeading || 'WEDDING CALENDAR'}</p>
             <h2 className="cl-reveal cl-up" data-delay="80" style={{ margin: '6px 0 0', textAlign: 'center', fontFamily: F_DISPLAY, fontStyle: 'italic', fontSize: 30, lineHeight: 1.1, color: '#2b2724' }}>{monthEnT}</h2>
-            <p className="cl-reveal cl-up" data-delay="140" style={{ margin: '8px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: 11, letterSpacing: '.14em', color: '#9a917f' }}>{year}년 {monthIdx0 + 1}월</p>
+            <p className="cl-reveal cl-up" data-delay="140" style={{ margin: '8px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: 11, letterSpacing: '.14em', color: '#9a917f' }}>{isEn ? `${monthTitle} ${year}` : `${year}년 ${monthIdx0 + 1}월`}</p>
             <div className="cl-reveal cl-up" data-delay="220" style={{ marginTop: 24, display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', paddingBottom: 8, borderBottom: '1px solid rgba(43,39,36,.4)' }}>
               {WK_EN.map((w, i) => <span key={i} style={{ fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 13, color: '#6f6757', textAlign: 'center' }}>{w}</span>)}
             </div>
@@ -655,7 +674,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 {svCl && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 12, color: '#8b8271' }}>{venueName}{venueHall ? ` ${venueHall}` : ''}</p>}
               </div>
               {dday !== null && dday >= 0 && (
-                <span className="cl-reveal cl-pop" data-delay="960" style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, background: '#2b2724', color: '#f3f0ea', padding: '8px 16px', borderRadius: 999, fontFamily: F_BODY, fontSize: 12, whiteSpace: 'nowrap' }}>{dday === 0 ? '오늘' : <>D-<b style={{ fontFamily: F_NUM, fontSize: 15, fontWeight: 500 }}>{dday}</b></>}</span>
+                <span className="cl-reveal cl-pop" data-delay="960" style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, background: '#2b2724', color: '#f3f0ea', padding: '8px 16px', borderRadius: 999, fontFamily: F_BODY, fontSize: 12, whiteSpace: 'nowrap' }}>{dday === 0 ? tr('오늘', 'Today') : <>D-<b style={{ fontFamily: F_NUM, fontSize: 15, fontWeight: 500 }}>{dday}</b></>}</span>
               )}
             </div>
           </div>
@@ -667,15 +686,15 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
       return (
         <section style={sec(cc.classicDateBgColor || dBg, '76px 34px 48px')}>
           <div className="cl-reveal cl-up" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <p style={{ margin: 0, textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 12, letterSpacing: '.06em', color: dTx }}>{firstKo} &amp; {secondKo}</p>
+            <p style={{ margin: 0, textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 12, letterSpacing: '.06em', color: dTx }}>{firstBody} &amp; {secondBody}</p>
             {ornRule(dTxA(0.34), 34)}
           </div>
           <div style={{ marginTop: 40, textAlign: 'center' }}>
             <div className="cl-reveal cl-lux" data-delay="180" style={{ fontFamily: F_NUM, fontWeight: 300, fontSize: 'clamp(112px,38vw,148px)', lineHeight: 0.82, letterSpacing: '-.03em', color: dTx }}>{day}</div>
-            <div className="cl-reveal cl-up" data-delay="380" style={{ marginTop: 22, fontFamily: F_BODY, fontSize: 12, letterSpacing: '.22em', paddingLeft: '.22em', color: dTxA(0.72) }}>{year}년 {monthIdx0 + 1}월 · {WEEK_KO[dow]}요일</div>
+            <div className="cl-reveal cl-up" data-delay="380" style={{ marginTop: 22, fontFamily: F_BODY, fontSize: 12, letterSpacing: '.22em', paddingLeft: '.22em', color: dTxA(0.72) }}>{isEn ? `${monthTitle} ${year} · ${WEEK_EN[dow]}` : `${year}년 ${monthIdx0 + 1}월 · ${WEEK_KO[dow]}요일`}</div>
           </div>
-          {dateCustomMsg('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다').trim() && (
-            <p className="cl-reveal cl-blur" data-delay="240" style={{ margin: '40px 0 36px', textAlign: 'center', fontFamily: F_BODY, fontSize: 13.5, lineHeight: 1.7, letterSpacing: '.02em', color: dTxA(0.82), whiteSpace: 'pre-line' }}>{dateCustomMsg('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다')}</p>
+          {dateCustomMsg(tr('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다', 'On the day our names stand side by side,\nwe hope you will join us in celebration.')).trim() && (
+            <p className="cl-reveal cl-blur" data-delay="240" style={{ margin: '40px 0 36px', textAlign: 'center', fontFamily: F_BODY, fontSize: 13.5, lineHeight: 1.7, letterSpacing: '.02em', color: dTxA(0.82), whiteSpace: 'pre-line' }}>{dateCustomMsg(tr('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다', 'On the day our names stand side by side,\nwe hope you will join us in celebration.'))}</p>
           )}
           <div style={{ marginTop: 'auto' }}>
             <div className="cl-reveal cl-linex" data-delay="80" style={{ height: 1, background: dTxA(0.24), transformOrigin: 'center' }} />
@@ -700,8 +719,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             {dday !== null && dday >= 0 && (
               <div className="cl-reveal cl-up" data-delay="360" style={{ marginTop: 28 }}>
                 <div style={{ display: 'flex', width: '100%', alignItems: 'baseline', justifyContent: 'center', gap: 9, padding: '13px 0', border: `1px solid ${dTxA(0.28)}` }}>
-                  <span style={{ fontFamily: F_BODY, fontSize: 11, letterSpacing: '.16em', paddingLeft: '.16em', color: dTxA(0.6) }}>{dday === 0 ? '오늘' : '예식까지'}</span>
-                  {dday === 0 ? <span style={{ fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 22, color: dTx }}>예식일</span> : <><CountUp value={dday} style={{ fontFamily: F_NUM, fontWeight: 400, fontSize: 34, lineHeight: 1, color: dTx }} /><span style={{ fontFamily: F_BODY, fontSize: 12, color: dTxA(0.7) }}>일 남았습니다</span></>}
+                  <span style={{ fontFamily: F_BODY, fontSize: 11, letterSpacing: '.16em', paddingLeft: '.16em', color: dTxA(0.6) }}>{dday === 0 ? tr('오늘', 'Today') : tr('예식까지', 'Countdown')}</span>
+                  {dday === 0 ? <span style={{ fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 22, color: dTx }}>{tr('예식일', 'Wedding day')}</span> : <><CountUp value={dday} style={{ fontFamily: F_NUM, fontWeight: 400, fontSize: 34, lineHeight: 1, color: dTx }} /><span style={{ fontFamily: F_BODY, fontSize: 12, color: dTxA(0.7) }}>{tr('일 남았습니다', dday === 1 ? 'day left' : 'days left')}</span></>}
                 </div>
               </div>
             )}
@@ -720,14 +739,14 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: F_META, fontSize: 11, color: '#9a917f' }}>
               <span style={{ letterSpacing: '.2em' }}>INVITATION</span><span style={{ letterSpacing: '.08em' }}>NO. {mm}{dd}</span>
             </div>
-            <p style={{ margin: '30px 0 0', fontFamily: F_BODY, fontSize: 15, color: '#3a352c', letterSpacing: '.08em' }}>{firstKo} <span style={{ color: '#b0a48c' }}>&amp;</span> {secondKo}</p>
+            <p style={{ margin: '30px 0 0', fontFamily: F_BODY, fontSize: 15, color: '#3a352c', letterSpacing: '.08em' }}>{firstBody} <span style={{ color: '#b0a48c' }}>&amp;</span> {secondBody}</p>
             <div className="cl-reveal cl-blur" data-delay="140" style={{ margin: '20px 0 0', display: 'flex', alignItems: 'baseline', gap: 12 }}>
               <span style={{ fontFamily: F_NUM, fontWeight: 300, fontSize: 70, lineHeight: 0.85, color: '#231f1b' }}>{mm}.{dd}</span>
-              <span style={{ fontFamily: F_BODY, fontSize: 14, color: '#8b8271' }}>{WEEK_KO[dow]}요일</span>
+              <span style={{ fontFamily: F_BODY, fontSize: 14, color: '#8b8271' }}>{isEn ? WEEK_EN[dow] : `${WEEK_KO[dow]}요일`}</span>
             </div>
             <p style={{ margin: '22px 0 0', fontFamily: F_BODY, fontSize: 13, lineHeight: 1.9, color: '#6f6757', whiteSpace: 'pre-line' }}>{[sdCl ? timeDisplay : null, svCl ? `${venueName}${venueHall ? ` ${venueHall}` : ''}` : null].filter(Boolean).join(' · ')}{svCl && venueAddress ? `\n${venueAddress}` : ''}</p>
-            {dateCustomMsg('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다').trim() && (
-              <p className="cl-reveal cl-blur" data-delay="220" style={{ margin: '18px 0 0', fontFamily: F_BODY, fontSize: 13, lineHeight: 1.9, letterSpacing: '.02em', color: '#6f6757', whiteSpace: 'pre-line' }}>{dateCustomMsg('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다')}</p>
+            {dateCustomMsg(tr('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다', 'On the day our names stand side by side,\nwe hope you will join us in celebration.')).trim() && (
+              <p className="cl-reveal cl-blur" data-delay="220" style={{ margin: '18px 0 0', fontFamily: F_BODY, fontSize: 13, lineHeight: 1.9, letterSpacing: '.02em', color: '#6f6757', whiteSpace: 'pre-line' }}>{dateCustomMsg(tr('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다', 'On the day our names stand side by side,\nwe hope you will join us in celebration.'))}</p>
             )}
           </div>
           <div style={{ ...panel, borderTop: 'none', borderBottom: 'none', height: 24, display: 'flex', alignItems: 'center', padding: '0 20px', position: 'relative' }}>
@@ -736,7 +755,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <div className="cl-reveal cl-tear" data-delay="640" style={{ flex: 1, borderTop: '1px dashed rgba(43,39,36,.28)' }} />
           </div>
           <div style={{ ...panel, borderTop: 'none', borderRadius: '0 0 6px 6px', padding: '26px 26px 30px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)' }}>{WEEK_KO.map((w, i) => <span key={i} style={{ fontFamily: F_META, fontSize: 11, color: '#a0977f', textAlign: 'center', paddingBottom: 14 }}>{w}</span>)}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)' }}>{WEEK_HDR.map((w, i) => <span key={i} style={{ fontFamily: F_META, fontSize: 11, color: '#a0977f', textAlign: 'center', paddingBottom: 14 }}>{w}</span>)}</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)' }}>
               {monthCells.map((n, i) => (
                 <div key={i} style={{ height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -748,8 +767,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             </div>
             {dday !== null && dday >= 0 && (
               <div className="cl-reveal cl-pop" data-delay="300" style={{ marginTop: 'auto', paddingTop: 22, borderTop: '1px solid rgba(43,39,36,.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <span style={{ fontFamily: F_BODY, fontSize: 13, color: '#8b8271', letterSpacing: '.06em' }}>예식까지 남은 날</span>
-                <span style={{ fontFamily: F_BODY, fontSize: 30, color: '#231f1b' }}>{dday === 0 ? '오늘입니다' : <><CountUp value={dday} style={{ fontFamily: F_NUM, fontSize: 40, fontWeight: 500, color: datePoint }} />일</>}</span>
+                <span style={{ fontFamily: F_BODY, fontSize: 13, color: '#8b8271', letterSpacing: '.06em' }}>{tr('예식까지 남은 날', 'Days until the wedding')}</span>
+                <span style={{ fontFamily: F_BODY, fontSize: 30, color: '#231f1b' }}>{dday === 0 ? tr('오늘입니다', 'Today') : <><CountUp value={dday} style={{ fontFamily: F_NUM, fontSize: 40, fontWeight: 500, color: datePoint }} />{tr('일', '')}</>}</span>
               </div>
             )}
           </div>
@@ -761,19 +780,19 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     // 2e — Editorial
     return (
       <section style={sec(cc.classicDateBgColor || '#e9e5dc', '64px 52px 44px')}>
-        <p className="cl-reveal cl-up" style={{ margin: 0, fontFamily: F_BODY, fontSize: 11, letterSpacing: '.28em', paddingLeft: '.28em', color: '#8a8272' }}>{year}년 {monthIdx0 + 1}월</p>
+        <p className="cl-reveal cl-up" style={{ margin: 0, fontFamily: F_BODY, fontSize: 11, letterSpacing: '.28em', paddingLeft: '.28em', color: '#8a8272' }}>{isEn ? `${monthTitle} ${year}` : `${year}년 ${monthIdx0 + 1}월`}</p>
         <div className="cl-reveal cl-clip-up" data-delay="200" style={{ margin: '16px 0 0', fontFamily: F_NUM, fontWeight: 300, fontSize: 'clamp(128px,44vw,172px)', lineHeight: 0.82, letterSpacing: '-.04em', color: 'transparent', WebkitTextStroke: '1.2px #4c4638' } as React.CSSProperties}>{day}</div>
         <div style={{ margin: '26px 0 0', display: 'flex', alignItems: 'baseline', gap: 14 }}>
-          <span className="cl-reveal cl-up" data-delay="640" style={{ fontFamily: F_BODY, fontSize: 17, color: '#3f3a2f', letterSpacing: '.12em', whiteSpace: 'nowrap' }}>{WEEK_KO[dow]}요일 {timeDisplay}</span>
+          <span className="cl-reveal cl-up" data-delay="640" style={{ fontFamily: F_BODY, fontSize: 17, color: '#3f3a2f', letterSpacing: '.12em', whiteSpace: 'nowrap' }}>{isEn ? WEEK_EN[dow] : `${WEEK_KO[dow]}요일`} {timeDisplay}</span>
           <span className="cl-reveal cl-linex" data-delay="760" style={{ flex: 1, height: 1, background: 'rgba(43,39,36,.2)' }} />
-          {dday !== null && dday >= 0 && <span className="cl-reveal cl-boop" data-delay="920" style={{ fontFamily: F_NUM, fontWeight: 400, fontSize: 30, lineHeight: 1, color: datePoint, whiteSpace: 'nowrap' }}>{dday === 0 ? '오늘' : `D-${dday}`}</span>}
+          {dday !== null && dday >= 0 && <span className="cl-reveal cl-boop" data-delay="920" style={{ fontFamily: F_NUM, fontWeight: 400, fontSize: 30, lineHeight: 1, color: datePoint, whiteSpace: 'nowrap' }}>{dday === 0 ? tr('오늘', 'Today') : `D-${dday}`}</span>}
         </div>
-        {dateCustomMsg('함께 걸어온 시간을\n같은 이름으로 이어가고자 합니다.').trim() && (
-          <p className="cl-reveal cl-blur" data-delay="1040" style={{ margin: '34px 0 0', fontFamily: F_BODY, fontSize: 15, lineHeight: 1.7, color: '#5b5449', whiteSpace: 'pre-line' }}>{dateCustomMsg('함께 걸어온 시간을\n같은 이름으로 이어가고자 합니다.')}</p>
+        {dateCustomMsg(tr('함께 걸어온 시간을\n같은 이름으로 이어가고자 합니다.', 'The time we have shared\nnow continues under one name.')).trim() && (
+          <p className="cl-reveal cl-blur" data-delay="1040" style={{ margin: '34px 0 0', fontFamily: F_BODY, fontSize: 15, lineHeight: 1.7, color: '#5b5449', whiteSpace: 'pre-line' }}>{dateCustomMsg(tr('함께 걸어온 시간을\n같은 이름으로 이어가고자 합니다.', 'The time we have shared\nnow continues under one name.'))}</p>
         )}
         <div className="cl-reveal cl-place" data-delay="1200" style={{ marginTop: 'auto', marginLeft: -22, marginRight: -22, background: '#FFFFFF', border: '1px solid rgba(43,39,36,.1)', padding: '22px 22px 20px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
           <div style={{ paddingBottom: 18, borderBottom: '1px solid rgba(43,39,36,.18)' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)' }}>{WEEK_KO.map((w, i) => <span key={i} style={{ fontFamily: F_META, fontSize: 10, color: '#8b8271', letterSpacing: '.06em', textAlign: 'center', paddingBottom: 12 }}>{w}</span>)}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)' }}>{WEEK_HDR.map((w, i) => <span key={i} style={{ fontFamily: F_META, fontSize: 10, color: '#8b8271', letterSpacing: '.06em', textAlign: 'center', paddingBottom: 12 }}>{w}</span>)}</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', alignItems: 'center' }}>
               {weekDays.map((n, i) => (
                 <div key={i} style={{ textAlign: 'center' }}>
@@ -792,7 +811,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               {svCl && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 14, lineHeight: 1.7, color: '#3a352c' }}>{venueName}{venueHall ? ` ${venueHall}` : ''}</p>}
               {svCl && venueAddress && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 12, color: '#8b8271' }}>{venueAddress}</p>}
             </div>
-            <span style={{ fontFamily: F_BODY, fontSize: 13, color: '#4c4638', letterSpacing: '.1em', whiteSpace: 'nowrap' }}>{firstKo} &amp; {secondKo}</span>
+            <span style={{ fontFamily: F_BODY, fontSize: 13, color: '#4c4638', letterSpacing: '.1em', whiteSpace: 'nowrap' }}>{firstBody} &amp; {secondBody}</span>
           </div>
         </div>
       </section>
@@ -908,7 +927,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const greetingOverlay: string = cc.classicGreetingOverlayColor || '#241610'
   const greetingOverlayOp: number = typeof cc.classicGreetingOverlayOpacity === 'number' ? Math.max(0, Math.min(1, cc.classicGreetingOverlayOpacity)) : 0.5
   // 인사말 / 인용
-  const greeting: string = cc.greeting || '오랜 시간 나란히 걸어온 두 사람이\n이제 하나의 이름으로\n같은 길을 걸으려 합니다.\n\n귀한 걸음으로 오시어\n저희의 시작을 축복해 주세요.'
+  const greeting: string = cc.greeting || tr('오랜 시간 나란히 걸어온 두 사람이\n이제 하나의 이름으로\n같은 길을 걸으려 합니다.\n\n귀한 걸음으로 오시어\n저희의 시작을 축복해 주세요.', 'Two people who have walked side by side\nare now choosing the same path, together.\n\nWe would be honored by your presence\nas we begin this new chapter.')
   const quoteText: string | undefined = cc.quote?.text
   const quoteAuthor: string | undefined = cc.quote?.author
 
@@ -1001,14 +1020,14 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         {!galExpanded ? (
           <button type="button" onClick={() => setGalExpanded(true)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: '100%', padding: 0, border: 'none', background: 'transparent', cursor: 'pointer' }}>
             <span style={{ width: 30, height: 1, background: cA(0.3) }} />
-            <span style={{ fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 15, letterSpacing: '.04em', color: c1 }}>사진 더보기</span>
+            <span style={{ fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 15, letterSpacing: '.04em', color: c1 }}>{tr('사진 더보기', 'View more')}</span>
             <span style={{ fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.28em', paddingLeft: '.28em', color: cA(0.5) }}>{String(n).padStart(2, '0')} {nameCase('MORE')}</span>
           </button>
         ) : (
           <>
             {body}
             <button type="button" onClick={() => setGalExpanded(false)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: '100%', margin: '28px 0 0', padding: 0, border: 'none', background: 'transparent', cursor: 'pointer' }}>
-              <span style={{ fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 13, letterSpacing: '.04em', color: cA(0.6) }}>접기</span>
+              <span style={{ fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 13, letterSpacing: '.04em', color: cA(0.6) }}>{tr('접기', 'Show less')}</span>
               <span style={{ width: 22, height: 1, background: cA(0.25) }} />
             </button>
           </>
@@ -1111,11 +1130,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
       const who = [role, holderName].filter(Boolean).join(' · ')
       return { line, who, copy: b.account || line }
     }).filter(Boolean) as Acct[]
-  const groomAccts = buildAccts([{ person: groom, role: '' }, { person: groom.father, role: '아버지' }, { person: groom.mother, role: '어머니' }])
-  const brideAccts = buildAccts([{ person: bride, role: '' }, { person: bride.father, role: '아버지' }, { person: bride.mother, role: '어머니' }])
+  const groomAccts = buildAccts([{ person: groom, role: '' }, { person: groom.father, role: tr('아버지', 'Father') }, { person: groom.mother, role: tr('어머니', 'Mother') }])
+  const brideAccts = buildAccts([{ person: bride, role: '' }, { person: bride.father, role: tr('아버지', 'Father') }, { person: bride.mother, role: tr('어머니', 'Mother') }])
   // 표시: 추가정보에서 토글(enabled)한 계좌만 표시 (신랑측/신부측 자동). 순서는 기본정보 이름 순서(nameSwap)를 따름
-  const _groomSide = groomAccts.length ? { side: '신랑측', accts: groomAccts } : null
-  const _brideSide = brideAccts.length ? { side: '신부측', accts: brideAccts } : null
+  const _groomSide = groomAccts.length ? { side: tr('신랑측', "GROOM'S SIDE"), accts: groomAccts } : null
+  const _brideSide = brideAccts.length ? { side: tr('신부측', "BRIDE'S SIDE"), accts: brideAccts } : null
   const acctSides = ([
     nameSwap ? _brideSide : _groomSide,
     nameSwap ? _groomSide : _brideSide,
@@ -1123,10 +1142,10 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
   // 오시는 길 rows
   const dirRows = [
-    directions.publicTransport && { label: '대중교통', text: directions.publicTransport },
-    directions.train && { label: '기차', text: directions.train },
-    directions.expressBus && { label: '고속버스', text: directions.expressBus },
-    directions.car && { label: '자가용', text: directions.car },
+    directions.publicTransport && { label: tr('대중교통', 'Transit'), text: directions.publicTransport },
+    directions.train && { label: tr('기차', 'Train'), text: directions.train },
+    directions.expressBus && { label: tr('고속버스', 'Bus'), text: directions.expressBus },
+    directions.car && { label: tr('자가용', 'By car'), text: directions.car },
   ].filter(Boolean) as { label: string; text: string }[]
   // 입력한 항목만 표시 — 비운 필드는 어디서든(실제·에디터 미리보기) 표시하지 않는다. 예시는 샘플 데이터로만 채움.
   const dirDisplay = dirRows
@@ -1139,9 +1158,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 안내 캐러셀
   const infoSlides: { title: string; body: string; pos: string; photo?: unknown }[] =
     (Array.isArray(cc.classicInfo) && cc.classicInfo.length ? cc.classicInfo : [
-      { title: 'Ceremony', pos: '50% 34%', body: '예식은 오후 두 시에 시작됩니다.\n30분 전까지 도착하시어\n신랑 신부와 인사 나눠주세요.' },
-      { title: 'Reception', pos: '40% 46%', body: '양식 정찬 코스가 준비되어 있습니다.\n웨딩 잔치국수까지 함께 즐겨주세요.' },
-      { title: 'Parking', pos: '62% 40%', body: '건물 지하 1~3층 주차장을 이용하실 수 있습니다.\n안내 데스크에서 세 시간까지 무료입니다.' },
+      { title: 'Ceremony', pos: '50% 34%', body: tr('예식은 오후 두 시에 시작됩니다.\n30분 전까지 도착하시어\n신랑 신부와 인사 나눠주세요.', 'The ceremony begins at 2:00 PM.\nPlease arrive 30 minutes early\nto greet the couple.') },
+      { title: 'Reception', pos: '40% 46%', body: tr('양식 정찬 코스가 준비되어 있습니다.\n웨딩 잔치국수까지 함께 즐겨주세요.', 'A plated dinner will be served\nfollowing the ceremony.') },
+      { title: 'Parking', pos: '62% 40%', body: tr('건물 지하 1~3층 주차장을 이용하실 수 있습니다.\n안내 데스크에서 세 시간까지 무료입니다.', 'Parking is available on site.\nPlease ask the front desk for validation.') },
     ])
   // 배경음악
   const bgmUrl: string = (cc.classicBgmEnabled && cc.classicBgmUrl) ? cc.classicBgmUrl : ''
@@ -1237,8 +1256,32 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   }
   const doShare = () => {
     if (typeof navigator !== 'undefined' && (navigator as any).share) {
-      (navigator as any).share({ title: `${firstKo} ♥ ${secondKo}`, text: '결혼식에 초대합니다', url: shareUrl }).catch(() => {})
+      (navigator as any).share({ title: isEn ? `${firstEn} ♥ ${secondEn}` : `${firstKo} ♥ ${secondKo}`, text: tr('결혼식에 초대합니다', 'You are invited to our wedding'), url: shareUrl }).catch(() => {})
     } else { doCopy(shareUrl, 'share') }
+  }
+
+  // 마무리 공유 버튼: 카카오톡 공유 / 일반 공유(폰 공유창). 미설정이면 한국어=카카오톡, 영문=일반
+  const shareMode: 'kakao' | 'native' = cc.classicShareMode === 'native' || cc.classicShareMode === 'kakao' ? cc.classicShareMode : (isEn ? 'native' : 'kakao')
+  const doKakaoShare = () => {
+    const kw = window as typeof window & { Kakao?: { isInitialized?: () => boolean; Share?: { sendDefault: (config: object) => void } } }
+    const meta = (c.meta || {}) as { title?: string; description?: string; kakaoThumbnail?: unknown; kakaoThumbnailCropped?: string; kakaoThumbnailRatio?: string; ogImage?: unknown; ogImageCropped?: string }
+    // 카카오는 절대 URL만 인식
+    const abs = (u: string) => (!u ? '' : /^https?:\/\//.test(u) ? u : `https://invite.deardrawer.com${u.startsWith('/') ? '' : '/'}${u}`)
+    const img = abs(meta.kakaoThumbnailCropped || extractUrl(meta.kakaoThumbnail) || meta.ogImageCropped || extractUrl(meta.ogImage) || gallery[0] || '')
+    const title = meta.title || (isEn ? `${firstBody} & ${secondBody} are getting married` : `${firstBody} ♥ ${secondBody} 결혼합니다`)
+    const desc = meta.description || [sdCl ? `${dateFullKo} ${timeDisplay}` : '', svCl ? venueName : ''].filter(Boolean).join('\n')
+    if (kw.Kakao?.Share && kw.Kakao.isInitialized?.()) {
+      const sizes: Record<string, { w: number; h: number }> = { '3:4': { w: 900, h: 1200 }, '1:1': { w: 800, h: 800 }, '3:2': { w: 1200, h: 800 } }
+      const sz = sizes[meta.kakaoThumbnailRatio || '1:1'] || sizes['1:1']
+      kw.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: { title, description: desc, imageUrl: img || 'https://invite.deardrawer.com/og-image.png', imageWidth: sz.w, imageHeight: sz.h, link: { mobileWebUrl: shareUrl, webUrl: shareUrl } },
+        buttons: [{ title: tr('청첩장 보기', 'View Invitation'), link: { mobileWebUrl: shareUrl, webUrl: shareUrl } }],
+      })
+    } else {
+      // 카카오 SDK 를 못 쓰는 환경(미리보기 등) → 링크 복사로 대신
+      doCopy(shareUrl, 'link')
+    }
   }
 
   const bgPhoto = (i: number, extra: Record<string, string> = {}) => {
@@ -1484,7 +1527,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
   // D-day 계산 (클라이언트에서만)
   useEffect(() => {
-    const target = wedding.date ? new Date(wedding.date) : null
+    const target = wedding.date ? parseDateOnly(wedding.date) : null
     if (!target || isNaN(target.getTime())) { setDday(null); return }
     target.setHours(0, 0, 0, 0)
     const today = new Date(); today.setHours(0, 0, 0, 0)
@@ -1523,16 +1566,16 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             allowFullScreen
           />
         ) : (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: inkA(0.6) }}>지도를 표시할 수 없습니다</div>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: inkA(0.6) }}>{tr('지도를 표시할 수 없습니다', 'Map unavailable')}</div>
         )
       ) : mapError ? (
-        <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: inkA(0.6) }}>지도에서 위치 보기</a>
+        <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: inkA(0.6) }}>{tr('지도에서 위치 보기', 'View on map')}</a>
       ) : (
         <div ref={mapContainerRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
       )}
       {mapInteractive && !mapActive && (
         <div onClick={handleOverlayTap} style={{ position: 'absolute', inset: 0, zIndex: 2, cursor: 'pointer', background: 'rgba(53,23,20,.04)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 46 }}>
-          <span style={{ fontFamily: F_BODY, fontSize: bfs(11), color: IVORY, background: inkA(0.62), padding: '5px 12px', borderRadius: 20 }}>{mapState === 'hint' ? '한 번 더 누르면 이동할 수 있어요' : '지도를 눌러 이동/확대'}</span>
+          <span style={{ fontFamily: F_BODY, fontSize: bfs(11), color: IVORY, background: inkA(0.62), padding: '5px 12px', borderRadius: 20 }}>{mapState === 'hint' ? tr('한 번 더 누르면 이동할 수 있어요', 'Tap again to move the map') : tr('지도를 눌러 이동/확대', 'Tap to move / zoom the map')}</span>
         </div>
       )}
     </div>
@@ -1558,7 +1601,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <audio ref={bgmRef} src={bgmUrl} loop preload="auto" />
             <button
               type="button"
-              aria-label="배경음악"
+              aria-label={tr('배경음악', 'Background music')}
               onClick={() => { const a = bgmRef.current; if (!a) return; if (a.paused) { a.play().then(() => setBgmPlaying(true)).catch(() => {}) } else { a.pause(); setBgmPlaying(false) } }}
               style={{ pointerEvents: 'auto', width: 38, height: 38, borderRadius: '50%', background: inkA(0.42), backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', border: `1px solid ${ivoryA(0.35)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
             >
@@ -1596,7 +1639,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               </div>
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(244,241,233,.78)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', opacity: frost ? 0 : 1, transition: 'opacity 1.2s ease', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
                 <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 15, letterSpacing: '.02em', color: inkA(0.62), minHeight: '1.4em' }}>{traceText.slice(0, traceTyped)}<span style={{ display: 'inline-block', marginLeft: 1, color: inkA(0.5), animation: 'cl-caret 1s step-end infinite' }}>|</span></p>
-                <p style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 11.5, letterSpacing: '.1em', paddingLeft: '.1em', color: inkA(0.42), opacity: traceTyped >= traceText.length ? 1 : 0, transition: 'opacity .8s ease' }}>화면을 클릭해주세요.</p>
+                <p style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 11.5, letterSpacing: '.1em', paddingLeft: '.1em', color: inkA(0.42), opacity: traceTyped >= traceText.length ? 1 : 0, transition: 'opacity .8s ease' }}>{tr('화면을 클릭해주세요.', 'Tap the screen to begin.')}</p>
               </div>
             </div>
           ) : (
@@ -1645,7 +1688,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                       </div>
                     </div>
                   </div>
-                  <p style={{ position: 'absolute', bottom: 22, left: 0, right: 0, margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: 14, lineHeight: 1.7, color: 'rgba(250,247,242,.9)', textShadow: '0 1px 6px rgba(20,10,8,.5)', opacity: ribbon ? 0 : 1, transition: 'opacity .5s ease', animation: 'cl-fade-soft .9s ease 1.8s backwards' }}>편지가 도착했어요.<br />클릭하여 편지를 열어주세요.</p>
+                  <p style={{ position: 'absolute', bottom: 22, left: 0, right: 0, margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: 14, lineHeight: 1.7, color: 'rgba(250,247,242,.9)', textShadow: '0 1px 6px rgba(20,10,8,.5)', opacity: ribbon ? 0 : 1, transition: 'opacity .5s ease', animation: 'cl-fade-soft .9s ease 1.8s backwards' }}>{tr('편지가 도착했어요.', 'A letter has arrived.')}<br />{tr('클릭하여 편지를 열어주세요.', 'Tap to open it.')}</p>
                 </div>
               )}
 
@@ -1679,7 +1722,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                       </div>
                     </div>
                   </div>
-                  <p style={{ margin: '18px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: 13, color: 'rgba(250,247,242,.9)', textShadow: '0 1px 6px rgba(20,10,8,.5)', opacity: fold > 0 ? 0 : 1, transition: 'opacity .5s ease', animation: 'cl-fade-soft .8s ease 1s backwards' }}>{cc.classicInfoStartText || '예식정보 바로보기'} <span style={{ opacity: 0.7 }}>(클릭)</span></p>
+                  <p style={{ margin: '18px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: 13, color: 'rgba(250,247,242,.9)', textShadow: '0 1px 6px rgba(20,10,8,.5)', opacity: fold > 0 ? 0 : 1, transition: 'opacity .5s ease', animation: 'cl-fade-soft .8s ease 1s backwards' }}>{cc.classicInfoStartText || tr('예식정보 바로보기', 'View wedding details')} <span style={{ opacity: 0.7 }}>{tr('(클릭)', '(tap)')}</span></p>
                 </div>
               )}
 
@@ -1690,7 +1733,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', background: PAPER, padding: '11px 11px 74px', boxSizing: 'border-box' }}>
                       <div style={{ width: '100%', height: '100%', ...cropBg(cc.classicFlipPhoto, { background: DEEP_BEIGE }, { backgroundPosition: '50% 34%' }), filter: 'saturate(.7)' }} />
                       <p style={{ margin: '14px 0 0', textAlign: 'center', fontFamily: nameFont, fontSize: 20, letterSpacing: '.06em', color: openInk, animation: 'cl-ink-in 1.3s ease .75s both' }}>{nameGroom} &amp; {nameBride}</p>
-                      <p style={{ margin: '8px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: 11, color: openInkA(0.5), animation: 'cl-ink-in 1s ease 1.2s both' }}>{cc.classicInfoStartText || '예식정보 바로보기'} <span style={{ opacity: 0.7 }}>(클릭)</span></p>
+                      <p style={{ margin: '8px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: 11, color: openInkA(0.5), animation: 'cl-ink-in 1s ease 1.2s both' }}>{cc.classicInfoStartText || tr('예식정보 바로보기', 'View wedding details')} <span style={{ opacity: 0.7 }}>{tr('(클릭)', '(tap)')}</span></p>
                     </div>
                     <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', background: PAPER, backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.022) 0 1px,transparent 1px 7px)', boxSizing: 'border-box', padding: 14 }}>
                       <div style={{ position: 'relative', width: '100%', height: '100%', border: `1px solid ${openInkA(0.2)}`, boxSizing: 'border-box', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>
@@ -1719,7 +1762,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           )}
           {introDone && (
           <div onClick={goToMain} role="button" style={{ position: 'absolute', bottom: 40, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, cursor: 'pointer', zIndex: 6, animation: 'cl-fade-soft 1.1s ease both' }}>
-            <span style={{ fontFamily: F_BODY, fontSize: 12, letterSpacing: '.18em', paddingLeft: '.18em', color: openingStyle === '프레임' ? frameInk : 'rgba(250,247,242,.9)', textShadow: openingStyle === '프레임' ? undefined : '0 1px 6px rgba(20,10,8,.5)' }}>터치 또는 스크롤</span>
+            <span style={{ fontFamily: F_BODY, fontSize: 12, letterSpacing: '.18em', paddingLeft: '.18em', color: openingStyle === '프레임' ? frameInk : 'rgba(250,247,242,.9)', textShadow: openingStyle === '프레임' ? undefined : '0 1px 6px rgba(20,10,8,.5)' }}>{tr('터치 또는 스크롤', 'Tap or scroll')}</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={openingStyle === '프레임' ? frameInk : 'rgba(250,247,242,.9)'} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'cl-nudge 1.6s ease-in-out infinite', filter: openingStyle === '프레임' ? undefined : 'drop-shadow(0 1px 4px rgba(20,10,8,.5))' }}><path d="M6 9l6 6 6-6" /></svg>
           </div>
           )}
@@ -1741,27 +1784,27 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 <div className="cl-reveal cl-line" data-delay="760" style={{ width: 1, height: 22, background: inkA(0.25), margin: '22px auto 18px' }} />
                 <div className="cl-reveal cl-blur" data-delay="900" style={{ display: 'flex', flexDirection: 'column', gap: 7, fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.7) }}>
                   {letterSign === 'couple' ? (
-                    <p style={{ margin: 0 }}><span style={{ color: INK }}>{letterA.ko}</span> &amp; <span style={{ color: INK }}>{letterB.ko}</span> 올림</p>
+                    <p style={{ margin: 0 }}><span style={{ color: INK }}>{letterA.ko}</span> &amp; <span style={{ color: INK }}>{letterB.ko}</span>{tr(' 올림', '')}</p>
                   ) : letterSign === 'hosts' ? (
                     hostSide === 'groom' ? (
-                      <p style={{ margin: 0 }}><span style={{ color: INK }}>{parentsJsx(groom.father, groom.mother)}</span> 올림</p>
+                      <p style={{ margin: 0 }}>{isEn && 'With love, '}<span style={{ color: INK }}>{parentsJsx(groom.father, groom.mother)}</span>{tr(' 올림', '')}</p>
                     ) : hostSide === 'bride' ? (
-                      <p style={{ margin: 0 }}><span style={{ color: INK }}>{parentsJsx(bride.father, bride.mother)}</span> 올림</p>
+                      <p style={{ margin: 0 }}>{isEn && 'With love, '}<span style={{ color: INK }}>{parentsJsx(bride.father, bride.mother)}</span>{tr(' 올림', '')}</p>
                     ) : (
                       <>
-                        {parentsJsx(letterA.side.father, letterA.side.mother) && <p style={{ margin: 0 }}>{letterA.label === 'GROOM' ? '신랑측 혼주' : '신부측 혼주'} <span style={{ color: INK }}>{parentsJsx(letterA.side.father, letterA.side.mother)}</span></p>}
-                        {parentsJsx(letterB.side.father, letterB.side.mother) && <p style={{ margin: 0 }}>{letterB.label === 'GROOM' ? '신랑측 혼주' : '신부측 혼주'} <span style={{ color: INK }}>{parentsJsx(letterB.side.father, letterB.side.mother)}</span></p>}
-                        <p style={{ margin: '2px 0 0' }}>올림</p>
+                        {parentsJsx(letterA.side.father, letterA.side.mother) && <p style={{ margin: 0 }}>{letterA.label === 'GROOM' ? tr('신랑측 혼주', "Groom's parents") : tr('신부측 혼주', "Bride's parents")} <span style={{ color: INK }}>{parentsJsx(letterA.side.father, letterA.side.mother)}</span></p>}
+                        {parentsJsx(letterB.side.father, letterB.side.mother) && <p style={{ margin: 0 }}>{letterB.label === 'GROOM' ? tr('신랑측 혼주', "Groom's parents") : tr('신부측 혼주', "Bride's parents")} <span style={{ color: INK }}>{parentsJsx(letterB.side.father, letterB.side.mother)}</span></p>}
+                        {!isEn && <p style={{ margin: '2px 0 0' }}>올림</p>}
                       </>
                     )
                   ) : (
                     // 부모명 · 관계(작게) · 자녀명을 3열로 컬럼 정렬 — 두 줄이 세로로 맞음
                     <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 8, rowGap: 7, justifyContent: 'center', alignItems: 'baseline' }}>
                       <span style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>{parentsJsx(letterA.side.father, letterA.side.mother) || ''}</span>
-                      <span style={{ fontSize: bfs(9), color: inkA(0.5), textAlign: 'left', whiteSpace: 'nowrap' }}>{parentsJsx(letterA.side.father, letterA.side.mother) ? `의 ${letterA.title}` : letterA.title}</span>
+                      <span style={{ fontSize: bfs(9), color: inkA(0.5), textAlign: 'left', whiteSpace: 'nowrap' }}>{parentsJsx(letterA.side.father, letterA.side.mother) ? tr(`의 ${letterA.title}`, `${letterA.title} of`) : letterA.title}</span>
                       <span style={{ textAlign: 'left', color: INK, whiteSpace: 'nowrap' }}>{letterA.ko}</span>
                       <span style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>{parentsJsx(letterB.side.father, letterB.side.mother) || ''}</span>
-                      <span style={{ fontSize: bfs(9), color: inkA(0.5), textAlign: 'left', whiteSpace: 'nowrap' }}>{parentsJsx(letterB.side.father, letterB.side.mother) ? `의 ${letterB.title}` : letterB.title}</span>
+                      <span style={{ fontSize: bfs(9), color: inkA(0.5), textAlign: 'left', whiteSpace: 'nowrap' }}>{parentsJsx(letterB.side.father, letterB.side.mother) ? tr(`의 ${letterB.title}`, `${letterB.title} of`) : letterB.title}</span>
                       <span style={{ textAlign: 'left', color: INK, whiteSpace: 'nowrap' }}>{letterB.ko}</span>
                     </div>
                   )}
@@ -1803,7 +1846,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 <div key={p.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   {!(cc.classicIntroShowParents !== false && parentsJsx(p.side.father, p.side.mother)) && <p className="cl-reveal cl-up" data-delay={String(160 + i * 260)} style={label(T_ROLE, 0.42, introFgAf(0.45))}>{nameCase(p.label)}</p>}
                   {cc.classicIntroShowParents !== false && parentsJsx(p.side.father, p.side.mother) && (
-                    <p className="cl-reveal cl-up" data-delay={String(160 + i * 260)} style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(12), color: introFgAf(0.6), whiteSpace: 'nowrap' }}>{parentsJsx(p.side.father, p.side.mother)} 의 {p.title}</p>
+                    <p className="cl-reveal cl-up" data-delay={String(160 + i * 260)} style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(12), color: introFgAf(0.6), whiteSpace: 'nowrap' }}>{ofParents(parentsJsx(p.side.father, p.side.mother), p.title)}</p>
                   )}
                   <p className="cl-reveal cl-blur" data-delay={String(300 + i * 260)} style={{ margin: '6px 0 0', fontFamily: F_BODY, fontSize: bfs(22), letterSpacing: '.01em', color: introFgC }}>{p.ko}</p>
                   {i === 0 && <div className="cl-reveal cl-line" data-delay="440" style={{ width: 1, height: 26, background: introFgAf(0.22), margin: '30px auto 0' }} />}
@@ -1823,7 +1866,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     {!(cc.classicIntroShowParents !== false && parentsJsx(introA.side.father, introA.side.mother)) && <p style={{ ...label(T_ROLE, 0.4, inkA(0.45)), textAlign: 'center' }}>{nameCase(introA.label)}</p>}
                     <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{introA.ko}</p>
                     {cc.classicIntroShowParents !== false && parentsJsx(introA.side.father, introA.side.mother) && (
-                      <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55) }}>{parentsJsx(introA.side.father, introA.side.mother)} 의 {introA.title}</p>
+                      <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55) }}>{ofParents(parentsJsx(introA.side.father, introA.side.mother), introA.title)}</p>
                     )}
                     {introA.intro && <p style={{ margin: '12px 0 0', width: '100%', fontFamily: F_BODY, fontSize: bfs(12.5), fontWeight: 500, lineHeight: 1.8, color: INK, textAlign: 'center', wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{introA.intro}</p>}
                   </div>
@@ -1834,7 +1877,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     {!(cc.classicIntroShowParents !== false && parentsJsx(introB.side.father, introB.side.mother)) && <p style={{ ...label(T_ROLE, 0.4, inkA(0.45)), textAlign: 'center' }}>{nameCase(introB.label)}</p>}
                     <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{introB.ko}</p>
                     {cc.classicIntroShowParents !== false && parentsJsx(introB.side.father, introB.side.mother) && (
-                      <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55) }}>{parentsJsx(introB.side.father, introB.side.mother)} 의 {introB.title}</p>
+                      <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55) }}>{ofParents(parentsJsx(introB.side.father, introB.side.mother), introB.title)}</p>
                     )}
                     {introB.intro && <p style={{ margin: '12px 0 0', width: '100%', fontFamily: F_BODY, fontSize: bfs(12.5), fontWeight: 500, lineHeight: 1.8, color: INK, textAlign: 'center', wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{introB.intro}</p>}
                   </div>
@@ -1850,7 +1893,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                   {!(cc.classicIntroShowParents !== false && parentsJsx(introA.side.father, introA.side.mother)) && <p style={label(T_ROLE, 0.4, inkA(0.45))}>{nameCase(introA.label)}</p>}
                   <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{introA.ko}</p>
                   {cc.classicIntroShowParents !== false && parentsJsx(introA.side.father, introA.side.mother) && (
-                    <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55), whiteSpace: 'nowrap' }}>{parentsJsx(introA.side.father, introA.side.mother)} 의 {introA.title}</p>
+                    <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55), whiteSpace: 'nowrap' }}>{ofParents(parentsJsx(introA.side.father, introA.side.mother), introA.title)}</p>
                   )}
                   {introA.intro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: bfs(12), fontWeight: 400, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{introA.intro}</p>}
                 </div>
@@ -1860,7 +1903,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                   {!(cc.classicIntroShowParents !== false && parentsJsx(introB.side.father, introB.side.mother)) && <p style={label(T_ROLE, 0.4, inkA(0.45))}>{nameCase(introB.label)}</p>}
                   <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{introB.ko}</p>
                   {cc.classicIntroShowParents !== false && parentsJsx(introB.side.father, introB.side.mother) && (
-                    <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55), whiteSpace: 'nowrap' }}>{parentsJsx(introB.side.father, introB.side.mother)} 의 {introB.title}</p>
+                    <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55), whiteSpace: 'nowrap' }}>{ofParents(parentsJsx(introB.side.father, introB.side.mother), introB.title)}</p>
                   )}
                   {introB.intro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: bfs(12), fontWeight: 400, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{introB.intro}</p>}
                 </div>
@@ -1884,7 +1927,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     {!(cc.classicIntroShowParents !== false && parentsJsx(introA.side.father, introA.side.mother)) && <p style={label(T_ROLE, 0.4, introFgAf(0.45))}>{nameCase(introA.label)}</p>}
                     <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: introFgC }}>{introA.ko}</p>
                     {cc.classicIntroShowParents !== false && parentsJsx(introA.side.father, introA.side.mother) && (
-                      <p style={{ margin: '4px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: introFgAf(0.68), whiteSpace: 'nowrap' }}>{parentsJsx(introA.side.father, introA.side.mother)} 의 {introA.title}</p>
+                      <p style={{ margin: '4px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: introFgAf(0.68), whiteSpace: 'nowrap' }}>{ofParents(parentsJsx(introA.side.father, introA.side.mother), introA.title)}</p>
                     )}
                   </div>
                   <span style={{ width: 1, height: 34, background: introFgAf(0.2) }} />
@@ -1892,7 +1935,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     {!(cc.classicIntroShowParents !== false && parentsJsx(introB.side.father, introB.side.mother)) && <p style={label(T_ROLE, 0.4, introFgAf(0.45))}>{nameCase(introB.label)}</p>}
                     <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: introFgC }}>{introB.ko}</p>
                     {cc.classicIntroShowParents !== false && parentsJsx(introB.side.father, introB.side.mother) && (
-                      <p style={{ margin: '4px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: introFgAf(0.68), whiteSpace: 'nowrap' }}>{parentsJsx(introB.side.father, introB.side.mother)} 의 {introB.title}</p>
+                      <p style={{ margin: '4px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: introFgAf(0.68), whiteSpace: 'nowrap' }}>{ofParents(parentsJsx(introB.side.father, introB.side.mother), introB.title)}</p>
                     )}
                   </div>
                 </div>
@@ -2055,11 +2098,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         <section style={{ order: orderOf('date'), position: 'relative', minHeight: '100dvh', padding: '74px 30px 66px', overflow: 'hidden', ...hide('date'), ...(cc.classicDateBgColor ? { background: cc.classicDateBgColor } : { background: IVORY, ...tintBg('date') }) }}>
           {(() => { const IVORY = dInk; const ivoryA = dInkA; return (<>
           <div className="cl-reveal cl-line" data-delay="100" style={{ position: 'absolute', left: 30, top: 0, bottom: 0, width: 1, background: ivoryA(0.14) }} />
-          <p className="cl-reveal cl-rise" data-delay="180" style={{ margin: '0 0 12px', position: 'relative', fontFamily: F_BODY, fontStyle: 'italic', fontSize: 13, letterSpacing: '.03em', color: ivoryA(0.75) }}>{cc.classicDateHeading || '저희가 하나 되는 날'}</p>
-          <h2 className="cl-reveal cl-rise" data-delay="320" style={{ margin: 0, position: 'relative', fontFamily: F_DISPLAY, fontSize: 70, lineHeight: 1, letterSpacing: '.01em', color: IVORY }}>{mm}<span style={{ fontFamily: F_BODY, fontSize: bfs(28), letterSpacing: 0 }}>월</span> {dd}<span style={{ fontFamily: F_BODY, fontSize: bfs(28), letterSpacing: 0 }}>일</span></h2>
+          <p className="cl-reveal cl-rise" data-delay="180" style={{ margin: '0 0 12px', position: 'relative', fontFamily: F_BODY, fontStyle: 'italic', fontSize: 13, letterSpacing: '.03em', color: ivoryA(0.75) }}>{cc.classicDateHeading || tr('저희가 하나 되는 날', 'The day we become one')}</p>
+          <h2 className="cl-reveal cl-rise" data-delay="320" style={{ margin: 0, position: 'relative', fontFamily: F_DISPLAY, fontSize: 70, lineHeight: 1, letterSpacing: '.01em', color: IVORY }}>{isEn ? <>{mm}<span style={{ opacity: 0.5 }}>.</span>{dd}</> : <>{mm}<span style={{ fontFamily: F_BODY, fontSize: bfs(28), letterSpacing: 0 }}>월</span> {dd}<span style={{ fontFamily: F_BODY, fontSize: bfs(28), letterSpacing: 0 }}>일</span></>}</h2>
           <div style={{ position: 'relative', zIndex: 3, display: 'flex', alignItems: 'center', gap: 14, margin: '20px 160px 0 0' }}>
             <span className="cl-reveal cl-linex" data-delay="560" style={{ flex: 1, height: 1, background: ivoryA(0.28) }} />
-            <span className="cl-reveal cl-rise" data-delay="660" style={{ fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.1em', color: ivoryA(0.72), paddingLeft: '.1em', whiteSpace: 'nowrap' }}>{year}년</span>
+            <span className="cl-reveal cl-rise" data-delay="660" style={{ fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.1em', color: ivoryA(0.72), paddingLeft: '.1em', whiteSpace: 'nowrap' }}>{isEn ? year : `${year}년`}</span>
           </div>
           {cc.classicDatePhotoEnabled !== false && dateFrame === 'stamp' && (
             <div className="cl-reveal cl-poof" data-delay="1600" style={{ position: 'absolute', right: 8, top: 220, width: 150, aspectRatio: '1900 / 2275', zIndex: 2, filter: 'drop-shadow(0 9px 13px rgba(53,23,20,.2))' }}>
@@ -2078,7 +2121,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           )}
           <div style={{ position: 'relative', margin: '210px 0 0', borderTop: `1px solid ${ivoryA(0.22)}`, borderBottom: `1px solid ${ivoryA(0.22)}`, padding: '16px 0' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', fontFamily: F_BODY, fontSize: bfs(13), letterSpacing: '.06em', color: ivoryA(0.6), textAlign: 'center' }}>
-              {['일', '월', '화', '수', '목', '금', '토'].map((d, i) => <span key={i} className="cl-reveal cl-rise" data-delay={720 + i * 30}>{d}</span>)}
+              {(isEn ? ['S', 'M', 'T', 'W', 'T', 'F', 'S'] : ['일', '월', '화', '수', '목', '금', '토']).map((d, i) => <span key={i} className="cl-reveal cl-rise" data-delay={720 + i * 30}>{d}</span>)}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', marginTop: 14, rowGap: 6, fontFamily: F_LABEL, fontSize: lfs(17), color: ivoryA(0.8), textAlign: 'center', alignItems: 'center' }}>
               {(() => {
@@ -2096,7 +2139,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {(sdCl || svCl) && <p className="cl-reveal cl-rise" data-delay="1200" style={{ position: 'relative', textAlign: 'center', margin: '26px 0 0', fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.06em', color: ivoryA(0.85) }}>{[sdCl ? timeDisplay : null, svCl ? venueName : null].filter(Boolean).join(' · ')}</p>}
           {dday !== null && dday >= 0 && (
             <p className="cl-reveal cl-rise" data-delay="1280" style={{ position: 'relative', textAlign: 'center', margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), letterSpacing: '.02em', color: IVORY, wordBreak: 'keep-all' }}>
-              {dday === 0 ? '오늘은 결혼식 날입니다' : <>결혼식 <span style={{ fontFamily: F_DISPLAY, fontSize: 18, letterSpacing: '.04em' }}>{dday}</span>일 남았습니다</>}
+              {dday === 0 ? tr('오늘은 결혼식 날입니다', 'Today is our wedding day') : isEn ? <><span style={{ fontFamily: F_DISPLAY, fontSize: 18, letterSpacing: '.04em' }}>{dday}</span> {dday === 1 ? 'day' : 'days'} until our wedding</> : <>결혼식 <span style={{ fontFamily: F_DISPLAY, fontSize: 18, letterSpacing: '.04em' }}>{dday}</span>일 남았습니다</>}
             </p>
           )}
           </>) })()}
@@ -2122,7 +2165,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <div className="cl-reveal cl-rise" data-delay="480" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', columnGap: 8, rowGap: 8, margin: '10px 0 0' }}>
               {/* 주소가 한 줄에 버튼과 같이 안 들어가면 버튼이 아래 줄 가운데로 내려간다 */}
               <p style={{ margin: 0, maxWidth: '100%', lineHeight: 1.6, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11.5), color: inkA(0.72), wordBreak: 'keep-all', textWrapStyle: 'balance' }}>{venueAddress}</p>
-              <button onClick={() => doCopy(venueAddress, 'addr')} aria-label="주소 복사" style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(9.5), cursor: 'pointer', background: inkA(0.62), border: 0, color: IVORY, borderRadius: 20, padding: '3px 9px', lineHeight: 1.4, whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '복사'}</button>
+              <button onClick={() => doCopy(venueAddress, 'addr')} aria-label={tr('주소 복사', 'Copy address')} style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(9.5), cursor: 'pointer', background: inkA(0.62), border: 0, color: IVORY, borderRadius: 20, padding: '3px 9px', lineHeight: 1.4, whiteSpace: 'nowrap' }}>{copied === 'addr' ? tr('복사됨', 'Copied') : tr('복사', 'Copy')}</button>
             </div>
             {dirDisplay.length > 0 && (
               <>
@@ -2157,9 +2200,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             )}
             {!isGoogleMap && (
             <div style={{ display: 'flex', gap: 7, margin: '22px 0 0' }}>
-              <a href={`https://map.naver.com/p/search/${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '7px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: INK, borderRadius: 0, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#03C75A', flexShrink: 0 }} />네이버지도</a>
-              <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '7px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: INK, borderRadius: 0, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FEE500', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)', flexShrink: 0 }} />카카오맵</a>
-              <a href={`tmap://search?name=${encodeURIComponent(venueName)}`} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '7px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: INK, borderRadius: 0, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#00C7B1', flexShrink: 0 }} />티맵</a>
+              <a href={`https://map.naver.com/p/search/${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '7px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: INK, borderRadius: 0, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#03C75A', flexShrink: 0 }} />{tr('네이버지도', 'Naver Map')}</a>
+              <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '7px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: INK, borderRadius: 0, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FEE500', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)', flexShrink: 0 }} />{tr('카카오맵', 'Kakao Map')}</a>
+              <a href={`tmap://search?name=${encodeURIComponent(venueName)}`} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '7px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: INK, borderRadius: 0, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#00C7B1', flexShrink: 0 }} />{tr('티맵', 'TMAP')}</a>
             </div>
             )}
           </div>
@@ -2173,7 +2216,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none', backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.05) 0 1px,transparent 1px 9px)' }} />
           <div className="cl-reveal cl-up" style={{ position: 'relative', textAlign: 'center', marginBottom: 6 }}>
             <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), lineHeight: 1.15, letterSpacing: '.02em', color: infoFgC }}>{nameCase('Information')}</h2>
-            <p style={{ margin: '8px 0 0', fontFamily: F_BODY, fontSize: lfs(12.5), fontWeight: 500, letterSpacing: '.16em', paddingLeft: '.16em', color: infoFgAf(0.85) }}>결혼식 안내</p>
+            <p style={{ margin: '8px 0 0', fontFamily: F_BODY, fontSize: lfs(12.5), fontWeight: 500, letterSpacing: '.16em', paddingLeft: '.16em', color: infoFgAf(0.85) }}>{tr('결혼식 안내', 'Wedding details')}</p>
           </div>
           {guideList.map((g, i) => (
             <div key={i} className="cl-reveal cl-up" data-delay={i * 130} style={{ position: 'relative', background: '#FFFFFF', padding: extractUrl(g.photo) ? '14px 14px 26px' : '26px 24px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
@@ -2191,7 +2234,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         <section style={{ order: orderOf('accounts'), position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 22, padding: '84px 30px', background: IVORY, backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.035) 0 1px,transparent 1px 9px)', ...tintBg('accounts') }}>
           <div className="cl-reveal cl-up" style={{ textAlign: 'center' }}>
             <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), color: fgC('accounts') }}>{nameCase('From the Heart')}</h2>
-            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: fgA('accounts', 0.65), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{paraText((typeof cc.classicAccountMessage === 'string' && cc.classicAccountMessage.trim()) ? cc.classicAccountMessage : '참석이 어려우신 분들을 위해\n마음 전하실 곳을 안내드립니다.')}</p>
+            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: fgA('accounts', 0.65), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{paraText((typeof cc.classicAccountMessage === 'string' && cc.classicAccountMessage.trim()) ? cc.classicAccountMessage : tr('참석이 어려우신 분들을 위해\n마음 전하실 곳을 안내드립니다.', 'For those who wish to send their blessings,\nwe have shared our details below.'))}</p>
           </div>
           {acctSides.map((grp, gi) => (
             <div key={gi} className="cl-reveal cl-up" data-delay={gi * 150} style={{ background: '#FFFFFF', padding: '24px 22px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
@@ -2205,7 +2248,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                         <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(12), color: INK }}>{a.line}</p>
                         <p style={{ margin: '5px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55) }}>{a.who}</p>
                       </div>
-                      <button onClick={() => doCopy(a.copy, `acc-${gi}-${ai}`)} style={{ fontFamily: F_BODY, fontSize: bfs(11), padding: '8px 13px', cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.3)}`, color: inkA(0.75), borderRadius: 4, whiteSpace: 'nowrap' }}>{copied === `acc-${gi}-${ai}` ? '복사됨' : '복사'}</button>
+                      <button onClick={() => doCopy(a.copy, `acc-${gi}-${ai}`)} style={{ fontFamily: F_BODY, fontSize: bfs(11), padding: '8px 13px', cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.3)}`, color: inkA(0.75), borderRadius: 4, whiteSpace: 'nowrap' }}>{copied === `acc-${gi}-${ai}` ? tr('복사됨', 'Copied') : tr('복사', 'Copy')}</button>
                     </div>
                   </div>
                 ))}
@@ -2223,10 +2266,10 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <>
               <p style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), color: col }}>{nameCase('Thank You')}</p>
               {thanksAnim !== 'typing' ? (
-                <p style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{paraText(cc.classicThankYou || '귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.')}</p>
+                <p style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{paraText(cc.classicThankYou || tr('귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.', 'Thank you for your love and support\nas we celebrate this day.'))}</p>
               ) : (
                 <TypeText
-                  text={cc.classicThankYou || '귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.'}
+                  text={cc.classicThankYou || tr('귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.', 'Thank you for your love and support\nas we celebrate this day.')}
                   caretColor={colA(0.5)}
                   speed={125}
                   style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}
@@ -2251,8 +2294,10 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             {/* 공유: 원 없이 가는 아이콘 + 글자 한 줄 — 도일리(타원)와 둥근 모양이 겹치지 않게, 장식은 도일리에 맡기고 링크는 조용히 */}
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 18, marginTop: 10 }}>
               {[
-                { key: 'kakao', label: '카카오톡 공유', run: doShare, icon: <path d="M12 5C7.6 5 4 7.8 4 11.2c0 2.2 1.5 4.1 3.7 5.2l-.8 2.9 3.3-2.1c.6.1 1.2.1 1.8.1 4.4 0 8-2.8 8-6.1S16.4 5 12 5z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /> },
-                { key: 'link', label: copied === 'link' ? '복사되었어요' : '링크 복사', run: () => doCopy(shareUrl, 'link'), icon: <><path d="M10 13.5a4 4 0 0 0 5.66.34l2.5-2.5a4 4 0 0 0-5.66-5.66l-1.2 1.2" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /><path d="M14 10.5a4 4 0 0 0-5.66-.34l-2.5 2.5a4 4 0 0 0 5.66 5.66l1.2-1.2" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></> },
+                shareMode === 'kakao'
+                  ? { key: 'kakao', label: tr('카카오톡 공유', 'Share via KakaoTalk'), run: doKakaoShare, icon: <path d="M12 5C7.6 5 4 7.8 4 11.2c0 2.2 1.5 4.1 3.7 5.2l-.8 2.9 3.3-2.1c.6.1 1.2.1 1.8.1 4.4 0 8-2.8 8-6.1S16.4 5 12 5z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /> }
+                  : { key: 'share', label: tr('공유하기', 'Share'), run: doShare, icon: <><path d="M12 15V4.5M8 8l4-4 4 4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /><path d="M6 11.5V18a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 18 18v-6.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></> },
+                { key: 'link', label: copied === 'link' ? tr('복사되었어요', 'Link copied') : tr('링크 복사', 'Copy link'), run: () => doCopy(shareUrl, 'link'), icon: <><path d="M10 13.5a4 4 0 0 0 5.66.34l2.5-2.5a4 4 0 0 0-5.66-5.66l-1.2 1.2" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /><path d="M14 10.5a4 4 0 0 0-5.66-.34l-2.5 2.5a4 4 0 0 0 5.66 5.66l1.2-1.2" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></> },
               ].map((o, i) => (
                 <span key={o.key} style={{ display: 'contents' }}>
                   {i > 0 && <span aria-hidden style={{ width: 1, height: 12, background: inkA(0.22) }} />}
@@ -2272,7 +2317,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         <section style={{ order: orderOf('rsvp'), position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 30, padding: '84px 30px', background: IVORY, ...hide('rsvp'), ...tintBg('rsvp') }}>
           <div className="cl-reveal cl-up" style={{ textAlign: 'center' }}>
             <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: lfs(T_TITLE), color: rInk }}>R.S.V.P</h2>
-            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: rInkA(0.62), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{paraText(cc.classicRsvpNotice || '참석 여부를 알려주시면\n정성껏 준비하겠습니다.')}</p>
+            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 1.7, color: rInkA(0.62), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{paraText(cc.classicRsvpNotice || tr('참석 여부를 알려주시면\n정성껏 준비하겠습니다.', 'Kindly let us know\nif you will be able to join us.'))}</p>
           </div>
 
           {rsvpAttend === 'attending' ? (
@@ -2288,10 +2333,12 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 sideDetail={cc.classicRsvpSideDetail}
                 sideDetailOptions={cc.classicRsvpSideDetailOptions}
                 messagePlaceholder={cc.classicRsvpMessagePlaceholder}
+                messageLabel={cc.classicRsvpMessageLabel}
+                lang={isEn ? 'en' : 'ko'}
                 onClose={() => setRsvpAttend(null)}
                 tokens={{ INK, IVORY: BTN_TEXT, PAPER: '#FFFFFF', inkA, F_BODY, F_LABEL }}
               />
-              <button onClick={() => setRsvpAttend(null)} style={{ display: 'block', margin: '16px auto 0', fontFamily: F_LABEL, fontSize: lfs(9), letterSpacing: '.4em', paddingLeft: '.4em', color: rInkA(0.6), background: 'transparent', border: 'none', cursor: 'pointer' }}>← 다시 선택</button>
+              <button onClick={() => setRsvpAttend(null)} style={{ display: 'block', margin: '16px auto 0', fontFamily: F_LABEL, fontSize: lfs(9), letterSpacing: '.4em', paddingLeft: '.4em', color: rInkA(0.6), background: 'transparent', border: 'none', cursor: 'pointer' }}>{tr('← 다시 선택', '← BACK')}</button>
             </div>
           ) : (
             <div style={{ position: 'relative', width: '100%', maxWidth: 300, minHeight: 310 }}>
@@ -2299,15 +2346,15 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               {rsvpAttend !== 'not_attending' && (
                 <div className="cl-reveal cl-env" data-delay="360" style={{ position: 'relative', zIndex: 2, margin: '0 8px 96px', background: '#FFFFFF', padding: '28px 22px 26px', textAlign: 'center', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
                   <p style={{ ...label(T_EYEBROW, 0.46, inkA(0.5)) }}>{nameCase('INVITATION')}</p>
-                  <p style={{ margin: '14px 0 0', fontFamily: F_BODY, fontSize: bfs(20), letterSpacing: '.06em', color: INK }}>{cc.classicRsvpInviteText || '초대합니다'}</p>
+                  <p style={{ margin: '14px 0 0', fontFamily: F_BODY, fontSize: bfs(20), letterSpacing: '.06em', color: INK }}>{cc.classicRsvpInviteText || tr('초대합니다', 'You are invited')}</p>
                   <div style={{ display: 'flex', gap: 8, margin: '22px 0 0' }}>
-                    <button onClick={() => setRsvpAttend('attending')} style={{ flex: 1, fontFamily: F_BODY, fontSize: bfs(12), color: BTN_TEXT, background: INK, border: `1px solid ${INK}`, padding: '11px 0', cursor: 'pointer', whiteSpace: 'nowrap' }}>{cc.classicRsvpAttendText || '참석합니다'}</button>
-                    <button onClick={() => setRsvpAttend('not_attending')} style={{ flex: 1, fontFamily: F_BODY, fontSize: bfs(12), color: INK, background: 'transparent', border: `1px solid ${inkA(0.35)}`, padding: '11px 0', cursor: 'pointer', whiteSpace: 'nowrap' }}>{cc.classicRsvpDeclineText || '참석 어렵습니다'}</button>
+                    <button onClick={() => setRsvpAttend('attending')} style={{ flex: 1, fontFamily: F_BODY, fontSize: bfs(12), color: BTN_TEXT, background: INK, border: `1px solid ${INK}`, padding: '11px 0', cursor: 'pointer', whiteSpace: 'nowrap' }}>{cc.classicRsvpAttendText || tr('참석합니다', 'Joyfully accept')}</button>
+                    <button onClick={() => setRsvpAttend('not_attending')} style={{ flex: 1, fontFamily: F_BODY, fontSize: bfs(12), color: INK, background: 'transparent', border: `1px solid ${inkA(0.35)}`, padding: '11px 0', cursor: 'pointer', whiteSpace: 'nowrap' }}>{cc.classicRsvpDeclineText || tr('참석 어렵습니다', 'Regretfully decline')}</button>
                   </div>
                 </div>
               )}
               {rsvpAttend === 'not_attending' && (
-                <p style={{ position: 'absolute', top: 6, left: 0, right: 0, textAlign: 'center', margin: 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.9, color: rInkA(0.7) }}>마음 전해주셔서 감사합니다.<br /><button onClick={() => setRsvpAttend(null)} style={{ marginTop: 8, fontFamily: F_LABEL, fontSize: lfs(9), letterSpacing: '.3em', paddingLeft: '.3em', color: rInkA(0.55), background: 'transparent', border: 'none', cursor: 'pointer' }}>다시 선택</button></p>
+                <p style={{ position: 'absolute', top: 6, left: 0, right: 0, textAlign: 'center', margin: 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.9, color: rInkA(0.7) }}>{tr('마음 전해주셔서 감사합니다.', 'Thank you for letting us know.')}<br /><button onClick={() => setRsvpAttend(null)} style={{ marginTop: 8, fontFamily: F_LABEL, fontSize: lfs(9), letterSpacing: '.3em', paddingLeft: '.3em', color: rInkA(0.55), background: 'transparent', border: 'none', cursor: 'pointer' }}>다시 선택</button></p>
               )}
             </div>
           )}

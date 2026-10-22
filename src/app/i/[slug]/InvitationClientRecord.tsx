@@ -15,6 +15,7 @@ import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
 import '@/components/dday/dday-popup.css'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 // Preview context - skip scroll reveal animations in editor preview
 const PreviewModeContext = createContext(false)
@@ -355,7 +356,7 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
   }, [])
 
   const w = invitation.wedding
-  const weddingDate = w?.date ? new Date(w.date) : new Date()
+  const weddingDate = w?.date ? parseDateOnly(w.date) : new Date()
   const dateStr = `${String(weddingDate.getFullYear()).slice(2)}.${String(weddingDate.getMonth() + 1).padStart(2, '0')}.${String(weddingDate.getDate()).padStart(2, '0')}`
   const groomName = invitation.groom?.name || '신랑'
   const brideName = invitation.bride?.name || '신부'
@@ -1386,7 +1387,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
   const { ref, isVisible } = useScrollReveal()
   const [isShaking, setIsShaking] = useState(false)
   const w = invitation.wedding || {}
-  const date = w.date ? new Date(w.date) : null
+  const date = w.date ? parseDateOnly(w.date) : null
   const dayNamesKr = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
   const dayNamesKr2 = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
   const groom = invitation.groom || {}
@@ -2039,7 +2040,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
   }
 
   const w = invitation.wedding || {}
-  const date = w.date ? new Date(w.date) : null
+  const date = w.date ? parseDateOnly(w.date) : null
 
   return (
     <div ref={ref} className="px-5 py-10" style={{ backgroundColor: bgOverride || 'transparent' }}>

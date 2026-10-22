@@ -9,6 +9,7 @@ import ZoomableImage from '@/components/invitation/ZoomableImage'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 // ===== Types =====
 type EssayColorTheme = 'essay-ivory' | 'essay-blush' | 'essay-sage' | 'essay-mono' | 'essay-sky' | 'essay-coral'
@@ -382,7 +383,7 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
   const coverTitle = data.design?.coverTitle || 'OUR WEDDING ESSAY'
   const coverDesign = data.design?.coverDesign || 'full'
   const coverImage = data.media?.coverImage || ''
-  const weddingDate = data.wedding?.date ? new Date(data.wedding.date) : new Date()
+  const weddingDate = data.wedding?.date ? parseDateOnly(data.wedding.date) : new Date()
   const dateStr = `${weddingDate.getFullYear()}.${String(weddingDate.getMonth() + 1).padStart(2, '0')}.${String(weddingDate.getDate()).padStart(2, '0')}`
   const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
   const dayOfWeek = dayNames[weddingDate.getDay()]
@@ -942,7 +943,7 @@ function InterviewItem({ qa, index, theme }: { qa: any; index: number; theme: Th
 // ====================================================================
 function WeddingInfoSection({ data, theme }: { data: any; theme: ThemeConfig }) {
   const w = data.wedding || {}; const groom = data.groom || {}; const bride = data.bride || {}
-  const weddingDate = w.date ? new Date(w.date) : new Date()
+  const weddingDate = w.date ? parseDateOnly(w.date) : new Date()
   const dayNames = ['일', '월', '화', '수', '목', '금', '토']
   const showDate = w.showDate !== false
   const showVenue = w.showVenue !== false
@@ -1165,7 +1166,7 @@ function RsvpSection({ data, invitationId, theme }: { data: any; invitationId: s
           <div className="text-center mb-8">
             <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '5px', color: theme.gray, marginBottom: '8px' }}>RSVP</div>
             <h3 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', color: theme.heading }}>참석 여부</h3>
-            {data.rsvpDeadline && <p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', color: theme.gray, marginTop: '8px' }}>{new Date(data.rsvpDeadline).toLocaleDateString('ko-KR')}까지 알려주세요</p>}
+            {data.rsvpDeadline && <p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', color: theme.gray, marginTop: '8px' }}>{parseDateOnly(data.rsvpDeadline).toLocaleDateString('ko-KR')}까지 알려주세요</p>}
           </div>
           <RsvpForm invitationId={invitationId} primaryColor={theme.accent} showMealOption={data.rsvpMealOption} showShuttleOption={data.rsvpShuttleOption} showAfterPartyOption={data.rsvpAfterPartyOption} showPhoneOption={data.rsvpPhoneOption} showSideDetail={data.rsvpSideDetail} sideDetailOptions={data.rsvpSideDetailOptions} notice={data.rsvpNotice} messagePlaceholder={data.rsvpMessagePlaceholder} />
         </div>
@@ -1317,7 +1318,7 @@ function PaperCover({ data, onOpen }: { data: any; onOpen: () => void }) {
   const [loaded, setLoaded] = useState(false)
   const groomName = data.groom?.name || '신랑'
   const brideName = data.bride?.name || '신부'
-  const weddingDate = data.wedding?.date ? new Date(data.wedding.date) : new Date()
+  const weddingDate = data.wedding?.date ? parseDateOnly(data.wedding.date) : new Date()
   const dateStr = `${weddingDate.getFullYear()}.${String(weddingDate.getMonth() + 1).padStart(2, '0')}.${String(weddingDate.getDate()).padStart(2, '0')}`
   const showDate = data.wedding?.showDate !== false
 
@@ -1537,7 +1538,7 @@ function PaperInvitationInfo({ data }: { data: any }) {
   const w = data.wedding || {}
   const groom = data.groom || {}
   const bride = data.bride || {}
-  const weddingDate = w.date ? new Date(w.date) : new Date()
+  const weddingDate = w.date ? parseDateOnly(w.date) : new Date()
   const dayNames = ['일', '월', '화', '수', '목', '금', '토']
   const showDate = w.showDate !== false
   const showVenue = w.showVenue !== false
@@ -3425,7 +3426,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
   const coverTitle = data.design?.coverTitle || 'OUR WEDDING ESSAY'
   const coverDesign = data.design?.coverDesign || 'full'
   const coverImage = data.media?.coverImage || ''
-  const weddingDate = data.wedding?.date ? new Date(data.wedding.date) : new Date()
+  const weddingDate = data.wedding?.date ? parseDateOnly(data.wedding.date) : new Date()
   const dateStr = `${weddingDate.getFullYear()}.${String(weddingDate.getMonth() + 1).padStart(2, '0')}.${String(weddingDate.getDate()).padStart(2, '0')}`
   const venueName = data.wedding?.venue?.name || ''
   const showDate = data.wedding?.showDate !== false
@@ -4052,7 +4053,7 @@ function BookGallery({ data }: { data: any }) {
 function BookDateEssay({ data }: { data: any }) {
   const bookColors = getBookColors(data.colorTheme, data.customThemeColors)
   const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
-  const weddingDate = data.wedding?.date ? new Date(data.wedding.date) : new Date()
+  const weddingDate = data.wedding?.date ? parseDateOnly(data.wedding.date) : new Date()
   const dateEssay = data.wedding?.dateEssay || `${weddingDate.getFullYear()}년 ${weddingDate.getMonth()+1}월,\n우리가 처음 만났던 계절이\n다시 돌아오는 날.\n\n가장 따뜻한 햇살 아래에서\n시작되는 이야기를\n함께해 주세요.`
   const lines = dateEssay.split('\n')
 
@@ -4168,7 +4169,7 @@ function BookInfoIntro({ data }: { data: any }) {
   const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
   const groomName = data.groom?.name || '신랑'
   const brideName = data.bride?.name || '신부'
-  const weddingDate = data.wedding?.date ? new Date(data.wedding.date) : new Date()
+  const weddingDate = data.wedding?.date ? parseDateOnly(data.wedding.date) : new Date()
   const dateStr = `${weddingDate.getFullYear()}. ${String(weddingDate.getMonth() + 1).padStart(2, '0')}. ${String(weddingDate.getDate()).padStart(2, '0')}`
   const venueName = data.wedding?.venue?.name || ''
   const coverImage = data.media?.coverImage
@@ -4222,7 +4223,7 @@ function BookInfoIntro({ data }: { data: any }) {
 function BookWeddingDate({ data }: { data: any }) {
   const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
   const w = data.wedding || {}
-  const weddingDate = w.date ? new Date(w.date) : new Date()
+  const weddingDate = w.date ? parseDateOnly(w.date) : new Date()
   const dayNames = ['일', '월', '화', '수', '목', '금', '토']
   const dayOfWeek = weddingDate.getDay()
   const dateDay = weddingDate.getDate()
@@ -4238,7 +4239,7 @@ function BookWeddingDate({ data }: { data: any }) {
   today.setHours(0, 0, 0, 0)
   const target = new Date(weddingDate)
   target.setHours(0, 0, 0, 0)
-  const diff = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  const diff = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
   let ddayStr = ''
   if (diff > 0) ddayStr = `D-${diff}`
   else if (diff === 0) ddayStr = 'D-DAY'
@@ -4784,7 +4785,7 @@ function BookRsvp({ data, invitationId }: { data: any; invitationId: string }) {
         <div style={{ paddingTop: '12px' }}>
           <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', animation: 'bkInk 1.2s cubic-bezier(.22,1,.36,1) 200ms both' }}>참석 여부</div>
           <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', animation: 'bkTrack 1.3s ease-out 500ms both' }}>RSVP</div>
-          {data.rsvpDeadline && <div style={{ fontSize: '11.5px', fontWeight: 300, color: bookInfoColors.muted, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 300ms forwards' }}>{new Date(data.rsvpDeadline).toLocaleDateString('ko-KR')}까지 회신 부탁드립니다</div>}
+          {data.rsvpDeadline && <div style={{ fontSize: '11.5px', fontWeight: 300, color: bookInfoColors.muted, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 300ms forwards' }}>{parseDateOnly(data.rsvpDeadline).toLocaleDateString('ko-KR')}까지 회신 부탁드립니다</div>}
           <div style={{ background: bookInfoColors.pageBg, padding: '24px 22px', opacity: 0, animation: 'bkFadeIn 1.2s ease-out 500ms forwards' }} onClick={e => e.stopPropagation()}>
             <RsvpForm invitationId={invitationId} primaryColor={bookInfoColors.accent} showMealOption={data.rsvpMealOption} showShuttleOption={data.rsvpShuttleOption} showAfterPartyOption={data.rsvpAfterPartyOption} notice={data.rsvpNotice} />
           </div>

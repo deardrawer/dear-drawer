@@ -1,5 +1,6 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { Invitation, InvitationInput } from "@/types/invitation";
+import { parseDateOnly } from "@/lib/dateOnly";
 
 // D1 Database 타입
 interface D1PreparedStatement {
@@ -1325,7 +1326,7 @@ export async function getAllInvitationsForAdmin(): Promise<InvitationWithDeletio
       //  - 미결제(!is_paid): 이 날 자동 삭제 대상.
       //  - 결제완료(is_paid): 삭제하지 않음. 이 날은 /i/[slug] '공개 종료 → POST DRAWER 보관' 전환 기준일일 뿐.
       //    (실제 자동 삭제 대상은 getInvitationsScheduledForDeletion의 !is_paid 참고)
-      deletionDate = new Date(inv.wedding_date);
+      deletionDate = parseDateOnly(inv.wedding_date);
       deletionDate.setDate(deletionDate.getDate() + 30);
       deletionReason = 'post_wedding';
     } else {

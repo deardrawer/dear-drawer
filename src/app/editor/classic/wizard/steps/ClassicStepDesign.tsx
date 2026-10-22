@@ -314,6 +314,36 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
         </p>
       </div>
 
+      {/* 청첩장 언어 */}
+      <section className="space-y-3">
+        <h3 className="text-base font-semibold text-gray-900">청첩장 언어</h3>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
+          English를 고르면 안내 문구·버튼·날짜/시간 형식·RSVP 항목이 영어로 바뀌어요. 직접 입력한 문구는 그대로예요.
+        </p>
+        <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+          {([
+            { id: 'ko', label: '한국어' },
+            { id: 'en', label: 'English' },
+          ] as const).map((opt) => {
+            const active = (data.content.classicLanguage || 'ko') === opt.id
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => updateNestedData('content.classicLanguage', opt.id === 'ko' ? undefined : opt.id)}
+                className={`px-4 py-2 text-sm transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
+                aria-pressed={active}
+              >
+                {opt.label}
+              </button>
+            )
+          })}
+        </div>
+        {data.content.classicLanguage === 'en' && (
+          <p className="text-[11px] text-gray-400 leading-relaxed">본문의 신랑·신부 이름은 기본정보의 영문 이름을 써요. 인사말·안내문 등 직접 쓰는 문구는 영어로 입력해 주세요.</p>
+        )}
+      </section>
+
       {/* 색상 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">

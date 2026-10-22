@@ -2,6 +2,7 @@
 
 import SharedRsvpLinkField from '@/components/editor/SharedRsvpLinkField'
 import type { FeedInvitationData } from '../../page'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 interface StepProps {
   data: FeedInvitationData
@@ -41,9 +42,9 @@ export default function FeedStep5Details({
   // RSVP 마감일 기본값 (결혼식 7일 전)
   const getDefaultRsvpDeadline = () => {
     if (data.wedding.date) {
-      const weddingDate = new Date(data.wedding.date)
+      const weddingDate = parseDateOnly(data.wedding.date)
       weddingDate.setDate(weddingDate.getDate() - 7)
-      return weddingDate.toISOString().split('T')[0]
+      return `${weddingDate.getFullYear()}-${String(weddingDate.getMonth() + 1).padStart(2, '0')}-${String(weddingDate.getDate()).padStart(2, '0')}`
     }
     return ''
   }

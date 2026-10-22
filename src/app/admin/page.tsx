@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 // ===== Types =====
 interface Invitation {
@@ -386,7 +387,7 @@ export default function AdminPage() {
   const processedPayments = paymentRequests.filter((r) => r.status !== 'pending')
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('ko-KR', {
+    return parseDateOnly(dateStr).toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -734,7 +735,7 @@ export default function AdminPage() {
                             <div className="text-sm">
                               {inv.wedding_date ? (
                                 (() => {
-                                  const weddingDate = new Date(inv.wedding_date)
+                                  const weddingDate = parseDateOnly(inv.wedding_date)
                                   const deleteAlertDate = new Date(weddingDate)
                                   deleteAlertDate.setDate(deleteAlertDate.getDate() + 30)
                                   const now = new Date()

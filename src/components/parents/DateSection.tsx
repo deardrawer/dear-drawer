@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSectionHighlight } from './SectionHighlightContext'
 import { useTheme } from './ThemeContext'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 interface DateSectionProps {
   weddingDate?: string
@@ -77,7 +78,7 @@ export default function DateSection({
   const { ref, isActive, hasAppeared } = useSectionHighlight('date')
   const theme = useTheme()
 
-  const date = new Date(weddingDate)
+  const date = parseDateOnly(weddingDate)
   const year = date.getFullYear()
   const month = date.getMonth() + 1
   const day = date.getDate()
@@ -121,7 +122,7 @@ export default function DateSection({
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const diffTime = date.getTime() - today.getTime()
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
 
   const monthNamesEn = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
   const dayHeaders = ['일', '월', '화', '수', '목', '금', '토']

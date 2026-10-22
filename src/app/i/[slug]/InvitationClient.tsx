@@ -19,7 +19,11 @@ import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
+import { readableOn, isDarkColor } from '@/lib/colorUtils'
+import { textureLayers, texBg, type BgTextureLayers } from '@/lib/bgTexture'
+import WaveLayers from '@/components/invitation/WaveLayers'
 import '@/components/dday/dday-popup.css'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 // Music Toggle Component
 function MusicToggle({
@@ -1480,7 +1484,7 @@ function SlideGallerySection({ invitation, themeColors, onOpenLightbox }: {
       ref={ref}
       className="px-5 py-10"
       style={{
-        background: themeColors.cardBg,
+        ...texBg(themeColors.texture, themeColors.cardBg),
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
         transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
@@ -1606,7 +1610,7 @@ function FeatureGallerySection({ invitation, themeColors, onOpenLightbox }: {
       ref={ref}
       className="px-5 py-10"
       style={{
-        background: themeColors.cardBg,
+        ...texBg(themeColors.texture, themeColors.cardBg),
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
         transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
@@ -1741,7 +1745,7 @@ function CustomLayoutGallerySection({ invitation, themeColors, onOpenLightbox }:
       ref={ref}
       className="px-5 py-10"
       style={{
-        background: themeColors.cardBg,
+        ...texBg(themeColors.texture, themeColors.cardBg),
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
         transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
@@ -1862,7 +1866,7 @@ function StaggeredGallerySection({ invitation, themeColors, showAllGallery, onSh
   }, [showAllGallery])
 
   return (
-    <div ref={ref} className="px-5 py-10" style={{ background: themeColors.cardBg }}>
+    <div ref={ref} className="px-5 py-10" style={{ ...texBg(themeColors.texture, themeColors.cardBg) }}>
       {allImages.length > 0 ? (
         <>
           <div className="grid grid-cols-2 gap-2">
@@ -1906,7 +1910,7 @@ function StaggeredGallerySection({ invitation, themeColors, showAllGallery, onSh
             <button
               onClick={onShowAllGallery}
               className="w-full mt-3 py-3 text-center transition-colors hover:opacity-80 rounded"
-              style={{ border: `1px solid ${themeColors.divider}`, background: themeColors.cardBg }}
+              style={{ border: `1px solid ${themeColors.divider}`, ...texBg(themeColors.texture, themeColors.cardBg) }}
             >
               <span style={{ fontSize: '13px', color: themeColors.text }}>
                 +{allImages.length - 6}장 더 보기
@@ -2115,12 +2119,13 @@ function GalleryLightbox({
 
 // Gallery Lightbox Variant - 7 alternate viewer styles (1=Editorial, 2=Glass, 4=Lookbook, 5=Cinema, 6=Minimal, 7=Magazine, 9=Film)
 // Adapted from TheSimple template's lightbox variants; all classes prefixed `our-lb-` to avoid collisions.
-function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant }: {
+function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant, zoomEnabled = false }: {
   images: string[]
   isOpen: boolean
   initialIndex: number
   onClose: () => void
   variant: number
+  zoomEnabled?: boolean
 }) {
   const [idx, setIdx] = useState(initialIndex)
   const [animClass, setAnimClass] = useState('')
@@ -2128,6 +2133,11 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
   const [v9Next, setV9Next] = useState<number | null>(null)
   const [closing, setClosing] = useState(false)
   const [visible, setVisible] = useState(false)
+  // 확대 보기: 각 타입의 레이아웃·애니메이션은 그대로 두고, 확대할 사진만 전체 화면 줌 레이어로 띄운다
+  const [zoomSrc, setZoomSrc] = useState<string | null>(null)
+  // 라이트박스가 닫히면 확대 보기도 함께 닫는다 (렌더 중 이전 값 비교로 리셋)
+  const [zoomOpenSeen, setZoomOpenSeen] = useState(isOpen)
+  if (zoomOpenSeen !== isOpen) { setZoomOpenSeen(isOpen); if (!isOpen) setZoomSrc(null) }
   const touchStartX = useRef(0)
   const overlayRef = useRef<HTMLDivElement>(null)
 
@@ -2227,7 +2237,11 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
 
   // Shared touch swipe handlers
   const touchProps = {
-    onTouchStart: (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX },
+    onTouchStart: (e: React.TouchEvent) => {
+      // 두 손가락을 대면 확대 보기로 (확대 허용일 때)
+      if (zoomEnabled && e.touches.length > 1) { setZoomSrc(images[idx]); return }
+      touchStartX.current = e.touches[0].clientX
+    },
     onTouchEnd: (e: React.TouchEvent) => {
       const diff = e.changedTouches[0].clientX - touchStartX.current
       if (Math.abs(diff) > 50) { diff < 0 ? goNext() : goPrev() }
@@ -2241,7 +2255,7 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
     content = (
       <div ref={overlayRef} className={`our-lightbox our-lb--v4${closing ? ' our-lightbox--closing' : ''}`} onContextMenu={preventContext} onClick={onClose}>
         <button className="our-lb-v4-close" onClick={onClose} aria-label="닫기">&times;</button>
-        <div className="our-lb-v4-scroll" onClick={e => e.stopPropagation()}>
+        <div className="our-lb-v4-scroll" onClick={e => e.stopPropagation()} onTouchStart={e => { if (zoomEnabled && e.touches.length > 1 && e.target instanceof HTMLImageElement) setZoomSrc(e.target.currentSrc || e.target.src) }}>
           {images.map((src, i) => (
             <img key={i} src={src} alt="" className="our-lb-v4-img" draggable={false} />
           ))}
@@ -2374,7 +2388,25 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
   return (
     <>
       {content}
+      {zoomEnabled && !zoomSrc && v !== 4 && !closing && images[idx] && (
+        <button type="button" className="our-lb-zoom-btn" onClick={e => { e.stopPropagation(); setZoomSrc(images[idx]) }} aria-label="사진 확대">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5" /></svg>
+        </button>
+      )}
+      {zoomEnabled && zoomSrc && (
+        <div className="our-lb-zoom" onContextMenu={preventContext} onClick={e => e.stopPropagation()}>
+          <ZoomableImage src={zoomSrc} alt="" className="our-lb-zoom-box" resetKey={zoomSrc} />
+          <button type="button" className="our-lb-zoom-close" onClick={() => setZoomSrc(null)} aria-label="확대 닫기">&times;</button>
+          <p className="our-lb-zoom-hint">두 손가락으로 확대 · 두 번 탭</p>
+        </div>
+      )}
       <style jsx global>{`
+        .our-lb-zoom-btn { position: fixed; z-index: 10000; right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 56px); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.38); color: #fff; border: 1px solid rgba(255,255,255,.28); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); cursor: pointer; }
+        .our-lb-zoom { position: fixed; inset: 0; z-index: 10001; background: rgba(0,0,0,.94); display: flex; align-items: center; justify-content: center; animation: ourLbZoomIn .2s ease; }
+        .our-lb-zoom-box { width: 100%; height: 100%; }
+        .our-lb-zoom-close { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); right: 16px; width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; font-size: 24px; line-height: 1; cursor: pointer; }
+        .our-lb-zoom-hint { position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); margin: 0; text-align: center; font-size: 11px; letter-spacing: .02em; color: rgba(255,255,255,.55); pointer-events: none; }
+        @keyframes ourLbZoomIn { from { opacity: 0 } to { opacity: 1 } }
         .our-lightbox {
           position: fixed;
           inset: 0;
@@ -2790,6 +2822,7 @@ function DividerSection({
   fontFamily,
   textColor,
   bgColor,
+  texture,
   isChapterBreak = false
 }: {
   id?: string
@@ -2798,6 +2831,7 @@ function DividerSection({
   fontFamily: string
   textColor: string
   bgColor: string
+  texture?: BgTextureLayers | null
   isChapterBreak?: boolean
 }) {
   const { ref, isVisible } = useScrollAnimation()
@@ -2807,7 +2841,7 @@ function DividerSection({
       id={id}
       ref={ref}
       className={`divider-section ${isChapterBreak ? 'chapter-break' : ''} ${isVisible ? 'in-view' : ''}`}
-      style={{ background: bgColor }}
+      style={{ ...texBg(texture, bgColor) }}
     >
       {/* Top Divider Line */}
       <div
@@ -2918,7 +2952,7 @@ function FullHeightDividerSection({
 function ProfileSection({
   profile,
   fonts,
-  themeColors,
+  themeColors: themeColorsRaw,
   bgColor,
   textStyle,
 }: {
@@ -2929,6 +2963,9 @@ function ProfileSection({
   textStyle?: { lineHeight?: number; textAlign?: 'left' | 'center' | 'right' }
 }) {
   const { ref, isVisible } = useScrollAnimation()
+  // 섹션 배경이 어두우면 본문 글자를 밝게 (밝은 배경은 그대로)
+  const onDark = isDarkColor(bgColor)
+  const themeColors = readableOn(themeColorsRaw, bgColor)
   const [labelRevealed, setLabelRevealed] = useState(false)
 
   useEffect(() => {
@@ -2943,7 +2980,7 @@ function ProfileSection({
     <div
       ref={ref}
       className="px-7 py-14"
-      style={{ background: bgColor }}
+      style={{ ...texBg(themeColors.texture, bgColor) }}
     >
       <div
         style={{
@@ -2976,7 +3013,7 @@ function ProfileSection({
         <p
           className="sc-tt11 text-[11px] font-light"
           style={{
-            color: '#999',
+            color: onDark ? themeColors.gray : '#999',
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
             transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1) 1s, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) 1s',
@@ -2999,17 +3036,19 @@ function ProfileSection({
         dangerouslySetInnerHTML={{ __html: parseHighlight(profile.intro) }}
       />
       {profile.tag && (
+        <div style={{ textAlign: textStyle?.textAlign || 'left' }}>
         <div
           className="inline-flex items-center gap-1.5 mt-5 px-3.5 py-2 rounded-md text-[10px] font-light"
           style={{
-            background: 'rgba(0,0,0,0.03)',
-            color: '#777',
+            background: onDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.03)',
+            color: onDark ? themeColors.gray : '#777',
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
             transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1) 2s, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) 2s',
           }}
         >
           &#9829; {profile.tag}
+        </div>
         </div>
       )}
     </div>
@@ -3105,7 +3144,7 @@ function InfoBlock({
 function InterviewSection({
   interview,
   fonts,
-  themeColors,
+  themeColors: themeColorsRaw,
   bgColor,
   textStyle,
 }: {
@@ -3116,6 +3155,8 @@ function InterviewSection({
   textStyle?: { lineHeight?: number; textAlign?: 'left' | 'center' | 'right' }
 }) {
   const { ref, isVisible } = useScrollAnimation()
+  // 섹션 배경이 어두우면 본문 글자를 밝게 (밝은 배경은 그대로)
+  const themeColors = readableOn(themeColorsRaw, bgColor)
   const [titleRevealed, setTitleRevealed] = useState(false)
 
   useEffect(() => {
@@ -3129,7 +3170,7 @@ function InterviewSection({
     <div
       ref={ref}
       className="px-7 py-14"
-      style={{ background: bgColor }}
+      style={{ ...texBg(themeColors.texture, bgColor) }}
     >
       {/* Images - Auto Slide for 2+ images */}
       <div
@@ -3195,13 +3236,16 @@ function InterviewSection({
 function StorySection({
   story,
   fonts,
-  themeColors,
+  themeColors: themeColorsRaw,
 }: {
   story: { date?: string; title?: string; desc?: string; images?: string[] }
   fonts: FontConfig
   themeColors: ColorConfig
 }) {
   const { ref, isVisible } = useScrollAnimation()
+  // 섹션 배경이 어두우면 본문 글자를 밝게 (밝은 배경은 그대로)
+  const onDark = isDarkColor(themeColorsRaw.sectionBg)
+  const themeColors = readableOn(themeColorsRaw, themeColorsRaw.sectionBg)
 
   return (
     <div
@@ -3209,7 +3253,7 @@ function StorySection({
       className={`story-section ${isVisible ? 'in-view' : ''}`}
       style={{
         padding: '60px 28px',
-        background: themeColors.sectionBg,
+        ...texBg(themeColors.texture, themeColors.sectionBg),
         textAlign: 'center'
       }}
     >
@@ -3249,7 +3293,7 @@ function StorySection({
           style={{
             fontSize: '13px',
             fontWeight: 300,
-            color: '#777',
+            color: onDark ? themeColors.gray : '#777',
             lineHeight: 1.6,
             marginBottom: '28px'
           }}
@@ -3307,7 +3351,7 @@ function YouTubeLiteSection({ youtube, themeColors, cardBg, onPlay, onStop }: { 
   if (!videoId) return null
 
   return (
-    <AnimatedSection className="px-5 py-12" style={{ background: cardBg }}>
+    <AnimatedSection className="px-5 py-12" style={{ ...texBg(themeColors.texture, cardBg) }}>
       {youtube.title && (
         <p className="sc-tt10 text-[10px] font-light text-center mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>{(youtube.title as string).toUpperCase()}</p>
       )}
@@ -3323,7 +3367,7 @@ function AnniversaryCounterSection({
   startDate,
   closingText,
   fonts,
-  themeColors,
+  themeColors: themeColorsRaw,
 }: {
   startDate: string
   closingText?: string
@@ -3331,6 +3375,9 @@ function AnniversaryCounterSection({
   themeColors: ColorConfig
 }) {
   const { ref, isVisible } = useScrollAnimation()
+  // 섹션 배경이 어두우면 본문 글자를 밝게 (밝은 배경은 그대로)
+  const onDark = isDarkColor(themeColorsRaw.sectionBg)
+  const themeColors = readableOn(themeColorsRaw, themeColorsRaw.sectionBg)
   const anniversary = calculateAnniversary(startDate)
   const displayClosingText = closingText || '그리고 이제 드디어 부르는 서로의 이름에\n\'신랑\', \'신부\'라는 호칭을 담습니다.'
 
@@ -3341,7 +3388,7 @@ function AnniversaryCounterSection({
       style={{
         padding: '56px 28px',
         textAlign: 'center',
-        background: `linear-gradient(180deg, ${themeColors.sectionBg} 0%, ${themeColors.cardBg} 100%)`
+        ...texBg(themeColors.texture, onDark ? themeColors.sectionBg : `linear-gradient(180deg, ${themeColors.sectionBg} 0%, ${themeColors.cardBg} 100%)`)
       }}
     >
       {/* 3-column numbers */}
@@ -3394,7 +3441,7 @@ function AnniversaryCounterSection({
 
 // Color themes
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'custom'
-interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string; highlight?: string }
+interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string; highlight?: string; texture?: BgTextureLayers | null }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
   'classic-rose': { primary: '#C41050', secondary: '#B8956A', accent: '#B8956A', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#3d3d3d', gray: '#555555' },
@@ -3750,6 +3797,8 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     customAccentColor: (content as any).customAccentColor,
     customBgColor: (content as any).customBgColor,
     customSectionBgColor: (content as any).customSectionBgColor,
+    bgTexture: (content as any).bgTexture,
+    bgTextureStrength: (content as any).bgTextureStrength,
     customDividerColor: (content as any).customDividerColor,
     ddayPopup: normalizeDdayPopup(content.ddayPopup),
     galleryDisplayStyle: content.galleryDisplayStyle,
@@ -3773,7 +3822,7 @@ function formatTimeToDisplay(time?: string): string {
 
 function formatDateDisplay(d: string): string {
   if (!d) return ''
-  const date = new Date(d)
+  const date = parseDateOnly(d)
   const y = date.getFullYear(), m = date.getMonth() + 1, day = date.getDate()
   const w = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()]
   return `${y}년 ${m}월 ${day}일 ${w}요일`
@@ -3781,7 +3830,7 @@ function formatDateDisplay(d: string): string {
 
 function formatDateShort(d: string): string {
   if (!d) return ''
-  const date = new Date(d)
+  const date = parseDateOnly(d)
   const y = date.getFullYear(), m = date.getMonth() + 1, day = date.getDate()
   const w = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()]
   return `${y}.${m}.${day} ${w}`
@@ -3789,9 +3838,9 @@ function formatDateShort(d: string): string {
 
 function calculateDday(d: string): string {
   if (!d) return ''
-  const wedding = new Date(d), today = new Date()
+  const wedding = parseDateOnly(d), today = new Date()
   today.setHours(0, 0, 0, 0); wedding.setHours(0, 0, 0, 0)
-  const diff = Math.ceil((wedding.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  const diff = Math.round((wedding.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
   return diff > 0 ? `D-${diff}` : diff === 0 ? 'D-Day' : `D+${Math.abs(diff)}`
 }
 
@@ -3799,12 +3848,12 @@ function calculateDday(d: string): string {
 function calculateAnniversary(startDate: string): { days: number; weeks: number; yearsMonths: string } {
   if (!startDate) return { days: 0, weeks: 0, yearsMonths: '0년 0개월' }
 
-  const start = new Date(startDate), today = new Date()
+  const start = parseDateOnly(startDate), today = new Date()
   start.setHours(0, 0, 0, 0); today.setHours(0, 0, 0, 0)
 
   // Days calculation (start date counts as day 1)
   const diffTime = today.getTime() - start.getTime()
-  const days = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1
+  const days = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1
 
   // Weeks calculation
   const weeks = Math.floor(days / 7)
@@ -3831,7 +3880,7 @@ function calculateAnniversary(startDate: string): { days: number; weeks: number;
 // Format date as "November 4, 2026"
 function formatDateEnglish(d: string): string {
   if (!d) return ''
-  const date = new Date(d)
+  const date = parseDateOnly(d)
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
 }
@@ -3871,7 +3920,9 @@ interface GuestbookMessage {
 // Intro Page Component - Screen-based transitions like original template
 type IntroScreen = 'cover' | 'invitation'
 
-function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors, onNavigate, onScreenChange, onNextStoryVisible, guestGreeting, guestCustomMessage, introSettings }: PageProps) {
+function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors: themeColorsRaw, onNavigate, onScreenChange, onNextStoryVisible, guestGreeting, guestCustomMessage, introSettings }: PageProps) {
+  // 인트로·초대 화면은 전체 배경 위 — 사용자가 고른 본문색이 배경과 안 맞으면 읽히는 색으로 보정 (기본 테마는 그대로)
+  const themeColors = readableOn(themeColorsRaw, themeColorsRaw.background)
   const [showDirections, setShowDirections] = useState(false)
   const nextStoryRef = useRef<HTMLDivElement>(null)
 
@@ -4240,7 +4291,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         id="invitation-section"
         className={`invitation-section px-7 py-10 text-center ${invitationAnimated ? 'in-view' : ''}`}
         style={{
-          background: themeColors.background,
+          ...texBg(themeColors.texture, themeColors.background),
           minHeight: '100vh',
           opacity: screenFadeOut ? 0 : 1,
           transition: 'opacity 0.5s ease',
@@ -4422,7 +4473,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
             style={{ background: themeColors.cardBg }}
           >
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-medium" style={{ color: themeColors.text }}>오시는 길</h3>
+              <h3 className="text-lg font-medium" style={{ color: readableOn(themeColors, themeColors.cardBg).text }}>오시는 길</h3>
               <button onClick={() => setShowDirections(false)} className="p-2 rounded-full hover:bg-gray-100">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -4432,10 +4483,10 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
             {/* Venue Info */}
             <div className="mb-6 p-4 rounded-xl" style={{ background: themeColors.sectionBg }}>
-              <p className="text-sm font-medium mb-1" style={{ color: themeColors.text }}>
+              <p className="text-sm font-medium mb-1" style={{ color: readableOn(themeColors, themeColors.sectionBg).text }}>
                 {invitation.wedding.venue.name}{!invitation.wedding.venue.hideHall && ` ${invitation.wedding.venue.hall}`}
               </p>
-              <p className="text-xs" style={{ color: themeColors.gray }}>{invitation.wedding.venue.address}</p>
+              <p className="text-xs" style={{ color: readableOn(themeColors, themeColors.sectionBg).gray }}>{invitation.wedding.venue.address}</p>
             </div>
 
             {/* Tabs */}
@@ -4593,12 +4644,17 @@ const sampleGuestbookMessages: GuestbookMessage[] = [
 ]
 
 // Main Page Component - matching template exactly
-function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, onOpenRsvp, onOpenLightbox, onOpenGuestbookModal, isSample = false, audioRef, navStyle }: PageProps) {
+function MainPage({ invitation, invitationId, fonts, themeColors: themeColorsRaw, onNavigate, onOpenRsvp, onOpenLightbox, onOpenGuestbookModal, isSample = false, audioRef, navStyle }: PageProps) {
+  // 본문 대부분은 흰 카드 배경 위 — 사용자가 고른 본문색이 배경과 안 맞으면 읽히는 색으로 보정 (기본 테마는 그대로)
+  const themeColors = readableOn(themeColorsRaw, themeColorsRaw.cardBg)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
     const questions = invitation.content.guestbookQuestions
     return questions?.length > 0 ? Math.floor(Math.random() * questions.length) : 0
   })
   const [showAllGallery, setShowAllGallery] = useState(false)
+  // 섹션 배경(sectionBg) 위 글자색 — 어두운 배경이면 밝게
+  const secDark = isDarkColor(themeColors.sectionBg)
+  const secTc = readableOn(themeColors, themeColors.sectionBg)
 
   // Section Highlight 상태
   const [activeSection, setActiveSection] = useState('invitation')
@@ -4775,6 +4831,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           fontFamily={fonts.displayKr}
           textColor={themeColors.text}
           bgColor={themeColors.cardBg}
+          texture={themeColors.texture}
           isChapterBreak={true}
         />
         {/* 음악 토글 버튼 - DividerSection 상단에 고정 */}
@@ -4785,29 +4842,8 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
 
       {/* Wave Divider - transitions to section background */}
       {invitation.sectionVisibility?.coupleProfile !== false && (invitation.bride.profile.intro || invitation.groom.profile.intro) && (
-        <div className="relative w-full h-[60px] overflow-hidden" style={{ background: themeColors.cardBg }}>
-          <svg
-            viewBox="0 0 2880 120"
-            preserveAspectRatio="none"
-            className="absolute bottom-0 w-[250%] h-full"
-            style={{ left: '-5%' }}
-          >
-            <path
-              className="wave-back"
-              d="M0,40 Q180,80 360,40 T720,40 T1080,40 T1440,40 T1800,40 T2160,40 T2520,40 T2880,40 L2880,120 L0,120 Z"
-              style={{ fill: themeColors.sectionBg, opacity: 0.3, animation: 'waveBack 8s ease-in-out infinite' }}
-            />
-            <path
-              className="wave-mid"
-              d="M0,50 Q240,90 480,50 T960,50 T1440,50 T1920,50 T2400,50 T2880,50 L2880,120 L0,120 Z"
-              style={{ fill: themeColors.sectionBg, opacity: 0.5, animation: 'waveMid 6s ease-in-out infinite' }}
-            />
-            <path
-              className="wave-front"
-              d="M0,70 Q360,100 720,70 T1440,70 T2160,70 T2880,70 L2880,120 L0,120 Z"
-              style={{ fill: themeColors.sectionBg, animation: 'waveFront 7s ease-in-out infinite' }}
-            />
-          </svg>
+        <div className="relative w-full h-[60px] overflow-hidden" style={{ ...texBg(themeColors.texture, themeColors.cardBg) }}>
+          <WaveLayers fill={themeColors.sectionBg} texture={themeColors.texture} />
         </div>
       )}
 
@@ -4846,6 +4882,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           fontFamily={fonts.displayKr}
           textColor={themeColors.text}
           bgColor={themeColors.cardBg}
+          texture={themeColors.texture}
           isChapterBreak={true}
         />
       )}
@@ -4898,6 +4935,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           fontFamily={fonts.displayKr}
           textColor={themeColors.text}
           bgColor={themeColors.cardBg}
+          texture={themeColors.texture}
           isChapterBreak={true}
         />
       )}
@@ -4918,7 +4956,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       {invitation.sectionVisibility?.guidance !== false && (
       <section
         className="px-6 py-14"
-        style={{ background: `linear-gradient(180deg, ${themeColors.sectionBg} 0%, ${themeColors.background} 100%)` }}
+        style={{ ...texBg(themeColors.texture, (secDark || isDarkColor(themeColors.background)) ? themeColors.sectionBg : `linear-gradient(180deg, ${themeColors.sectionBg} 0%, ${themeColors.background} 100%)`) }}
       >
         {/* Info Photo */}
         {invitation.guidance?.image && (
@@ -4967,11 +5005,11 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         <AnimatedSection className="text-center mb-8">
           <h3
             className="sc-tt15 text-[15px] font-light relative inline-block"
-            style={{ fontFamily: fonts.displayKr, color: themeColors.text }}
+            style={{ fontFamily: fonts.displayKr, color: secTc.text }}
           >
             행복한 시간을 위한 안내
           </h3>
-          <div className="w-10 h-px mx-auto mt-4" style={{ background: themeColors.divider }} />
+          <div className="w-10 h-px mx-auto mt-4" style={{ background: secTc.divider }} />
         </AnimatedSection>
 
         {/* Dress Code Block */}
@@ -5079,45 +5117,24 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       )}
 
       {/* Thank You Section */}
-      <AnimatedSection className="min-h-[300px] flex flex-col justify-center items-center text-center px-7 py-20" style={{ background: themeColors.sectionBg }}>
-        <h2 className="our-thankyou-title text-lg mb-7" style={{ fontFamily: fonts.display, color: themeColors.text, fontWeight: 400, letterSpacing: '4px' }}>{invitation.content.thankYou.title}</h2>
+      <AnimatedSection className="min-h-[300px] flex flex-col justify-center items-center text-center px-7 py-20" style={{ ...texBg(themeColors.texture, themeColors.sectionBg) }}>
+        <h2 className="our-thankyou-title text-lg mb-7" style={{ fontFamily: fonts.display, color: secTc.text, fontWeight: 400, letterSpacing: '4px' }}>{invitation.content.thankYou.title}</h2>
         {invitation.content.thankYou.message ? (
-          <p className="our-thankyou-body text-[13px] font-light leading-[2.2] mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.thankYou.message) }} />
+          <p className="our-thankyou-body text-[13px] font-light leading-[2.2] mb-7" style={{ fontFamily: fonts.displayKr, color: secTc.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.thankYou.message) }} />
         ) : (
-          <p className="text-[11px] text-gray-400 mb-7">감사 메시지를 입력해주세요</p>
+          <p className="text-[11px] mb-7" style={{ color: secDark ? secTc.gray : '#9ca3af' }}>감사 메시지를 입력해주세요</p>
         )}
-        {invitation.content.thankYou.sign && <p className="sc-if11 text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.gray }}>{invitation.content.thankYou.sign}</p>}
+        {invitation.content.thankYou.sign && <p className="sc-if11 text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: secTc.gray }}>{invitation.content.thankYou.sign}</p>}
       </AnimatedSection>
 
       {/* Wave Divider before Guestbook */}
-      <div className="relative w-full h-[60px] overflow-hidden" style={{ background: themeColors.sectionBg }}>
-        <svg
-          viewBox="0 0 2880 120"
-          preserveAspectRatio="none"
-          className="absolute bottom-0 w-[250%] h-full"
-          style={{ left: '-5%' }}
-        >
-          <path
-            className="wave-back"
-            d="M0,40 Q180,80 360,40 T720,40 T1080,40 T1440,40 T1800,40 T2160,40 T2520,40 T2880,40 L2880,120 L0,120 Z"
-            style={{ fill: themeColors.cardBg, opacity: 0.3, animation: 'waveBack 8s ease-in-out infinite' }}
-          />
-          <path
-            className="wave-mid"
-            d="M0,50 Q240,90 480,50 T960,50 T1440,50 T1920,50 T2400,50 T2880,50 L2880,120 L0,120 Z"
-            style={{ fill: themeColors.cardBg, opacity: 0.5, animation: 'waveMid 6s ease-in-out infinite' }}
-          />
-          <path
-            className="wave-front"
-            d="M0,70 Q360,100 720,70 T1440,70 T2160,70 T2880,70 L2880,120 L0,120 Z"
-            style={{ fill: themeColors.cardBg, animation: 'waveFront 7s ease-in-out infinite' }}
-          />
-        </svg>
+      <div className="relative w-full h-[60px] overflow-hidden" style={{ ...texBg(themeColors.texture, themeColors.sectionBg) }}>
+        <WaveLayers fill={themeColors.cardBg} texture={themeColors.texture} />
       </div>
 
       {/* Guestbook Section - with visibility toggle */}
       {invitation.sectionVisibility?.guestbook !== false && (
-        <AnimatedSection className="px-5 py-14 pb-20 text-center" style={{ background: themeColors.cardBg }}>
+        <AnimatedSection className="px-5 py-14 pb-20 text-center" style={{ ...texBg(themeColors.texture, themeColors.cardBg) }}>
           <h3 className="sc-tt14 text-sm mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>Guestbook</h3>
           <div className="max-w-[300px] mx-auto mb-9">
             <div className="text-center mb-6">
@@ -5222,7 +5239,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
 
       {/* RSVP Section */}
       {invitation.rsvpEnabled && (
-        <AnimatedSection className="px-6 py-14 text-center" style={{ background: themeColors.cardBg }}>
+        <AnimatedSection className="px-6 py-14 text-center" style={{ ...texBg(themeColors.texture, themeColors.cardBg) }}>
           <h3 className="sc-tt14 text-sm mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>RSVP</h3>
           <p className="sc-bd14 text-sm mb-4" style={{ color: themeColors.text }}>참석 여부를 알려주세요</p>
           <button
@@ -5237,14 +5254,14 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       )}
 
       {/* Footer */}
-      <div className="px-6 py-10 text-center" style={{ background: themeColors.background }}>
+      <div className="px-6 py-10 text-center" style={{ ...texBg(themeColors.texture, themeColors.background) }}>
         <p className="text-[10px] font-light" style={{ color: '#999' }}>Thank you for celebrating with us</p>
         <p className="text-[9px] font-light mt-2" style={{ color: '#ccc' }}>Made with dear drawer</p>
       </div>
 
       {/* 하단 네비바가 푸터를 가리지 않도록 모바일 전용 여백 (모바일에서 .mobile-frame-content가 display:contents라 JS 패딩이 안 먹힘) */}
       {(navStyle === 'bottom-nav' || navStyle === 'bottom-mini') && (
-        <div className="bottom-nav-spacer" style={{ background: themeColors.background }} aria-hidden />
+        <div className="bottom-nav-spacer" style={{ ...texBg(themeColors.texture, themeColors.background) }} aria-hidden />
       )}
     </div>
     </SectionHighlightContext.Provider>
@@ -5640,6 +5657,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
     ...(isCustomTheme && customBg ? { background: customBg } : {}),
     ...(isCustomTheme && customSectionBg ? { sectionBg: customSectionBg } : {}),
     ...(isCustomTheme && customDivider ? { divider: customDivider } : {}),
+    texture: textureLayers((invitation as any).bgTexture, (invitation as any).bgTextureStrength),
     text: invitation.bodyTextColor || baseThemeColors.text,
     highlight: invitation.accentTextColor || (isCustomTheme && customAccent ? customAccent : null) || baseThemeColors.highlight || baseThemeColors.primary,
   }
@@ -5735,7 +5753,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                 <div
                   className={`relative w-full min-h-screen overflow-x-hidden theme-${invitation.colorTheme} ${effectiveFontStyle === 'romantic' ? 'font-romantic' : ''}`}
                   style={{
-                    backgroundColor: themeColors.background,
+                    ...texBg(themeColors.texture, themeColors.background),
                     fontFamily: fonts.body,
                     color: invitation.bodyTextColor || themeColors.text,
                     ...(invitation.accentTextColor ? { '--text-accent': invitation.accentTextColor } as React.CSSProperties : {}),
@@ -5795,7 +5813,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
               {/* Floating Button */}
               {showFloatingButton && !isPreview && (
                 <GuestFloatingButton
-                  themeColors={themeColors}
+                  themeColors={readableOn(themeColors, themeColors.cardBg)}
                   fonts={fonts}
                   openModal={openModalType}
                   onModalClose={() => setOpenModalType('none')}
@@ -5852,6 +5870,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                   initialIndex={lightboxIndex}
                   onClose={() => setLightboxOpen(false)}
                   variant={invitation.galleryLightboxVariant}
+                  zoomEnabled={invitation.gallery?.zoomEnabled === true}
                 />
               ) : (
                 <GalleryLightbox
@@ -5876,7 +5895,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                   }}
                   cardColors={['#FFF9F0', '#F0F7FF', '#F5FFF0', '#FFF0F5', '#F0FFFF']}
                   fonts={fonts}
-                  themeColors={themeColors}
+                  themeColors={readableOn(themeColors, themeColors.cardBg)}
                   showQuestion={invitation.content.guestbookShowQuestion !== false}
                 />,
                 document.body

@@ -16,6 +16,7 @@ import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 import { YouTubeLite } from '@/components/invitation/YouTubeLite'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral'
@@ -347,7 +348,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
     }
   }, [isPreview, introStyle, onEnter])
 
-  const weddingDate = invitation.wedding?.date ? new Date(invitation.wedding.date) : new Date()
+  const weddingDate = invitation.wedding?.date ? parseDateOnly(invitation.wedding.date) : new Date()
   const year = weddingDate.getFullYear()
   const month = String(weddingDate.getMonth() + 1).padStart(2, '0')
   const day = String(weddingDate.getDate()).padStart(2, '0')
@@ -1267,7 +1268,7 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
   }
   const { ref, isVisible } = useScrollReveal()
   const w = invitation.wedding || {}
-  const date = w.date ? new Date(w.date) : null
+  const date = w.date ? parseDateOnly(w.date) : null
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -1323,7 +1324,7 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
               const wedding = new Date(date)
               wedding.setHours(0, 0, 0, 0)
               const diffTime = wedding.getTime() - today.getTime()
-              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+              const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
               if (diffDays < 0) return null
               return (
                 <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: `0.5px solid ${themeColors.divider}`, opacity: 0, ...(isVisible ? { animation: 'mag-scaleBlurReveal 0.8s ease 1.8s both' } : {}) }}>

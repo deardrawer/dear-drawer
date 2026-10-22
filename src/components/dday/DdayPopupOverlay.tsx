@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type { DdayPopupData, ImageWithSettings } from '@/lib/ddayPopupTypes'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 interface DdayPopupOverlayProps {
   data: DdayPopupData
@@ -16,9 +17,9 @@ interface DdayPopupOverlayProps {
 function calcDday(weddingDate: string): number {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  const wedding = new Date(weddingDate)
+  const wedding = parseDateOnly(weddingDate)
   wedding.setHours(0, 0, 0, 0)
-  return Math.ceil((wedding.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  return Math.round((wedding.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 }
 
 function getDdayLabel(dday: number): string {
@@ -67,19 +68,19 @@ export default function DdayPopupOverlay({
     // displayStart / displayEnd 우선, 없으면 startDays 폴백
     let start: Date, end: Date
     if (data.displayStart) {
-      start = new Date(data.displayStart)
+      start = parseDateOnly(data.displayStart)
       start.setHours(0, 0, 0, 0)
     } else {
       const days = data.startDays ?? 7
-      start = new Date(weddingDate)
+      start = parseDateOnly(weddingDate)
       start.setHours(0, 0, 0, 0)
       start.setDate(start.getDate() - days)
     }
     if (data.displayEnd) {
-      end = new Date(data.displayEnd)
+      end = parseDateOnly(data.displayEnd)
       end.setHours(0, 0, 0, 0)
     } else {
-      end = new Date(weddingDate)
+      end = parseDateOnly(weddingDate)
       end.setHours(0, 0, 0, 0)
     }
     if (today < start || today > end) return

@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react'
 import { getBgmPresetByUrl } from '@/lib/bgmPresets'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 function useFontLink(id: string, href: string) {
   useEffect(() => {
@@ -95,7 +96,7 @@ export function RecordDaysCover({ invitation, onEnter, isPreview, variant }: { i
     ? `It's been ${together} days since you said yes to me,\nand they have been the best days of my life. love you.`
     : 'Every day with you has been the best day of my life.\nNow we are starting forever. love you.'
   const label = invitation.recordDaysLabel ?? 'dear love'
-  const wd = invitation.wedding?.date ? new Date(invitation.wedding.date) : null
+  const wd = invitation.wedding?.date ? parseDateOnly(invitation.wedding.date) : null
   const year = wd && !isNaN(wd.getTime()) ? wd.getFullYear() : today != null ? new Date(today).getFullYear() : ''
   const tag = wed != null && wd ? `${String(wd.getDate()).padStart(2, '0')}.${String(wd.getMonth() + 1).padStart(2, '0')}.${String(wd.getFullYear()).slice(2)}` : ''
   const nm = names(invitation)

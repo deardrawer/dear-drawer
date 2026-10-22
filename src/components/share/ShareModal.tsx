@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ColorField from '@/components/editor/ColorField'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 interface ShareModalProps {
   open: boolean
@@ -76,7 +77,7 @@ export default function ShareModal({
   // Generate default slug
   useEffect(() => {
     if (!slug && groomName && brideName) {
-      const year = weddingDate ? new Date(weddingDate).getFullYear() : new Date().getFullYear()
+      const year = weddingDate ? parseDateOnly(weddingDate).getFullYear() : new Date().getFullYear()
       const defaultSlug = `${groomName}-${brideName}-${year}`.toLowerCase().replace(/\s/g, '')
       setSlug(defaultSlug)
     }
@@ -211,7 +212,7 @@ export default function ShareModal({
 
       // 날짜 포맷팅
       const formattedDate = weddingDate
-        ? new Date(weddingDate).toLocaleDateString('ko-KR', {
+        ? parseDateOnly(weddingDate).toLocaleDateString('ko-KR', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -290,7 +291,7 @@ export default function ShareModal({
 
     // 날짜/시간/장소 정보 포맷팅
     const formattedDate = weddingDate
-      ? new Date(weddingDate).toLocaleDateString('ko-KR', {
+      ? parseDateOnly(weddingDate).toLocaleDateString('ko-KR', {
           year: 'numeric',
           month: 'long',
           day: 'numeric',
@@ -400,7 +401,7 @@ export default function ShareModal({
                 <br /><br />
                 {shareDescription || (() => {
                   const date = weddingDate
-                    ? new Date(weddingDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
+                    ? parseDateOnly(weddingDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
                     : ''
                   const details = [date, weddingTime, venueName].filter(Boolean).join(' / ')
                   return details || '저희 결혼식에 초대합니다.'

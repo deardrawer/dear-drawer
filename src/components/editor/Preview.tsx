@@ -272,6 +272,8 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     customBaseColor: (invitation as any).customBaseColor,
     customSectionBgColor: (invitation as any).customSectionBgColor,
     customDividerColor: (invitation as any).customDividerColor,
+    bgTexture: (invitation as any).bgTexture,
+    bgTextureStrength: (invitation as any).bgTextureStrength,
     sectionTextColor: (invitation as any).sectionTextColor,
     sectionAccentColor: (invitation as any).sectionAccentColor,
     magazineBoxContrastMap: (invitation as any).magazineBoxContrastMap,

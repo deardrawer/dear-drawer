@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react'
 import { IntroSettings, presetAccentColors, presetCustomColors } from '@/lib/introPresets'
 import { ImageSettings } from '@/store/editorStore'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
+import { parseDateOnly } from '@/lib/dateOnly'
 
 // Helper function to convert hex to rgba
 function hexToRgba(hex: string, alpha: number): string {
@@ -221,7 +222,7 @@ export default function IntroAnimation({
 // 날짜 포맷 헬퍼 (영어식: May 24, 2025)
 function formatDate(dateString: string): string {
   if (!dateString) return ''
-  const date = new Date(dateString)
+  const date = parseDateOnly(dateString)
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const month = months[date.getMonth()]
   const day = date.getDate()

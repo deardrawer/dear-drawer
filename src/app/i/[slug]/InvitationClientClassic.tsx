@@ -536,9 +536,19 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const mm = String(wdate.getMonth() + 1).padStart(2, '0')
   const dd = String(day).padStart(2, '0')
   const dow = wdate.getDay() // 0=Sun
-  // 영문: "14:00" → "2:00 PM"
-  const enTime = (t?: string): string | null => { const m = (t || '').match(/^(\d{1,2}):(\d{2})/); if (!m) return null; const h = Number(m[1]); return `${h % 12 || 12}:${m[2]} ${h >= 12 ? 'PM' : 'AM'}` }
-  const timeDisplay = isEn ? (enTime(wedding.time) || wedding.timeDisplay || '2:00 PM') : (wedding.timeDisplay || wedding.time || '오후 두 시')
+  // 시간: 에디터 '시간' 칸에 쓴 글(timeDisplay)을 그대로 쓴다. (wedding.time 은 THE CLASSIC 에서 편집하지 않는 기본값)
+  // 영문 화면에서 글이 한글("오후 3시 30분")이면 "3:30 PM" 으로만 바꾸고, "3PM (HST)" 처럼 이미 영문이면 그대로 둔다
+  const koTimeToEn = (t: string): string | null => {
+    const m = t.match(/(오전|오후)\s*(\d{1,2})\s*시(?:\s*(\d{1,2})\s*분|\s*반)?/)
+    if (!m) return null
+    const h = Number(m[2]) % 12 + (m[1] === '오후' ? 12 : 0)
+    const min = m[3] ? m[3].padStart(2, '0') : /반/.test(m[0]) ? '30' : '00'
+    return `${h % 12 || 12}:${min} ${h >= 12 ? 'PM' : 'AM'}`
+  }
+  const timeText: string = (wedding.timeDisplay || '').trim()
+  const timeDisplay = isEn
+    ? (timeText ? (/[가-힣]/.test(timeText) ? (koTimeToEn(timeText) || timeText) : timeText) : '2:00 PM')
+    : (timeText || wedding.time || '오후 두 시')
   const dateFullEn = `${dd} ${monthEn} ${year}`
   const WEEK_KO = ['일', '월', '화', '수', '목', '금', '토']
   // 달력 머리 요일 (영문: S M T W T F S)

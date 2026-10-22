@@ -247,13 +247,21 @@ export async function updateInvitation(
     updates.push("slug = ?");
     values.push(input.slug);
   }
+  if (input.title !== undefined) {
+    updates.push("title = ?");
+    values.push(input.title && input.title.trim() ? input.title.trim() : null);
+  }
 
   if (updates.length === 0) {
     return getInvitationById(id);
   }
 
-  updates.push("updated_at = ?");
-  values.push(now);
+  // 목록 이름만 바꿀 때는 '수정일'과 목록 순서를 건드리지 않는다
+  const titleOnly = updates.length === 1 && input.title !== undefined;
+  if (!titleOnly) {
+    updates.push("updated_at = ?");
+    values.push(now);
+  }
   values.push(id);
   values.push(userId);
 

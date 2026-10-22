@@ -40,6 +40,8 @@ export interface Invitation {
   // 하객 사진 공유 (Google Drive) — 0017 마이그레이션
   guest_share_enabled?: number | null;
   guest_share_title?: string | null;
+  /** 내 청첩장 목록에 보이는 이름 (사용자 지정) */
+  title?: string | null;
   guest_share_description?: string | null;
 
   // 타임스탬프
@@ -67,6 +69,8 @@ export interface InvitationInput {
   content?: string;
   is_published?: boolean;
   slug?: string;
+  /** 내 청첩장 목록에 보이는 이름 (null/빈 값이면 "신랑 & 신부") */
+  title?: string | null;
 }
 
 export interface AccountInfo {

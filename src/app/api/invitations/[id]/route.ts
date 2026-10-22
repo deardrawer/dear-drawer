@@ -129,6 +129,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (body.bride_name && body.bride_name.length > 50) {
       return NextResponse.json({ error: "신부 이름이 너무 깁니다." }, { status: 400 });
     }
+    // 목록 이름(title)은 "내 청첩장"에서 이름만 보낸 요청으로만 바꾼다.
+    // 에디터 저장처럼 다른 값과 함께 온 title 은 무시해 사용자가 지은 이름을 덮어쓰지 않게 한다.
+    if (body.title !== undefined && Object.keys(body).some((k) => k !== "title")) {
+      delete body.title;
+    }
+    if (typeof body.title === "string" && body.title.trim().length > 40) {
+      return NextResponse.json({ error: "청첩장 이름은 40자 이내로 입력해주세요." }, { status: 400 });
+    }
     if (body.slug && body.slug.length > 100) {
       return NextResponse.json({ error: "슬러그가 너무 깁니다." }, { status: 400 });
     }

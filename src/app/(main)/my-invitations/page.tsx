@@ -228,6 +228,33 @@ export default function MyInvitationsPage() {
   const [invitations, setInvitations] = useState<InvitationSummary[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  // 목록 카드 이름 바꾸기 (비우면 "신랑 & 신부"로 돌아감)
+  const [renameId, setRenameId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState('')
+  const [renameSaving, setRenameSaving] = useState(false)
+  const saveRename = async (id: string) => {
+    if (renameSaving) return
+    const title = renameValue.trim()
+    setRenameSaving(true)
+    try {
+      const res = await fetch(`/api/invitations/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: title || null }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as { error?: string }
+        alert(data.error || '이름을 저장하지 못했어요. 잠시 후 다시 시도해주세요.')
+        return
+      }
+      setInvitations((prev) => prev.map((inv) => (inv.id === id ? { ...inv, title } : inv)))
+      setRenameId(null)
+    } catch {
+      alert('이름을 저장하지 못했어요. 잠시 후 다시 시도해주세요.')
+    } finally {
+      setRenameSaving(false)
+    }
+  }
   const [isDeleting, setIsDeleting] = useState(false)
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
 
@@ -1034,9 +1061,42 @@ export default function MyInvitationsPage() {
                     {/* 정보 */}
                     <div className="mi-info">
                       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
-                        <h3 style={{ margin: 0, fontSize: 'clamp(16px, 1.4vw, 18px)', fontWeight: 650, letterSpacing: '-.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {invitation.title || `${invitation.groom_name} & ${invitation.bride_name}`}
-                        </h3>
+                        {renameId === invitation.id ? (
+                          <form
+                            onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); saveRename(invitation.id) }}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}
+                          >
+                            <input
+                              id={`rename-${invitation.id}`}
+                              autoFocus
+                              value={renameValue}
+                              maxLength={40}
+                              onChange={(e) => setRenameValue(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Escape') setRenameId(null) }}
+                              placeholder={`${invitation.groom_name} & ${invitation.bride_name}`}
+                              aria-label="청첩장 이름"
+                              style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 600, letterSpacing: '-.02em', color: MI.ink, border: `1px solid ${MI.ink3}`, borderRadius: 4, padding: '5px 8px', outline: 'none', background: '#fff' }}
+                            />
+                            <button type="submit" disabled={renameSaving} style={{ fontSize: 12, fontWeight: 600, color: '#fff', background: MI.ink, border: 0, borderRadius: 4, padding: '7px 10px', cursor: 'pointer', whiteSpace: 'nowrap', opacity: renameSaving ? 0.6 : 1 }}>저장</button>
+                            <button type="button" onClick={() => setRenameId(null)} style={{ fontSize: 12, color: MI.ink3, background: 'transparent', border: 0, padding: '7px 2px', cursor: 'pointer', whiteSpace: 'nowrap' }}>취소</button>
+                          </form>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                            <h3 style={{ margin: 0, fontSize: 'clamp(16px, 1.4vw, 18px)', fontWeight: 650, letterSpacing: '-.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {invitation.title || `${invitation.groom_name} & ${invitation.bride_name}`}
+                            </h3>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setRenameValue(invitation.title || ''); setRenameId(invitation.id) }}
+                              aria-label="청첩장 이름 바꾸기"
+                              title="이름 바꾸기"
+                              style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, border: 0, background: 'transparent', color: MI.ink3, cursor: 'pointer', borderRadius: 4 }}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 20h4L19 9l-4-4L4 16v4z" /><path d="M14 6l4 4" /></svg>
+                            </button>
+                          </div>
+                        )}
                         <span style={{ fontSize: 12, fontWeight: 500, color: invitation.is_paid ? MI.ink : MI.warn, whiteSpace: 'nowrap' }}>{invitation.is_paid ? '결제완료' : '미결제'}</span>
                       </div>
                       <p style={{ margin: '6px 0 0', fontSize: 12, color: MI.ink3, letterSpacing: '-.01em', fontVariantNumeric: 'tabular-nums' }}>

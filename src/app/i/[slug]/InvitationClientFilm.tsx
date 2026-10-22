@@ -2420,7 +2420,8 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, zoomEnabled = 
             className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-11 h-16 flex items-center justify-center text-white/85 hover:text-white" style={{ filter: "drop-shadow(0 1px 4px rgba(0,0,0,.6))" }}><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></button>
         </>
       )}
-      {resolved[idx] && <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); if (zoomed) return; setIdx((idx + 1) % resolved.length) }}>{zoomEnabled ? <ZoomableImage src={resolved[idx]} alt="" className="film-zoomable-box" onZoomChange={setZoomed} /> : <img src={resolved[idx]} alt="" className="max-w-full max-h-full object-contain" style={{ pointerEvents: 'none', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties} />}</div>}
+      {/* 줌 허용 시엔 사진 탭으로 넘기지 않음(더블탭 첫 탭이 다음 사진으로 넘어가는 충돌 방지) — 화살표·좌우 스와이프로 이동 */}
+      {resolved[idx] && <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: zoomEnabled ? undefined : 'pointer' }} onClick={e => { e.stopPropagation(); if (zoomed || zoomEnabled) return; setIdx((idx + 1) % resolved.length) }}>{zoomEnabled ? <ZoomableImage src={resolved[idx]} alt="" className="film-zoomable-box" onZoomChange={setZoomed} resetKey={idx} onSwipe={d => { if (resolved.length > 1) setIdx((idx + d + resolved.length) % resolved.length) }} /> : <img src={resolved[idx]} alt="" className="max-w-full max-h-full object-contain" style={{ pointerEvents: 'none', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties} />}</div>}
     </div>
   )
 }

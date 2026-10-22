@@ -3122,6 +3122,7 @@ function GalleryLightbox({
               alt=""
               className="w-full h-[80vh]"
               onZoomChange={setZoomed}
+              onSwipe={d => { if (d > 0) next(); else prev() }}
             />
           </div>
         ) : (
@@ -3142,8 +3143,8 @@ function GalleryLightbox({
             />
           ))
         )}
-        {/* 좌/우 클릭 존 (줌 중에는 비활성화) */}
-        {images.length > 1 && !zoomed && (
+        {/* 좌/우 클릭 존 — 줌 허용 시엔 렌더하지 않음(이미지 위를 덮어 핀치·더블탭을 막으므로, 화살표·좌우 스와이프로 이동) */}
+        {images.length > 1 && !zoomEnabled && !zoomed && (
           <>
             <button
               aria-label="이전 사진"

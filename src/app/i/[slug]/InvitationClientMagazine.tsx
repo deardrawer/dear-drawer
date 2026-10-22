@@ -2271,14 +2271,17 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, zoomEnabled = 
             className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-11 h-16 flex items-center justify-center text-white/85 hover:text-white" style={{ filter: "drop-shadow(0 1px 4px rgba(0,0,0,.6))" }}><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></button>
         </>
       )}
+      {/* 줌 허용 시엔 사진 탭으로 넘기지 않음(더블탭 첫 탭이 다음 사진으로 넘어가는 충돌 방지) — 화살표·좌우 스와이프로 이동 */}
       {resolvedImages[currentIndex] && (
-        <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); if (!zoomed && resolvedImages.length > 1) setCurrentIndex((currentIndex + 1) % resolvedImages.length) }}>
+        <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: zoomEnabled ? undefined : 'pointer' }} onClick={e => { e.stopPropagation(); if (!zoomEnabled && !zoomed && resolvedImages.length > 1) setCurrentIndex((currentIndex + 1) % resolvedImages.length) }}>
           {zoomEnabled ? (
             <ZoomableImage
               src={resolvedImages[currentIndex]}
               alt=""
               className="mag-zoomable-box"
               onZoomChange={setZoomed}
+              resetKey={currentIndex}
+              onSwipe={d => { if (resolvedImages.length > 1) setCurrentIndex((currentIndex + d + resolvedImages.length) % resolvedImages.length) }}
             />
           ) : (
             <img

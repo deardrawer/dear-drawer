@@ -126,6 +126,22 @@ export default function MainPhotoSection({
   const touchStartXRef = useRef<number>(0)
   const moreBtnRef = useRef<HTMLButtonElement>(null)
 
+  // 줌 허용 라이트박스가 열려 있는 동안 페이지 자체의 핀치 확대(iOS gesture*, 두 손가락 touchmove)를 막는다
+  const lightboxOpen = lightboxIndex !== null
+  useEffect(() => {
+    if (!lightboxOpen || !zoomEnabled) return
+    const onGesture = (e: Event) => e.preventDefault()
+    const onTouchMove = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault() }
+    document.addEventListener('gesturestart', onGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('gesturechange', onGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    return () => {
+      document.removeEventListener('gesturestart', onGesture)
+      document.removeEventListener('gesturechange', onGesture)
+      document.removeEventListener('touchmove', onTouchMove)
+    }
+  }, [lightboxOpen, zoomEnabled])
+
   // 더보기/접기 토글: 접을 때 갤러리 높이가 줄며 스크롤이 아래 섹션으로 튀지 않도록 버튼 위치 고정
   const toggleGrid = () => {
     const collapsing = gridExpanded
@@ -562,9 +578,10 @@ export default function MainPhotoSection({
           {/* 이미지 영역 - 한 장씩 표시 */}
           <div
             className="flex-1 relative flex items-center justify-center px-4"
-            onTouchStart={(e) => { if (zoomed) return; touchStartXRef.current = e.touches[0].clientX }}
+            onTouchStart={(e) => { if (zoomEnabled || zoomed) return; touchStartXRef.current = e.touches[0].clientX }}
             onTouchEnd={(e) => {
-              if (zoomed) return
+              // 줌 허용 시엔 ZoomableImage의 onSwipe가 처리 (핀치 직후 오작동 방지)
+              if (zoomEnabled || zoomed) return
               const dx = e.changedTouches[0].clientX - touchStartXRef.current
               if (dx < -60 && lightboxIndex < allPhotos.length - 1) {
                 setSlideDir('left')
@@ -591,6 +608,15 @@ export default function MainPhotoSection({
                   alt={`사진 ${lightboxIndex + 1}`}
                   className="w-full h-full"
                   onZoomChange={setZoomed}
+                  onSwipe={(d) => {
+                    if (d > 0 && lightboxIndex < allPhotos.length - 1) {
+                      setSlideDir('left')
+                      setLightboxIndex(lightboxIndex + 1)
+                    } else if (d < 0 && lightboxIndex > 0) {
+                      setSlideDir('right')
+                      setLightboxIndex(lightboxIndex - 1)
+                    }
+                  }}
                 />
               </div>
             ) : (

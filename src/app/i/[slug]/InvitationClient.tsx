@@ -17,6 +17,7 @@ import { IntroSettings, getDefaultIntroSettings, isInteractiveIntro } from '@/li
 import { parseHighlight } from '@/lib/textUtils'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
+import LightboxZoomLayer from '@/components/invitation/LightboxZoomLayer'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import { readableOn, isDarkColor } from '@/lib/colorUtils'
@@ -2038,20 +2039,22 @@ function GalleryLightbox({
     }
   }, [isOpen, onClose, goToPrev, goToNext])
 
-  // Touch swipe (줌 중엔 비활성화)
+  // Touch swipe (줌 중엔 비활성화) — 줌 허용 시엔 ZoomableImage의 onSwipe가 처리(핀치 후 오작동 방지)
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (zoomed) return
+    if (zoomEnabled || zoomed) return
     touchStartX.current = e.touches[0].clientX
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (zoomed) return
+    if (zoomEnabled || zoomed) return
     const diff = touchStartX.current - e.changedTouches[0].clientX
     if (Math.abs(diff) > 50) {
       if (diff > 0) goToNext()
       else goToPrev()
     }
   }
+
+  const swipeTo = (dir: 1 | -1) => { if (dir > 0) goToNext(); else goToPrev() }
 
   // Calculate display index (1-based)
   let displayIndex = currentIndex
@@ -2087,17 +2090,17 @@ function GalleryLightbox({
         >
           {/* Last clone */}
           <div className="gallery-lightbox-slide">
-            {zoomEnabled ? <ZoomableImage src={images[images.length - 1]} alt="갤러리 이미지" className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} /> : <img src={images[images.length - 1]} alt="갤러리 이미지" />}
+            {zoomEnabled ? <ZoomableImage src={images[images.length - 1]} alt="갤러리 이미지" className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} onSwipe={swipeTo} /> : <img src={images[images.length - 1]} alt="갤러리 이미지" />}
           </div>
           {/* Actual slides */}
           {images.map((img, i) => (
             <div key={i} className="gallery-lightbox-slide">
-              {zoomEnabled ? <ZoomableImage src={img} alt={`갤러리 이미지 ${i + 1}`} className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} /> : <img src={img} alt={`갤러리 이미지 ${i + 1}`} />}
+              {zoomEnabled ? <ZoomableImage src={img} alt={`갤러리 이미지 ${i + 1}`} className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} onSwipe={swipeTo} /> : <img src={img} alt={`갤러리 이미지 ${i + 1}`} />}
             </div>
           ))}
           {/* First clone */}
           <div className="gallery-lightbox-slide">
-            {zoomEnabled ? <ZoomableImage src={images[0]} alt="갤러리 이미지" className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} /> : <img src={images[0]} alt="갤러리 이미지" />}
+            {zoomEnabled ? <ZoomableImage src={images[0]} alt="갤러리 이미지" className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} onSwipe={swipeTo} /> : <img src={images[0]} alt="갤러리 이미지" />}
           </div>
         </div>
 
@@ -2134,11 +2137,14 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
   const [closing, setClosing] = useState(false)
   const [visible, setVisible] = useState(false)
   // 확대 보기: 각 타입의 레이아웃·애니메이션은 그대로 두고, 확대할 사진만 전체 화면 줌 레이어로 띄운다
-  const [zoomSrc, setZoomSrc] = useState<string | null>(null)
+  // 레이어는 현재 인덱스(idx)의 사진을 띄우고, 레이어 안 스와이프/화살표 이동도 idx를 함께 바꿔 아래 라이트박스와 동기화
+  const [zoomOpen, setZoomOpen] = useState(false)
   // 라이트박스가 닫히면 확대 보기도 함께 닫는다 (렌더 중 이전 값 비교로 리셋)
   const [zoomOpenSeen, setZoomOpenSeen] = useState(isOpen)
-  if (zoomOpenSeen !== isOpen) { setZoomOpenSeen(isOpen); if (!isOpen) setZoomSrc(null) }
+  if (zoomOpenSeen !== isOpen) { setZoomOpenSeen(isOpen); if (!isOpen) setZoomOpen(false) }
   const touchStartX = useRef(0)
+  // 두 손가락으로 확대 레이어를 연 제스처는 손가락을 모두 뗄 때까지 스와이프로 처리하지 않음
+  const multiTouchRef = useRef(false)
   const overlayRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -2239,10 +2245,11 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
   const touchProps = {
     onTouchStart: (e: React.TouchEvent) => {
       // 두 손가락을 대면 확대 보기로 (확대 허용일 때)
-      if (zoomEnabled && e.touches.length > 1) { setZoomSrc(images[idx]); return }
+      if (zoomEnabled && e.touches.length > 1) { multiTouchRef.current = true; setZoomOpen(true); return }
       touchStartX.current = e.touches[0].clientX
     },
     onTouchEnd: (e: React.TouchEvent) => {
+      if (multiTouchRef.current) { if (e.touches.length === 0) multiTouchRef.current = false; return }
       const diff = e.changedTouches[0].clientX - touchStartX.current
       if (Math.abs(diff) > 50) { diff < 0 ? goNext() : goPrev() }
     },
@@ -2250,12 +2257,28 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
 
   let content: React.ReactNode
 
+  // V4(룩북) 확대: 주어진 화면 y좌표에 가장 가까운 사진을 확대 레이어로 연다
+  const openV4ZoomAt = (y: number) => {
+    const imgs = Array.from(overlayRef.current?.querySelectorAll('.our-lb-v4-img') ?? [])
+    let hit = -1
+    let best = Infinity
+    imgs.forEach((img, i) => {
+      const r = img.getBoundingClientRect()
+      const d = y < r.top ? r.top - y : y > r.bottom ? y - r.bottom : 0
+      if (d < best) { best = d; hit = i }
+    })
+    if (hit >= 0) { setIdx(hit); setZoomOpen(true) }
+  }
+
   // === V4: Lookbook - full vertical scroll of every image ===
   if (v === 4) {
     content = (
       <div ref={overlayRef} className={`our-lightbox our-lb--v4${closing ? ' our-lightbox--closing' : ''}`} onContextMenu={preventContext} onClick={onClose}>
         <button className="our-lb-v4-close" onClick={onClose} aria-label="닫기">&times;</button>
-        <div className="our-lb-v4-scroll" onClick={e => e.stopPropagation()} onTouchStart={e => { if (zoomEnabled && e.touches.length > 1 && e.target instanceof HTMLImageElement) setZoomSrc(e.target.currentSrc || e.target.src) }}>
+        <div className="our-lb-v4-scroll" onClick={e => e.stopPropagation()} onTouchStart={e => {
+          // .our-lb-v4-img는 pointer-events: none이라 e.target으로 못 찾음 → 두 손가락 중점 좌표로 사진을 찾는다
+          if (zoomEnabled && e.touches.length > 1) openV4ZoomAt((e.touches[0].clientY + e.touches[1].clientY) / 2)
+        }}>
           {images.map((src, i) => (
             <img key={i} src={src} alt="" className="our-lb-v4-img" draggable={false} />
           ))}
@@ -2388,25 +2411,21 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
   return (
     <>
       {content}
-      {zoomEnabled && !zoomSrc && v !== 4 && !closing && images[idx] && (
-        <button type="button" className="our-lb-zoom-btn" onClick={e => { e.stopPropagation(); setZoomSrc(images[idx]) }} aria-label="사진 확대">
+      {zoomEnabled && !zoomOpen && !closing && images[idx] && (
+        <button type="button" className="our-lb-zoom-btn" onClick={e => { e.stopPropagation(); if (v === 4) openV4ZoomAt(window.innerHeight / 2); else setZoomOpen(true) }} aria-label="사진 확대">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5" /></svg>
         </button>
       )}
-      {zoomEnabled && zoomSrc && (
-        <div className="our-lb-zoom" onContextMenu={preventContext} onClick={e => e.stopPropagation()}>
-          <ZoomableImage src={zoomSrc} alt="" className="our-lb-zoom-box" resetKey={zoomSrc} />
-          <button type="button" className="our-lb-zoom-close" onClick={() => setZoomSrc(null)} aria-label="확대 닫기">&times;</button>
-          <p className="our-lb-zoom-hint">두 손가락으로 확대 · 두 번 탭</p>
-        </div>
+      {zoomEnabled && zoomOpen && (
+        <LightboxZoomLayer
+          images={images}
+          index={idx}
+          onIndexChange={n => { setIdx(n); setAnimClass(''); setV9Next(null) }}
+          onClose={() => setZoomOpen(false)}
+        />
       )}
       <style jsx global>{`
         .our-lb-zoom-btn { position: fixed; z-index: 10000; right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 56px); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.38); color: #fff; border: 1px solid rgba(255,255,255,.28); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); cursor: pointer; }
-        .our-lb-zoom { position: fixed; inset: 0; z-index: 10001; background: rgba(0,0,0,.94); display: flex; align-items: center; justify-content: center; animation: ourLbZoomIn .2s ease; }
-        .our-lb-zoom-box { width: 100%; height: 100%; }
-        .our-lb-zoom-close { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); right: 16px; width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; font-size: 24px; line-height: 1; cursor: pointer; }
-        .our-lb-zoom-hint { position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); margin: 0; text-align: center; font-size: 11px; letter-spacing: .02em; color: rgba(255,255,255,.55); pointer-events: none; }
-        @keyframes ourLbZoomIn { from { opacity: 0 } to { opacity: 1 } }
         .our-lightbox {
           position: fixed;
           inset: 0;

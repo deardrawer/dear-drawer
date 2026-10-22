@@ -2430,8 +2430,9 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, zoomEnabled = 
       )}
       {resolved[idx] && (
         zoomEnabled ? (
-          <div className="flex items-center justify-center w-full h-full p-4" onClick={e => { e.stopPropagation(); advance() }}>
-            <ZoomableImage src={resolved[idx]} alt="" className="record-zoomable-box" onZoomChange={setZoomed} />
+          /* 줌 허용 시엔 사진 탭으로 넘기지 않음(더블탭 첫 탭이 다음 사진으로 넘어가는 충돌 방지) — 화살표·좌우 스와이프로 이동 */
+          <div className="flex items-center justify-center w-full h-full p-4" onClick={e => { e.stopPropagation() }}>
+            <ZoomableImage src={resolved[idx]} alt="" className="record-zoomable-box" onZoomChange={setZoomed} resetKey={idx} onSwipe={d => { if (resolved.length > 1) setIdx((idx + d + resolved.length) % resolved.length) }} />
           </div>
         ) : (
           <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); advance() }}><img src={resolved[idx]} alt="" className="max-w-full max-h-full object-contain" style={{ pointerEvents: 'none', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties} /></div>

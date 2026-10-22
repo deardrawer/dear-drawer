@@ -21,7 +21,7 @@ export default function FeedPreview({ data, fullscreen: _fullscreen }: FeedPrevi
     },
     content: data.content,
     rooms: data.rooms,
-    gallery: { images: data.rooms.flatMap((r) => r.images) },
+    gallery: { images: data.rooms.flatMap((r) => r.images), zoomEnabled: data.gallery?.zoomEnabled },
     youtube: data.youtube,
     bgm: data.bgm,
     rsvpEnabled: data.rsvpEnabled,

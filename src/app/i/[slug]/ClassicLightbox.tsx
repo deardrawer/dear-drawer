@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
+import LightboxZoomLayer, { LightboxZoomButton } from '@/components/invitation/LightboxZoomLayer'
 
 /**
  * THE CLASSIC 갤러리 라이트박스.
@@ -38,7 +39,8 @@ const CL_LB_STYLES = `
   .cl-lb-stage-row { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
   .cl-lb-stage { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 6px 54px; touch-action: pan-y; }
   .cl-lb-img { max-width: 100%; max-height: 100%; object-fit: contain; -webkit-user-select: none; user-select: none; box-shadow: 0 30px 70px -20px rgba(0,0,0,.7); }
-  .cl-lb-zoombox { width: 100%; height: 80vh; }
+  .cl-lb-zoombox { width: 100%; height: 100%; }
+  .cl-lb-stage--zoom { touch-action: none; }
   .cl-lb-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3; width: 44px; height: 64px; border: none; background: none; color: #F4F1E9; font-size: 34px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; text-shadow: 0 1px 8px rgba(0,0,0,.45); -webkit-tap-highlight-color: transparent; opacity: .82; transition: opacity .2s ease, color .2s ease; }
   .cl-lb-nav:hover, .cl-lb-nav:active { opacity: 1; color: var(--lb-accent, #c06a5b); background: none; }
   .cl-lb-nav--prev { left: 10px; }
@@ -127,6 +129,9 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
   useEffect(() => { setMounted(true) }, [])
   const touchStartX = useRef(0)
   const touchStartY = useRef(0)
+  // v4(룩북) 전용 전체 화면 확대 레이어
+  const [zoomOpen, setZoomOpen] = useState(false)
+  const v4ScrollRef = useRef<HTMLDivElement>(null)
 
   const v = STYLED_VARIANTS.has(variant) ? variant : 1
 
@@ -135,6 +140,7 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
   if (open !== prevOpen) {
     setPrevOpen(open)
     if (open) setIdx(Math.min(Math.max(index, 0), Math.max(images.length - 1, 0)))
+    else setZoomOpen(false)
   }
 
   // 스크롤 잠금
@@ -171,6 +177,21 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose, goNext, goPrev])
 
+  // 줌 허용 시 라이트박스가 열려 있는 동안 페이지 자체의 핀치 확대(iOS gesture*, 두 손가락 touchmove)를 막는다
+  useEffect(() => {
+    if (!open || !zoomEnabled) return
+    const onGesture = (e: Event) => e.preventDefault()
+    const onTouchMove = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault() }
+    document.addEventListener('gesturestart', onGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('gesturechange', onGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    return () => {
+      document.removeEventListener('gesturestart', onGesture)
+      document.removeEventListener('gesturechange', onGesture)
+      document.removeEventListener('touchmove', onTouchMove)
+    }
+  }, [open, zoomEnabled])
+
   if (!open || images.length === 0 || !mounted) return null
 
   const preventContext = (e: React.SyntheticEvent) => e.preventDefault()
@@ -179,11 +200,12 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
 
   const touchProps = {
     onTouchStart: (e: React.TouchEvent) => {
+      if (zoomEnabled) return // 줌 허용 시엔 ZoomableImage의 onSwipe가 처리 (핀치 직후 오작동 방지)
       touchStartX.current = e.touches[0].clientX
       touchStartY.current = e.touches[0].clientY
     },
     onTouchEnd: (e: React.TouchEvent) => {
-      if (zoomed) return // 줌 상태에서는 팬 제스처이므로 스와이프 이동 금지
+      if (zoomEnabled || zoomed) return // 줌 상태에서는 팬 제스처이므로 스와이프 이동 금지
       const dx = e.changedTouches[0].clientX - touchStartX.current
       const dy = e.changedTouches[0].clientY - touchStartY.current
       if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { if (dx < 0) goNext(); else goPrev() }
@@ -192,15 +214,36 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
 
   // === v4 룩북: 전체 세로 스크롤 ===
   if (v === 4) {
+    // 확대할 사진: 두 손가락 중점(또는 화면 중앙)에 가장 가까운 사진 → 전체 화면 확대 레이어
+    const openZoomAt = (y: number) => {
+      const imgs = Array.from(v4ScrollRef.current?.querySelectorAll('img') ?? [])
+      let hit = -1
+      let best = Infinity
+      imgs.forEach((img, i) => {
+        const r = img.getBoundingClientRect()
+        const d = y < r.top ? r.top - y : y > r.bottom ? y - r.bottom : 0
+        if (d < best) { best = d; hit = i }
+      })
+      if (hit >= 0) { setIdx(hit); setZoomOpen(true) }
+    }
     return wrap(
       <div className="cl-lb-overlay cl-lb--v4" style={accentVar} onContextMenu={preventContext} onClick={onClose}>
         <style dangerouslySetInnerHTML={{ __html: CL_LB_STYLES }} />
         <button type="button" className="cl-lb-v4-close" onClick={(e) => { e.stopPropagation(); onClose() }} aria-label="닫기">&times;</button>
-        <div className="cl-lb-v4-scroll" onClick={(e) => e.stopPropagation()}>
+        <div
+          ref={v4ScrollRef}
+          className="cl-lb-v4-scroll"
+          onClick={(e) => e.stopPropagation()}
+          onTouchStart={zoomEnabled ? (e) => { if (e.touches.length > 1) openZoomAt((e.touches[0].clientY + e.touches[1].clientY) / 2) } : undefined}
+        >
           {images.map((src, i) => (
             <img key={i} src={src} alt={`갤러리 사진 ${i + 1}`} className="cl-lb-v4-img" draggable={false} onContextMenu={preventContext} />
           ))}
         </div>
+        {zoomEnabled && !zoomOpen && <LightboxZoomButton onClick={() => openZoomAt(window.innerHeight / 2)} />}
+        {zoomEnabled && zoomOpen && (
+          <LightboxZoomLayer images={images} index={idx} onIndexChange={setIdx} onClose={() => setZoomOpen(false)} />
+        )}
       </div>
     )
   }
@@ -220,7 +263,7 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
       <div className="cl-lb-stage-row">
         {v === 9 && <div className="cl-lb-sprocket cl-lb-sprocket--top" aria-hidden="true" />}
         <button type="button" className="cl-lb-nav cl-lb-nav--prev" onClick={(e) => { e.stopPropagation(); goPrev() }} aria-label="이전 사진">&#8249;</button>
-        <div className="cl-lb-stage" onClick={(e) => e.stopPropagation()} {...touchProps}>
+        <div className={`cl-lb-stage${zoomEnabled ? ' cl-lb-stage--zoom' : ''}`} onClick={(e) => e.stopPropagation()} {...touchProps}>
           {zoomEnabled ? (
             <ZoomableImage
               key={idx}
@@ -229,6 +272,7 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
               className="cl-lb-zoombox"
               imgClassName={`cl-lb-img${v === 5 ? ' cl-lb--v5-fade' : ''}${v === 5 && fading ? ' is-hidden' : ''}`}
               onZoomChange={setZoomed}
+              onSwipe={(d) => { if (d > 0) goNext(); else goPrev() }}
             />
           ) : (
             <img

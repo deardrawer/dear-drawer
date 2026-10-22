@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import RsvpForm from '@/components/invitation/RsvpForm'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import type { Invitation } from '@/types/invitation'
@@ -102,7 +103,9 @@ function ScrollSection({ children, delay = 0, className = '' }: { children: Reac
 
 // ===== Shared Gallery Components =====
 
-function EssayGalleryViewer({ images, startIndex, onClose, zoomEnabled = true }: { images: string[]; startIndex: number; onClose: () => void; zoomEnabled?: boolean }) {
+// portal: 책(book) 컨셉 — 뷰어가 책 컨테이너 안에 있으면 책의 네이티브 터치/마우스 리스너가 뷰어 조작을 페이지 넘김으로 받아
+// 뷰어가 언마운트되므로 body로 포털 렌더해 이벤트를 분리한다
+function EssayGalleryViewer({ images, startIndex, onClose, zoomEnabled = true, portal = false }: { images: string[]; startIndex: number; onClose: () => void; zoomEnabled?: boolean; portal?: boolean }) {
   const [currentIndex, setCurrentIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
   const [imgFade, setImgFade] = useState(true)
@@ -151,17 +154,18 @@ function EssayGalleryViewer({ images, startIndex, onClose, zoomEnabled = true }:
     }
   }, [handleClose, goNext, goPrev])
 
+  // 줌 허용 시엔 ZoomableImage의 onSwipe가 처리 (핀치 직후 오작동 방지)
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (zoomed) return
+    if (zoomEnabled || zoomed) return
     touchStartX.current = e.touches[0].clientX
   }
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (zoomed) return
+    if (zoomEnabled || zoomed) return
     const dx = e.changedTouches[0].clientX - touchStartX.current
     if (Math.abs(dx) > 40) { dx < 0 ? goNext() : goPrev() }
   }
 
-  return (
+  const viewer = (
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 10002,
@@ -207,6 +211,7 @@ function EssayGalleryViewer({ images, startIndex, onClose, zoomEnabled = true }:
             className="essay-zoom-box"
             imgClassName="essay-zoom-img"
             onZoomChange={setZoomed}
+            onSwipe={(d) => { if (d > 0) goNext(); else goPrev() }}
           />
         </div>
       ) : (
@@ -241,6 +246,7 @@ function EssayGalleryViewer({ images, startIndex, onClose, zoomEnabled = true }:
       </div>
     </div>
   )
+  return portal ? createPortal(viewer, document.body) : viewer
 }
 
 // 갤러리 전용 keyframe: 컴포넌트 로컬로 포함해 default/paper/book 모든 컨셉에서 동작
@@ -4042,7 +4048,7 @@ function BookGallery({ data }: { data: any }) {
         </BA>
       </div>
       {viewerOpen && (
-        <EssayGalleryViewer images={images} startIndex={viewerIndex} onClose={() => setViewerOpen(false)} zoomEnabled={data.gallery?.zoomEnabled === true} />
+        <EssayGalleryViewer images={images} startIndex={viewerIndex} onClose={() => setViewerOpen(false)} zoomEnabled={data.gallery?.zoomEnabled === true} portal />
       )}
     </div>
   )

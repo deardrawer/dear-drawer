@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
-import LightboxZoomLayer, { LightboxZoomButton } from '@/components/invitation/LightboxZoomLayer'
 
 /**
  * THE CLASSIC 갤러리 라이트박스.
@@ -73,6 +72,7 @@ const CL_LB_STYLES = `
   .cl-lb--v4 { background: #12100C; overflow-y: auto; }
   .cl-lb-v4-scroll { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 60px 0 40px; }
   .cl-lb-v4-img { width: 100%; max-width: 480px; -webkit-user-select: none; user-select: none; }
+  .cl-lb-v4-zoom { width: 100%; max-width: 480px; } /* 확대 허용 시 사진마다 감싸는 제자리 확대 영역 (사진과 같은 폭) */
   .cl-lb-v4-close { position: fixed; top: 16px; right: 18px; z-index: 4; width: 40px; height: 40px; border: none; background: none; color: #F4F1E9; font-size: 26px; line-height: 1; cursor: pointer; text-shadow: 0 1px 8px rgba(0,0,0,.45); transition: color .2s ease; }
   .cl-lb-v4-close:hover, .cl-lb-v4-close:active { color: var(--lb-accent, #c06a5b); }
 
@@ -129,9 +129,6 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
   useEffect(() => { setMounted(true) }, [])
   const touchStartX = useRef(0)
   const touchStartY = useRef(0)
-  // v4(룩북) 전용 전체 화면 확대 레이어
-  const [zoomOpen, setZoomOpen] = useState(false)
-  const v4ScrollRef = useRef<HTMLDivElement>(null)
 
   const v = STYLED_VARIANTS.has(variant) ? variant : 1
 
@@ -140,7 +137,6 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
   if (open !== prevOpen) {
     setPrevOpen(open)
     if (open) setIdx(Math.min(Math.max(index, 0), Math.max(images.length - 1, 0)))
-    else setZoomOpen(false)
   }
 
   // 스크롤 잠금
@@ -214,36 +210,17 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
 
   // === v4 룩북: 전체 세로 스크롤 ===
   if (v === 4) {
-    // 확대할 사진: 두 손가락 중점(또는 화면 중앙)에 가장 가까운 사진 → 전체 화면 확대 레이어
-    const openZoomAt = (y: number) => {
-      const imgs = Array.from(v4ScrollRef.current?.querySelectorAll('img') ?? [])
-      let hit = -1
-      let best = Infinity
-      imgs.forEach((img, i) => {
-        const r = img.getBoundingClientRect()
-        const d = y < r.top ? r.top - y : y > r.bottom ? y - r.bottom : 0
-        if (d < best) { best = d; hit = i }
-      })
-      if (hit >= 0) { setIdx(hit); setZoomOpen(true) }
-    }
     return wrap(
       <div className="cl-lb-overlay cl-lb--v4" style={accentVar} onContextMenu={preventContext} onClick={onClose}>
         <style dangerouslySetInnerHTML={{ __html: CL_LB_STYLES }} />
         <button type="button" className="cl-lb-v4-close" onClick={(e) => { e.stopPropagation(); onClose() }} aria-label="닫기">&times;</button>
-        <div
-          ref={v4ScrollRef}
-          className="cl-lb-v4-scroll"
-          onClick={(e) => e.stopPropagation()}
-          onTouchStart={zoomEnabled ? (e) => { if (e.touches.length > 1) openZoomAt((e.touches[0].clientY + e.touches[1].clientY) / 2) } : undefined}
-        >
-          {images.map((src, i) => (
-            <img key={i} src={src} alt={`갤러리 사진 ${i + 1}`} className="cl-lb-v4-img" draggable={false} onContextMenu={preventContext} />
-          ))}
+        <div className="cl-lb-v4-scroll" onClick={(e) => e.stopPropagation()}>
+          {images.map((src, i) => {
+            const img = <img key={i} src={src} alt={`갤러리 사진 ${i + 1}`} className="cl-lb-v4-img" draggable={false} onContextMenu={preventContext} />
+            // 확대 허용 시 사진마다 제자리 확대 (더블탭·핀치, 1배에선 세로 스크롤 유지)
+            return zoomEnabled ? <ZoomableImage key={i} className="cl-lb-v4-zoom" idleTouchAction="pan-y">{img}</ZoomableImage> : img
+          })}
         </div>
-        {zoomEnabled && !zoomOpen && <LightboxZoomButton onClick={() => openZoomAt(window.innerHeight / 2)} />}
-        {zoomEnabled && zoomOpen && (
-          <LightboxZoomLayer images={images} index={idx} onIndexChange={setIdx} onClose={() => setZoomOpen(false)} />
-        )}
       </div>
     )
   }

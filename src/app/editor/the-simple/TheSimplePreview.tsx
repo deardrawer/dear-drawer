@@ -11,7 +11,6 @@ import { sanitizeTextForRender } from '@/lib/utils'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import { YouTubeLite } from '@/components/invitation/YouTubeLite'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
-import LightboxZoomLayer, { LightboxZoomButton } from '@/components/invitation/LightboxZoomLayer'
 import './the-simple-preview.css'
 import '@/components/dday/dday-popup.css'
 import { parseDateOnly } from '@/lib/dateOnly'
@@ -6459,11 +6458,10 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1, z
   const touchStartX = useRef(0)
   const overlayRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const v9MultiTouchRef = useRef(false)
+  // V9: 확대 중에 시작했거나 두 손가락(핀치)으로 시작한 제스처는 손가락을 모두 뗄 때까지 스와이프로 보지 않음
+  const v9NoSwipeRef = useRef(false)
   // V9: 오버레이 전환용 — 새 사진이 기존 위에 페이드인
   const [v9Next, setV9Next] = useState<number | null>(null)
-  // V4(룩북)·V9(필름)는 레이아웃상 인라인 줌이 없어 돋보기/두 손가락으로 전체 화면 확대 레이어를 띄운다
-  const [zoomOpen, setZoomOpen] = useState(false)
 
   useContainedOverlay(overlayRef, isOpen)
 
@@ -6473,8 +6471,6 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1, z
       setAnimClass('')
       setTransitioning(false)
       setZoomed(false)
-    } else {
-      setZoomOpen(false)
     }
   }, [initialIndex, isOpen, variant])
 
@@ -6550,65 +6546,35 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1, z
   // 길게누르기 / 우클릭 방지 (이미지 저장 차단)
   const preventContext = (e: React.MouseEvent | React.TouchEvent) => e.preventDefault()
 
-  // 확대 레이어 (V4/V9 전용) — 레이어 안 이동은 idx를 함께 바꿔 아래 라이트박스와 동기화
-  const zoomLayer = zoomEnabled && zoomOpen && (
-    <LightboxZoomLayer
-      images={images}
-      index={idx}
-      onIndexChange={n => { setIdx(n); setAnimClass(''); setV9Next(null) }}
-      onClose={() => setZoomOpen(false)}
-    />
-  )
-
   // === V4: 룩북 스크롤 (전체 이미지 세로 나열) ===
   if (v === 4) {
-    // 확대할 사진: 두 손가락 중점(또는 화면 중앙)에 가장 가까운 사진
-    const openZoomAt = (y: number) => {
-      const imgs = Array.from(scrollRef.current?.querySelectorAll('img') ?? [])
-      let hit = -1
-      let best = Infinity
-      imgs.forEach((img, i) => {
-        const r = img.getBoundingClientRect()
-        const d = y < r.top ? r.top - y : y > r.bottom ? y - r.bottom : 0
-        if (d < best) { best = d; hit = i }
-      })
-      if (hit >= 0) { setIdx(hit); setZoomOpen(true) }
-    }
     return (
       <div ref={overlayRef} className="ts-lightbox ts-lb--v4" onContextMenu={preventContext} onClick={onClose}>
         <button className="ts-lb-v4-close" onClick={onClose}>&times;</button>
-        <div
-          ref={scrollRef}
-          className="ts-lb-v4-scroll"
-          onClick={e => e.stopPropagation()}
-          onTouchStart={zoomEnabled ? e => { if (e.touches.length > 1) openZoomAt((e.touches[0].clientY + e.touches[1].clientY) / 2) } : undefined}
-        >
-          {images.map((src, i) => (
-            <img key={i} src={src} alt="" className="ts-lb-v4-img" draggable={false} />
-          ))}
+        <div ref={scrollRef} className="ts-lb-v4-scroll" onClick={e => e.stopPropagation()}>
+          {images.map((src, i) => {
+            const img = <img key={i} src={src} alt="" className="ts-lb-v4-img" draggable={false} />
+            // 확대 허용 시 사진마다 제자리 확대 (더블탭·핀치, 1배에선 세로 스크롤 유지)
+            return zoomEnabled ? <ZoomableImage key={i} idleTouchAction="pan-y">{img}</ZoomableImage> : img
+          })}
         </div>
-        {zoomEnabled && !zoomOpen && (
-          <LightboxZoomButton onClick={() => { const r = overlayRef.current?.getBoundingClientRect(); openZoomAt(r ? r.top + r.height / 2 : window.innerHeight / 2) }} />
-        )}
-        {zoomLayer}
       </div>
     )
   }
 
-  // V9는 인라인 줌이 없으므로(확대 레이어 사용) 기존 스와이프 그대로. 그 외 타입은 줌 허용 시 ZoomableImage의 onSwipe가 처리
+  // 줌 허용 시 V9 외 타입은 ZoomableImage의 onSwipe가 스와이프를 처리. V9는 캐러셀 스와이프를 그대로 쓰되 확대 중·핀치 제스처는 제외
   const inlineZoom = zoomEnabled && v !== 9
 
   // 공통 터치/스와이프 핸들러 (줌 중에는 스와이프 비활성 → 패닝 우선)
   const touchProps = {
     onTouchStart: (e: React.TouchEvent) => {
       if (inlineZoom) return
-      // V9: 두 손가락 → 확대 레이어. 레이어를 연 제스처는 손가락을 모두 뗄 때까지 스와이프로 보지 않음
-      if (zoomEnabled && e.touches.length > 1) { v9MultiTouchRef.current = true; setZoomOpen(true); return }
+      if (zoomEnabled && (zoomed || e.touches.length > 1)) { v9NoSwipeRef.current = true; return }
       touchStartX.current = e.touches[0].clientX
     },
     onTouchEnd: (e: React.TouchEvent) => {
       if (inlineZoom) return
-      if (v9MultiTouchRef.current) { if (e.touches.length === 0) v9MultiTouchRef.current = false; return }
+      if (v9NoSwipeRef.current) { if (e.touches.length === 0) v9NoSwipeRef.current = false; return }
       if (zoomed) return
       const diff = e.changedTouches[0].clientX - touchStartX.current
       if (Math.abs(diff) > 50) { diff < 0 ? goNext() : goPrev() }
@@ -6644,19 +6610,25 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1, z
           <div className="ts-lb-v9-side ts-lb-v9-side--prev" onClick={goPrev}>
             <img src={images[prevIdx]} alt="" draggable={false} />
           </div>
-          <div className="ts-lb-v9-current">
-            <img src={images[idx]} alt="" draggable={false} />
-            {v9Next !== null && (
-              <img src={images[v9Next]} alt="" draggable={false} className="ts-lb-v9-overlay" />
-            )}
-          </div>
+          {(() => {
+            const imgs = (
+              <>
+                <img src={images[idx]} alt="" draggable={false} />
+                {v9Next !== null && (
+                  <img src={images[v9Next]} alt="" draggable={false} className="ts-lb-v9-overlay" />
+                )}
+              </>
+            )
+            // 확대 허용 시 가운데 사진 칸 자체가 확대 영역 (확대한 사진은 이 칸 안에서만 보임)
+            return zoomEnabled
+              ? <ZoomableImage className="ts-lb-v9-current" idleTouchAction="none" onZoomChange={setZoomed} resetKey={idx}>{imgs}</ZoomableImage>
+              : <div className="ts-lb-v9-current">{imgs}</div>
+          })()}
           <div className="ts-lb-v9-side ts-lb-v9-side--next" onClick={goNext}>
             <img src={images[nextIdx]} alt="" draggable={false} />
           </div>
         </div>
         <div className="ts-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
-        {zoomEnabled && !zoomOpen && <LightboxZoomButton onClick={() => setZoomOpen(true)} />}
-        {zoomLayer}
       </div>
     )
   }

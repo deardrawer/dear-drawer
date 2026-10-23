@@ -17,7 +17,6 @@ import { IntroSettings, getDefaultIntroSettings, isInteractiveIntro } from '@/li
 import { parseHighlight } from '@/lib/textUtils'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
-import LightboxZoomLayer from '@/components/invitation/LightboxZoomLayer'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import { readableOn, isDarkColor } from '@/lib/colorUtils'
@@ -2136,15 +2135,12 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
   const [v9Next, setV9Next] = useState<number | null>(null)
   const [closing, setClosing] = useState(false)
   const [visible, setVisible] = useState(false)
-  // 확대 보기: 각 타입의 레이아웃·애니메이션은 그대로 두고, 확대할 사진만 전체 화면 줌 레이어로 띄운다
-  // 레이어는 현재 인덱스(idx)의 사진을 띄우고, 레이어 안 스와이프/화살표 이동도 idx를 함께 바꿔 아래 라이트박스와 동기화
-  const [zoomOpen, setZoomOpen] = useState(false)
-  // 라이트박스가 닫히면 확대 보기도 함께 닫는다 (렌더 중 이전 값 비교로 리셋)
-  const [zoomOpenSeen, setZoomOpenSeen] = useState(isOpen)
-  if (zoomOpenSeen !== isOpen) { setZoomOpenSeen(isOpen); if (!isOpen) setZoomOpen(false) }
+  // 확대 허용 시: 각 타입의 디자인·전환 애니메이션은 그대로 두고 보이는 사진을 제자리에서 확대(ZoomableImage children 모드)
+  // 확대 중엔 스와이프·탭으로 사진이 넘어가지 않음
+  const [zoomed, setZoomed] = useState(false)
   const touchStartX = useRef(0)
-  // 두 손가락으로 확대 레이어를 연 제스처는 손가락을 모두 뗄 때까지 스와이프로 처리하지 않음
-  const multiTouchRef = useRef(false)
+  // 확대 중에 시작했거나 두 손가락(핀치)으로 시작한 제스처는 손가락을 모두 뗄 때까지 스와이프로 처리하지 않음
+  const noSwipeRef = useRef(false)
   const overlayRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -2244,12 +2240,11 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
   // Shared touch swipe handlers
   const touchProps = {
     onTouchStart: (e: React.TouchEvent) => {
-      // 두 손가락을 대면 확대 보기로 (확대 허용일 때)
-      if (zoomEnabled && e.touches.length > 1) { multiTouchRef.current = true; setZoomOpen(true); return }
+      if (zoomEnabled && (zoomed || e.touches.length > 1)) { noSwipeRef.current = true; return }
       touchStartX.current = e.touches[0].clientX
     },
     onTouchEnd: (e: React.TouchEvent) => {
-      if (multiTouchRef.current) { if (e.touches.length === 0) multiTouchRef.current = false; return }
+      if (noSwipeRef.current) { if (e.touches.length === 0) noSwipeRef.current = false; return }
       const diff = e.changedTouches[0].clientX - touchStartX.current
       if (Math.abs(diff) > 50) { diff < 0 ? goNext() : goPrev() }
     },
@@ -2257,17 +2252,16 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
 
   let content: React.ReactNode
 
-  // V4(룩북) 확대: 주어진 화면 y좌표에 가장 가까운 사진을 확대 레이어로 연다
-  const openV4ZoomAt = (y: number) => {
-    const imgs = Array.from(overlayRef.current?.querySelectorAll('.our-lb-v4-img') ?? [])
-    let hit = -1
-    let best = Infinity
-    imgs.forEach((img, i) => {
-      const r = img.getBoundingClientRect()
-      const d = y < r.top ? r.top - y : y > r.bottom ? y - r.bottom : 0
-      if (d < best) { best = d; hit = i }
-    })
-    if (hit >= 0) { setIdx(hit); setZoomOpen(true) }
+  // 확대 허용 시 현재 사진(<img> 그대로)을 제자리 확대 영역으로 감싼다 — 1배에선 확대 미허용 때와 똑같이 보임.
+  // onTap: 사진을 한 번 탭하면 넘어가는 타입(1·2·5)은 더블탭(확대)과 구분하려고 300ms 뒤에 넘김
+  const zoomFrame = (img: React.ReactNode, onTap?: () => void) => zoomEnabled ? (
+    <ZoomableImage className="our-lb-zoomframe" idleTouchAction="none" onZoomChange={setZoomed} resetKey={idx} onTap={onTap}>{img}</ZoomableImage>
+  ) : img
+  // 탭 이동 타입: 확대 영역 안의 탭은 ZoomableImage의 onTap이 처리, 확대 중엔 넘기지 않음
+  const tapNext = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (zoomed || (zoomEnabled && (e.target as HTMLElement).closest?.('.our-lb-zoomframe'))) return
+    goNext()
   }
 
   // === V4: Lookbook - full vertical scroll of every image ===
@@ -2275,13 +2269,12 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
     content = (
       <div ref={overlayRef} className={`our-lightbox our-lb--v4${closing ? ' our-lightbox--closing' : ''}`} onContextMenu={preventContext} onClick={onClose}>
         <button className="our-lb-v4-close" onClick={onClose} aria-label="닫기">&times;</button>
-        <div className="our-lb-v4-scroll" onClick={e => e.stopPropagation()} onTouchStart={e => {
-          // .our-lb-v4-img는 pointer-events: none이라 e.target으로 못 찾음 → 두 손가락 중점 좌표로 사진을 찾는다
-          if (zoomEnabled && e.touches.length > 1) openV4ZoomAt((e.touches[0].clientY + e.touches[1].clientY) / 2)
-        }}>
-          {images.map((src, i) => (
-            <img key={i} src={src} alt="" className="our-lb-v4-img" draggable={false} />
-          ))}
+        <div className="our-lb-v4-scroll" onClick={e => e.stopPropagation()}>
+          {images.map((src, i) => {
+            const img = <img key={i} src={src} alt="" className="our-lb-v4-img" draggable={false} />
+            // 확대 허용 시 사진마다 제자리 확대 (1배에선 세로 스크롤 유지)
+            return zoomEnabled ? <ZoomableImage key={i} idleTouchAction="pan-y">{img}</ZoomableImage> : img
+          })}
         </div>
       </div>
     )
@@ -2296,12 +2289,20 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
           <div className="our-lb-v9-side our-lb-v9-side--prev" onClick={goPrev}>
             <img src={images[prevIdx]} alt="" draggable={false} />
           </div>
-          <div className="our-lb-v9-current">
-            <img src={images[idx]} alt="" draggable={false} />
-            {v9Next !== null && (
-              <img src={images[v9Next]} alt="" draggable={false} className="our-lb-v9-overlay" />
-            )}
-          </div>
+          {(() => {
+            const imgs = (
+              <>
+                <img src={images[idx]} alt="" draggable={false} />
+                {v9Next !== null && (
+                  <img src={images[v9Next]} alt="" draggable={false} className="our-lb-v9-overlay" />
+                )}
+              </>
+            )
+            // 확대 허용 시 가운데 사진 칸 자체가 확대 영역 (확대한 사진은 이 칸 안에서만 보임)
+            return zoomEnabled
+              ? <ZoomableImage className="our-lb-v9-current" idleTouchAction="none" onZoomChange={setZoomed} resetKey={idx}>{imgs}</ZoomableImage>
+              : <div className="our-lb-v9-current">{imgs}</div>
+          })()}
           <div className="our-lb-v9-side our-lb-v9-side--next" onClick={goNext}>
             <img src={images[nextIdx]} alt="" draggable={false} />
           </div>
@@ -2317,8 +2318,8 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
           <span className="our-lb-topbar-title">Gallery</span>
           <button className="our-lb-topbar-close" onClick={onClose} aria-label="닫기">&times;</button>
         </div>
-        <div className="our-lb-image-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
-          {images[idx] && <img src={images[idx]} alt="" className={`our-lb-img ${animClass}`} draggable={false} />}
+        <div className="our-lb-image-wrap" onClick={tapNext} {...touchProps}>
+          {images[idx] && zoomFrame(<img src={images[idx]} alt="" className={`our-lb-img ${animClass}`} draggable={false} />, goNext)}
         </div>
         <div className="our-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
         <div className="our-lb-progress">
@@ -2331,8 +2332,8 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
     content = (
       <div ref={overlayRef} className={`our-lightbox our-lb--v2${closing ? ' our-lightbox--closing' : ''}`} onContextMenu={preventContext} onClick={onClose}>
         <button className="our-lb-topbar-close our-lb-v2-close" onClick={onClose} aria-label="닫기">&times;</button>
-        <div className="our-lb-image-wrap our-lb-v2-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
-          {images[idx] && <img src={images[idx]} alt="" className={`our-lb-img our-lb-v2-img ${animClass}`} draggable={false} />}
+        <div className="our-lb-image-wrap our-lb-v2-wrap" onClick={tapNext} {...touchProps}>
+          {images[idx] && zoomFrame(<img src={images[idx]} alt="" className={`our-lb-img our-lb-v2-img ${animClass}`} draggable={false} />, goNext)}
         </div>
         <div className="our-lb-v2-dots">
           {images.map((_, i) => (
@@ -2345,8 +2346,8 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
   } else if (v === 5) {
     content = (
       <div ref={overlayRef} className={`our-lightbox our-lb--v5${closing ? ' our-lightbox--closing' : ''}`} onContextMenu={preventContext} onClick={onClose}>
-        <div className="our-lb-image-wrap our-lb-v5-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
-          {images[idx] && <img src={images[idx]} alt="" className={`our-lb-img our-lb-v5-img ${animClass}`} draggable={false} />}
+        <div className="our-lb-image-wrap our-lb-v5-wrap" onClick={tapNext} {...touchProps}>
+          {images[idx] && zoomFrame(<img src={images[idx]} alt="" className={`our-lb-img our-lb-v5-img ${animClass}`} draggable={false} />, goNext)}
         </div>
       </div>
     )
@@ -2357,7 +2358,7 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
         <button className="our-lb-topbar-close our-lb-v6-close" onClick={onClose} aria-label="닫기">&times;</button>
         <div className="our-lb-image-wrap our-lb-v6-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
           <button className="our-lb-v6-arrow our-lb-v6-arrow--prev" onClick={e => { e.stopPropagation(); goPrev() }} aria-label="이전">&#8249;</button>
-          {images[idx] && <img src={images[idx]} alt="" className={`our-lb-img ${animClass}`} draggable={false} />}
+          {images[idx] && zoomFrame(<img src={images[idx]} alt="" className={`our-lb-img ${animClass}`} draggable={false} />)}
           <button className="our-lb-v6-arrow our-lb-v6-arrow--next" onClick={e => { e.stopPropagation(); goNext() }} aria-label="다음">&#8250;</button>
         </div>
         <div className="our-lb-v6-counter">{idx + 1} / {images.length}</div>
@@ -2370,7 +2371,7 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
         <button className="our-lb-topbar-close our-lb-v7-close" onClick={onClose} aria-label="닫기">&times;</button>
         <div className="our-lb-image-wrap our-lb-v7-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
           <button className="our-lb-v7-arrow our-lb-v7-arrow--prev" onClick={e => { e.stopPropagation(); goPrev() }} aria-label="이전">&#8249;</button>
-          {images[idx] && <img src={images[idx]} alt="" className={`our-lb-img ${animClass}`} draggable={false} />}
+          {images[idx] && zoomFrame(<img src={images[idx]} alt="" className={`our-lb-img ${animClass}`} draggable={false} />)}
           <button className="our-lb-v7-arrow our-lb-v7-arrow--next" onClick={e => { e.stopPropagation(); goNext() }} aria-label="다음">&#8250;</button>
         </div>
         <div className="our-lb-v7-thumbs" onClick={e => e.stopPropagation()}>
@@ -2397,8 +2398,8 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
           <span className="our-lb-topbar-title">Gallery</span>
           <button className="our-lb-topbar-close" onClick={onClose} aria-label="닫기">&times;</button>
         </div>
-        <div className="our-lb-image-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
-          {images[idx] && <img src={images[idx]} alt="" className={`our-lb-img ${animClass}`} draggable={false} />}
+        <div className="our-lb-image-wrap" onClick={tapNext} {...touchProps}>
+          {images[idx] && zoomFrame(<img src={images[idx]} alt="" className={`our-lb-img ${animClass}`} draggable={false} />, goNext)}
         </div>
         <div className="our-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
         <div className="our-lb-progress">
@@ -2411,21 +2412,9 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
   return (
     <>
       {content}
-      {zoomEnabled && !zoomOpen && !closing && images[idx] && (
-        <button type="button" className="our-lb-zoom-btn" onClick={e => { e.stopPropagation(); if (v === 4) openV4ZoomAt(window.innerHeight / 2); else setZoomOpen(true) }} aria-label="사진 확대">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5" /></svg>
-        </button>
-      )}
-      {zoomEnabled && zoomOpen && (
-        <LightboxZoomLayer
-          images={images}
-          index={idx}
-          onIndexChange={n => { setIdx(n); setAnimClass(''); setV9Next(null) }}
-          onClose={() => setZoomOpen(false)}
-        />
-      )}
       <style jsx global>{`
-        .our-lb-zoom-btn { position: fixed; z-index: 10000; right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 56px); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.38); color: #fff; border: 1px solid rgba(255,255,255,.28); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); cursor: pointer; }
+        /* 확대 허용 시 사진을 감싸는 제자리 확대 영역 — 이미지 칸을 그대로 채워 <img> 크기·위치가 확대 미허용 때와 같게 */
+        .our-lb-zoomframe { width: 100%; height: 100%; }
         .our-lightbox {
           position: fixed;
           inset: 0;

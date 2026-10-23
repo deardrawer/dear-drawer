@@ -1982,6 +1982,9 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
   const [animClass, setAnimClass] = useState('')
   const [transitioning, setTransitioning] = useState(false)
   const [v9Next, setV9Next] = useState<number | null>(null)
+  // 룩북(v4): 하단 아래 화살표 — 마지막 사진까지 내려오면 숨김
+  const v4ScrollRef = useRef<HTMLDivElement>(null)
+  const [v4AtEnd, setV4AtEnd] = useState(false)
   const [closing, setClosing] = useState(false)
   const [visible, setVisible] = useState(false)
   // 확대 허용 시: 각 타입의 디자인·전환 애니메이션은 그대로 두고 보이는 사진을 제자리에서 확대(ZoomableImage children 모드)
@@ -2118,13 +2121,35 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
     content = (
       <div ref={overlayRef} className={`our-lightbox our-lb--v4${closing ? ' our-lightbox--closing' : ''}`} onContextMenu={preventContext} onClick={onClose}>
         <button className="our-lb-v4-close" onClick={onClose} aria-label="닫기">&times;</button>
-        <div className="our-lb-v4-scroll" onClick={e => e.stopPropagation()}>
+        <div
+          ref={v4ScrollRef}
+          className="our-lb-v4-scroll"
+          onClick={e => e.stopPropagation()}
+          onScroll={e => { const el = e.currentTarget; setV4AtEnd(el.scrollTop + el.clientHeight >= el.scrollHeight - 8) }}
+        >
           {images.map((src, i) => {
             const img = <img key={i} src={src} alt="" className="our-lb-v4-img" draggable={false} />
             // 확대 허용 시 사진마다 제자리 확대 (1배에선 세로 스크롤 유지)
             return zoomEnabled ? <ZoomableImage key={i} idleTouchAction="pan-y">{img}</ZoomableImage> : img
           })}
         </div>
+        {images.length > 1 && !v4AtEnd && (
+          <button
+            type="button"
+            className="our-lb-v4-down"
+            aria-label="다음 사진"
+            onClick={e => {
+              e.stopPropagation()
+              // 화면 맨 위보다 아래에서 시작하는 첫 사진으로 부드럽게 이동
+              const el = v4ScrollRef.current
+              if (!el) return
+              const next = Array.from(el.children).find(c => (c as HTMLElement).offsetTop > el.scrollTop + 4) as HTMLElement | undefined
+              el.scrollTo({ top: next ? next.offsetTop : el.scrollHeight, behavior: 'smooth' })
+            }}
+          >
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+          </button>
+        )}
       </div>
     )
   // === V9: Film - 3-image carousel with clickable side previews ===
@@ -2472,6 +2497,16 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
           overflow-y: auto; -webkit-overflow-scrolling: touch;
           padding: 0;
         }
+        .our-lb-v4-down {
+          position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); z-index: 10;
+          width: 44px; height: 44px; margin-left: -22px; padding: 0; border: none;
+          background: none; color: #fff; cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          filter: drop-shadow(0 1px 3px rgba(0,0,0,0.55));
+          animation: ourLbV4Nudge 1.8s ease-in-out infinite;
+        }
+        @keyframes ourLbV4Nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+        @media (prefers-reduced-motion: reduce) { .our-lb-v4-down { animation: none; } }
         .our-lb-v4-img {
           width: 100%; display: block;
           -webkit-touch-callout: none;

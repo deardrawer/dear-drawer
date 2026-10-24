@@ -150,7 +150,7 @@ function getTemplateDisplayName(templateId: string, senderSide?: string) {
 }
 
 // 페이지 디자인 토큰 (/templates 와 같은 톤)
-const MI = { ink: '#1F1C19', ink2: '#5E5751', ink3: '#9A908C', line: 'rgba(31,28,25,.11)', img: '#F0E5E3', warn: '#B4533A' }
+const MI = { ink: '#1F1C19', ink2: '#5E5751', ink3: '#9A908C', line: 'rgba(31,28,25,.11)', img: '#F0E5E3', warn: '#B4533A', keep: '#7A5C45' }
 const MI_FONT = "'Inter', 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif"
 const MI_CSS = `
   .mi { -webkit-font-smoothing: antialiased; }
@@ -1114,7 +1114,8 @@ export default function MyInvitationsPage() {
                             </button>
                           </div>
                         )}
-                        <span style={{ fontSize: 12, fontWeight: 500, color: invitation.is_paid ? MI.ink : MI.warn, whiteSpace: 'nowrap' }}>{invitation.is_paid ? '결제완료' : '미결제'}</span>
+                        {/* 장기보관을 신청한 결제 청첩장은 '결제완료' 대신 '서랍 보관 중' (은은한 브라운으로 구분) */}
+                        <span style={{ fontSize: 12, fontWeight: 500, color: !invitation.is_paid ? MI.warn : postDrawerLongTerm ? MI.keep : MI.ink, whiteSpace: 'nowrap' }}>{!invitation.is_paid ? '미결제' : postDrawerLongTerm ? '서랍 보관 중' : '결제완료'}</span>
                       </div>
                       <p style={{ margin: '6px 0 0', fontSize: 12, color: MI.ink3, letterSpacing: '-.01em', fontVariantNumeric: 'tabular-nums' }}>
                         수정 {new Date(invitation.updated_at).toLocaleDateString('ko-KR')}

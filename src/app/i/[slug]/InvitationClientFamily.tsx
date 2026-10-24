@@ -1368,11 +1368,12 @@ function SlideGallerySection({ invitation, themeColors, onOpenLightbox }: {
               onClick={goPrev}
               aria-label="이전 사진"
               style={{
-                position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
-                width: 28, height: 28, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.65)', border: 'none',
+                // 동그라미 배경 없이 화살표만 — 흰 화살표 + 옅은 그림자로 밝은·어두운 사진 모두에서 보이게
+                position: 'absolute', left: 6, top: '50%', transform: 'translateY(-50%)',
+                width: 32, height: 44,
+                background: 'transparent', border: 'none',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 16, color: '#333', zIndex: 2,
+                fontSize: 30, lineHeight: 1, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,.45)', zIndex: 2,
               }}
             >
               ‹
@@ -1382,11 +1383,12 @@ function SlideGallerySection({ invitation, themeColors, onOpenLightbox }: {
               onClick={goNext}
               aria-label="다음 사진"
               style={{
-                position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-                width: 28, height: 28, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.65)', border: 'none',
+                // 동그라미 배경 없이 화살표만 — 흰 화살표 + 옅은 그림자로 밝은·어두운 사진 모두에서 보이게
+                position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)',
+                width: 32, height: 44,
+                background: 'transparent', border: 'none',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 16, color: '#333', zIndex: 2,
+                fontSize: 30, lineHeight: 1, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,.45)', zIndex: 2,
               }}
             >
               ›
@@ -2856,13 +2858,15 @@ function FullHeightDividerSection({
       <div className="full-height-divider-content">
         {/* English Title - Staggered Effect */}
         <p className="full-height-divider-english sc-tt14">
-          <StaggeredText text={englishTitle} isVisible={isVisible} delay={0.3} charDelay={0.04} />
+          {/* 늦게 나오면 그냥 지나치게 돼서 빠르게: 영문 0.2초, 한글 0.6초부터 글자 간격 0.035초 (예전 0.3 / 1.5 / 0.06) */}
+          <StaggeredText text={englishTitle} isVisible={isVisible} delay={0.2} charDelay={0.03} />
         </p>
 
         {/* Korean Text - Staggered Effect */}
         <div className="full-height-divider-quote">
           <p className="full-height-divider-korean sc-tt26">
-            <StaggeredText text={koreanText} isVisible={isVisible} delay={1.5} charDelay={0.06} />
+            {/* 영문 제목이 비어 있으면(공백만 포함) 기다리지 않고 0.2초부터 */}
+            <StaggeredText text={koreanText} isVisible={isVisible} delay={englishTitle.trim() ? 0.6 : 0.2} charDelay={0.035} />
           </p>
         </div>
       </div>
@@ -4277,6 +4281,9 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
   const touchStartY = useRef(0)
   const touchStartAtBottom = useRef(false) // 스와이프 시작 시 이미 스크롤 하단이었는지
   const lastWheelTs = useRef(0)            // 연속 휠 스크롤 구분용
+  // 당겨서 넘기기: 맨 아래에서 위로 끌어올린 거리(px). PULL_NEXT_PX 이상 끌어올린 뒤 손을 떼야 다음 장으로 (덜 끌면 그대로)
+  const PULL_NEXT_PX = 120
+  const [pullPx, setPullPx] = useState(0)
 
   // Get intro settings from invitation or use default
   const effectiveIntroSettings = introSettings || invitation.intro || getDefaultIntroSettings('cinematic')
@@ -4340,15 +4347,24 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
     touchStartY.current = e.touches[0].clientY
     // 제스처 시작 시 이미 하단이었는지 기록 (다음 이야기를 드러낸 스와이프로는 넘기지 않기 위함)
     touchStartAtBottom.current = isAtScrollBottom()
+    setPullPx(0)
+  }
+
+  // 맨 아래에서 시작한 위로 끌기만 거리 표시 (중간에서 내려오다 바닥에 닿은 스크롤은 제외)
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (currentScreen !== 'invitation' || !touchStartAtBottom.current) return
+    const dy = touchStartY.current - e.touches[0].clientY
+    setPullPx(dy > 0 && isAtScrollBottom() ? dy : 0)
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     const dy = touchStartY.current - e.changedTouches[0].clientY // 양수 = 위로 스와이프
+    setPullPx(0)
     if (currentScreen === 'cover') {
       if (dy > 50) switchScreen('cover', 'invitation')
     } else if (currentScreen === 'invitation') {
-      // 이미 하단에 도달한 상태에서 시작한 '별도' 스와이프만 메인으로
-      if (dy > 60 && touchStartAtBottom.current && isAtScrollBottom()) {
+      // 이미 하단에 도달한 상태에서 시작한 '별도' 끌어올리기를 충분히(PULL_NEXT_PX) 했을 때만 메인으로
+      if (dy >= PULL_NEXT_PX && touchStartAtBottom.current && isAtScrollBottom()) {
         onNavigate('main')
       }
     }
@@ -4583,6 +4599,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         }}
         onClick={handleInvitationClick}
         onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchCancel={() => setPullPx(0)}
         onTouchEnd={handleTouchEnd}
         onWheel={handleWheel}
       >
@@ -4667,8 +4685,27 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         )}
         </div>
 
-        {/* Next Story Navigation */}
-        <div ref={nextStoryRef} className="next-story-section flex flex-col items-center">
+        {/* 당겨서 넘기기 표시 — 맨 아래에서 위로 끌어올리는 동안만, 하단 네비바 바로 위에 */}
+        {pullPx > 8 && (
+          <div
+            aria-hidden
+            style={{
+              position: 'fixed', left: '50%', bottom: 'calc(84px + env(safe-area-inset-bottom))', transform: 'translateX(-50%)',
+              zIndex: 70, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7,
+              padding: '9px 16px 10px', borderRadius: 999, background: themeColors.cardBg, boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+            }}
+          >
+            <span style={{ fontSize: 12, lineHeight: 1, whiteSpace: 'nowrap', color: themeColors.gray, fontFamily: fonts.displayKr }}>
+              {pullPx >= PULL_NEXT_PX ? '놓으면 다음 이야기' : '위로 더 올리면 다음 이야기'}
+            </span>
+            <span style={{ display: 'block', width: 72, height: 2, borderRadius: 2, overflow: 'hidden', background: `${themeColors.gray}30` }}>
+              <span style={{ display: 'block', height: '100%', width: `${Math.min(100, (pullPx / PULL_NEXT_PX) * 100)}%`, background: themeColors.primary }} />
+            </span>
+          </div>
+        )}
+
+        {/* Next Story Navigation — 아래 여백: '다음 이야기'가 보이면 올라오는 하단 네비바에 가리지 않게 */}
+        <div ref={nextStoryRef} className="next-story-section flex flex-col items-center" style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom))' }}>
           <button
             onClick={(e) => {
               e.stopPropagation()

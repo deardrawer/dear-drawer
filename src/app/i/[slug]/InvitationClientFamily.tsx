@@ -5916,6 +5916,25 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
   // Scroll to appropriate position when page changes
   useEffect(() => {
     window.scrollTo(0, 0)
+    // 터치로 끌어올리며 넘어온 경우 손을 뗀 뒤의 관성 스크롤이 새 페이지까지 이어져 살짝 내려가 있게 됨
+    // → 터치 기기에서만 잠깐(0.3초) 스크롤을 막아 관성을 끊고 다시 맨 위로
+    if (typeof window === 'undefined' || !window.matchMedia?.('(pointer: coarse)').matches) return
+    const html = document.documentElement
+    const body = document.body
+    const prevHtml = html.style.overflow
+    const prevBody = body.style.overflow
+    html.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    const t = setTimeout(() => {
+      html.style.overflow = prevHtml
+      body.style.overflow = prevBody
+      window.scrollTo(0, 0)
+    }, 300)
+    return () => {
+      clearTimeout(t)
+      html.style.overflow = prevHtml
+      body.style.overflow = prevBody
+    }
   }, [currentPage])
 
   // Prepare contacts for FloatingButton

@@ -8,7 +8,9 @@ import ColorField from '@/components/editor/ColorField'
 import ClassicPhotoField from '../../ClassicPhotoField'
 import ClassicGalleryEditor from '../../ClassicGalleryEditor'
 import ClassicInterstitialEditor from '../../ClassicInterstitialEditor'
+import ClassicTextInterstitialEditor from '../../ClassicTextInterstitialEditor'
 import type { ClassicInvitationData } from '../../page'
+import { PHOTO_INTER_KEYS, TEXT_INTER_KEYS, shiftInterKeysAfterRemove } from '@/lib/classicInterKeys'
 
 interface Props {
   data: ClassicInvitationData
@@ -18,6 +20,17 @@ interface Props {
 }
 
 export default function ClassicStepGreeting({ data, updateNestedData, invitationId }: Props) {
+  // 간지를 지우면 섹션 순서·숨김·틴티드 설정에서 그 자리를 없애고 뒤 간지들의 번호를 한 칸씩 당긴다 (뒤 간지들은 원래 자리 그대로)
+  const shiftInter = (keys: readonly string[], removed: number) => {
+    const r = shiftInterKeysAfterRemove(keys, removed, {
+      order: data.content.classicContentOrder,
+      hidden: data.content.classicHiddenSections,
+      bgMap: data.content.classicSectionBgMap as Record<string, string> | undefined,
+    })
+    if (r.order) updateNestedData('content.classicContentOrder', r.order)
+    if (r.hidden) updateNestedData('content.classicHiddenSections', r.hidden)
+    if (r.bgMap) updateNestedData('content.classicSectionBgMap', r.bgMap)
+  }
   const greetingOp = Math.round((data.content.classicGreetingOverlayOpacity ?? 0.5) * 100)
   const introSecOp = Math.round((data.content.classicIntroSectionOverlayOpacity ?? 0) * 100)
   const thanksSecOp = Math.round((data.content.classicThanksSectionOverlayOpacity ?? 0) * 100)
@@ -590,11 +603,30 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         <h3 className="text-base font-semibold text-gray-900">
           간지 (사이 페이지)
         </h3>
-        <p className="text-sm text-gray-500">섹션 사이에 들어가는 사진/인용 페이지입니다. 타입별로 사진을 추가하세요.</p>
+        <p className="text-sm text-gray-500">섹션 사이에 들어가는 사진/인용 페이지입니다. 최대 3개까지 만들 수 있고, 각각의 위치는 &apos;추가정보&apos; 단계의 섹션 순서에서 바꿀 수 있어요.</p>
         <ClassicInterstitialEditor
           value={data.content.classicInterstitials}
           onChange={(list) => updateNestedData('content.classicInterstitials', list)}
+          // 마지막 하나를 지우면 기본 사진 간지가 '사진 간지 1' 자리에 그대로 나오므로 자리는 유지
+          onRemove={(i) => { if ((data.content.classicInterstitials || []).length > 1) shiftInter(PHOTO_INTER_KEYS, i) }}
           invitationId={invitationId || undefined}
+        />
+      </section>
+
+      {/* 글 간지 (선택) */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900">
+          글 간지 (선택)
+        </h3>
+        <p className="text-sm text-gray-500">사진 없이 글로 쉬어 가는 페이지입니다. 추가한 것만 표시되고, 최대 3개까지 만들 수 있어요. 각각의 위치는 &apos;추가정보&apos; 단계의 섹션 순서에서 바꿀 수 있어요.</p>
+        <ClassicTextInterstitialEditor
+          value={data.content.classicTextInterstitials}
+          onChange={(list) => updateNestedData('content.classicTextInterstitials', list)}
+          onRemove={(i) => shiftInter(TEXT_INTER_KEYS, i)}
+          invitationId={invitationId || undefined}
+          lang={data.content.classicLanguage === 'en' ? 'en' : 'ko'}
+          bodyFont={data.content.classicBodyFont}
+          displayFont={data.content.classicDisplayFont}
         />
       </section>
 

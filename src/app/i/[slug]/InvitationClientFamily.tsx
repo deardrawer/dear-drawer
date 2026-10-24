@@ -5169,8 +5169,10 @@ function MainPage({ invitation, invitationId, fonts, themeColors: themeColorsRaw
       {/* YouTube Section - FAMILY */}
       <YouTubeLiteSectionFamily youtube={(invitation as any).youtube} themeColors={themeColors} sectionBg={themeColors.sectionBg} onPlay={handleVideoPlay} onStop={handleVideoStop} />
 
-      {/* 세 번째 디바이더 - 갤러리 섹션 하단 (갤러리에 이미지가 있으면 표시) */}
-      {invitation.gallery.images && invitation.gallery.images.length > 0 && (
+      {/* 세 번째 디바이더 - 인터뷰 상단 (인터뷰를 켠 경우만. 에디터에서도 인터뷰 안에서 편집)
+          예전 기준(갤러리에 이미지가 있으면 표시)은 유지하고, 갤러리가 비어 있어도 디바이더 사진을 직접 넣었으면 표시 */}
+      {invitation.sectionVisibility?.interview !== false &&
+        ((invitation.gallery.images && invitation.gallery.images.length > 0) || !!(invitation as any).fullHeightDividers?.items?.[2]?.image) && (
         <FullHeightDividerSection
           englishTitle={(invitation as any).fullHeightDividers?.items?.[2]?.englishTitle || 'Our way to marriage'}
           koreanText={(invitation as any).fullHeightDividers?.items?.[2]?.koreanText || '같은 시간, 같은 마음으로\n하나의 계절을 준비하고 있습니다.'}

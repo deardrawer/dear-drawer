@@ -97,3 +97,72 @@
   font-weight: 600 900;
   font-display: swap;
 }
+
+/* 그리운(griun.co.kr) 무료 손글씨 — 상업적 이용 가능, 폰트 파일 개작·수정·판매 금지. 공식 배포 woff2 그대로 사용 (THE CLASSIC 글 간지) */
+@font-face {
+  font-family: 'GriunMyoeunHeullim';
+  src: url('/fonts/Griun/Griun_MyoeunHeullim-Rg.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 118%; /* 글자 폭이 좁아 작아 보임 → 리디바탕과 비슷한 크기로 (글자 높이·폭 기준) */
+}
+
+@font-face {
+  font-family: 'GriunPerfume';
+  src: url('/fonts/Griun/Griun_Perfume-Rg.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 118%; /* 글자 폭이 좁아 작아 보임 → 리디바탕과 비슷한 크기로 (글자 높이·폭 기준) */
+}
+
+@font-face {
+  font-family: 'GriunEverydayJeong';
+  src: url('/fonts/Griun/Griun_EverydayJeong-Rg.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 125%; /* 글자 폭이 좁아 작아 보임 → 리디바탕과 비슷한 크기로 (글자 높이·폭 기준) */
+}
+
+@font-face {
+  font-family: 'GriunHangeulMin';
+  src: url('/fonts/Griun/GriunXHangeulMin-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GriunHangeulGowoon';
+  src: url('/fonts/Griun/GriunXHangeul_Gowoon-Rg.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GriunPolFairness';
+  src: url('/fonts/Griun/Griun_PolFairness-Rg.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GriunSemfafa';
+  src: url('/fonts/Griun/Griun_Semfafa-Rg.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GriunPolHumanrights';
+  src: url('/fonts/Griun/Griun_PolHumanrights-Rg.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+

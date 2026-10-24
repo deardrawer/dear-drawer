@@ -4,6 +4,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import ColorField from '@/components/editor/ColorField'
 import ClassicPhotoField, { type ClassicPhoto } from './ClassicPhotoField'
+import { INTER_MAX } from '@/lib/classicInterKeys'
 
 export type ClassicInter = {
   type: 'photo2' | 'photo1' | 'photoText'
@@ -23,6 +24,7 @@ export type ClassicInter = {
 interface Props {
   value?: ClassicInter[]
   onChange: (list: ClassicInter[]) => void
+  onRemove?: (index: number) => void // 간지를 지웠을 때 (섹션 순서 자리 당기기용)
   invitationId?: string
 }
 
@@ -32,7 +34,7 @@ const TYPES = [
   { id: 'photoText', label: '인용구', photos: 1, hasText: true, hasCaption: true, hasBg: true, ratio: 5 / 4, textBase: 21, alignBase: 'left' },
 ] as const
 
-export default function ClassicInterstitialEditor({ value, onChange, invitationId }: Props) {
+export default function ClassicInterstitialEditor({ value, onChange, onRemove, invitationId }: Props) {
   const list = value || []
 
   const update = (i: number, patch: Partial<ClassicInter>) =>
@@ -43,13 +45,10 @@ export default function ClassicInterstitialEditor({ value, onChange, invitationI
     update(i, { photos })
   }
   const add = () => onChange([...list, { type: 'photo2', photos: [] }])
-  const remove = (i: number) => onChange(list.filter((_, idx) => idx !== i))
-  const move = (i: number, dir: -1 | 1) => {
-    const j = i + dir
-    if (j < 0 || j >= list.length) return
-    const next = [...list]
-    ;[next[i], next[j]] = [next[j], next[i]]
-    onChange(next)
+  // 지우면 뒤 간지들의 섹션 순서 자리도 한 칸씩 당겨야 해서 부모에게 알린다 (onRemove)
+  const remove = (i: number) => {
+    onChange(list.filter((_, idx) => idx !== i))
+    onRemove?.(i)
   }
 
   return (
@@ -63,12 +62,8 @@ export default function ClassicInterstitialEditor({ value, onChange, invitationI
         return (
           <div key={i} className="rounded-lg border border-gray-200 p-4 bg-gray-50/50 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">간지 {i + 1}</span>
-              <div className="flex items-center gap-2 text-[11px] text-gray-400">
-                <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="disabled:opacity-30 hover:text-gray-700">↑</button>
-                <button type="button" onClick={() => move(i, 1)} disabled={i === list.length - 1} className="disabled:opacity-30 hover:text-gray-700">↓</button>
-                <button type="button" onClick={() => remove(i)} className="text-red-400 hover:text-red-500">삭제</button>
-              </div>
+              <span className="text-sm font-medium text-gray-700">사진 간지 {i + 1}</span>
+              <button type="button" onClick={() => remove(i)} className="text-[11px] text-red-400 hover:text-red-500">삭제</button>
             </div>
 
             <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
@@ -220,13 +215,16 @@ export default function ClassicInterstitialEditor({ value, onChange, invitationI
         )
       })}
 
-      <button
-        type="button"
-        onClick={add}
-        className="w-full py-2.5 rounded-lg border border-dashed border-gray-300 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors"
-      >
-        + 간지 추가
-      </button>
+      {/* 사진 간지는 최대 3개 (각자 '추가정보' 단계 섹션 순서에서 자리를 정함) */}
+      {list.length < INTER_MAX && (
+        <button
+          type="button"
+          onClick={add}
+          className="w-full py-2.5 rounded-lg border border-dashed border-gray-300 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors"
+        >
+          + 사진 간지 추가 ({list.length}/{INTER_MAX})
+        </button>
+      )}
     </div>
   )
 }

@@ -11,6 +11,9 @@ import PinchZoomGuard from '@/components/invitation/PinchZoomGuard'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 import { parseDateOnly } from '@/lib/dateOnly'
+import { isDarkColor, contrastRatio } from '@/lib/colorUtils'
+import { GRIUN_FONTS } from '@/lib/griunFonts'
+import { INTER_MAX, INTER_SEQ, PHOTO_INTER_KEYS, TEXT_INTER_KEYS, interAnchor } from '@/lib/classicInterKeys'
 
 /**
  * THE CLASSIC (혼주용) — 클래식 스테이셔너리 청첩장
@@ -53,6 +56,82 @@ const F_BODY_DEFAULT = "var(--font-gowun-batang), serif"
 const MONTHS_EN = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
 
 const extractUrl = (im: unknown): string => (typeof im === 'string' ? im : (im && typeof im === 'object' && 'url' in im ? (im as { url: string }).url : '')) || ''
+
+// ===== 글 간지 6종 (사진 없이 글로 쉬어 가는 페이지) — 에디터(ClassicInterstitialEditor)와 공유 =====
+export type ClassicTextInterType = 'verse' | 'quote' | 'promises' | 'manuscript' | 'underline' | 'card'
+export const CLASSIC_TEXT_INTER_TYPES: readonly ClassicTextInterType[] = ['verse', 'quote', 'promises', 'manuscript', 'underline', 'card']
+// 타입별 예시 문장: 에디터에서 타입을 고르면 빈 칸에 미리 채우고, 게스트 화면에선 필드가 없을(undefined) 때 대신 보여준다
+// (빈 문자열 = 사용자가 지운 것 → 그 요소를 숨김). 모두 직접 쓴 문장 / B는 로버트 브라우닝 시 구절(저작권 만료)
+export const CLASSIC_TEXT_INTER_EXAMPLES: Record<ClassicTextInterType, Record<'ko' | 'en', Record<string, string>>> = {
+  verse: {
+    ko: { verseText: '늦은 저녁 둘이 나란히 걷던 골목에서 우리는 자주 같은 생각을 했다. 이 길이 조금만 더 길었으면, 오늘이 조금만 더 천천히 지나갔으면. 그래서 이제는 그 길을 함께 오래 걷기로 했다.', versePull: '천천히, 오래, 그리고 함께.', verseSign: 'Written by Jihoon & Seoyeon.' },
+    en: { verseText: 'Walking side by side down the same narrow street on late evenings, we often found ourselves thinking the same thing. If only this road were a little longer, if only today would pass a little more slowly. So we have decided to walk it together, for a long, long time.', versePull: 'Slowly, for long, and together.', verseSign: 'Written by Jihoon & Seoyeon.' },
+  },
+  quote: {
+    ko: { quoteText: 'Grow old along with me! The best is yet to be.', quoteTrans: '나와 함께 나이 들어가요.\n가장 좋은 날은 아직 오지 않았으니.', quoteSource: 'ROBERT BROWNING' },
+    en: { quoteText: 'Grow old along with me! The best is yet to be.', quoteTrans: '', quoteSource: 'ROBERT BROWNING' },
+  },
+  promises: {
+    ko: { promTitle: 'Our Promises', promSub: '우리가 서로에게 하는 약속', promItems: '서로의 편이 되기\n고맙다는 말 아끼지 않기\n다툰 날엔 그날 안에 화해하기\n작은 기념일도 챙기기\n천천히, 함께 나이 들기', promSide: '한지훈 · 윤서연 2027', promNote: '우리 둘의 다짐', promSign: '한지훈 · 윤서연 씀' },
+    en: { promTitle: 'Our Promises', promSub: 'What we promise each other', promItems: 'Always be on each other’s side\nNever hold back a thank-you\nMake up before the day ends\nRemember the little anniversaries\nGrow old, slowly, together', promSide: 'Jihoon · Seoyeon 2027', promNote: 'Our vows to each other', promSign: 'Jihoon & Seoyeon' },
+  },
+  manuscript: {
+    ko: { msText: '서로의 오늘이 되어\n함께 내일을 씁니다\n느려도 괜찮아요\n우리는 같은 쪽으로\n걷고 있으니까', msTitle: '같은 쪽으로', msName: '한지훈 · 윤서연' },
+    en: { msText: 'Side by\nside, we\nwrite our\ntomorrow.\nNo rush,\nwe walk\nthe same\nway.', msTitle: 'The Same Way', msName: 'Jihoon · Seoyeon' },
+  },
+  underline: {
+    ko: { ulChapter: 'CHAPTER · 01', ulBefore: '우리는 같은 동네의 다른 골목에서 자랐고, 같은 노래를 다른 계절에 좋아했다. 그렇게 조금씩 어긋나 있던 시간들이 어느 날 한 자리에 모였다.', ulMark: '함께라면 평범한 하루도 이야기가 된다는 것을, 우리는 서로에게서 배웠다.', ulAfter: '이제 그 이야기의 다음 장을, 여러분 앞에서 시작하려 한다.', ulNote: 'our sentence', ulPage: '27' },
+    en: { ulChapter: 'CHAPTER · 01', ulBefore: 'We grew up on different streets of the same neighborhood and loved the same songs in different seasons. Then one day, all those slightly mismatched hours came together in one place.', ulMark: 'From each other, we learned that together even an ordinary day becomes a story.', ulAfter: 'Now we are ready to begin the next chapter of that story, in front of all of you.', ulNote: 'our sentence', ulPage: '27' },
+  },
+  card: {
+    ko: { cardText: '흔들리는 날에도 처음 손을 잡던 마음을 기억하자', cardName: '-지훈과 서연' },
+    en: { cardText: 'Even on unsteady days, let’s remember how it felt the first time we held hands.', cardName: '- Jihoon & Seoyeon' },
+  },
+}
+// 타입별 기본값: 배경 모드(base 기본 배경 / tint 틴티드 배경 / custom 직접 선택) · 직접 선택 시 기본색 ·
+// 포인트 색(따옴표·원고지 줄·밑줄·출처 선; 없는 타입은 undefined) · 카드 종이색. 글자색은 배경 밝기로 자동 결정
+export type ClassicTextInterBgMode = 'base' | 'tint' | 'custom'
+export const CLASSIC_TEXT_INTER_DEFAULTS: Record<ClassicTextInterType, { bgMode: ClassicTextInterBgMode; bgColor: string; point?: string; card?: string }> = {
+  verse: { bgMode: 'base', bgColor: '#FCFBF8', point: '#A3262A' },
+  quote: { bgMode: 'custom', bgColor: '#241110', point: '#DDD1BB' },
+  promises: { bgMode: 'tint', bgColor: '#DDD1BB' },
+  manuscript: { bgMode: 'base', bgColor: '#FCFBF8', point: '#D63434' },
+  underline: { bgMode: 'base', bgColor: '#F7F2E9', point: '#9B2F23' },
+  card: { bgMode: 'base', bgColor: '#E7E6E3', card: '#F7F6F3' },
+}
+// 원고지에서 손글씨로 보는 한글 글꼴 id (글자마다 살짝 기울임)
+export const MS_HAND_FONT_IDS: string[] = ['neathand', 'roundhand', 'adulthand', 'romantic', ...GRIUN_FONTS.map((f) => f.id)]
+// 글 간지 글꼴 스택. 한글: 청첩장 글꼴 목록 + 그리운 손글씨 (그리운 글꼴에 없는 글자는 fallback 으로)
+function textInterKoFamily(id: string | undefined, fallback: string): string | null {
+  const g = GRIUN_FONTS.find((f) => f.id === id)
+  if (g) return `${g.family}, ${fallback}`
+  return KOREAN_FONTS.find((f) => f.id === id)?.fontFamily || null
+}
+// 글꼴 스택 끝의 일반 글꼴(serif 등) 제거 — 뒤에 한글 글꼴을 이어 붙일 때 일반 글꼴이 한글까지 가로채지 않게
+const stripGenericFamily = (stack: string) => stack.replace(/,\s*(serif|sans-serif|cursive|monospace|system-ui)\s*$/, '')
+// 글 간지 한 장 (content.classicTextInterstitials[]). 글 필드는 타입마다 따로 저장 → 타입을 바꿔도 각자 쓴 글이 남는다
+export type ClassicTextInter = {
+  type: ClassicTextInterType
+  bgMode?: ClassicTextInterBgMode
+  bgColor?: string // 직접 선택 배경색
+  pointColor?: string
+  textColor?: string // 글자색 (선택, 없으면 배경에 맞춰 자동)
+  lineColor?: string // 선 색 (선택, 없으면 글자색을 옅게)
+  verseText?: string; versePull?: string; verseSign?: string
+  quoteMark?: boolean // 큰 따옴표 표시 (없으면 표시)
+  txScale?: number // 글자 크기 배율 0.85~1.3 (원고지 제외, 없으면 1)
+  txLh?: number // 본문 행간 배율 0.8~1.3 (원고지 제외, 없으면 1)
+  txLs?: number // 본문 자간 더하기(em) -0.05~0.1 (원고지 제외, 없으면 0)
+  quoteText?: string; quoteTrans?: string; quoteSource?: string; quoteBg?: { url: string; scale?: number; positionX?: number; positionY?: number }; quoteDim?: number
+  promTitle?: string; promSub?: string; promItems?: string; promSide?: string; promNote?: string; promSign?: string
+  koFont?: string // 한글 글꼴 id (없으면 청첩장 본문 글꼴, 원고지는 오무다예). 'body' = 청첩장 본문 글꼴
+  enFont?: string // 영문 글꼴 id (DISPLAY_FONTS, 없으면 청첩장 영문 글꼴)
+  msText?: string; msTitle?: string; msName?: string; msFont?: string; msCols?: number // msFont: 예전 원고지 글꼴 값 (koFont 가 없을 때만 읽음)
+  ulChapter?: string; ulBefore?: string; ulMark?: string; ulAfter?: string; ulNote?: string; ulPage?: string
+  cardText?: string; cardName?: string; cardColor?: string; cardTexture?: boolean; cardAlign?: 'left' | 'center' | 'right' /* 카드 글 정렬, 없으면 왼쪽 */; cardBg?: { url: string; scale?: number; positionX?: number; positionY?: number }; cardDim?: number
+}
+// 종이 카드(F) 질감: feTurbulence + feDiffuseLighting (카드 색 위에 multiply)
+const CARD_PAPER_TEXTURE = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='p' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.12' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeDiffuseLighting surfaceScale='1.1' lighting-color='%23ffffff' diffuseConstant='1'%3E%3CfeDistantLight azimuth='225' elevation='55'/%3E%3C/feDiffuseLighting%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='.05' intercept='.95'/%3E%3CfeFuncG type='linear' slope='.05' intercept='.95'/%3E%3CfeFuncB type='linear' slope='.05' intercept='.95'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E")`
 
 // 스크롤 리빌 + 인터랙션 스타일
 const CLASSIC_STYLES = `
@@ -225,6 +304,49 @@ const CLASSIC_STYLES = `
   @keyframes cl-swing-in { 0% { opacity: 0; transform: perspective(1200px) rotateY(-42deg) translateY(26px) scale(.95); filter: blur(5px); } 62% { opacity: 1; filter: blur(0); } 100% { opacity: 1; transform: perspective(1200px) rotateY(0deg) translateY(0) scale(1); filter: blur(0); } }
   @keyframes cl-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
   .cl-scroll::-webkit-scrollbar { display: none; }
+
+  /* ===== 글 간지 6종: 섹션 안의 .cl-ix 묶음이 화면에 들어오면(is-in) 자식들이 --d 순서대로 재생 ===== */
+  .cl-reveal.cl-ix, .cl-reveal.cl-ix.is-in { opacity: 1; transform: none; transition: none; }
+  .cl-iv-grain::after { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .5; mix-blend-mode: multiply; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35  0 0 0 0 .3  0 0 0 0 .27  0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  /* 글이 살짝 흐릿하게 떠오름 */
+  .cl-iv-rv { opacity: 0; }
+  .cl-ix.is-in .cl-iv-rv { animation: cl-iv-rv 1.1s cubic-bezier(.22,.61,.36,1) var(--d, 0s) both; }
+  @keyframes cl-iv-rv { from { opacity: 0; transform: translateY(8px); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
+  /* 가로선이 가운데서 양옆으로 그어짐 */
+  .cl-iv-draw { transform: scaleX(0); transform-origin: center; }
+  .cl-ix.is-in .cl-iv-draw { animation: cl-iv-draw 1.2s ease var(--d, 0s) both; }
+  @keyframes cl-iv-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  /* 인용: 단어마다 차례로 */
+  .cl-iv-w { display: inline-block; opacity: 0; }
+  .cl-ix.is-in .cl-iv-w { animation: cl-iv-w .9s cubic-bezier(.22,.61,.36,1) var(--d, 0s) both; }
+  @keyframes cl-iv-w { from { opacity: 0; transform: translateY(10px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+  /* 약속 목록: 항목 아래 실선이 왼쪽부터 그어짐 */
+  .cl-iv-li::after { content: ''; position: absolute; left: 0; right: -6px; bottom: 0; height: 1px; background: var(--iv-line, currentColor); opacity: var(--iv-line-op, .35); transform-origin: left; transform: scaleX(0); }
+  .cl-ix.is-in .cl-iv-li::after { animation: cl-iv-rule 1s ease var(--d, 0s) both; }
+  @keyframes cl-iv-rule { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  /* 원고지: 칸 크기는 폭에 맞춰(flex), 글자 크기는 칸 크기 비율(컨테이너 단위 미지원이면 31px 칸 기준) */
+  .cl-iv-sheet { container-type: inline-size; }
+  .cl-iv-cell { font-size: calc(31px * var(--fr, .52)); font-size: calc(100cqw / var(--cols, 10) * var(--fr, .52)); }
+  .cl-iv-ch { display: inline-block; opacity: 0; }
+  .cl-iv-ch.cl-iv-hand { transform: translate(var(--jx, 0), 0) rotate(var(--jr, 0deg)); }
+  .cl-ix.is-in .cl-iv-ch { animation: cl-iv-ch .35s ease var(--d, 0s) both; }
+  .cl-ix.is-in .cl-iv-ch.cl-iv-hand { animation: cl-iv-hand .45s ease var(--d, 0s) both; }
+  @keyframes cl-iv-ch { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
+  @keyframes cl-iv-hand { 0% { opacity: 0; transform: translate(var(--jx, 0), 3px) rotate(var(--jr, 0deg)) scale(.85); } 100% { opacity: 1; transform: translate(var(--jx, 0), 0) rotate(var(--jr, 0deg)); } }
+  /* 책 속 밑줄: 연필 밑줄이 줄을 넘어가며 그어짐 */
+  .cl-iv-hl { background-size: 0% 1.4px; }
+  .cl-ix.is-in .cl-iv-hl { animation: cl-iv-pen 2.2s cubic-bezier(.45,.05,.3,1) var(--d, 0s) both; }
+  @keyframes cl-iv-pen { from { background-size: 0% 1.4px; } to { background-size: 100% 1.4px; } }
+  /* 종이 카드가 살며시 놓임 */
+  .cl-iv-card { opacity: 0; }
+  .cl-ix.is-in .cl-iv-card { animation: cl-iv-card 1.2s cubic-bezier(.22,.61,.36,1) both; }
+  @keyframes cl-iv-card { from { opacity: 0; transform: translateY(14px); box-shadow: 0 0 0 rgba(0,0,0,0); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .cl-ix .cl-iv-rv, .cl-ix .cl-iv-w, .cl-ix .cl-iv-ch, .cl-ix .cl-iv-card { animation: none !important; opacity: 1 !important; }
+    .cl-ix .cl-iv-rv, .cl-ix .cl-iv-w, .cl-ix .cl-iv-card { transform: none !important; filter: none !important; }
+    .cl-ix .cl-iv-draw, .cl-ix .cl-iv-li::after { animation: none !important; transform: none !important; }
+    .cl-ix .cl-iv-hl { animation: none !important; background-size: 100% 1.4px !important; }
+  }
 `
 
 // 숫자 카운트업: 화면 진입 시 0 → value (달력 디데이 강조용)
@@ -1201,20 +1323,28 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
   // 섹션 순서 (전체) — flex order로 제어
   const CONTENT_KEYS = ['letter', 'intro', 'interstitials', 'gallery', 'date', 'directions', 'guide', 'accounts', 'links', 'rsvp']
+  // 간지는 사진 간지·글 간지 각 최대 3개가 하나씩 따로 자리를 가진다 (사진 간지 1 = 예전 'interstitials' 키).
+  // 순서에 아직 없는 간지(새로 추가했거나 예전에 저장된 순서)는 바로 앞 간지와 같은 order 값을 주고
+  // DOM에서 사진 1→2→3 → 글 1→2→3 순으로 두어 그 바로 뒤에 오게 한다 (기존 섹션들의 order 값은 그대로 유지)
+  const EXTRA_INTER_KEYS = INTER_SEQ.filter((k) => !CONTENT_KEYS.includes(k))
   const contentOrder: string[] = (() => {
-    const saved = Array.isArray(cc.classicContentOrder) ? (cc.classicContentOrder as string[]).filter((k) => CONTENT_KEYS.includes(k)) : []
+    const saved = Array.isArray(cc.classicContentOrder) ? (cc.classicContentOrder as string[]).filter((k) => CONTENT_KEYS.includes(k) || EXTRA_INTER_KEYS.includes(k)) : []
+    const base = saved.filter((k) => CONTENT_KEYS.includes(k))
     // 모든 키를 포함한 완전한 순서만 사용 (레거시 부분 순서는 폐기하여 미리보기와 어긋나지 않게 함)
-    const complete = saved.length === CONTENT_KEYS.length && CONTENT_KEYS.every((k) => saved.includes(k))
+    const complete = base.length === CONTENT_KEYS.length && CONTENT_KEYS.every((k) => base.includes(k))
     return complete ? saved : [...CONTENT_KEYS]
   })()
-  const orderOf = (k: string) => 10 + (contentOrder.indexOf(k) < 0 ? CONTENT_KEYS.indexOf(k) : contentOrder.indexOf(k))
+  const orderOf = (key: string) => {
+    const k = interAnchor(key, (x) => contentOrder.includes(x))
+    return 10 + (contentOrder.indexOf(k) < 0 ? CONTENT_KEYS.indexOf(k) : contentOrder.indexOf(k))
+  }
   const hiddenSet = new Set(Array.isArray(cc.classicHiddenSections) ? (cc.classicHiddenSections as string[]) : [])
   const hide = (k: string) => (hiddenSet.has(k) ? { display: 'none' as const } : {})
   // 섹션별 배경 모드: 'tinted'로 지정된 섹션은 틴티드 배경 + 틴티드 텍스트 적용, 그 외는 각 섹션 고유 디자인 유지
   const sectionBgMap = (cc.classicSectionBgMap && typeof cc.classicSectionBgMap === 'object') ? cc.classicSectionBgMap as Record<string, string> : {}
   const isTinted = (k: string) => sectionBgMap[k] === 'tinted'
   // 틴티드로 지정한 섹션: 배경=틴티드 배경, 텍스트=틴티드 배경 텍스트
-  const TINTABLE = new Set(['intro', 'gallery', 'directions', 'guide', 'accounts', 'links', 'date', 'rsvp', 'interstitials'])
+  const TINTABLE = new Set(['intro', 'gallery', 'directions', 'guide', 'accounts', 'links', 'date', 'rsvp', ...PHOTO_INTER_KEYS])
   const tintBg = (k: string) => (isTinted(k) && TINTABLE.has(k) ? { background: DEEP_BEIGE, backgroundImage: 'none' as const } : {})
   // 밝은 섹션 배경 위 전경색: 기본→기본 배경 텍스트, 틴티드→틴티드 배경 텍스트
   const fgC = (k: string) => (isTinted(k) && TINTABLE.has(k) ? TXT_TINT : TXT_DEFAULT)
@@ -1254,6 +1384,10 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     : [
         { type: 'photo1', text: 'The morning we chose each other, again.' },
       ]
+  // 글 간지 목록 (선택 섹션 — 기본은 빈 목록이라 기존 청첩장엔 아무것도 그려지지 않음). 알 수 없는 타입은 건너뜀
+  const textInterstitials: ClassicTextInter[] = Array.isArray(cc.classicTextInterstitials)
+    ? (cc.classicTextInterstitials as ClassicTextInter[]).filter((it) => !!it && (CLASSIC_TEXT_INTER_TYPES as readonly string[]).includes(it.type))
+    : []
   // 간지 사진 슬롯 → 크롭 렌더 (없으면 갤러리 사진 fallback)
   const interSrc = (item: Inter, i: number) => item.photos?.[i] ?? item.images?.[i]
 
@@ -1347,6 +1481,290 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     const op = typeof item.overlayOpacity === 'number' ? Math.max(0, Math.min(1, item.overlayOpacity)) : (hasBg ? 0.4 : 0)
     if (op <= 0) return null
     return <div style={{ position: 'absolute', inset: 0, background: item.overlayColor || '#1C100D', opacity: op, pointerEvents: 'none', zIndex: 0 }} />
+  }
+
+  // ===== 글 간지 6종 렌더 — 시집 한 페이지(verse) / 큰 따옴표 인용(quote) / 약속 목록(promises) / 원고지(manuscript) / 책 속 밑줄(underline) / 종이 카드(card) =====
+  // 섹션 안 .cl-reveal.cl-ix 묶음이 화면에 들어오면 is-in → 자식(.cl-iv-*)들이 각자 --d 지연만큼 기다렸다 재생
+  const renderTextInterstitial = (item: ClassicTextInter, idx: number): React.ReactNode => {
+    const key = `tinter-${idx}`
+    const t = item.type
+    const ex = CLASSIC_TEXT_INTER_EXAMPLES[t][isEn ? 'en' : 'ko']
+    // 필드가 아직 없으면(undefined) 예시 문장, 사용자가 비웠으면('') 그 요소를 숨김
+    const val = (k: keyof ClassicTextInter & string): string => {
+      const v = item[k]
+      return typeof v === 'string' ? v.replace(/\s+$/, '') : (ex[k] || '')
+    }
+    const dc = CLASSIC_TEXT_INTER_DEFAULTS[t]
+    // 글자 조정(원고지 제외 — 글자가 칸에 묶여 있음): 크기는 이 글 간지의 모든 글자, 행간·자간은 본문만
+    const tune = t !== 'manuscript'
+    const clampN = (v: unknown, lo: number, hi: number, d: number) => (tune && typeof v === 'number' && isFinite(v) ? Math.max(lo, Math.min(hi, v)) : d)
+    const tS = clampN(item.txScale, 0.85, 1.3, 1)
+    const tLh = clampN(item.txLh, 0.8, 1.3, 1)
+    const tLs = clampN(item.txLs, -0.05, 0.1, 0)
+    // 글 간지는 디자인 탭의 본문 글자 크기·상단문구 크기와 연동하지 않음 — 이 글 간지의 '글자 크기'만 따른다
+    const ibfs = (n: number) => Math.round(n * tS * 10) / 10
+    const ilfs = ibfs
+    const lh = (n: number) => Math.round(n * tLh * 100) / 100
+    const ls = (em: number) => `${Math.round((em + tLs) * 1000) / 1000}em`
+    // 글꼴: 이 글 간지에서 고른 한글/영문 글꼴. 영문 글꼴을 고르면 영문 글자는 그 글꼴, 한글은 한글 글꼴로 이어 쓴다
+    const enPick = DISPLAY_FONTS.find((f) => f.id === item.enFont)?.fontFamily
+    const koStack = (item.koFont && item.koFont !== 'body' ? textInterKoFamily(item.koFont, F_BODY) : null) || F_BODY
+    const T_BODY = enPick ? `${stripGenericFamily(enPick)}, ${koStack}` : koStack
+    const T_LABEL = `${stripGenericFamily(enPick || F_LABEL)}, ${koStack}`
+    const T_DISPLAY = enPick || F_DISPLAY
+    // 배경: 기본 배경(IVORY) / 틴티드 배경(DEEP_BEIGE) / 직접 선택. 글자색은 배경 밝기로 자동(밝으면 INK 계열, 어두우면 밝은 글자)
+    // — 기본·틴티드 배경에 사용자가 지정해 둔 텍스트 색(디자인 탭)이 있으면 다른 섹션과 똑같이 그 색을 따른다
+    const mode: ClassicTextInterBgMode = item.bgMode === 'base' || item.bgMode === 'tint' || item.bgMode === 'custom' ? item.bgMode : dc.bgMode
+    const bgC = mode === 'tint' ? DEEP_BEIGE : mode === 'custom' ? (item.bgColor || dc.bgColor) : IVORY
+    // 자동 글자색: 어두운 글자(INK)와 밝은 글자 중 이 배경에서 더 또렷한 쪽 (중간 밝기 배경에서도 잘 보이게)
+    const autoTx = contrastRatio(bgC, INK) >= contrastRatio(bgC, '#F4EEE6') ? INK : '#F4EEE6'
+    const txC = item.textColor || (mode === 'base' && cc.classicDefaultTextColor ? TXT_DEFAULT : mode === 'tint' && cc.classicTintedTextColor ? TXT_TINT : autoTx)
+    const bgDark = isDarkColor(bgC)
+    // 포인트 기본색이 밝은 색(인용의 베이지)인데 배경도 밝으면 안 보이므로, 직접 고르지 않은 경우 글자색으로
+    const ptC = item.pointColor || (dc.point && !isDarkColor(dc.point) && !bgDark ? txC : dc.point) || txC
+    const cardC = item.cardColor || dc.card || '#F7F6F3'
+    const tA = (a: number) => `rgba(${hexToRgb(txC, '53,23,20')},${a})`
+    // 선 색: 직접 고르면 그 색 그대로, 아니면 각 선의 원래 색(글자색·포인트색을 옅게)
+    const lineOr = (fallback: string) => item.lineColor || fallback
+    const pA = (a: number) => `rgba(${hexToRgb(ptC, '163,38,42')},${a})`
+    const dl = (s: number): React.CSSProperties => ({ ['--d' as string]: `${Math.round(s * 100) / 100}s` } as React.CSSProperties)
+    // 글 영역 고정 폭: 360px 휴대폰에도 들어가는 크기로 고정해 화면마다 줄바꿈이 달라지지 않게 한다
+    const fixW = (px: number): React.CSSProperties => ({ width: '100%', maxWidth: px, alignSelf: 'center' })
+    // 그리운 손글씨는 Regular 한 굵기뿐 → 굵게 지정된 줄(약속 목록 항목·서명 등)을 브라우저가 가짜로 두껍게 만들지 않게 (기울임·작은 대문자 합성은 그대로)
+    const noFakeBold: React.CSSProperties = GRIUN_FONTS.some((f) => f.id === item.koFont) ? { fontSynthesis: 'style small-caps' } : {}
+    const sec: React.CSSProperties = { position: 'relative', minHeight: '100vh', overflow: 'hidden', boxSizing: 'border-box', background: bgC, color: txC, ...noFakeBold }
+
+    if (t === 'verse') {
+      // A. 시집 한 페이지: 양 끝 붉은 따옴표 달린 가는 선 · 좁은 본문 · 강조 한 줄 · 같은 선 · (선이 다 그어진 뒤) 서명
+      const body = val('verseText')
+      const pull = val('versePull').replace(/^["“”'‘’\s]+|["“”'‘’\s]+$/g, '')
+      const sign = val('verseSign')
+      const colW = Math.round(228 * tS) // 글자 크기에 맞춰 칸 폭도 같이 → 줄바꿈 위치 유지
+      const qm = (side: 'left' | 'right', ch: string) => (
+        <span aria-hidden style={{ position: 'absolute', [side]: -1, bottom: 3, fontFamily: T_LABEL, fontSize: ilfs(22), lineHeight: .7, color: ptC }}>{ch}</span>
+      )
+      return (
+        <section key={key} className="cl-iv-grain" style={{ ...sec, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '80px 28px', textAlign: 'center' }}>
+          <div className="cl-reveal cl-ix" style={{ ...fixW(300), display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: ilfs(22) }}>
+            <div className="cl-iv-draw" style={{ ...dl(0.2), position: 'relative', alignSelf: 'stretch', height: 1, background: lineOr(tA(0.18)), margin: '0 0 32px' }}>
+              {qm('left', '“')}{qm('right', '”')}
+            </div>
+            {body ? <p className="cl-iv-rv" style={{ ...dl(0.9), margin: 0, maxWidth: colW, fontFamily: T_BODY, fontSize: ibfs(13), lineHeight: lh(1.85), letterSpacing: ls(0.01), color: tA(0.88), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{body}</p> : null}
+            {pull ? <p className="cl-iv-rv" style={{ ...dl(1.5), margin: body ? '22px 0 0' : 0, maxWidth: colW, fontFamily: T_BODY, fontSize: ibfs(13.5), lineHeight: lh(1.7), letterSpacing: ls(0), color: txC, wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{`“${pull}”`}</p> : null}
+            <div className="cl-iv-draw" style={{ ...dl(2), alignSelf: 'stretch', height: 1, background: lineOr(tA(0.18)), margin: '32px 0 0' }} />
+            {sign ? <p className="cl-iv-rv" style={{ ...dl(3.2), margin: '18px 0 0', fontFamily: T_LABEL, fontSize: ilfs(11.5), letterSpacing: '.03em', color: tA(0.8), wordBreak: 'keep-all' }}>{sign}</p> : null}
+          </div>
+        </section>
+      )
+    }
+
+    if (t === 'quote') {
+      // B′. 큰 따옴표 인용: 어두운 배경 + 위쪽 옅은 빛(어두운 배경일 때만 · 사진이 있으면 사진 위 배경색 막) · 원문이 단어마다 떠오르고 번역 · 출처
+      const en = val('quoteText')
+      const ko = val('quoteTrans')
+      const src = val('quoteSource')
+      const hasBg = !!extractUrl(item.quoteBg)
+      const dim = typeof item.quoteDim === 'number' ? Math.max(0, Math.min(1, item.quoteDim)) : 0.6
+      const tokens = en.split(/(\s+)/)
+      const nW = tokens.filter((tk) => tk.trim()).length
+      const step = nW > 1 ? Math.min(0.16, 2.4 / (nW - 1)) : 0.16
+      // 단어 순번(공백 토큰 제외) → 등장 지연
+      const words = tokens.map((tk, i) => (tk.trim() ? <span key={i} className="cl-iv-w" style={dl(0.45 + tokens.slice(0, i).filter((x) => x.trim()).length * step)}>{tk}</span> : tk))
+      const lastW = 0.45 + Math.max(0, nW - 1) * step
+      const koD = lastW + 0.42
+      const srcD = (ko ? koD : lastW + 0.2) + 0.5
+      return (
+        <section key={key} className="cl-iv-grain" style={{ ...sec, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '80px 30px', background: hasBg || !bgDark ? bgC : `radial-gradient(120% 70% at 50% 18%, rgba(240,150,130,.1) 0%, rgba(240,150,130,0) 62%), ${bgC}` }}>
+          {hasBg ? <div aria-hidden style={{ position: 'absolute', inset: 0, ...cropBg(item.quoteBg, {}) }} /> : null}
+          {hasBg ? <div aria-hidden style={{ position: 'absolute', inset: 0, background: bgC, opacity: dim }} /> : null}
+          <div className="cl-reveal cl-ix" style={{ ...fixW(300), position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column' }}>
+            {item.quoteMark !== false ? <span className="cl-iv-rv" aria-hidden style={{ ...dl(0.1), display: 'block', fontFamily: T_DISPLAY, fontSize: Math.round(120 * tS), lineHeight: 0.6, color: pA(0.28), marginBottom: 6 }}>{'“'}</span> : null}
+            {en ? <p style={{ margin: 0, fontFamily: T_LABEL, fontStyle: 'italic', fontSize: ilfs(23), lineHeight: lh(1.45), letterSpacing: ls(0.005), textWrap: 'balance', whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>{words}</p> : null}
+            {ko ? <p className="cl-iv-rv" style={{ ...dl(koD), margin: en ? '22px 0 0' : 0, fontFamily: T_BODY, fontSize: ibfs(13), lineHeight: lh(1.95), letterSpacing: ls(0), color: tA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{ko}</p> : null}
+            {src ? (
+              <p className="cl-iv-rv" style={{ ...dl(srcD), margin: '30px 0 0', display: 'flex', alignItems: 'center', gap: 12, fontFamily: T_LABEL, fontSize: ilfs(11), letterSpacing: '.28em', color: pA(0.7), wordBreak: 'keep-all' }}>
+                <i aria-hidden style={{ display: 'block', flex: '0 0 28px', height: 1, background: lineOr(pA(0.45)) }} />{src}
+              </p>
+            ) : null}
+          </div>
+        </section>
+      )
+    }
+
+    if (t === 'promises') {
+      // C′. 약속 목록(표지형): 색 배경 · 영문 스몰캡 제목 + 한글 부제 · 실선 위 항목들 · 오른쪽 세로 글씨 · 오른쪽 아래 서명
+      const title = val('promTitle')
+      const sub = val('promSub')
+      const side = val('promSide')
+      const note = val('promNote')
+      const sign = val('promSign')
+      const lines = val('promItems').split('\n').map((s) => s.trim())
+      while (lines.length && !lines[0]) lines.shift()
+      while (lines.length && !lines[lines.length - 1]) lines.pop()
+      // 빈 줄(줄바꿈 두 번)은 선 없는 빈 칸으로 남겨 항목 묶음 사이를 띄운다
+      const items = lines.filter(Boolean)
+      const step = items.length > 1 ? Math.min(0.2, 1.6 / (items.length - 1)) : 0.2
+      const lastD = 0.7 + Math.max(0, items.length - 1) * step
+      // 세로 글씨 끝의 영문·숫자(예: 2027)는 눕혀 쓰고 글꼴은 나머지와 같게(고른 영문 글꼴 → 없으면 한글 글꼴) / 서명 끝의 '씀·드림·올림'은 굵게 하지 않음
+      // 보조 글씨(한글 부제·세로 글씨·아래 작은 문구)는 고른 글꼴과 상관없이 조선일보명조로 고정 — 손글씨여도 정돈돼 보이게
+      const MJ = KOREAN_FONTS.find((f) => f.id === 'myungjo')?.fontFamily || T_BODY
+      const sideM = side.match(/^(.*?)\s*([0-9A-Za-z.'’]+)$/)
+      const signM = sign.match(/^(.*?)(\s*(?:씀|드림|올림))$/)
+      return (
+        <section key={key} className="cl-iv-grain" style={sec}>
+          <div className="cl-reveal cl-ix" style={{ position: 'relative', minHeight: '100vh', boxSizing: 'border-box', padding: '88px 58px 80px 28px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            {/* 내용 묶음 — 세로 글씨는 이 묶음 위쪽(제목 높이)에 맞춘다 */}
+            <div style={{ position: 'relative', ...fixW(272) }}>
+            {side ? (
+              <span className="cl-iv-rv" style={{ ...dl(lastD + 0.3), position: 'absolute', top: 2, right: -40, maxHeight: '100%', writingMode: 'vertical-rl', fontFamily: MJ, fontSize: ibfs(11), lineHeight: 1, letterSpacing: '.16em', color: tA(0.75) }}>
+                {/* 한글·가운뎃점은 세워 쓰고(띄어쓰기 그대로), 끝의 연도·영문은 눕혀서 한 칸 띄운 뒤 */}
+                {sideM && sideM[1] ? (
+                  <>
+                    <span style={{ textOrientation: 'upright', whiteSpace: 'pre' }}>{sideM[1]}</span>
+                    <span aria-hidden style={{ display: 'inline-block', inlineSize: '.8em' }} />
+                    <em style={{ fontStyle: 'normal', fontFamily: MJ, letterSpacing: '.08em' }}>{sideM[2]}</em>
+                  </>
+                ) : <span style={{ textOrientation: 'upright', whiteSpace: 'pre' }}>{side}</span>}
+              </span>
+            ) : null}
+            {title ? <span className="cl-iv-rv" style={{ ...dl(0.15), display: 'block', fontFamily: T_LABEL, fontVariant: 'small-caps', fontSize: ilfs(15), fontWeight: 600, letterSpacing: '.06em', wordBreak: 'keep-all' }}>{title}</span> : null}
+            {sub ? <span className="cl-iv-rv" style={{ ...dl(0.35), display: 'block', margin: '2px 0 0', fontFamily: MJ, fontSize: ibfs(12), letterSpacing: '.1em', color: tA(0.85), wordBreak: 'keep-all' }}>{sub}</span> : null}
+            {items.length ? (
+              <ul style={{ margin: title || sub ? '26px 0 0' : 0, padding: 0, listStyle: 'none' }}>
+                {(() => {
+                  let k = -1
+                  return lines.map((s, i) => {
+                    if (!s) return <li key={i} aria-hidden style={{ height: ibfs(18) }} />
+                    k += 1
+                    return <li key={i} className="cl-iv-rv cl-iv-li" style={{ ...dl(0.7 + k * step), ...(item.lineColor ? { ['--iv-line' as string]: item.lineColor, ['--iv-line-op' as string]: '1' } : {}), position: 'relative', padding: `${Math.round(12 * tLh)}px 0 ${Math.round(9 * tLh)}px`, fontFamily: T_BODY, fontWeight: 700, fontSize: ibfs(15.5), letterSpacing: ls(0.02), wordBreak: 'keep-all' }}>{s}</li>
+                  })
+                })()}
+              </ul>
+            ) : null}
+            {note || sign ? (
+              <p className="cl-iv-rv" style={{ ...dl(lastD + 0.6), margin: '48px 0 0', alignSelf: 'flex-end', textAlign: 'right', fontFamily: T_BODY, fontSize: ibfs(11), lineHeight: 1.7, wordBreak: 'keep-all' }}>
+                {note ? <span style={{ fontFamily: MJ }}>{note}</span> : null}{note && sign ? <br /> : null}
+                {sign ? (signM && signM[1] ? <><b style={{ fontWeight: 700 }}>{signM[1]}</b>{signM[2]}</> : <b style={{ fontWeight: 700 }}>{sign}</b>) : null}
+              </p>
+            ) : null}
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    if (t === 'manuscript') {
+      // D′. 원고지: 붉은 줄 칸 + 줄 사이 좁은 띠. 한 줄씩 첫 칸부터, 글자마다 살짝 기울어 손으로 쓴 듯 · 제목/이름은 오른쪽 아래
+      const text = val('msText')
+      const cols = item.msCols === 12 ? 12 : 10
+      // 글꼴: 청첩장 본문 글꼴 / 한글 글꼴 목록 중 하나(손글씨 포함). 손글씨 글꼴이면 글자마다 살짝 기울여 손으로 쓴 느낌
+      const msId = item.koFont || (!item.msFont || item.msFont === 'hand' ? 'neathand' : item.msFont)
+      const hand = MS_HAND_FONT_IDS.includes(msId)
+      const msKo = (msId !== 'body' ? textInterKoFamily(msId, F_BODY) : null) || F_BODY
+      const msFont = enPick ? `${stripGenericFamily(enPick)}, ${msKo}` : msKo
+      // 줄바꿈 = 원고지 다음 줄. 칸 수를 넘으면 다음 줄로 이어 쓰고, 이어지는 줄 첫 칸의 띄어쓰기는 생략
+      const rows: string[][] = []
+      text.split('\n').forEach((ln) => {
+        const chars = Array.from(ln.replace(/\s+$/, ''))
+        if (!chars.length) { rows.push([]); return }
+        let s = 0
+        while (s < chars.length) {
+          rows.push(chars.slice(s, s + cols))
+          s += cols
+          if (chars[s] === ' ') s++
+        }
+      })
+      while (rows.length && !rows[rows.length - 1].length) rows.pop()
+      const total = rows.reduce((n, r) => n + r.filter((ch) => ch.trim()).length, 0)
+      const step = Math.min(0.085, 3.4 / Math.max(1, total))
+      const capD = 0.25 + Math.max(0, total - 1) * step + 0.35
+      const ln = `1.2px solid ${pA(0.78)}`
+      const cap = [val('msTitle'), val('msName')].filter(Boolean).join(' / ')
+      // 줄마다 앞 줄들까지의 글자 수(띄어쓰기 제외) → 글자 순번 = 쓰이는 순서
+      const nonSpace = (chs: string[]) => chs.filter((ch) => ch.trim()).length
+      const rowStart = rows.map((_, ri) => rows.slice(0, ri).reduce((n, r) => n + nonSpace(r), 0))
+      return (
+        <section key={key} className="cl-iv-grain" style={{ ...sec, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px' }}>
+          <div className="cl-reveal cl-ix" style={{ width: '100%', maxWidth: 314, display: 'flex', flexDirection: 'column' }}>
+            {rows.length ? (
+              <div className="cl-iv-sheet" role="img" aria-label={text.replace(/\s*\n\s*/g, ' / ')} style={{ ['--cols' as string]: String(cols), ['--fr' as string]: hand ? '0.5' : '0.52', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', width: '100%', borderLeft: ln, borderRight: ln, borderTop: ln, fontFamily: msFont, color: txC } as React.CSSProperties}>
+                {rows.flatMap((r, ri) => [
+                  ri > 0 ? <div key={`s${ri}`} aria-hidden style={{ height: 6, borderBottom: ln }} /> : null,
+                  <div key={`r${ri}`} aria-hidden style={{ display: 'flex', borderBottom: ln }}>
+                    {Array.from({ length: cols }, (_, ci) => {
+                      const ch = r[ci]
+                      let inner: React.ReactNode = null
+                      if (ch && ch.trim()) {
+                        const i = rowStart[ri] + nonSpace(r.slice(0, ci))
+                        // 손글씨: 글자마다 기울기·가로 위치를 조금씩 다르게 (순번으로 정해지는 의사 난수 → 항상 같은 모양)
+                        const f = (Math.sin(i * 12.9898) * 43758.5453) % 1
+                        const jit = hand ? { ['--jr' as string]: `${((Math.abs(f) - 0.5) * 8).toFixed(1)}deg`, ['--jx' as string]: `${(Math.sin(i * 3.7) * 0.9).toFixed(1)}px` } : {}
+                        inner = <span className={hand ? 'cl-iv-ch cl-iv-hand' : 'cl-iv-ch'} style={{ ...dl(0.25 + i * step), ...jit } as React.CSSProperties}>{ch}</span>
+                      }
+                      return <div key={ci} className="cl-iv-cell" style={{ flex: '1 1 0', minWidth: 0, aspectRatio: '1 / 1', boxSizing: 'border-box', borderRight: ci < cols - 1 ? ln : 0, display: 'grid', placeItems: 'center', lineHeight: 1 }}>{inner}</div>
+                    })}
+                  </div>,
+                ])}
+              </div>
+            ) : null}
+            {cap ? <p className="cl-iv-rv" style={{ ...dl(capD), margin: '10px 6px 0 0', alignSelf: 'flex-end', textAlign: 'right', fontFamily: msFont, fontSize: hand ? ibfs(14) : ibfs(12), letterSpacing: '.02em', color: tA(0.75), wordBreak: 'keep-all' }}>{cap}</p> : null}
+          </div>
+        </section>
+      )
+    }
+
+    if (t === 'underline') {
+      // E. 책 속 밑줄: CHAPTER 머리글 · 옅은 본문 속 한 문장에 붉은 연필 밑줄(줄을 넘어가며 그어짐) · 여백 메모 · 쪽 번호
+      const chapter = val('ulChapter')
+      const before = val('ulBefore')
+      const mark = val('ulMark')
+      const after = val('ulAfter')
+      const note = val('ulNote')
+      const pg = val('ulPage').replace(/^[\s—–-]+|[\s—–-]+$/g, '')
+      return (
+        <section key={key} className="cl-iv-grain" style={{ ...sec, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '80px 30px' }}>
+          <div className="cl-reveal cl-ix" style={{ ...fixW(300), display: 'flex', flexDirection: 'column' }}>
+            {chapter ? <span className="cl-iv-rv" style={{ ...dl(0.1), display: 'block', marginBottom: 26, textAlign: 'center', fontFamily: T_LABEL, fontSize: ilfs(10), letterSpacing: '.32em', paddingLeft: '.32em', color: tA(0.4) }}>{chapter}</span> : null}
+            {before || mark || after ? (
+              <p className="cl-iv-rv" style={{ ...dl(0.35), margin: 0, fontFamily: T_BODY, fontSize: ibfs(13), lineHeight: lh(2.05), letterSpacing: ls(0), color: tA(0.62), textAlign: 'left', textIndent: '1em', wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>
+                {before}{before && mark ? ' ' : ''}
+                {mark ? <span className="cl-iv-hl" style={{ ...dl(1.5), color: txC, backgroundImage: `linear-gradient(${pA(0.75)}, ${pA(0.75)})`, backgroundRepeat: 'no-repeat', backgroundPosition: '0 92%', paddingBottom: 2 }}>{mark}</span> : null}
+                {after ? `${before || mark ? ' ' : ''}${after}` : null}
+              </p>
+            ) : null}
+            {note ? (
+              <p className="cl-iv-rv" style={{ ...dl(2.6), margin: '26px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, fontFamily: T_LABEL, fontStyle: 'italic', fontSize: ilfs(15), color: ptC, wordBreak: 'keep-all' }}>
+                <i aria-hidden style={{ display: 'block', flex: '0 0 22px', height: 1, background: lineOr(pA(0.5)) }} />{note}
+              </p>
+            ) : null}
+            {pg ? <span className="cl-iv-rv" style={{ ...dl(2.9), display: 'block', margin: '30px 0 0', textAlign: 'center', fontFamily: T_LABEL, fontSize: ilfs(10), letterSpacing: '.3em', paddingLeft: '.3em', color: tA(0.35) }}>{`— ${pg} —`}</span> : null}
+          </div>
+        </section>
+      )
+    }
+
+    // F. 종이 카드: 연회색 바탕 가운데 종이 질감 카드 한 장 · 왼쪽 정렬 한두 줄 + '-이름'
+    const cText = val('cardText')
+    const cName = val('cardName')
+    const texture = item.cardTexture !== false
+    // 카드 위 글자색은 바깥 배경이 아니라 카드 색 밝기로 정한다 (어두운 배경 + 흰 카드여도 글자는 어둡게)
+    const cardTx = item.textColor || (contrastRatio(cardC, INK) >= contrastRatio(cardC, '#F4EEE6') ? INK : '#F4EEE6')
+    // 배경 사진(선택): 사진 위에 배경색 막을 '어둡기'만큼 덮는다 (큰 따옴표 인용과 같은 방식)
+    const cHasBg = !!extractUrl(item.cardBg)
+    const cDim = typeof item.cardDim === 'number' ? Math.max(0, Math.min(1, item.cardDim)) : 0.35
+    return (
+      <section key={key} style={{ ...sec, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0' }}>
+        {cHasBg ? <div aria-hidden style={{ position: 'absolute', inset: 0, ...cropBg(item.cardBg, {}) }} /> : null}
+        {cHasBg ? <div aria-hidden style={{ position: 'absolute', inset: 0, background: bgC, opacity: cDim }} /> : null}
+        {/* 카드 폭 고정(감사 인사 도일리처럼): 휴대폰 폭이 달라도 같은 자리에서 줄이 바뀐다 */}
+        <div className="cl-reveal cl-ix" style={{ position: 'relative', zIndex: 1, width: 'min(84%, 300px)' }}>
+          <div className="cl-iv-card" style={{ position: 'relative', width: '100%', aspectRatio: '4 / 3.3', boxSizing: 'border-box', padding: '24px 22px', display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: item.cardAlign === 'center' || item.cardAlign === 'right' ? item.cardAlign : 'left', backgroundColor: cardC, backgroundImage: texture ? CARD_PAPER_TEXTURE : 'none', backgroundBlendMode: 'multiply', boxShadow: '0 1px 2px rgba(0,0,0,.06), 0 10px 24px -14px rgba(0,0,0,.18)' }}>
+            {cText ? <p className="cl-iv-rv" style={{ ...dl(1), margin: 0, fontFamily: T_BODY, fontSize: ibfs(12.5), lineHeight: lh(1.75), letterSpacing: ls(-0.01), color: cardTx, wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{cText}</p> : null}
+            {cName ? <p className="cl-iv-rv" style={{ ...dl(1.6), margin: cText ? '14px 0 0' : 0, fontFamily: T_BODY, fontSize: ibfs(12.5), lineHeight: lh(1.75), letterSpacing: ls(0), color: cardTx, wordBreak: 'keep-all' }}>{cName}</p> : null}
+          </div>
+        </div>
+      </section>
+    )
   }
 
   // 간지 섹션 렌더 (타입별)
@@ -1957,9 +2375,19 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         </section>
 
         {/* ===== 간지 (동적: 사진2 / 사진1 / 사진+문구) ===== */}
-        <div style={{ order: orderOf('interstitials'), display: 'flex', flexDirection: 'column', ...hide('interstitials'), ...tintBg('interstitials') }}>
-          {interstitials.map((it, i) => renderInterstitial(it, i))}
-        </div>
+        {/* 사진 간지 1·2·3 — 각자 섹션 순서의 자리에 (3개를 넘는 예전 데이터는 3번째 자리에 이어서) */}
+        {PHOTO_INTER_KEYS.slice(0, Math.min(INTER_MAX, interstitials.length)).map((key, s) => (
+          <div key={key} style={{ order: orderOf(key), display: 'flex', flexDirection: 'column', ...hide(key), ...tintBg(key) }}>
+            {(s < INTER_MAX - 1 ? [interstitials[s]] : interstitials.slice(s)).map((it, j) => renderInterstitial(it, s + j))}
+          </div>
+        ))}
+
+        {/* ===== 글 간지 (선택: 시집·인용·약속·원고지·밑줄·카드) — 비어 있으면 아무것도 그리지 않음 ===== */}
+        {TEXT_INTER_KEYS.slice(0, Math.min(INTER_MAX, textInterstitials.length)).map((key, s) => (
+          <div key={key} style={{ order: orderOf(key), display: 'flex', flexDirection: 'column', ...hide(key) }}>
+            {(s < INTER_MAX - 1 ? [textInterstitials[s]] : textInterstitials.slice(s)).map((it, j) => renderTextInterstitial(it, s + j))}
+          </div>
+        ))}
 
         {/* ===== VI. Gallery ===== */}
         {/* 갤러리는 종이 질감(grain) 위로 올려 사진·배경에 질감이 얹히지 않게 */}

@@ -93,6 +93,12 @@ function contrast(a: string, b: string): number {
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
 }
 
+/** 두 색의 명도 대비 (WCAG). 색을 못 읽으면 1 */
+export function contrastRatio(a: string, b: string): number {
+  const x = toHex6(a), y = toHex6(b)
+  return x && y ? contrast(x, y) : 1
+}
+
 /** 배경색이 어두운지 (흰 글자가 검은 글자보다 잘 읽히는 색) */
 export function isDarkColor(hex: string): boolean {
   const h = toHex6(hex)

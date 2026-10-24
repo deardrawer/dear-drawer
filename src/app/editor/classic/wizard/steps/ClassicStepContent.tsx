@@ -10,6 +10,7 @@ import ClassicPhotoField from '../../ClassicPhotoField'
 import ClassicGuideEditor from '../../ClassicGuideEditor'
 import SharedRsvpLinkField from '@/components/editor/SharedRsvpLinkField'
 import type { ClassicInvitationData, ClassicBank } from '../../page'
+import { INTER_MAX, INTER_SEQ, PHOTO_INTER_KEYS, TEXT_INTER_KEYS, interAnchor, interLabel } from '@/lib/classicInterKeys'
 
 interface Props {
   data: ClassicInvitationData
@@ -23,7 +24,7 @@ const formatAccount = (value: string) => value.replace(/[^\d-]/g, '')
 const CONTENT_SECTIONS: { key: string; label: string }[] = [
   { key: 'letter', label: '인사말' },
   { key: 'intro', label: '신랑 · 신부 소개' },
-  { key: 'interstitials', label: '사진 간지' },
+  { key: 'interstitials', label: '사진 간지' }, // 간지는 개수만큼 '사진 간지 1·2·3' / '글 간지 1·2·3'으로 따로 표시 (interLabel)
   { key: 'gallery', label: '갤러리' },
   { key: 'date', label: '예식 일정' },
   { key: 'directions', label: '오시는 길' },
@@ -37,11 +38,24 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
   const infoOp = Math.round((data.content.classicInfoSectionOverlayOpacity ?? 0) * 100)
 
   const DEFAULT_ORDER = CONTENT_SECTIONS.map((s) => s.key)
-  const savedOrder = (data.content.classicContentOrder || []).filter((k) => DEFAULT_ORDER.includes(k))
-  // 모든 키를 포함한 완전한 순서만 사용 (레거시 부분 순서는 폐기)
-  const orderComplete = savedOrder.length === DEFAULT_ORDER.length && DEFAULT_ORDER.every((k) => savedOrder.includes(k))
-  const sectionOrder = orderComplete ? savedOrder : [...DEFAULT_ORDER]
-  const labelOf = (k: string) => CONTENT_SECTIONS.find((s) => s.key === k)?.label || k
+  // 지금 있는 간지만 순서에 둔다: 사진 간지는 비어 있어도 기본 1개가 표시되므로 최소 1, 글 간지는 만든 개수만큼 (각 최대 3)
+  const photoInterCount = Math.min(INTER_MAX, Math.max(1, (data.content.classicInterstitials || []).length))
+  const textInterCount = Math.min(INTER_MAX, (data.content.classicTextInterstitials || []).length)
+  const activeInter: string[] = [...PHOTO_INTER_KEYS.slice(0, photoInterCount), ...TEXT_INTER_KEYS.slice(0, textInterCount)]
+  const savedRaw = (data.content.classicContentOrder || []).filter((k) => DEFAULT_ORDER.includes(k) || activeInter.includes(k))
+  // 모든 기본 섹션을 포함한 완전한 순서만 사용 (레거시 부분 순서는 폐기)
+  const orderComplete = DEFAULT_ORDER.every((k) => savedRaw.includes(k))
+  const sectionOrder = (() => {
+    const list = orderComplete ? [...savedRaw] : [...DEFAULT_ORDER]
+    // 순서에 아직 없는 간지는 바로 앞 간지 뒤에 (청첩장 화면과 같은 규칙 — interAnchor)
+    for (const k of INTER_SEQ) {
+      if (!activeInter.includes(k) || list.includes(k)) continue
+      const anchor = interAnchor(k, (x) => list.includes(x))
+      list.splice(list.indexOf(anchor) + 1, 0, k)
+    }
+    return list
+  })()
+  const labelOf = (k: string) => interLabel(k) || CONTENT_SECTIONS.find((s) => s.key === k)?.label || k
 
   const hiddenSections = data.content.classicHiddenSections || []
   const isHidden = (k: string) => hiddenSections.includes(k)
@@ -51,7 +65,7 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
   }
 
   // 기본↔틴티드 배경 전환 가능 섹션 (인사말 제외)
-  const TINTABLE = new Set(['intro', 'gallery', 'directions', 'guide', 'accounts', 'links', 'date', 'rsvp', 'interstitials'])
+  const TINTABLE = new Set(['intro', 'gallery', 'directions', 'guide', 'accounts', 'links', 'date', 'rsvp', ...PHOTO_INTER_KEYS])
   const sectionBgMap = data.content.classicSectionBgMap || {}
   const isTintedMode = (k: string) => sectionBgMap[k] === 'tinted'
   const setBgMode = (k: string, tinted: boolean) => {

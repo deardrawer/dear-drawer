@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useAuth } from '@/components/providers/AuthProvider'
-import { isPostDrawerActiveKST } from '@/lib/weddingLifecycle'
+import { isPostDrawerActiveKST, isWeddingArchivedKST } from '@/lib/weddingLifecycle'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import QRCode from 'qrcode'
@@ -59,6 +59,9 @@ function extractImageUrl(value: unknown): string {
   return ''
 }
 
+// POST DRAWER 장기보관 신청 창구 (서랍 보관 종료 화면의 '문의하기'와 같은 카카오 채널)
+const LONG_TERM_APPLY_URL = 'https://pf.kakao.com/_bEpxen/chat'
+
 // content JSON에서 커버 이미지와 인트로 정보 추출
 function parseInvitationContent(content?: string) {
   if (!content) return { coverImage: '', kakaoThumbnail: '', introTitle: '', introSubTitle: '', senderSide: '', envelopeTheme: '' }
@@ -95,6 +98,10 @@ function parseInvitationContent(content?: string) {
       envelopeTheme, // 혼주용 봉투 테마 컬러 (hex)
       shareTitle: parsed.meta?.title || '',
       shareDescription: parsed.meta?.description || '',
+      // POST DRAWER 장기보관 신청 여부 (서버 postDrawerLongTermOf 와 같은 기준). 미신청이면 예식+30일 후 서랍이 잠긴다
+      postDrawerLongTerm: parsed.meta?.postDrawerLongTerm === true || parsed.meta?.postDrawerLongTerm === 1,
+      // 예식+30일 링크 공개 자동 종료 (관리자가 청첩장별로 켬, 기본 꺼짐 — /i, /invitation 페이지와 같은 기준)
+      publicAutoClose: parsed.meta?.publicAutoClose === true,
     }
   } catch {
     return { coverImage: '', kakaoThumbnail: '', kakaoThumbnailRatio: '1:1' as const, introTitle: '', introSubTitle: '', senderSide: '', envelopeTheme: '', shareTitle: '', shareDescription: '' }
@@ -974,14 +981,24 @@ export default function MyInvitationsPage() {
             <div className="mi-cards">
               {filteredInvitations.map((invitation, idx) => {
                 const daysInfo = calculateDaysLeft(invitation)
-                const { coverImage, introTitle, introSubTitle, senderSide, envelopeTheme } = parseInvitationContent(invitation.content)
+                const { coverImage, introTitle, introSubTitle, senderSide, envelopeTheme, postDrawerLongTerm, publicAutoClose } = parseInvitationContent(invitation.content)
                 const displayImage = coverImage || invitation.main_image
                 const templateName = getTemplateDisplayName(invitation.template_id, senderSide)
                 const isParentsTemplate = invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents' || invitation.template_id === 'parents-formal'
                 // 결제완료 + 예식 다음날(Day 1)부터 → 예식 종료. 카드 액션을 잠그고 POST DRAWER 바로가기만 노출
                 const isDrawerMode = !!invitation.is_paid && isPostDrawerActiveKST(invitation.wedding_date)
+                // 장기보관 미신청 + 예식+30일 경과 → POST DRAWER 잠김 (서버 isPostDrawerLockedByExpiry 와 같은 기준, 데이터는 보존)
+                const drawerLocked = isDrawerMode && !postDrawerLongTerm && isWeddingArchivedKST(invitation.wedding_date)
                 const days = daysInfo && daysInfo.days > 0 ? daysInfo.days : null
-                const daysText = days === null ? '' : invitation.is_paid ? `공개 종료까지 D-${days}` : `${days}일 후 자동 삭제`
+                // 결제 청첩장: 링크 자동 종료를 켠 경우만 '공개 종료까지'(예식+30일), 아니면 링크가 닫히지 않으므로 '예식까지'
+                const daysToWedding = days === null ? null : days - 30
+                const daysText = days === null
+                  ? ''
+                  : !invitation.is_paid
+                    ? `${days}일 후 자동 삭제`
+                    : publicAutoClose
+                      ? `공개 종료까지 D-${days}`
+                      : daysToWedding !== null && daysToWedding > 0 ? `예식까지 D-${daysToWedding}` : ''
                 const rsvpCount = invitation.rsvp_count || 0
                 const editorHref =
                   invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents'
@@ -1110,7 +1127,21 @@ export default function MyInvitationsPage() {
                         </p>
                       )}
                       <p className="mi-note" style={{ margin: '10px 0 0', fontSize: 11.5, lineHeight: 1.6, color: MI.ink3, letterSpacing: '-.015em', wordBreak: 'keep-all' }}>
-                        {invitation.is_paid ? '예식일로부터 30일 후 링크 공개만 종료되고, 방명록·하객 사진·메시지는 POST DRAWER에 계속 보관돼요.' : '결제하지 않은 청첩장은 만든 날로부터 7일 후 자동 삭제돼요.'}
+                        {!invitation.is_paid
+                          ? '결제하지 않은 청첩장은 만든 날로부터 7일 후 자동 삭제돼요.'
+                          : postDrawerLongTerm
+                            ? (publicAutoClose
+                              ? '장기보관 중이에요. 예식일로부터 30일 후 링크 공개만 종료되고, 방명록·하객 사진·메시지는 POST DRAWER에 계속 보관돼요.'
+                              : '장기보관 중이에요. 방명록·하객 사진·메시지는 예식 30일 후에도 POST DRAWER에 계속 보관돼요.')
+                            : (
+                              <>
+                                {/* 이미 잠긴 경우(예식+30일 경과)는 지금 상태를, 아니면 앞으로의 안내를 — 신청 링크는 이 문구 한 곳에만 */}
+                                {drawerLocked
+                                  ? '예식 후 30일이 지나 POST DRAWER가 잠겼어요. 장기보관을 신청하면 방명록·하객 사진·메시지를 다시 볼 수 있어요.'
+                                  : `${publicAutoClose ? '예식일로부터 30일 후 링크 공개가 종료되고 POST DRAWER도 잠겨요.' : '예식일로부터 30일 후 POST DRAWER가 잠겨요.'} 장기보관을 신청하면 방명록·하객 사진·메시지를 계속 볼 수 있어요.`}{' '}
+                                <a href={LONG_TERM_APPLY_URL} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ color: MI.ink2, fontWeight: 500, textDecoration: 'underline', textUnderlineOffset: 2, whiteSpace: 'nowrap' }}>장기보관 신청</a>
+                              </>
+                            )}
                       </p>
                     </div>
 

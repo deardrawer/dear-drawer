@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import ClassicPreview from './ClassicPreview'
 import ClassicWizardEditor from './wizard/ClassicWizardEditor'
 import type { ClassicPhoto } from './ClassicPhotoField'
+import type { ClassicTextInter } from '@/app/i/[slug]/InvitationClientClassic'
 import ShareModal from '@/components/share/ShareModal'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import type { DdayPopupData } from '@/lib/ddayPopupTypes'
@@ -122,6 +123,8 @@ export interface ClassicInvitationData {
     classicTogetherPhoto?: ClassicPhoto // 함께 사진
     // 본문 · 간지 (사진2 / FULL / 인용구)
     classicInterstitials?: { type: 'photo2' | 'photo1' | 'photoText'; photos?: ClassicPhoto[]; text?: string; source?: string; body?: string; bodySize?: number; caption?: string }[]
+    // 본문 · 글 간지 (선택 섹션: 시집 한 페이지 / 큰 따옴표 인용 / 약속 목록 / 원고지 / 책 속 밑줄 / 종이 카드). 비어 있으면 표시 안 함
+    classicTextInterstitials?: ClassicTextInter[]
     // 본문 · 예식 일정 사진
     classicDatePhoto?: ClassicPhoto
     classicDatePhotoEnabled?: boolean // 예식 일정 폴라로이드 사진 표시 여부 (기본 true)

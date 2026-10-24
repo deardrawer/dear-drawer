@@ -2478,7 +2478,10 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 2, marginTop: 2 }}>
                 <div className="cl-reveal cl-clip-l" onClick={() => openLightbox(4)} style={{ aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(4), bgPhoto(4)) }} />
                 <div style={{ background: INK, display: 'flex', alignItems: 'flex-end' }}>
-                  <p style={{ margin: 0, padding: '0 0 16px 14px', writingMode: 'vertical-rl', fontFamily: F_LABEL, fontSize: lfs(13), letterSpacing: '.2em', color: ivoryA(0.75) }}>{nameGroom} &amp; {nameBride}</p>
+                  <p style={{ margin: 0, padding: '0 0 16px 14px', writingMode: 'vertical-rl', fontFamily: F_LABEL, fontSize: lfs(13), letterSpacing: '.2em', color: ivoryA(0.75) }}>
+                    {/* 한글 이름: 반각 '&'는 영문 글꼴로 눕혀져 앞 글자와 겹치므로 전각 '＆'(한글 글꼴, 한 칸 가운데에 섬)로 (영문 이름은 그대로) */}
+                    {/[가-힣]/.test(`${nameGroom}${nameBride}`) ? `${nameGroom} ＆ ${nameBride}` : <>{nameGroom} &amp; {nameBride}</>}
+                  </p>
                 </div>
               </div>
               <div style={{ padding: '0 24px' }}>{galleryMore(5, 'ivory', 24)}</div>

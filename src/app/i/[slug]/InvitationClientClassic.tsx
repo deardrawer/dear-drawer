@@ -1801,7 +1801,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     const pLs = typeof item.txLs === 'number' && isFinite(item.txLs) ? `${Math.max(-0.05, Math.min(0.1, item.txLs))}em` : undefined
     if (item.type === 'photo1') {
       return (
-        <section key={key} style={{ position: 'relative', minHeight: '72vh', background: DARK_PHOTO, overflow: 'hidden' }}>
+        <section key={key} style={{ position: 'relative', minHeight: '100vh' /* 휴대폰 한 화면을 꽉 채움 (예전 72vh) */, background: DARK_PHOTO, overflow: 'hidden' }}>
           <div data-parallax className="cl-reveal cl-clip" style={{ position: 'absolute', inset: '-2%', ...cropBg(interSrc(item, 0), { background: 'transparent' }), willChange: 'transform' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(36,17,16,.34),rgba(36,17,16,.04) 42%,rgba(36,17,16,.6))' }} />
           <div style={{ position: 'absolute', inset: 20, border: `1px solid ${ivoryA(0.5)}`, pointerEvents: 'none' }} />

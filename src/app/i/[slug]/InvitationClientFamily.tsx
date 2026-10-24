@@ -2858,15 +2858,15 @@ function FullHeightDividerSection({
       <div className="full-height-divider-content">
         {/* English Title - Staggered Effect */}
         <p className="full-height-divider-english sc-tt14">
-          {/* 늦게 나오면 그냥 지나치게 돼서 빠르게: 영문 0.2초, 한글 0.6초부터 글자 간격 0.035초 (예전 0.3 / 1.5 / 0.06) */}
-          <StaggeredText text={englishTitle} isVisible={isVisible} delay={0.2} charDelay={0.03} />
+          {/* 시작 대기는 줄이고(한글 1.5→0.9초, 영문 없으면 0.4초) 글자 나오는 속도는 원래에 가깝게(0.06→0.05초) */}
+          <StaggeredText text={englishTitle} isVisible={isVisible} delay={0.3} charDelay={0.04} />
         </p>
 
         {/* Korean Text - Staggered Effect */}
         <div className="full-height-divider-quote">
           <p className="full-height-divider-korean sc-tt26">
-            {/* 영문 제목이 비어 있으면(공백만 포함) 기다리지 않고 0.2초부터 */}
-            <StaggeredText text={koreanText} isVisible={isVisible} delay={englishTitle.trim() ? 0.6 : 0.2} charDelay={0.035} />
+            {/* 영문 제목이 비어 있으면(공백만 포함) 영문을 기다리지 않고 0.4초부터 */}
+            <StaggeredText text={koreanText} isVisible={isVisible} delay={englishTitle.trim() ? 0.9 : 0.4} charDelay={0.05} />
           </p>
         </div>
       </div>

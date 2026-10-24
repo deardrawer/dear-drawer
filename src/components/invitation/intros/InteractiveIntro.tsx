@@ -163,7 +163,8 @@ export default function InteractiveIntro({ styleId, settings, data, onNext, embe
                 {settings.guideText || '터치하거나 아래로 넘겨주세요'}
               </span>
             )}
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" className="dd-intro-cue" style={{ color: 'rgba(120,112,102,.8)' }}>
+            {/* 아래 화살표: 흰색 + 옅은 그림자 (밝은 사진에서도 보이게) */}
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="dd-intro-cue" style={{ color: 'rgba(255,255,255,.95)', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.35))' }}>
               <path d="M6 9l6 6 6-6" />
             </svg>
           </div>

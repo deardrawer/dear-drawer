@@ -7,6 +7,7 @@ import {
   deleteExpiredInvitations,
   setInvitationPublicAutoClose,
 } from "@/lib/db";
+import { setPostDrawerLongTerm } from "@/lib/postDrawer";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // 관리자 인증 확인 (Cloudflare에서는 요청 핸들러 내부에서 env 읽어야 함)
@@ -56,8 +57,18 @@ export async function PATCH(request: NextRequest) {
       id: string;
       is_paid?: 0 | 1;
       public_auto_close?: boolean;
+      post_drawer_long_term?: boolean;
     };
     const { id } = body;
+
+    // POST DRAWER 장기보관 신청 처리 (content.meta.postDrawerLongTerm) — 우표 관리 페이지와 같은 값
+    if (typeof body.post_drawer_long_term === "boolean") {
+      if (!id) {
+        return NextResponse.json({ error: "id required" }, { status: 400 });
+      }
+      await setPostDrawerLongTerm(id, body.post_drawer_long_term);
+      return NextResponse.json({ success: true, post_drawer_long_term: body.post_drawer_long_term });
+    }
 
     // 공개 자동 종료 토글 (content.meta.publicAutoClose)
     if (typeof body.public_auto_close === "boolean") {

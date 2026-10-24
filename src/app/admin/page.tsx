@@ -78,6 +78,8 @@ export default function AdminPage() {
   // 청첩장별 공개 자동 종료(예식+30일)
   const [savingCloseId, setSavingCloseId] = useState<string | null>(null)
   const [autoCloseOverride, setAutoCloseOverride] = useState<Record<string, boolean>>({}) // 토글 후 세션 오버라이드
+  const [longTermOverride, setLongTermOverride] = useState<Record<string, boolean>>({}) // 장기보관 토글 후 세션 오버라이드
+  const [savingLongId, setSavingLongId] = useState<string | null>(null)
 
   // Invitations state
   const [invitations, setInvitations] = useState<Invitation[]>([])
@@ -372,6 +374,41 @@ export default function AdminPage() {
       alert('저장에 실패했습니다.')
     } finally {
       setSavingCloseId(null)
+    }
+  }
+
+  // 장기보관 신청 여부(오버라이드 우선, 없으면 content.meta.postDrawerLongTerm — 서버 postDrawerLongTermOf 와 같은 기준)
+  const longTermOf = (inv: Invitation): boolean => {
+    if (inv.id in longTermOverride) return longTermOverride[inv.id]
+    try {
+      const c = inv.content ? (JSON.parse(inv.content) as { meta?: { postDrawerLongTerm?: unknown } }) : null
+      return c?.meta?.postDrawerLongTerm === true || c?.meta?.postDrawerLongTerm === 1
+    } catch {
+      return false
+    }
+  }
+
+  // 청첩장별 POST DRAWER 장기보관 신청 처리/해제. 우표 관리 페이지의 장기보관 버튼과 같은 값
+  const toggleLongTerm = async (inv: Invitation, next: boolean) => {
+    if (savingLongId) return
+    const msg = next
+      ? '이 청첩장을 장기보관 신청 처리합니다.\n예식 +30일이 지나도 내 서랍·POST DRAWER가 계속 열립니다.\n계속할까요?'
+      : '이 청첩장의 장기보관을 해제합니다.\n예식 +30일이 지났다면 내 서랍·POST DRAWER가 바로 잠깁니다. (데이터는 보존)\n계속할까요?'
+    if (!window.confirm(msg)) return
+    setSavingLongId(inv.id)
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({ id: inv.id, post_drawer_long_term: next }),
+      })
+      const d = (await res.json().catch(() => ({}))) as { post_drawer_long_term?: boolean; error?: string }
+      if (!res.ok) { alert(d.error || '저장에 실패했습니다.'); return }
+      setLongTermOverride((m) => ({ ...m, [inv.id]: !!d.post_drawer_long_term }))
+    } catch {
+      alert('저장에 실패했습니다.')
+    } finally {
+      setSavingLongId(null)
     }
   }
 
@@ -855,6 +892,24 @@ export default function AdminPage() {
                                   }}
                                 >
                                   {savingCloseId === inv.id ? '…' : on ? '공개종료ON' : '공개종료OFF'}
+                                </button>
+                              )
+                            })()}
+                            {(() => {
+                              const on = longTermOf(inv)
+                              return (
+                                <button
+                                  onClick={() => toggleLongTerm(inv, !on)}
+                                  disabled={savingLongId === inv.id}
+                                  title="POST DRAWER 장기보관 (예식+30일 후에도 내 서랍·POST DRAWER 열람 허용)"
+                                  className="px-3 py-1 rounded text-xs font-medium"
+                                  style={{
+                                    backgroundColor: on ? '#2563EB' : '#F3F4F6',
+                                    color: on ? '#FFFFFF' : '#374151',
+                                    opacity: savingLongId === inv.id ? 0.5 : 1,
+                                  }}
+                                >
+                                  {savingLongId === inv.id ? '…' : on ? '장기보관ON' : '장기보관OFF'}
                                 </button>
                               )
                             })()}

@@ -1,10 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import ColorField from '@/components/editor/ColorField'
 import ClassicPhotoField, { type ClassicPhoto } from './ClassicPhotoField'
 import { INTER_MAX } from '@/lib/classicInterKeys'
+import { FontGrid, FontTrigger, GriunGlyphNote, TuneSlider, bodyFamilyOf, displayFamilyOf, enFontGroups, koFontGroups, sampleFrom, stripGeneric } from './ClassicFontControls'
 
 export type ClassicInter = {
   type: 'photo2' | 'photo1' | 'photoText'
@@ -19,6 +21,12 @@ export type ClassicInter = {
   overlayOpacity?: number
   textSize?: number
   textAlign?: 'left' | 'center' | 'right'
+  bodyAlign?: 'left' | 'center' | 'right' // 인용구: 본문 정렬 (없으면 인용문 정렬과 같게)
+  captionAlign?: 'left' | 'center' | 'right' // 서명 정렬 (없으면 본문이 가운데면 가운데, 좌·우면 오른쪽)
+  koFont?: string // 한글 글꼴 id ('body' = 청첩장 본문 글꼴, 없으면 예전 그대로)
+  enFont?: string // 영문 글꼴 id (없으면 청첩장 영문 글꼴)
+  txLh?: number // 행간 배율 0.8~1.3 (없으면 1)
+  txLs?: number // 자간 더하기(em) -0.05~0.1 (없으면 0)
 }
 
 interface Props {
@@ -26,6 +34,8 @@ interface Props {
   onChange: (list: ClassicInter[]) => void
   onRemove?: (index: number) => void // 간지를 지웠을 때 (섹션 순서 자리 당기기용)
   invitationId?: string
+  bodyFont?: string // 청첩장 한글 본문 글꼴 id — 글꼴 견본용
+  displayFont?: string // 청첩장 영문 글꼴 id
 }
 
 const TYPES = [
@@ -34,8 +44,19 @@ const TYPES = [
   { id: 'photoText', label: '인용구', photos: 1, hasText: true, hasCaption: true, hasBg: true, ratio: 5 / 4, textBase: 21, alignBase: 'left' },
 ] as const
 
-export default function ClassicInterstitialEditor({ value, onChange, onRemove, invitationId }: Props) {
+export default function ClassicInterstitialEditor({ value, onChange, onRemove, invitationId, bodyFont, displayFont }: Props) {
   const list = value || []
+  // 펼친 글꼴 목록 (항목 번호 + 한글/영문)
+  const [fontOpen, setFontOpen] = useState<{ i: number; k: 'ko' | 'en' } | null>(null)
+  const toggleFont = (i: number, k: 'ko' | 'en') => setFontOpen((o) => (o && o.i === i && o.k === k ? null : { i, k }))
+  const bodyFamily = bodyFamilyOf(bodyFont)
+  const displayFamily = displayFamilyOf(displayFont)
+  // 기본 = 한글 리디바탕 (영문은 청첩장 영문 글꼴)
+  const koGroups = koFontGroups([
+    { id: '', name: '기본 (리디바탕)', family: `${stripGeneric(displayFamily)}, 'Ridibatang', serif` },
+    { id: 'body', name: '청첩장 본문 글꼴', family: bodyFamily },
+  ], bodyFamily)
+  const enGroups = enFontGroups(displayFamily)
 
   const update = (i: number, patch: Partial<ClassicInter>) =>
     onChange(list.map((it, idx) => (idx === i ? { ...it, ...patch } : it)))
@@ -151,32 +172,117 @@ export default function ClassicInterstitialEditor({ value, onChange, onRemove, i
             {it.type === 'photoText' && (
               <div className="space-y-1.5">
                 <span className="text-sm font-medium text-gray-700">본문 (선택)</span>
-                <p className="text-[10px] text-gray-400 leading-tight">인용문 아래에 따옴표 없이 이어지는 글이에요. 정렬은 인용문과 같이 맞춰져요.</p>
+                <p className="text-[10px] text-gray-400 leading-tight">인용문 아래에 따옴표 없이 이어지는 글이에요. 정렬은 인용문과 따로 고를 수 있고, 서명은 본문이 좌·우 정렬이면 오른쪽, 가운데면 가운데에 놓여요.</p>
                 <Textarea
                   value={it.body || ''}
                   onChange={(e) => update(i, { body: e.target.value })}
                   placeholder={'계절이 몇 번 바뀌는 동안\n서로의 가장 편한 자리가 되어 준 두 사람이\n이제 같은 길을 함께 걸어가려 합니다.'}
                   rows={4}
                 />
-                <div>
-                  <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>본문 글자 크기</span><span>{it.bodySize ?? Math.round((it.textSize ?? meta.textBase) * 0.82)}px</span></div>
-                  <input
-                    type="range"
-                    min={11}
-                    max={26}
-                    value={it.bodySize ?? Math.round((it.textSize ?? meta.textBase) * 0.82)}
-                    onChange={(e) => update(i, { bodySize: Number(e.target.value) })}
-                    className="w-full accent-[color:var(--ed-accent)]"
-                  />
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>본문 글자 크기</span><span>{it.bodySize ?? Math.round((it.textSize ?? meta.textBase) * 0.82)}px</span></div>
+                    <input
+                      type="range"
+                      min={11}
+                      max={26}
+                      value={it.bodySize ?? Math.round((it.textSize ?? meta.textBase) * 0.82)}
+                      onChange={(e) => update(i, { bodySize: Number(e.target.value) })}
+                      className="w-full accent-[color:var(--ed-accent)]"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[11px] text-gray-500">본문 정렬</span>
+                    <div className="inline-flex rounded-md border border-gray-200 overflow-hidden">
+                      {([
+                        { id: 'left', label: '좌' },
+                        { id: 'center', label: '중앙' },
+                        { id: 'right', label: '우' },
+                      ] as const).map((opt) => {
+                        const active = (it.bodyAlign ?? it.textAlign ?? meta.alignBase) === opt.id
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => update(i, { bodyAlign: opt.id })}
+                            className={`px-2.5 py-1 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
+                          >
+                            {opt.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
             {meta.hasCaption && (
               <div className="space-y-1.5">
                 <span className="text-sm font-medium text-gray-700">{it.type === 'photoText' ? '서명 (선택)' : '출처 / 서명 (선택)'}</span>
-                <Input value={it.caption || ''} onChange={(e) => update(i, { caption: e.target.value })} placeholder="신랑 & 신부" />
+                <div className="flex items-center gap-3">
+                  <Input className="flex-1" value={it.caption || ''} onChange={(e) => update(i, { caption: e.target.value })} placeholder="신랑 & 신부" />
+                  <div className="inline-flex shrink-0 rounded-md border border-gray-200 overflow-hidden" aria-label="서명 정렬">
+                    {([
+                      { id: 'left', label: '좌' },
+                      { id: 'center', label: '중앙' },
+                      { id: 'right', label: '우' },
+                    ] as const).map((opt) => {
+                      const bodyA = it.bodyAlign ?? it.textAlign ?? meta.alignBase
+                      const active = (it.captionAlign ?? (bodyA === 'center' ? 'center' : 'right')) === opt.id
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => update(i, { captionAlign: opt.id })}
+                          className={`px-2.5 py-1 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
+                        >
+                          {opt.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
               </div>
             )}
+
+            {/* 글꼴 · 글자 조정 (디자인 탭 글자 크기와 따로) */}
+            {(() => {
+              // 인용구는 인용문·출처가 기본 글꼴로 고정 → 고른 글꼴이 쓰이는 본문·서명만 견본·글자 안내에
+              const vals = (it.type === 'photoText' ? [it.body, it.caption] : [it.text, it.caption]).map((v) => v || '')
+              const koId = it.koFont || ''
+              const koCur = koGroups.flatMap((g) => g.items).find((f) => f.id === koId)
+              const enCur = enGroups.flatMap((g) => g.items).find((f) => f.id === (it.enFont || ''))
+              const openK = fontOpen && fontOpen.i === i ? fontOpen.k : null
+              return (
+                <div className="space-y-3 pt-2 border-t border-gray-100">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">글꼴 · 글자 조정</p>
+                    {it.type === 'photoText' ? <p className="text-[10px] text-gray-400 leading-tight">인용문과 출처는 기본 글꼴 그대로, 고른 글꼴은 본문·서명에 적용돼요.</p> : null}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <FontTrigger label="한글 글꼴" name={koCur?.name || '기본 (리디바탕)'} family={koCur?.family} open={openK === 'ko'} onClick={() => toggleFont(i, 'ko')} />
+                    <FontTrigger label="영문 글꼴" name={enCur?.name || '청첩장 영문 글꼴'} family={enCur?.family} open={openK === 'en'} onClick={() => toggleFont(i, 'en')} />
+                  </div>
+                  {openK === 'ko' && (
+                    <FontGrid groups={koGroups} value={koId} sample={sampleFrom(vals, /[가-힣]/, '우리 결혼합니다', 18)} onPick={(id) => update(i, { koFont: id || undefined })} />
+                  )}
+                  {openK === 'en' && (
+                    <FontGrid groups={enGroups} value={it.enFont || ''} sample={sampleFrom(vals, /[A-Za-z]{3}/, 'Wedding Day', 24)} onPick={(id) => update(i, { enFont: id || undefined })} />
+                  )}
+                  <GriunGlyphNote koId={koId} text={vals.join(' ')} fallbackLabel="청첩장 본문 글꼴" />
+                  <div className="space-y-2 rounded-md border border-gray-100 bg-gray-50/60 p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-gray-500">행간 · 자간 <span className="text-gray-400">(글자 크기는 위 문구별 슬라이더)</span></span>
+                      {it.txLh !== undefined || it.txLs !== undefined ? (
+                        <button type="button" onClick={() => update(i, { txLh: undefined, txLs: undefined })} className="text-[11px] text-gray-400 underline underline-offset-2 hover:text-gray-700">기본값</button>
+                      ) : null}
+                    </div>
+                    <TuneSlider label="행간" min={80} max={130} value={Math.round((it.txLh ?? 1) * 100)} show={(v) => `${v}%`} onChange={(v) => update(i, { txLh: v === 100 ? undefined : v / 100 })} />
+                    <TuneSlider label="자간" min={-5} max={10} value={Math.round((it.txLs ?? 0) * 100)} show={(v) => (v > 0 ? `+${v}` : `${v}`)} onChange={(v) => update(i, { txLs: v === 0 ? undefined : v / 100 })} />
+                  </div>
+                </div>
+              )
+            })()}
 
             {meta.hasBg && (
               <div className="space-y-3 pt-2 border-t border-gray-100">

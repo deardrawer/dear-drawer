@@ -20,7 +20,8 @@ interface Props {
   zoomEnabled?: boolean // 핀치·더블탭 확대 허용 (기본 true, 끄면 일반 <img>)
 }
 
-const F_LABEL = "var(--font-eb-garamond), serif"
+// 사진 설명에 한글이 들어가면 기기 대체 글꼴 대신 리디바탕 (THE CLASSIC 본문과 같은 기준)
+const F_LABEL = "var(--font-eb-garamond), 'Ridibatang', serif"
 
 // 실제로 고유 스타일을 구현한 variant. 그 외(3/8 등)는 1(에디토리얼)로 대체.
 const STYLED_VARIANTS = new Set([1, 2, 4, 5, 6, 7, 9])

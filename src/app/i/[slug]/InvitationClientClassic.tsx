@@ -107,6 +107,8 @@ function textInterKoFamily(id: string | undefined, fallback: string): string | n
   if (g) return `${g.family}, ${fallback}`
   return KOREAN_FONTS.find((f) => f.id === id)?.fontFamily || null
 }
+// 사진 간지 한글 기본 글꼴 (리디바탕) — 기기마다 대체 글꼴이 달라 고딕으로 보이던 것을 고정
+const INTER_KO_DEFAULT = KOREAN_FONTS.find((f) => f.id === 'classic')?.fontFamily || "'Ridibatang', serif"
 // 글꼴 스택 끝의 일반 글꼴(serif 등) 제거 — 뒤에 한글 글꼴을 이어 붙일 때 일반 글꼴이 한글까지 가로채지 않게
 const stripGenericFamily = (stack: string) => stack.replace(/,\s*(serif|sans-serif|cursive|monospace|system-ui)\s*$/, '')
 // 글 간지 한 장 (content.classicTextInterstitials[]). 글 필드는 타입마다 따로 저장 → 타입을 바꿔도 각자 쓴 글이 남는다
@@ -476,8 +478,13 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const ddayPopup = normalizeDdayPopup(cc.classicDdayPopup)
 
   // ===== 폰트 (에디터 디자인 탭에서 선택; 미선택 시 기본값) =====
-  const F_DISPLAY = DISPLAY_FONTS.find((f) => f.id === cc.classicDisplayFont)?.fontFamily || F_DISPLAY_DEFAULT
-  const F_LABEL = DISPLAY_FONTS.find((f) => f.id === cc.classicDisplayFont)?.fontFamily || F_LABEL_DEFAULT
+  // 영문 글꼴 그대로 (글 간지·사진 간지에서 고른 한글 글꼴을 뒤에 붙일 때 사용)
+  const F_DISPLAY_EN = DISPLAY_FONTS.find((f) => f.id === cc.classicDisplayFont)?.fontFamily || F_DISPLAY_DEFAULT
+  const F_LABEL_EN = DISPLAY_FONTS.find((f) => f.id === cc.classicDisplayFont)?.fontFamily || F_LABEL_DEFAULT
+  // 영문 글꼴 자리에 한글이 들어가면(이름·예식장·캡션·안내 제목 등) 기기 대체 글꼴 대신 리디바탕으로
+  // (예전엔 기기마다 달라 아이폰에선 고딕으로 보이기도 했음). 영문 글자는 그대로 영문 글꼴
+  const F_DISPLAY = `${stripGenericFamily(F_DISPLAY_EN)}, ${INTER_KO_DEFAULT}`
+  const F_LABEL = `${stripGenericFamily(F_LABEL_EN)}, ${INTER_KO_DEFAULT}`
   const F_BODY = KOREAN_FONTS.find((f) => f.id === cc.classicBodyFont)?.fontFamily || F_BODY_DEFAULT
 
   // ===== 색 토큰 (에디터 색 설정 반영) =====
@@ -1378,7 +1385,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const rInkA = (a: number) => fgA('rsvp', a)
 
   // 간지(interstitial) 동적 섹션: 타입별(사진2 / FULL사진 / 인용구). 사진은 크롭(ClassicPhoto)
-  type Inter = { type: 'photo2' | 'photo1' | 'photoText'; photos?: unknown[]; images?: string[]; text?: string; source?: string; body?: string; bodySize?: number; caption?: string; bg?: unknown; overlayColor?: string; overlayOpacity?: number; textSize?: number; textAlign?: 'left' | 'center' | 'right' }
+  type Inter = { type: 'photo2' | 'photo1' | 'photoText'; photos?: unknown[]; images?: string[]; text?: string; source?: string; body?: string; bodySize?: number; caption?: string; bg?: unknown; overlayColor?: string; overlayOpacity?: number; textSize?: number; textAlign?: 'left' | 'center' | 'right'; bodyAlign?: 'left' | 'center' | 'right'; captionAlign?: 'left' | 'center' | 'right'; koFont?: string; enFont?: string; txLh?: number; txLs?: number }
   const interstitials: Inter[] = (Array.isArray(cc.classicInterstitials) && cc.classicInterstitials.length)
     ? cc.classicInterstitials
     : [
@@ -1510,7 +1517,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     const enPick = DISPLAY_FONTS.find((f) => f.id === item.enFont)?.fontFamily
     const koStack = (item.koFont && item.koFont !== 'body' ? textInterKoFamily(item.koFont, F_BODY) : null) || F_BODY
     const T_BODY = enPick ? `${stripGenericFamily(enPick)}, ${koStack}` : koStack
-    const T_LABEL = `${stripGenericFamily(enPick || F_LABEL)}, ${koStack}`
+    const T_LABEL = `${stripGenericFamily(enPick || F_LABEL_EN)}, ${koStack}`
     const T_DISPLAY = enPick || F_DISPLAY
     // 배경: 기본 배경(IVORY) / 틴티드 배경(DEEP_BEIGE) / 직접 선택. 글자색은 배경 밝기로 자동(밝으면 INK 계열, 어두우면 밝은 글자)
     // — 기본·틴티드 배경에 사용자가 지정해 둔 텍스트 색(디자인 탭)이 있으면 다른 섹션과 똑같이 그 색을 따른다
@@ -1773,6 +1780,25 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     const baseSize = item.type === 'photoText' ? 21 : item.type === 'photo1' ? 20 : 18
     const fs = typeof item.textSize === 'number' ? item.textSize : baseSize
     const ta = item.textAlign || (item.type === 'photoText' ? 'left' : 'center')
+    // 인용구 본문 정렬: 따로 고를 수 있음 (없으면 인용문 정렬과 같게). 서명은 본문이 가운데면 가운데, 좌·우면 오른쪽
+    const bta = item.bodyAlign || ta
+    const capAlign = item.captionAlign || (bta === 'center' ? 'center' : 'right') // 서명 정렬: 직접 고르면 그대로
+    const hasQuote = !!item.text?.trim()
+    // 글꼴(선택): 영문 글꼴 + 한글 글꼴. 한글을 고르지 않으면 기본 = 리디바탕
+    // (예전엔 영문 글꼴의 대체 글꼴이라 기기마다 달랐음 — 아이폰은 고딕으로 보이기도 함). 서명은 본문 글꼴
+    // 디자인 탭 글자 크기와 연동하지 않음 — 크기는 이 간지의 문구별 크기, 행간·자간은 이 간지 설정만 따른다
+    const enPick = DISPLAY_FONTS.find((f) => f.id === item.enFont)?.fontFamily
+    const koPick = item.koFont === 'body' ? F_BODY : item.koFont ? textInterKoFamily(item.koFont, F_BODY) : null
+    const koText = koPick || INTER_KO_DEFAULT
+    const enStack = enPick || F_LABEL_EN
+    const pF = `${stripGenericFamily(enStack)}, ${koText}`
+    const qF = `${stripGenericFamily(F_LABEL_EN)}, ${INTER_KO_DEFAULT}` // 인용문·출처: 고른 글꼴과 상관없이 기본
+    const capF = enPick ? `${stripGenericFamily(enPick)}, ${koPick || F_BODY}` : (koPick || F_BODY)
+    // 손글씨 글꼴을 고르면 기울임 합성을 끈다 (억지로 비스듬해져 어색함). 명조·바탕 계열은 기울임 그대로
+    const noFakeItalic: React.CSSProperties = item.koFont && MS_HAND_FONT_IDS.includes(item.koFont) ? { fontSynthesis: 'weight small-caps' } : {}
+    const tLh = typeof item.txLh === 'number' && isFinite(item.txLh) ? Math.max(0.8, Math.min(1.3, item.txLh)) : 1
+    const pLh = (n: number) => Math.round(n * tLh * 100) / 100
+    const pLs = typeof item.txLs === 'number' && isFinite(item.txLs) ? `${Math.max(-0.05, Math.min(0.1, item.txLs))}em` : undefined
     if (item.type === 'photo1') {
       return (
         <section key={key} style={{ position: 'relative', minHeight: '72vh', background: DARK_PHOTO, overflow: 'hidden' }}>
@@ -1782,7 +1808,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <div style={{ position: 'absolute', inset: 27, border: `1px solid ${ivoryA(0.22)}`, pointerEvents: 'none' }} />
           {item.text ? (
             <div className="cl-reveal cl-blur" style={{ position: 'absolute', left: 46, right: 46, bottom: 64, textAlign: ta }}>
-              <p style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: fs, lineHeight: 1.5, color: IVORY, whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{item.text}</p>
+              {/* 글 폭 고정(360px 휴대폰 기준 268px): 화면 폭이 달라도 같은 자리에서 줄바꿈 */}
+              <p style={{ margin: '0 auto', maxWidth: 268, fontFamily: pF, fontStyle: 'italic', ...noFakeItalic, fontSize: fs, lineHeight: pLh(1.5), letterSpacing: pLs, color: IVORY, whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{item.text}</p>
             </div>
           ) : null}
         </section>
@@ -1794,12 +1821,18 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {interOverlay(item)}
           <div className="cl-reveal cl-clip" data-delay="120" style={{ position: 'relative', zIndex: 1, margin: '0 auto 0 0', width: '82%', aspectRatio: '4/5', ...cropBg(interSrc(item, 0), { background: DEEP_BEIGE }), filter: 'saturate(.68)' }} />
           <div className="cl-reveal cl-blur" data-delay="380" style={{ position: 'relative', zIndex: 2, margin: '-58px 30px 0 auto', width: '78%', background: PAPER, padding: '34px 26px 30px', boxShadow: '0 26px 44px -36px rgba(53,23,20,.7)' }}>
-            <blockquote style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: fs, lineHeight: 1.5, color: INK, textAlign: ta, whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>“{item.text || ''}”</blockquote>
+            {/* 글 폭 고정(360px 휴대폰 기준 228px): 화면 폭이 달라도 같은 자리에서 줄바꿈 */}
+            <div style={{ maxWidth: 228, margin: '0 auto' }}>
+            {/* 인용문·출처는 고른 글꼴과 상관없이 기본 글꼴(청첩장 영문 글꼴 기울임) — 고른 글꼴은 본문·서명에만 */}
+            {/* 인용문이 비어 있으면 따옴표도 그리지 않음 */}
+            {hasQuote ? <blockquote style={{ margin: 0, fontFamily: qF, fontStyle: 'italic', fontSize: fs, lineHeight: pLh(1.5), letterSpacing: pLs, color: INK, textAlign: ta, whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>“{item.text || ''}”</blockquote> : null}
             {/* 인용문 출처 — 인용문 바로 아래 작게 */}
-            {item.source ? <p style={{ margin: '10px 0 0', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: Math.max(11, Math.round(fs * 0.62)), color: inkA(0.6), textAlign: ta, whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>{item.source}</p> : null}
+            {item.source ? <p style={{ margin: hasQuote ? '10px 0 0' : 0, fontFamily: qF, fontStyle: 'italic', fontSize: Math.max(11, Math.round(fs * 0.62)), letterSpacing: pLs, color: inkA(0.6), textAlign: ta, whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>{item.source}</p> : null}
             {/* 인용문 아래 본문 — 따옴표 없이, 인용문과 같은 글꼴·정렬 · 크기는 따로 (기본 인용문의 82%) */}
-            {item.body ? <p style={{ margin: '26px 0 0', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: typeof item.bodySize === 'number' ? item.bodySize : Math.round(fs * 0.82), lineHeight: 1.65, color: inkA(0.88), textAlign: ta, whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>{item.body}</p> : null}
-            {item.caption ? <p style={{ margin: '20px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55), textAlign: ta, overflowWrap: 'anywhere' }}>{item.caption}</p> : null}
+            {item.body ? <p style={{ margin: hasQuote || item.source ? '26px 0 0' : 0, fontFamily: pF, fontStyle: 'normal' /* 본문은 기울이지 않음 (인용문·출처만 기울임) */, fontSize: typeof item.bodySize === 'number' ? item.bodySize : Math.round(fs * 0.82), lineHeight: pLh(1.65), letterSpacing: pLs, color: inkA(0.88), textAlign: bta, whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>{item.body}</p> : null}
+            {/* 서명: 본문이 좌·우 정렬이면 오른쪽(편지 끝 서명처럼), 가운데면 가운데 */}
+            {item.caption ? <p style={{ margin: hasQuote || item.source || item.body ? '20px 0 0' : 0, fontFamily: capF, fontSize: 11, letterSpacing: pLs, color: inkA(0.55), textAlign: capAlign, overflowWrap: 'anywhere' }}>{item.caption}</p> : null}
+            </div>
           </div>
         </section>
       )
@@ -1817,7 +1850,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           </div>
         </div>
         {item.text ? (
-          <p className="cl-reveal cl-blur" data-delay="200" style={{ position: 'relative', zIndex: 1, margin: '40px 34px 0', textAlign: ta, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: fs, lineHeight: 1.55, color: ivoryA(0.85), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{item.text}</p>
+          <p className="cl-reveal cl-blur" data-delay="200" style={{ position: 'relative', zIndex: 1, margin: '40px auto 0', width: 'calc(100% - 68px)', maxWidth: 232 /* 글 폭 고정(360px 휴대폰 기준) */, textAlign: ta, fontFamily: pF, fontStyle: 'italic', ...noFakeItalic, fontSize: fs, lineHeight: pLh(1.55), letterSpacing: pLs, color: ivoryA(0.85), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{item.text}</p>
         ) : null}
       </section>
     )

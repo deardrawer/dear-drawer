@@ -6,12 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import ColorField from '@/components/editor/ColorField'
 import ClassicPhotoField from './ClassicPhotoField'
-import { DISPLAY_FONTS, KOREAN_FONTS } from '@/app/editor/the-simple/fontOptions'
-import { GRIUN_FONTS, griunMissingChars } from '@/lib/griunFonts'
+import { FontGrid, FontTrigger, GriunGlyphNote, TuneSlider, bodyFamilyOf, displayFamilyOf, enFontGroups, koFontGroups, sampleFrom } from './ClassicFontControls'
 import { INTER_MAX } from '@/lib/classicInterKeys'
 import {
   CLASSIC_TEXT_INTER_DEFAULTS,
-  MS_HAND_FONT_IDS,
   CLASSIC_TEXT_INTER_EXAMPLES,
   type ClassicTextInter,
   type ClassicTextInterBgMode,
@@ -78,72 +76,6 @@ const withExamples = (it: ClassicTextInter, type: ClassicTextInterType, lang: 'k
 const koFontOf = (it: ClassicTextInter): string =>
   it.koFont || (it.type === 'manuscript' ? (!it.msFont || it.msFont === 'hand' ? 'neathand' : it.msFont) : 'body')
 
-// 글꼴 미리보기 견본: 이 글 간지에 실제로 들어간 글 중 첫 줄 (없으면 기본 문장)
-const sampleFrom = (vals: string[], re: RegExp, fallback: string, max: number): string => {
-  const line = vals.flatMap((v) => v.split('\n')).map((l) => l.trim()).find((l) => re.test(l))
-  if (!line) return fallback
-  const chars = Array.from(line)
-  return chars.length > max ? chars.slice(0, max).join('') + '…' : line
-}
-
-type FontOpt = { id: string; name: string; family?: string }
-
-// 글꼴 고르기: 버튼을 누르면 아래에 글꼴마다 견본 문장을 그 글꼴로 보여 준다 (select 는 글꼴 미리보기가 안 됨)
-function FontGrid({ groups, value, sample, onPick }: { groups: { label?: string; items: FontOpt[] }[]; value: string; sample: string; onPick: (id: string) => void }) {
-  return (
-    <div className="rounded-md border border-gray-200 bg-white p-2 space-y-2 max-h-[340px] overflow-y-auto">
-      {groups.map((g, gi) => (
-        <div key={gi} className="space-y-1">
-          {g.label ? <p className="px-0.5 text-[10px] text-gray-400">{g.label}</p> : null}
-          <div className="grid grid-cols-2 gap-1.5">
-            {g.items.map((f) => {
-              const active = f.id === value
-              return (
-                <button
-                  key={f.id || 'default'}
-                  type="button"
-                  onClick={() => onPick(f.id)}
-                  className={`min-w-0 rounded-md border px-2 py-1.5 text-left transition-colors ${active ? 'border-[color:var(--ed-accent)] bg-[color:var(--ed-accent)]/5' : 'border-gray-200 hover:border-gray-400'}`}
-                >
-                  <span className={`block text-[10px] ${active ? 'text-[color:var(--ed-accent)] font-medium' : 'text-gray-400'}`}>{f.name}</span>
-                  <span className="block truncate text-[15px] leading-snug text-gray-800" style={{ fontFamily: f.family }}>{sample}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-// 글자 조정 슬라이더 한 줄 (라벨 · 값 · 슬라이더)
-function TuneSlider({ label, min, max, value, show, onChange }: { label: string; min: number; max: number; value: number; show: (v: number) => string; onChange: (v: number) => void }) {
-  return (
-    <div>
-      <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>{label}</span><span>{show(value)}</span></div>
-      <input type="range" min={min} max={max} value={value} onChange={(ev) => onChange(Number(ev.target.value))} className="w-full accent-[color:var(--ed-accent)]" />
-    </div>
-  )
-}
-
-// 글꼴 선택 버튼 (현재 글꼴 이름을 그 글꼴로)
-function FontTrigger({ label, name, family, open, onClick }: { label: string; name: string; family?: string; open: boolean; onClick: () => void }) {
-  return (
-    <Field label={label}>
-      <button
-        type="button"
-        onClick={onClick}
-        aria-expanded={open}
-        className={`flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-white px-2 text-sm text-gray-700 transition-colors ${open ? 'border-gray-500' : 'border-gray-200 hover:border-gray-400'}`}
-      >
-        <span className="min-w-0 truncate" style={{ fontFamily: family }}>{name}</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-gray-400" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s ease' }} aria-hidden><path d="M6 9l6 6 6-6" /></svg>
-      </button>
-    </Field>
-  )
-}
-
 // 입력 칸 묶음 (라벨 + 입력 + 작은 안내)
 function Field({ label, hint, children }: { label: string; hint?: ReactNode; children: ReactNode }) {
   return (
@@ -178,18 +110,9 @@ export default function ClassicTextInterstitialEditor({ value, onChange, onRemov
   // 펼친 글꼴 목록 (항목 번호 + 한글/영문)
   const [fontOpen, setFontOpen] = useState<{ i: number; k: 'ko' | 'en' } | null>(null)
   const toggleFont = (i: number, k: 'ko' | 'en') => setFontOpen((o) => (o && o.i === i && o.k === k ? null : { i, k }))
-  const bodyFamily = KOREAN_FONTS.find((f) => f.id === (bodyFont || 'classic'))?.fontFamily
-  const displayFamily = DISPLAY_FONTS.find((f) => f.id === (displayFont || 'italiana'))?.fontFamily
-  const koGroups: { label?: string; items: FontOpt[] }[] = [
-    { items: [{ id: 'body', name: '청첩장 본문 글꼴', family: bodyFamily }] },
-    { label: '그리운 손글씨', items: GRIUN_FONTS.map((f) => ({ id: f.id, name: f.name, family: `${f.family}, ${bodyFamily || 'serif'}` })) },
-    { label: '손글씨', items: KOREAN_FONTS.filter((f) => MS_HAND_FONT_IDS.includes(f.id)).map((f) => ({ id: f.id, name: f.name, family: f.fontFamily })) },
-    { label: '바탕 · 고딕', items: KOREAN_FONTS.filter((f) => !MS_HAND_FONT_IDS.includes(f.id)).map((f) => ({ id: f.id, name: f.name, family: f.fontFamily })) },
-  ]
-  const enGroups: { label?: string; items: FontOpt[] }[] = [
-    { items: [{ id: '', name: '청첩장 영문 글꼴', family: displayFamily }] },
-    { items: DISPLAY_FONTS.map((f) => ({ id: f.id, name: f.name, family: f.fontFamily })) },
-  ]
+  const bodyFamily = bodyFamilyOf(bodyFont)
+  const koGroups = koFontGroups([{ id: 'body', name: '청첩장 본문 글꼴', family: bodyFamily }], bodyFamily)
+  const enGroups = enFontGroups(displayFamilyOf(displayFont))
 
   const update = (i: number, patch: Partial<ClassicTextInter>) =>
     onChange(list.map((it, idx) => (idx === i ? { ...it, ...patch } : it)))
@@ -219,7 +142,6 @@ export default function ClassicTextInterstitialEditor({ value, onChange, onRemov
           const cur = it[k as keyof ClassicTextInter]
           return typeof cur === 'string' ? cur : v || ''
         })
-        const koMissing = griunMissingChars(koId, shownVals.join(' '))
         const koSample = sampleFrom(shownVals, /[가-힣]/, '우리 결혼합니다', 18)
         const enSample = sampleFrom(shownVals, /[A-Za-z]{3}/, 'Wedding Day', 24)
         const koCur = koGroups.flatMap((g) => g.items).find((f) => f.id === koId)
@@ -398,13 +320,7 @@ export default function ClassicTextInterstitialEditor({ value, onChange, onRemov
                   <TuneSlider label="자간" min={-5} max={10} value={Math.round((it.txLs ?? 0) * 100)} show={(v) => (v > 0 ? `+${v}` : `${v}`)} onChange={(v) => update(i, { txLs: v === 0 ? undefined : v / 100 })} />
                 </div>
               )}
-              {koMissing.length ? (
-                <p className="text-[11px] leading-snug text-amber-700">
-                  {GRIUN_FONTS.find((f) => f.id === koId)?.name}에 없는 글자가 있어요: <b className="font-medium">{koMissing.slice(0, 12).join(' ')}</b>{koMissing.length > 12 ? ` 외 ${koMissing.length - 12}자` : ''}. 이 글자만 청첩장 본문 글꼴로 보여요.
-                </p>
-              ) : GRIUN_FONTS.some((f) => f.id === koId && !f.full) ? (
-                <p className="text-[10px] text-gray-400 leading-tight">자주 쓰는 한글 2,780자가 들어 있는 글꼴이에요. 드문 글자는 청첩장 본문 글꼴로 보여요.</p>
-              ) : null}
+              <GriunGlyphNote koId={koId} text={shownVals.join(' ')} fallbackLabel="청첩장 본문 글꼴" />
               <Field label="배경" hint="기본·틴티드 배경은 디자인 탭의 색 설정을 따라요.">
                 <div className="flex flex-wrap items-center gap-2">
                   <Segment options={BG_MODES} value={bgMode} onPick={(v) => update(i, { bgMode: v })} />

@@ -607,6 +607,8 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         <ClassicInterstitialEditor
           value={data.content.classicInterstitials}
           onChange={(list) => updateNestedData('content.classicInterstitials', list)}
+          bodyFont={data.content.classicBodyFont}
+          displayFont={data.content.classicDisplayFont}
           // 마지막 하나를 지우면 기본 사진 간지가 '사진 간지 1' 자리에 그대로 나오므로 자리는 유지
           onRemove={(i) => { if ((data.content.classicInterstitials || []).length > 1) shiftInter(PHOTO_INTER_KEYS, i) }}
           invitationId={invitationId || undefined}

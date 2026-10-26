@@ -243,15 +243,22 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
         <button type="button" className="cl-lb-nav cl-lb-nav--prev" onClick={(e) => { e.stopPropagation(); goPrev() }} aria-label="이전 사진">&#8249;</button>
         <div className={`cl-lb-stage${zoomEnabled ? ' cl-lb-stage--zoom' : ''}`} onClick={(e) => e.stopPropagation()} {...touchProps}>
           {zoomEnabled ? (
+            // 제자리 확대: 사진(<img>)을 그대로 두고 확대 → 액자(흰 테두리·그림자)가 확대를 켜지 않았을 때처럼 사진 크기에 딱 맞음
+            // (예전엔 확대 상자 전체에 액자가 그려지고 사진은 그 안에 contain 으로 들어가 위아래가 비었음)
             <ZoomableImage hdZoom
               key={idx}
-              src={images[idx]}
-              alt={`갤러리 사진 ${idx + 1}`}
               className="cl-lb-zoombox"
-              imgClassName={`cl-lb-img${v === 5 ? ' cl-lb--v5-fade' : ''}${v === 5 && fading ? ' is-hidden' : ''}`}
               onZoomChange={setZoomed}
               onSwipe={(d) => { if (d > 0) goNext(); else goPrev() }}
-            />
+            >
+              <img
+                src={images[idx]}
+                alt={`갤러리 사진 ${idx + 1}`}
+                className={`cl-lb-img${v === 5 ? ' cl-lb--v5-fade' : ''}${v === 5 && fading ? ' is-hidden' : ''}`}
+                draggable={false}
+                onContextMenu={preventContext}
+              />
+            </ZoomableImage>
           ) : (
             <img
               src={images[idx]}

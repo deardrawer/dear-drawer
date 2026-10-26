@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useMemo } from 'react'
 import { uploadImage, uploadImages, UploadResult, isBase64, isUrl } from '@/lib/imageUpload'
-import { isHdImage } from '@/lib/hdImage'
+import { isHdImage, isHdUpload, setHdActive } from '@/lib/hdImage'
 import { Button } from '@/components/ui/button'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, useSortable, rectSortingStrategy, arrayMove } from '@dnd-kit/sortable'
@@ -96,6 +96,11 @@ export default function ImageUploader({
   const handleHdClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (disabled || isUploading) return
+    // 고화질로 올린 사진이면 같은 자리에서 해제/켜기 (다시 올리지 않음, 고화질 파일은 그대로)
+    if (value && isHdUpload(value)) {
+      onChange(setHdActive(value, !isHdImage(value)))
+      return
+    }
     hdPick.current = true
     hdInputRef.current?.click()
   }
@@ -165,9 +170,9 @@ export default function ImageUploader({
                   variant="secondary"
                   onClick={handleHdClick}
                   disabled={isUploading}
-                  title="같은 사진을 고화질로 다시 올리면 하객이 더 크게, 선명하게 확대할 수 있어요"
+                  title={value && isHdUpload(value) ? (isHdImage(value) ? '고화질 확대를 끄고 일반 사진처럼(최대 2.5배) 확대돼요' : '다시 고화질로 크게 확대돼요') : '같은 사진을 고화질로 다시 올리면 하객이 더 크게, 선명하게 확대할 수 있어요'}
                 >
-                  고화질
+                  {value && isHdUpload(value) ? (isHdImage(value) ? '고화질 해제' : '고화질 켜기') : '고화질'}
                 </Button>
               )}
               <Button

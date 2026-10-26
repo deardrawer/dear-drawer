@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react'
 import HdReuploadButton from '@/components/editor/HdReuploadButton'
-import { isHdImage } from '@/lib/hdImage'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -81,8 +80,9 @@ function SortableGalleryCard({
             <HdReuploadButton
               className="text-[11px]"
               invitationId={invitationId}
-              isHd={isHdImage(img.url)}
+              url={img.url}
               onUploaded={(res) => onChange({ ...img, url: res.webUrl! })}
+              onToggle={(u) => onChange({ ...img, url: u })}
             />
           )}
         </div>
@@ -660,10 +660,15 @@ export default function ParentsStep3Content({
                       <HdReuploadButton
                         className="text-[11px]"
                         invitationId={invitationId || undefined}
-                        isHd={isHdImage(img.url)}
+                        url={img.url}
                         onUploaded={(res) => {
                           const newImages = [...images]
                           newImages[index] = { ...img, url: res.webUrl! }
+                          updateNestedData('gallery.images', newImages)
+                        }}
+                        onToggle={(u) => {
+                          const newImages = [...images]
+                          newImages[index] = { ...img, url: u }
                           updateNestedData('gallery.images', newImages)
                         }}
                       />

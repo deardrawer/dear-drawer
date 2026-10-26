@@ -4,6 +4,7 @@ import { useState } from 'react'
 import ImageZoomEditor from '@/components/editor/ImageZoomEditor'
 import { uploadImage } from '@/lib/imageUpload'
 import { isHdImage } from '@/lib/hdImage'
+import HdReuploadButton from '@/components/editor/HdReuploadButton'
 import type { ClassicPhoto } from './ClassicPhotoField'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, useSortable, rectSortingStrategy, arrayMove } from '@dnd-kit/sortable'
@@ -86,21 +87,6 @@ export default function ClassicGalleryEditor({ images, onChange, invitationId, m
     }
   }
 
-  // 고화질로 다시 올리기: 같은 사진을 고화질(확대용)과 함께 다시 올림 — 같은 사진이니 줌·위치는 그대로
-  const handleHdReplace = async (i: number, file: File) => {
-    setUploadingIndex(i)
-    try {
-      const res = await uploadImage(file, { invitationId, hd: true })
-      if (res.success && res.webUrl) {
-        updateAt(i, { url: res.webUrl })
-      } else {
-        alert(res.error || '업로드에 실패했습니다.')
-      }
-    } finally {
-      setUploadingIndex(null)
-    }
-  }
-
   const handleAdd = async (files: File[]) => {
     const available = maxImages - items.length
     if (available <= 0 || files.length === 0) return
@@ -173,19 +159,13 @@ export default function ClassicGalleryEditor({ images, onChange, invitationId, m
               {uploadingIndex === editingIndex ? '업로드 중…' : '사진 교체'}
             </label>
             {zoomEnabled && uploadingIndex !== editingIndex && (
-              <label className="text-[11px] text-gray-500 underline cursor-pointer">
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0]
-                    e.target.value = ''
-                    if (f && editingIndex !== null) handleHdReplace(editingIndex, f)
-                  }}
-                />
-                {isHdImage(items[editingIndex].url) ? '고화질 ✓ · 다시 올리기' : '고화질로 다시 올리기'}
-              </label>
+              <HdReuploadButton
+                className="text-[11px]"
+                url={items[editingIndex].url}
+                invitationId={invitationId}
+                onUploaded={(res) => { if (res.webUrl) updateAt(editingIndex, { url: res.webUrl }) }}
+                onToggle={(u) => updateAt(editingIndex, { url: u })}
+              />
             )}
             <button type="button" onClick={() => setEditingIndex(null)} className="text-[11px] text-gray-500 border border-gray-200 rounded px-2 py-0.5 hover:bg-gray-100">닫기</button>
           </div>

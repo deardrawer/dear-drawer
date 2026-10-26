@@ -735,11 +735,19 @@ function SortableGalleryItem({
   isExpanded,
   onRemove,
   onToggleExpand,
+  hdOption = false,
+  invitationId,
+  onHdUploaded,
+  onHdToggle,
 }: {
   img: GalleryImage
   isExpanded: boolean
   onRemove: () => void
   onToggleExpand: () => void
+  hdOption?: boolean // 사진 확대 허용 시: 썸네일에서도 '고화질로 다시 올리기'
+  invitationId?: string
+  onHdUploaded?: (res: UploadResult) => void
+  onHdToggle?: (nextUrl: string) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: img.id })
   const style: React.CSSProperties = {
@@ -758,6 +766,19 @@ function SortableGalleryItem({
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={img.thumbUrl} alt="" className="w-full h-full object-cover pointer-events-none" />
+        {/* 고화질: 켜진 사진은 표시, 확대 허용 시 마우스를 올리면 같은 자리에 버튼(고화질 / 고화질 해제 / 고화질 켜기) */}
+        {isHdImage(img.webUrl) && (
+          <span className={`absolute bottom-1 left-1 rounded bg-black/55 px-1 py-px text-[9px] font-medium leading-none text-white ${hdOption ? 'group-hover:opacity-0' : ''}`}>고화질</span>
+        )}
+        {hdOption && onHdUploaded && (
+          <span
+            className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] leading-none text-white opacity-0 group-hover:opacity-100 transition-opacity [&_label]:!text-white [&_label]:!no-underline [&_button]:!text-white [&_button]:!no-underline"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <HdReuploadButton short url={img.webUrl} invitationId={invitationId} onUploaded={onHdUploaded} onToggle={onHdToggle} />
+          </span>
+        )}
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onRemove() }}
@@ -1122,6 +1143,18 @@ function TheSimpleEditorContent() {
     if (invitationId) {
       deleteImage(oldId, invitationId).catch((err) => console.error('Delete error:', err))
     }
+  }
+
+  // 고화질 해제/켜기: 다시 올리지 않고 주소 표시만 바꿈 (고화질 파일은 그대로)
+  const handleGalleryHdToggle = (instanceId: string, imageId: string, nextUrl: string) => {
+    setData((prev) => ({
+      ...prev,
+      galleries: {
+        ...prev.galleries,
+        [instanceId]: (prev.galleries[instanceId] ?? []).map((img) => (img.id === imageId ? { ...img, webUrl: nextUrl } : img)),
+      },
+    }))
+    setIsDirty(true)
   }
 
   const handleGalleryRemove = async (instanceId: string, imageId: string) => {
@@ -2561,6 +2594,10 @@ function TheSimpleEditorContent() {
                                         onToggleExpand={() =>
                                           setExpandedImageId(expandedImageId === img.id ? null : img.id)
                                         }
+                                        hdOption={data.galleryZoomEnabled === true}
+                                        invitationId={invitationId || undefined}
+                                        onHdUploaded={(res) => handleGalleryHdReplace(id, img.id, res)}
+                                        onHdToggle={(u) => handleGalleryHdToggle(id, img.id, u)}
                                       />
                                     ))}
                                   </div>
@@ -2597,8 +2634,9 @@ function TheSimpleEditorContent() {
                                         <HdReuploadButton
                                           className="text-[11px]"
                                           invitationId={invitationId || undefined}
-                                          isHd={isHdImage(img.webUrl)}
+                                          url={img.webUrl}
                                           onUploaded={(res) => handleGalleryHdReplace(id, img.id, res)}
+                                          onToggle={(u) => handleGalleryHdToggle(id, img.id, u)}
                                         />
                                       </div>
                                     )

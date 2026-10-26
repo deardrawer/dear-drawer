@@ -143,6 +143,8 @@ function RecordPreviewWrapper({ invitation, skipIntro }: { invitation: Invitatio
     recordDaysInk: (invitation as any).recordDaysInk,
     recordLpImage: (invitation as any).recordLpImage,
     recordLpImageSettings: (invitation as any).recordLpImageSettings,
+    recordDiscImage: (invitation as any).recordDiscImage,
+    recordDiscImageSettings: (invitation as any).recordDiscImageSettings,
     ddayPopup: invitation.ddayPopup,
   }), [invitation])
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { FIXED_TEXT_WIDTH_CSS, useFrameWidthVar } from '@/lib/fixedTextWidth'
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
@@ -3068,7 +3069,7 @@ function ProfileSection({
         </p>
       </div>
       <div
-        className="our-profile-body text-[13px] font-light"
+        className="dd-fixw our-profile-body text-[13px] font-light"
         style={{
           fontFamily: fonts.displayKr,
           color: themeColors.text,
@@ -3161,7 +3162,7 @@ function InfoBlock({
 
       {/* Content */}
       <p
-        className="sc-bd12 text-xs font-light leading-[1.8]"
+        className="dd-fixw sc-bd12 text-xs font-light leading-[1.8]"
         style={{ color: '#666', textAlign }}
         dangerouslySetInnerHTML={{ __html: parseHighlight(content) }}
       />
@@ -3260,7 +3261,7 @@ function InterviewSection({
       {/* Answer */}
       {interview.answer && (
         <p
-          className="our-interview-body text-[13px] font-light"
+          className="dd-fixw our-interview-body text-[13px] font-light"
           style={{
             fontFamily: fonts.displayKr,
             color: themeColors.text,
@@ -3334,7 +3335,7 @@ function StorySection({
 
       {story.desc && (
         <p
-          className="story-desc"
+          className="dd-fixw story-desc"
           style={{
             fontSize: '13px',
             fontWeight: 300,
@@ -3470,7 +3471,7 @@ function AnniversaryCounterSection({
 
       {/* Closing Message */}
       <p
-        className="counter-text"
+        className="dd-fixw counter-text"
         style={{
           fontFamily: fonts.displayKr,
           fontSize: '13px',
@@ -4371,7 +4372,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
               />
             </div>
 
-            <p className="text-[13px] font-light leading-[1.9] mb-2" style={{ fontFamily: fonts.displayKr, color: themeColors.highlight || themeColors.primary }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.quote.text) }} />
+            <p className="dd-fixw text-[13px] font-light leading-[1.9] mb-2" style={{ fontFamily: fonts.displayKr, color: themeColors.highlight || themeColors.primary }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.quote.text) }} />
             {invitation.content.quote.author && !invitation.content.quote.hideAuthor && <p className="text-[11px] font-light mb-5" style={{ color: themeColors.gray }}>{invitation.content.quote.author}</p>}
 
             {/* Bottom divider bar with animation */}
@@ -4410,7 +4411,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
         {/* Greeting Section */}
         <div className="greeting-section mb-11">
-          <p className="greeting-body text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.greeting ? parseHighlight(invitation.content.greeting) : '인사말을 입력해주세요' }} />
+          <p className="dd-fixw greeting-body text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.greeting ? parseHighlight(invitation.content.greeting) : '인사말을 입력해주세요' }} />
         </div>
 
         {/* Parents Info */}
@@ -5167,7 +5168,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors: themeColorsRaw
       <AnimatedSection className="min-h-[300px] flex flex-col justify-center items-center text-center px-7 py-20" style={{ ...texBg(themeColors.texture, themeColors.sectionBg) }}>
         <h2 className="our-thankyou-title text-lg mb-7" style={{ fontFamily: fonts.display, color: secTc.text, fontWeight: 400, letterSpacing: '4px' }}>{invitation.content.thankYou.title}</h2>
         {invitation.content.thankYou.message ? (
-          <p className="our-thankyou-body text-[13px] font-light leading-[2.2] mb-7" style={{ fontFamily: fonts.displayKr, color: secTc.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.thankYou.message) }} />
+          <p className="dd-fixw our-thankyou-body text-[13px] font-light leading-[2.2] mb-7" style={{ fontFamily: fonts.displayKr, color: secTc.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.thankYou.message) }} />
         ) : (
           <p className="text-[11px] mb-7" style={{ color: secDark ? secTc.gray : '#9ca3af' }}>감사 메시지를 입력해주세요</p>
         )}
@@ -5619,6 +5620,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
 
   // If skipIntro is true, start directly on main page
   const [currentPage, setCurrentPage] = useState<PageType>(skipIntro ? 'main' : 'intro')
+  useFrameWidthVar()
   const [introScreen, setIntroScreen] = useState<'cover' | 'invitation'>('cover')
 
   // 페이지 레벨 핀치줌 방지
@@ -5815,7 +5817,9 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
         <div className="mobile-frame">
           <div className="mobile-frame-screen">
             <div className="mobile-frame-content" ref={scrollContainerRef}>
-              <WatermarkOverlay isPaid={isPaid || isPreview} className="relative w-full min-h-screen">
+              <WatermarkOverlay isPaid={isPaid || isPreview} className="dd-fw-root relative w-full min-h-screen">
+                {/* 사용자 글 단락: 휴대폰 폭과 상관없이 같은 줄바꿈 + 단어 단위 줄바꿈 (src/lib/fixedTextWidth.ts) */}
+                <style dangerouslySetInnerHTML={{ __html: FIXED_TEXT_WIDTH_CSS }} />
                 <div
                   className={`relative w-full min-h-screen overflow-x-hidden theme-${invitation.colorTheme} ${effectiveFontStyle === 'romantic' ? 'font-romantic' : ''}`}
                   style={{

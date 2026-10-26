@@ -1,5 +1,6 @@
 'use client'
 
+import { FIXED_TEXT_WIDTH_CSS, useFrameWidthVar } from '@/lib/fixedTextWidth'
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
@@ -3047,7 +3048,7 @@ function ParentIntroSection({
         }}
       >
         <p
-          className="typo-body sc-bd13"
+          className="dd-fixw typo-body sc-bd13"
           style={{
             color: themeColors.text,
             fontFamily: fonts.body,
@@ -3184,7 +3185,7 @@ function WhyWeChoseSection({
         {/* Content */}
         <div className="relative py-10 px-6">
           <p
-            className="typo-body sc-bd13"
+            className="dd-fixw typo-body sc-bd13"
             style={{
               color: themeColors.text,
               fontFamily: fonts.body,
@@ -3330,7 +3331,7 @@ function ProfileSection({
         </p>
       </div>
       <div
-        className="typo-body"
+        className="dd-fixw typo-body"
         style={{
           fontFamily: fonts.displayKr,
           color: themeColors.text,
@@ -3423,7 +3424,7 @@ function InfoBlock({
 
       {/* Content */}
       <p
-        className="typo-body sc-bd13 leading-[1.8]"
+        className="dd-fixw typo-body sc-bd13 leading-[1.8]"
         style={{ color: '#666', textAlign }}
         dangerouslySetInnerHTML={{ __html: parseHighlight(content) }}
       />
@@ -3522,7 +3523,7 @@ function InterviewSection({
       {/* Answer */}
       {interview.answer && (
         <p
-          className="typo-body sc-bd13"
+          className="dd-fixw typo-body sc-bd13"
           style={{
             fontFamily: fonts.displayKr,
             color: themeColors.text,
@@ -3596,7 +3597,7 @@ function StorySection({
 
       {story.desc && (
         <p
-          className="story-desc"
+          className="dd-fixw story-desc"
           style={{
             fontSize: '13px',
             fontWeight: 300,
@@ -3733,7 +3734,7 @@ function AnniversaryCounterSection({
 
       {/* Closing Message */}
       <p
-        className="counter-text"
+        className="dd-fixw counter-text"
         style={{
           fontFamily: fonts.displayKr,
           fontSize: '13px',
@@ -4601,7 +4602,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         {/* Quote Section */}
         {invitation.content.quote.text && (
           <div className="quote-section mb-9">
-            <p className="typo-body sc-bd13" style={{ fontFamily: fonts.displayKr, color: themeColors.highlight || themeColors.primary }}>
+            <p className="dd-fixw typo-body sc-bd13" style={{ fontFamily: fonts.displayKr, color: themeColors.highlight || themeColors.primary }}>
               <StaggeredText text={invitation.content.quote.text} isVisible={invitationAnimated} delay={0.5} charDelay={0.05} />
             </p>
             {invitation.content.quote.author && !invitation.content.quote.hideAuthor && <p className="typo-caption sc-if10 mt-2" style={{ color: themeColors.gray }}>{invitation.content.quote.author}</p>}
@@ -4610,7 +4611,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
         {/* Greeting Section */}
         <div className="greeting-section mb-11">
-          <p className="greeting-body text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: (guestInfo?.customMessage || invitation.content.greeting) ? parseHighlight(guestInfo?.customMessage || invitation.content.greeting || '') : '인사말을 입력해주세요' }} />
+          <p className="dd-fixw greeting-body text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: (guestInfo?.customMessage || invitation.content.greeting) ? parseHighlight(guestInfo?.customMessage || invitation.content.greeting || '') : '인사말을 입력해주세요' }} />
         </div>
 
         {/* Parents Info */}
@@ -5367,7 +5368,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors: themeColorsRaw
       <AnimatedSection className="min-h-[300px] flex flex-col justify-center items-center text-center px-7 py-12" style={{ ...texBg(themeColors.texture, themeColors.sectionBg) }}>
         <h2 className="typo-title sc-tt18 mb-7" style={{ fontFamily: fonts.display, color: secTc.text }}>{invitation.content.thankYou.title}</h2>
         {invitation.content.thankYou.message ? (
-          <p className="typo-body sc-bd13 mb-7" style={{ fontFamily: fonts.displayKr, color: secTc.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.thankYou.message) }} />
+          <p className="dd-fixw typo-body sc-bd13 mb-7" style={{ fontFamily: fonts.displayKr, color: secTc.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.thankYou.message) }} />
         ) : (
           <p className="typo-body sc-bd13 mb-7" style={{ color: secDark ? secTc.gray : '#9ca3af' }}>감사 메시지를 입력해주세요</p>
         )}
@@ -5816,6 +5817,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
 
   // If skipIntro is true, start directly on main page
   const [currentPage, setCurrentPage] = useState<PageType>(skipIntro ? 'main' : 'intro')
+  useFrameWidthVar()
   const [introScreen, setIntroScreen] = useState<'cover' | 'invitation'>('cover')
 
   // 페이지 레벨 핀치줌 방지
@@ -6007,7 +6009,9 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
         <div className="mobile-frame">
           <div className="mobile-frame-screen">
             <div className="mobile-frame-content">
-              <WatermarkOverlay isPaid={isPaid || isPreview} className="relative w-full min-h-screen">
+              <WatermarkOverlay isPaid={isPaid || isPreview} className="dd-fw-root relative w-full min-h-screen">
+                {/* 사용자 글 단락: 휴대폰 폭과 상관없이 같은 줄바꿈 + 단어 단위 줄바꿈 (src/lib/fixedTextWidth.ts) */}
+                <style dangerouslySetInnerHTML={{ __html: FIXED_TEXT_WIDTH_CSS }} />
                 <div
                   className={`relative w-full min-h-screen overflow-x-hidden theme-${invitation.colorTheme} ${effectiveFontStyle === 'romantic' ? 'font-romantic' : ''}`}
                   style={{

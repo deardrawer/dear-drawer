@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useCallback, useEffect, type CSSProperties, type ReactNode, type PointerEvent as ReactPointerEvent, type TouchEvent as ReactTouchEvent } from 'react'
+import { hdSrcOf } from '@/lib/hdImage'
 
 /**
  * 라이트박스 내 이미지 줌 — 핀치(두 손가락) + 더블탭 토글 + 줌 상태에서 팬.
@@ -12,6 +13,10 @@ import { useRef, useState, useCallback, useEffect, type CSSProperties, type Reac
  * - 1배일 땐 transform·clip 없이 자식을 그대로 두므로 확대 미허용 때와 똑같이 보이고, 사진 전환 애니메이션도 <img>에 그대로 걸린다.
  * - 확대는 안쪽 래퍼에 걸고, 바깥 박스를 첫 <img>의 레이아웃 영역(둥근 모서리 포함)으로 clip-path 해서 사진 테두리 밖으로 넘치지 않게 한다.
  * - 안쪽 래퍼는 바깥 박스를 가득 채우는 가운데 정렬 flex 컨테이너 — 바깥 박스엔 padding을 두지 않는다.
+ *
+ * hdZoom(고화질 확대): '고화질로 다시 올리기'로 올린 사진(…_hqweb.webp)은 확대할 때 고화질 파일(…_full.webp)을
+ * 미리 받아 다 받으면 바꿔 끼우고 최대 4배까지, 그 외 사진은 화질이 깨지지 않게 최대 2.5배까지만 확대한다.
+ * 확대 중인 사진의 주소는 src(또는 제자리 확대 모드에선 첫 <img>)에서 읽는다.
  */
 export default function ZoomableImage({
   src,
@@ -24,6 +29,7 @@ export default function ZoomableImage({
   children,
   idleTouchAction,
   onTap,
+  hdZoom = true,
 }: {
   src?: string
   alt?: string
@@ -35,6 +41,7 @@ export default function ZoomableImage({
   children?: ReactNode  // 제자리 확대 모드 (위 설명)
   idleTouchAction?: CSSProperties['touchAction']  // 확대하지 않았을 때의 touch-action (기본 manipulation, 룩북처럼 세로 스크롤이 필요하면 'pan-y')
   onTap?: () => void  // 한 번 탭 — 더블탭(확대)과 구분하려고 300ms 기다렸다가 실행, 확대 중엔 실행하지 않음
+  hdZoom?: boolean  // 고화질 확대 (위 설명, 기본 켜짐 — 모든 템플릿 공통). 끄면 예전처럼 모든 사진 최대 4배
 }) {
   const [scale, setScale] = useState(1)
   const [tx, setTx] = useState(0)
@@ -61,11 +68,39 @@ export default function ZoomableImage({
   const [clip, setClip] = useState<string | undefined>(undefined)
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inPlace = children !== undefined
+  // 고화질 확대: 지금 확대하는 사진 주소 / 다 받은 고화질 주소(src 모드에서 바꿔 끼움)
+  const [hdShown, setHdShown] = useState<string | undefined>(undefined)
+  const baseSrc = () => (inPlace ? innerRef.current?.querySelector('img')?.getAttribute('src') : src) || undefined
+  const maxScaleNow = () => (!hdZoom ? 4 : hdSrcOf(baseSrc()) ? 4 : 2.5)
 
   useEffect(() => { onZoomChange?.(scale > 1.02) }, [scale, onZoomChange])
 
   // 라이트박스에서 사진을 넘기면 줌 리셋
   useEffect(() => { setScale(1); setTx(0); setTy(0) }, [resetKey])
+  useEffect(() => { setHdShown(undefined) }, [resetKey, src])
+
+  // 고화질 확대: 확대를 시작하면 고화질 파일을 미리 받아 두었다가 다 받으면 바꿔 끼운다 (받는 동안은 지금 사진 그대로)
+  const zoomedNow = scale > 1.02
+  useEffect(() => {
+    if (!hdZoom || !zoomedNow) return
+    const base = baseSrc()
+    const hd = hdSrcOf(base)
+    if (!hd || hd === base || hd === hdShown) return
+    let alive = true
+    const pre = new Image()
+    pre.onload = () => {
+      if (!alive) return
+      if (inPlace) {
+        const img = innerRef.current?.querySelector('img')
+        if (img && img.getAttribute('src') === base) img.src = hd
+      } else {
+        setHdShown(hd)
+      }
+    }
+    pre.src = hd
+    return () => { alive = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hdZoom, zoomedNow, src, resetKey])
 
   const clamp = useCallback((s: number, x: number, y: number) => {
     const el = boxRef.current
@@ -142,7 +177,7 @@ export default function ZoomableImage({
     if (pointers.current.size === 2 && startDist.current > 0) {
       const pts = [...pointers.current.values()]
       const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y)
-      const ns = Math.max(1, Math.min(4, startScale.current * (dist / startDist.current)))
+      const ns = Math.max(1, Math.min(maxScaleNow(), startScale.current * (dist / startDist.current)))
       const c = clamp(ns, startT.current.x, startT.current.y)
       setScale(ns); setTx(c.x); setTy(c.y)
     } else if (pointers.current.size === 1 && panStart.current && scale > 1) {
@@ -254,7 +289,7 @@ export default function ZoomableImage({
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={src}
+        src={hdShown || src}
         alt={alt}
         draggable={false}
         className={imgClassName}

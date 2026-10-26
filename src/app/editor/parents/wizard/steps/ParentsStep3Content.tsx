@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import HdReuploadButton from '@/components/editor/HdReuploadButton'
+import { isHdImage } from '@/lib/hdImage'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -37,6 +39,7 @@ function SortableGalleryCard({
   onChange,
   invitationId,
   galleryIndex,
+  hdOption = false,
 }: {
   id: string
   img: { url: string; cropX: number; cropY: number; cropWidth: number; cropHeight: number }
@@ -45,6 +48,7 @@ function SortableGalleryCard({
   onChange: (cropData: { url: string; cropX: number; cropY: number; cropWidth: number; cropHeight: number }) => void
   invitationId?: string
   galleryIndex: number
+  hdOption?: boolean // 사진 확대 허용 시 '고화질로 다시 올리기'
 }) {
   const {
     attributes,
@@ -73,6 +77,14 @@ function SortableGalleryCard({
             <GripVertical className="w-4 h-4 text-gray-400" />
           </div>
           <span className="text-xs font-medium text-gray-600">사진 {index + 1}</span>
+          {hdOption && (
+            <HdReuploadButton
+              className="text-[11px]"
+              invitationId={invitationId}
+              isHd={isHdImage(img.url)}
+              onUploaded={(res) => onChange({ ...img, url: res.webUrl! })}
+            />
+          )}
         </div>
         <button
           onClick={onDelete}
@@ -615,6 +627,9 @@ export default function ParentsStep3Content({
             onCheckedChange={(checked) => updateNestedData('gallery.zoomEnabled', checked)}
           />
         </div>
+        {data.gallery?.zoomEnabled === true && (
+          <p className="text-xs text-gray-500 leading-snug">사진은 2.5배까지 확대돼요. 더 크게 선명하게 확대하고 싶은 사진은 사진 번호 옆 &apos;고화질로 다시 올리기&apos;로 올려 주세요.</p>
+        )}
 
         {(() => {
           const images = data.gallery?.images || []
@@ -639,7 +654,21 @@ export default function ParentsStep3Content({
               return (
               <div key={index} className="border rounded-lg p-3 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-gray-600">사진 {index + 1}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-gray-600">사진 {index + 1}</span>
+                    {data.gallery?.zoomEnabled === true && (
+                      <HdReuploadButton
+                        className="text-[11px]"
+                        invitationId={invitationId || undefined}
+                        isHd={isHdImage(img.url)}
+                        onUploaded={(res) => {
+                          const newImages = [...images]
+                          newImages[index] = { ...img, url: res.webUrl! }
+                          updateNestedData('gallery.images', newImages)
+                        }}
+                      />
+                    )}
+                  </div>
                   <button
                     onClick={() => {
                       const newImages = images.filter((_, i) => i !== index)
@@ -692,6 +721,7 @@ export default function ParentsStep3Content({
                       updateNestedData('gallery.images', newImages)
                     }}
                     invitationId={invitationId || undefined}
+                    hdOption={data.gallery?.zoomEnabled === true}
                   />
                 ))}
               </SortableContext>

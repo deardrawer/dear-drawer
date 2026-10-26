@@ -580,8 +580,12 @@ export default function Step3Film({}: Step3FilmProps) {
             onCheckedChange={(checked) => updateNestedField('gallery.zoomEnabled', checked)}
           />
         </div>
+        {invitation.gallery.zoomEnabled === true && (
+          <p className="text-xs text-gray-500 leading-snug">사진은 2.5배까지 확대돼요. 더 크게 선명하게 확대하고 싶은 사진은 사진에 마우스를 올려 &apos;고화질&apos;로 다시 올려 주세요.</p>
+        )}
 
         <MultiImageUploader
+          hdOption={invitation.gallery.zoomEnabled === true}
           images={invitation.gallery.images}
           onChange={(images) => {
             updateNestedField('gallery.images', images)

@@ -10,6 +10,7 @@ export interface UploadResult {
   imageId?: string;
   webUrl?: string;
   thumbUrl?: string;
+  fullUrl?: string; // hd 업로드일 때만: 확대용 고화질 주소
   width?: number;
   height?: number;
   sizeWeb?: number;
@@ -23,6 +24,7 @@ export interface UploadOptions {
   maxThumbSize?: number;  // default: 600
   webQuality?: number;    // default: 0.8
   thumbQuality?: number;  // default: 0.7
+  hd?: boolean;           // '고화질로 다시 올리기': 확대용 고화질(긴 변 4000px)도 함께 저장 → 화면용 주소가 …_hqweb.webp
   onProgress?: (progress: number) => void;
 }
 
@@ -31,7 +33,12 @@ const DEFAULT_OPTIONS: Required<Omit<UploadOptions, 'invitationId' | 'onProgress
   maxThumbSize: 600,
   webQuality: 0.8,
   thumbQuality: 0.7,
+  hd: false,
 };
+
+// 확대용 고화질 파일 (hd 업로드)
+const FULL_MAX_SIZE = 4000;
+const FULL_QUALITY = 0.9;
 
 /**
  * 이미지를 로드하여 Image 객체 반환
@@ -51,7 +58,8 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 function resizeToWebP(
   img: HTMLImageElement,
   maxSize: number,
-  quality: number
+  quality: number,
+  highQualitySmoothing = false // 고화질 업로드: 줄일 때 브라우저 최고 품질 보간
 ): Promise<{ blob: Blob; width: number; height: number }> {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas');
@@ -78,6 +86,10 @@ function resizeToWebP(
     canvas.height = height;
 
     // 이미지 그리기
+    if (highQualitySmoothing) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+    }
     ctx.drawImage(img, 0, 0, width, height);
 
     // WebP로 변환
@@ -129,13 +141,16 @@ export async function uploadImage(
 
     opts.onProgress?.(30);
 
-    // Web 버전 생성 (max 2048px)
-    const web = await resizeToWebP(img, opts.maxWebSize, opts.webQuality);
+    // Web 버전 생성 (max 2048px) — 고화질 업로드면 화면용도 고품질 보간
+    const web = await resizeToWebP(img, opts.maxWebSize, opts.webQuality, opts.hd);
 
     opts.onProgress?.(50);
 
     // Thumb 버전 생성 (max 600px)
     const thumb = await resizeToWebP(img, opts.maxThumbSize, opts.thumbQuality);
+
+    // 고화질 확대용 (hd 업로드만, max 4000px)
+    const full = opts.hd ? await resizeToWebP(img, FULL_MAX_SIZE, FULL_QUALITY, true) : null;
 
     opts.onProgress?.(70);
 
@@ -146,6 +161,7 @@ export async function uploadImage(
     const formData = new FormData();
     formData.append('web', new File([web.blob], 'web.webp', { type: 'image/webp' }));
     formData.append('thumb', new File([thumb.blob], 'thumb.webp', { type: 'image/webp' }));
+    if (full) formData.append('full', new File([full.blob], 'full.webp', { type: 'image/webp' }));
     formData.append('width', web.width.toString());
     formData.append('height', web.height.toString());
 
@@ -166,6 +182,7 @@ export async function uploadImage(
       imageId?: string;
       webUrl?: string;
       thumbUrl?: string;
+      fullUrl?: string;
       width?: number;
       height?: number;
       sizeWeb?: number;
@@ -186,6 +203,7 @@ export async function uploadImage(
       imageId: data.imageId,
       webUrl: data.webUrl,
       thumbUrl: data.thumbUrl,
+      fullUrl: data.fullUrl,
       width: data.width,
       height: data.height,
       sizeWeb: data.sizeWeb,

@@ -1,6 +1,8 @@
 'use client'
 
 import { Suspense, useEffect, useRef, useState } from 'react'
+import HdReuploadButton from '@/components/editor/HdReuploadButton'
+import { isHdImage } from '@/lib/hdImage'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/components/providers/AuthProvider'
@@ -28,7 +30,7 @@ import DdayPopupOverlay from './DdayPopupOverlay'
 import TapToOpenCover, { COVER_VARIANTS } from './TapToOpenCover'
 import ImageZoomEditor from '@/components/editor/ImageZoomEditor'
 import ColorField from '@/components/editor/ColorField'
-import { uploadImages, deleteImage, cropAndUploadImage } from '@/lib/imageUpload'
+import { uploadImages, deleteImage, cropAndUploadImage, type UploadResult } from '@/lib/imageUpload'
 import { bgmPresets, getBgmPresetByUrl } from '@/lib/bgmPresets'
 import { loadKakaoMapSDK } from '@/lib/geunnalKakaoMap'
 import { createSectionInstanceId, getSectionType } from './utils'
@@ -1101,6 +1103,27 @@ function TheSimpleEditorContent() {
   }
 
   // 갤러리 이미지 삭제
+  // 고화질로 다시 올리기: 같은 자리의 사진을 새 파일로 바꾸고(줌·위치 유지), 예전 파일은 정리
+  const handleGalleryHdReplace = (instanceId: string, oldId: string, res: UploadResult) => {
+    if (!res.imageId || !res.webUrl) return
+    setData((prev) => ({
+      ...prev,
+      galleries: {
+        ...prev.galleries,
+        [instanceId]: (prev.galleries[instanceId] ?? []).map((img) =>
+          img.id === oldId
+            ? { ...img, id: res.imageId!, webUrl: res.webUrl!, thumbUrl: res.thumbUrl || res.webUrl!, width: res.width, height: res.height }
+            : img,
+        ),
+      },
+    }))
+    setExpandedImageId(res.imageId)
+    setIsDirty(true)
+    if (invitationId) {
+      deleteImage(oldId, invitationId).catch((err) => console.error('Delete error:', err))
+    }
+  }
+
   const handleGalleryRemove = async (instanceId: string, imageId: string) => {
     setData((prev) => ({
       ...prev,
@@ -2567,6 +2590,19 @@ function TheSimpleEditorContent() {
                                       />
                                     )
                                   })()}
+                                  {data.galleryZoomEnabled === true && (() => {
+                                    const img = images.find((x) => x.id === expandedImageId)!
+                                    return (
+                                      <div className="text-center">
+                                        <HdReuploadButton
+                                          className="text-[11px]"
+                                          invitationId={invitationId || undefined}
+                                          isHd={isHdImage(img.webUrl)}
+                                          onUploaded={(res) => handleGalleryHdReplace(id, img.id, res)}
+                                        />
+                                      </div>
+                                    )
+                                  })()}
                                 </div>
                               )}
                             {/* 행 패턴 편집 UI (V3~V5 커스텀 레이아웃) */}
@@ -2753,6 +2789,9 @@ function TheSimpleEditorContent() {
                                 <span className="text-[11px] text-stone-600">사진 확대(줌) 허용</span>
                               </label>
                               <p className="text-[10px] text-stone-400 leading-relaxed">라이트박스에서 핀치 · 더블탭으로 사진을 확대할 수 있습니다</p>
+                              {data.galleryZoomEnabled === true && (
+                                <p className="text-[10px] text-stone-400 leading-relaxed">사진은 2.5배까지 확대돼요. 더 크게 선명하게 확대하고 싶은 사진은 &apos;조정&apos; → &apos;고화질로 다시 올리기&apos;로 올려 주세요.</p>
+                              )}
                             </div>
                           </div>
                         )

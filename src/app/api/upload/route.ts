@@ -58,6 +58,8 @@ export async function POST(request: NextRequest) {
     // 파일 추출 (web, thumb 버전)
     const webFile = formData.get("web") as File | null;
     const thumbFile = formData.get("thumb") as File | null;
+    // '고화질로 다시 올리기': 확대용 고화질 파일 (있으면 화면용 파일 이름을 _hqweb 으로 — src/lib/hdImage.ts 규칙)
+    const fullFile = formData.get("full") as File | null;
     const invitationId = formData.get("invitationId") as string || "temp";
     const imageId = formData.get("imageId") as string || crypto.randomUUID();
 
@@ -78,7 +80,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 파일 크기 검증
-    if (webFile.size > MAX_FILE_SIZE) {
+    if (webFile.size > MAX_FILE_SIZE || (fullFile && fullFile.size > MAX_FILE_SIZE)) {
       return NextResponse.json(
         { error: "파일 크기는 30MB 이하여야 합니다." },
         { status: 400 }
@@ -97,8 +99,19 @@ export async function POST(request: NextRequest) {
 
       const baseUrl = "/api/r2";
       const baseKey = `invitation/${invitationId}/${imageId}`;
-      const webKey = `${baseKey}_web.webp`;
+      const webKey = fullFile ? `${baseKey}_hqweb.webp` : `${baseKey}_web.webp`;
       const thumbKey = `${baseKey}_thumb.webp`;
+      const fullKey = `${baseKey}_full.webp`;
+
+      // 고화질 확대용 업로드 (있는 경우)
+      if (fullFile) {
+        await env.R2.put(fullKey, await fullFile.arrayBuffer(), {
+          httpMetadata: {
+            contentType: "image/webp",
+            cacheControl: "public, max-age=31536000",
+          },
+        });
+      }
 
       // Web 버전 업로드
       const webBuffer = await webFile.arrayBuffer();
@@ -130,6 +143,7 @@ export async function POST(request: NextRequest) {
         imageId,
         webUrl: `${baseUrl}/${webKey}`,
         thumbUrl: thumbUrl || `${baseUrl}/${webKey}`,
+        ...(fullFile ? { fullUrl: `${baseUrl}/${fullKey}` } : {}),
         width,
         height,
         sizeWeb: webFile.size,
@@ -141,8 +155,14 @@ export async function POST(request: NextRequest) {
       await ensureUploadDir(subDir);
 
       const baseUrl = "/uploads";
-      const webFileName = `${imageId}_web.webp`;
+      const webFileName = fullFile ? `${imageId}_hqweb.webp` : `${imageId}_web.webp`;
       const thumbFileName = `${imageId}_thumb.webp`;
+      const fullFileName = `${imageId}_full.webp`;
+
+      // 고화질 확대용 저장 (있는 경우)
+      if (fullFile) {
+        await writeFile(path.join(LOCAL_UPLOAD_DIR, subDir, fullFileName), Buffer.from(await fullFile.arrayBuffer()));
+      }
 
       // Web 버전 저장
       const webBuffer = Buffer.from(await webFile.arrayBuffer());
@@ -166,6 +186,7 @@ export async function POST(request: NextRequest) {
         imageId,
         webUrl: `${baseUrl}/${subDir}/${webFileName}`,
         thumbUrl: thumbUrl || `${baseUrl}/${subDir}/${webFileName}`,
+        ...(fullFile ? { fullUrl: `${baseUrl}/${subDir}/${fullFileName}` } : {}),
         width,
         height,
         sizeWeb: webFile.size,
@@ -225,9 +246,12 @@ export async function DELETE(request: NextRequest) {
       const webKey = `${baseKey}_web.webp`;
       const thumbKey = `${baseKey}_thumb.webp`;
 
+      // 고화질로 올린 사진이면 _hqweb · _full 도 (없으면 지워도 그만)
       await Promise.all([
         env.R2.delete(webKey),
         env.R2.delete(thumbKey),
+        env.R2.delete(`${baseKey}_hqweb.webp`),
+        env.R2.delete(`${baseKey}_full.webp`),
       ]);
     } else {
       // ===== 로컬 개발 환경 =====
@@ -238,6 +262,8 @@ export async function DELETE(request: NextRequest) {
       await Promise.all([
         unlink(webPath).catch(() => {}),
         unlink(thumbPath).catch(() => {}),
+        unlink(path.join(LOCAL_UPLOAD_DIR, subDir, `${imageId}_hqweb.webp`)).catch(() => {}),
+        unlink(path.join(LOCAL_UPLOAD_DIR, subDir, `${imageId}_full.webp`)).catch(() => {}),
       ]);
     }
 

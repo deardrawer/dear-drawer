@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useMemo } from 'react'
 import { uploadImage, uploadImages, UploadResult, isBase64, isUrl } from '@/lib/imageUpload'
+import { isHdImage } from '@/lib/hdImage'
 import { Button } from '@/components/ui/button'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, useSortable, rectSortingStrategy, arrayMove } from '@dnd-kit/sortable'
@@ -18,6 +19,7 @@ interface ImageUploaderProps {
   aspectRatio?: string  // e.g., "aspect-[3/4]", "aspect-square"
   showPreview?: boolean
   disabled?: boolean
+  hdOption?: boolean  // 갤러리 확대 허용 시: '고화질' 버튼(같은 사진을 확대용 고화질과 함께 다시 올림)
 }
 
 export default function ImageUploader({
@@ -30,19 +32,27 @@ export default function ImageUploader({
   aspectRatio = 'aspect-[3/4]',
   showPreview = true,
   disabled = false,
+  hdOption = false,
 }: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const hdInputRef = useRef<HTMLInputElement>(null)
+  const hdPick = useRef(false) // 이번 파일 선택이 '고화질' 버튼에서 왔는지
 
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
+    const hd = hdPick.current
+    hdPick.current = false
     if (!file) return
 
-    // input 초기화 (같은 파일 재선택 가능하도록)
+    // input 초기화 (같은 파일 재선택 가능하도록) — FileList 는 비워지므로 file 을 먼저 꺼내 둔 뒤
     if (inputRef.current) {
       inputRef.current.value = ''
+    }
+    if (hdInputRef.current) {
+      hdInputRef.current.value = ''
     }
 
     setIsUploading(true)
@@ -52,6 +62,7 @@ export default function ImageUploader({
     const result: UploadResult = await uploadImage(file, {
       invitationId,
       onProgress: setProgress,
+      hd,
     })
 
     setIsUploading(false)
@@ -82,6 +93,13 @@ export default function ImageUploader({
 
   const hasImage = value && (isUrl(value) || isBase64(value))
 
+  const handleHdClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (disabled || isUploading) return
+    hdPick.current = true
+    hdInputRef.current?.click()
+  }
+
   return (
     <div className={`relative ${className}`}>
       <input
@@ -92,6 +110,16 @@ export default function ImageUploader({
         className="hidden"
         disabled={disabled || isUploading}
       />
+      {hdOption && (
+        <input
+          ref={hdInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={handleFileSelect}
+          className="hidden"
+          disabled={disabled || isUploading}
+        />
+      )}
 
       <div
         onClick={handleClick}
@@ -111,6 +139,14 @@ export default function ImageUploader({
               alt="Preview"
               className="w-full h-full object-cover"
             />
+            {/* 고화질로 올린 사진 표시 */}
+            {isHdImage(value) && (
+              <span className="absolute bottom-1 left-1 z-[1] rounded bg-black/55 px-1 py-px text-[9px] font-medium leading-none text-white">고화질</span>
+            )}
+            {/* 사진이 있는 상태에서 다시 올리는 중 */}
+            {isUploading && (
+              <div className="absolute inset-0 z-[2] flex items-center justify-center bg-black/45 text-[11px] text-white">업로드 중… {progress}%</div>
+            )}
             {/* 오버레이 */}
             <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               <Button
@@ -122,6 +158,18 @@ export default function ImageUploader({
               >
                 변경
               </Button>
+              {hdOption && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleHdClick}
+                  disabled={isUploading}
+                  title="같은 사진을 고화질로 다시 올리면 하객이 더 크게, 선명하게 확대할 수 있어요"
+                >
+                  고화질
+                </Button>
+              )}
               <Button
                 type="button"
                 size="sm"
@@ -193,6 +241,7 @@ function SortableImageItem({
   aspectRatio,
   itemClassName,
   disabled,
+  hdOption = false,
 }: {
   id: string
   img: string
@@ -203,6 +252,7 @@ function SortableImageItem({
   aspectRatio: string
   itemClassName: string
   disabled: boolean
+  hdOption?: boolean
 }) {
   const {
     attributes,
@@ -237,6 +287,7 @@ function SortableImageItem({
         aspectRatio={aspectRatio}
         className={itemClassName}
         disabled={disabled}
+        hdOption={hdOption}
       />
     </div>
   )
@@ -336,6 +387,7 @@ interface MultiImageUploaderProps {
   aspectRatio?: string
   disabled?: boolean
   sortable?: boolean
+  hdOption?: boolean  // 갤러리 확대 허용 시 사진마다 '고화질' 버튼
 }
 
 export function MultiImageUploader({
@@ -350,6 +402,7 @@ export function MultiImageUploader({
   aspectRatio = 'aspect-square',
   disabled = false,
   sortable = false,
+  hdOption = false,
 }: MultiImageUploaderProps) {
   const [uploadQueue, setUploadQueue] = useState<UploadQueueItem[]>([])
   const [overLimitMsg, setOverLimitMsg] = useState<string | null>(null)
@@ -594,6 +647,7 @@ export function MultiImageUploader({
                 aspectRatio={aspectRatio}
                 itemClassName={itemClassName}
                 disabled={disabled}
+                hdOption={hdOption}
               />
             ))}
             {uploadingItems}
@@ -617,6 +671,7 @@ export function MultiImageUploader({
           aspectRatio={aspectRatio}
           className={itemClassName}
           disabled={disabled}
+          hdOption={hdOption}
         />
       ))}
       {uploadingItems}

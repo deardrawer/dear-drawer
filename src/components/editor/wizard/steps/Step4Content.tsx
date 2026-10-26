@@ -1493,6 +1493,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           </div>
           <Switch checked={invitation.gallery.zoomEnabled === true} onCheckedChange={(c) => updateNestedField('gallery.zoomEnabled', c)} />
         </div>
+        {invitation.gallery.zoomEnabled === true && (
+          <p className="-mt-1 text-xs" style={{ color: 'var(--ed-text-muted)' }}>사진은 2.5배까지 확대돼요. 더 크게 선명하게 확대하고 싶은 사진은 사진에 마우스를 올려 &apos;고화질&apos;로 다시 올려 주세요.</p>
+        )}
 
         <MultiImageUploader
           images={invitation.gallery.images}
@@ -1522,6 +1525,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           maxImages={30}
           placeholder="사진 추가"
           aspectRatio="aspect-square"
+          hdOption={invitation.gallery.zoomEnabled === true}
         />
 
         {/* 갤러리 이미지 크롭 조정 */}

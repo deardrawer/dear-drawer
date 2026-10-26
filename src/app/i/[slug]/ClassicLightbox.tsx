@@ -219,7 +219,7 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
           {images.map((src, i) => {
             const img = <img key={i} src={src} alt={`갤러리 사진 ${i + 1}`} className="cl-lb-v4-img" draggable={false} onContextMenu={preventContext} />
             // 확대 허용 시 사진마다 제자리 확대 (더블탭·핀치, 1배에선 세로 스크롤 유지)
-            return zoomEnabled ? <ZoomableImage key={i} className="cl-lb-v4-zoom" idleTouchAction="pan-y">{img}</ZoomableImage> : img
+            return zoomEnabled ? <ZoomableImage hdZoom key={i} className="cl-lb-v4-zoom" idleTouchAction="pan-y">{img}</ZoomableImage> : img
           })}
         </div>
       </div>
@@ -243,7 +243,7 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
         <button type="button" className="cl-lb-nav cl-lb-nav--prev" onClick={(e) => { e.stopPropagation(); goPrev() }} aria-label="이전 사진">&#8249;</button>
         <div className={`cl-lb-stage${zoomEnabled ? ' cl-lb-stage--zoom' : ''}`} onClick={(e) => e.stopPropagation()} {...touchProps}>
           {zoomEnabled ? (
-            <ZoomableImage
+            <ZoomableImage hdZoom
               key={idx}
               src={images[idx]}
               alt={`갤러리 사진 ${idx + 1}`}

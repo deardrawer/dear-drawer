@@ -1940,17 +1940,17 @@ function GalleryLightbox({
         >
           {/* Last clone */}
           <div className="gallery-lightbox-slide">
-            {zoomEnabled ? <ZoomableImage src={images[images.length - 1]} alt="갤러리 이미지" className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} onSwipe={swipeTo} /> : <img src={images[images.length - 1]} alt="갤러리 이미지" />}
+            {zoomEnabled ? <ZoomableImage hdZoom src={images[images.length - 1]} alt="갤러리 이미지" className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} onSwipe={swipeTo} /> : <img src={images[images.length - 1]} alt="갤러리 이미지" />}
           </div>
           {/* Actual slides */}
           {images.map((img, i) => (
             <div key={i} className="gallery-lightbox-slide">
-              {zoomEnabled ? <ZoomableImage src={img} alt={`갤러리 이미지 ${i + 1}`} className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} onSwipe={swipeTo} /> : <img src={img} alt={`갤러리 이미지 ${i + 1}`} />}
+              {zoomEnabled ? <ZoomableImage hdZoom src={img} alt={`갤러리 이미지 ${i + 1}`} className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} onSwipe={swipeTo} /> : <img src={img} alt={`갤러리 이미지 ${i + 1}`} />}
             </div>
           ))}
           {/* First clone */}
           <div className="gallery-lightbox-slide">
-            {zoomEnabled ? <ZoomableImage src={images[0]} alt="갤러리 이미지" className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} onSwipe={swipeTo} /> : <img src={images[0]} alt="갤러리 이미지" />}
+            {zoomEnabled ? <ZoomableImage hdZoom src={images[0]} alt="갤러리 이미지" className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} onSwipe={swipeTo} /> : <img src={images[0]} alt="갤러리 이미지" />}
           </div>
         </div>
 
@@ -2109,7 +2109,7 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
   // 확대 허용 시 현재 사진(<img> 그대로)을 제자리 확대 영역으로 감싼다 — 1배에선 확대 미허용 때와 똑같이 보임.
   // onTap: 사진을 한 번 탭하면 넘어가는 타입(1·2·5)은 더블탭(확대)과 구분하려고 300ms 뒤에 넘김
   const zoomFrame = (img: React.ReactNode, onTap?: () => void) => zoomEnabled ? (
-    <ZoomableImage className="our-lb-zoomframe" idleTouchAction="none" onZoomChange={setZoomed} resetKey={idx} onTap={onTap}>{img}</ZoomableImage>
+    <ZoomableImage hdZoom className="our-lb-zoomframe" idleTouchAction="none" onZoomChange={setZoomed} resetKey={idx} onTap={onTap}>{img}</ZoomableImage>
   ) : img
   // 탭 이동 타입: 확대 영역 안의 탭은 ZoomableImage의 onTap이 처리, 확대 중엔 넘기지 않음
   const tapNext = (e: React.MouseEvent) => {
@@ -2132,7 +2132,7 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
           {images.map((src, i) => {
             const img = <img key={i} src={src} alt="" className="our-lb-v4-img" draggable={false} />
             // 확대 허용 시 사진마다 제자리 확대 (1배에선 세로 스크롤 유지)
-            return zoomEnabled ? <ZoomableImage key={i} idleTouchAction="pan-y">{img}</ZoomableImage> : img
+            return zoomEnabled ? <ZoomableImage hdZoom key={i} idleTouchAction="pan-y">{img}</ZoomableImage> : img
           })}
         </div>
         {images.length > 1 && !v4AtEnd && (
@@ -2176,7 +2176,7 @@ function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant
             )
             // 확대 허용 시 가운데 사진 칸 자체가 확대 영역 (확대한 사진은 이 칸 안에서만 보임)
             return zoomEnabled
-              ? <ZoomableImage className="our-lb-v9-current" idleTouchAction="none" onZoomChange={setZoomed} resetKey={idx}>{imgs}</ZoomableImage>
+              ? <ZoomableImage hdZoom className="our-lb-v9-current" idleTouchAction="none" onZoomChange={setZoomed} resetKey={idx}>{imgs}</ZoomableImage>
               : <div className="our-lb-v9-current">{imgs}</div>
           })()}
           <div className="our-lb-v9-side our-lb-v9-side--next" onClick={goNext}>

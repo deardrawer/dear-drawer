@@ -28,6 +28,7 @@ export interface RecordIntroData {
   recordDaysSong?: string; recordDaysArtist?: string; recordDaysMessage?: string
   recordDaysBg?: string; recordDaysInk?: string
   recordLpImage?: string; recordLpImageSettings?: Crop
+  recordDiscImage?: string; recordDiscImageSettings?: Crop
 }
 const coverHeight = (isPreview?: boolean) => (isPreview ? 660 : '100dvh')
 
@@ -108,8 +109,11 @@ export function RecordDaysCover({ invitation, onEnter, isPreview, variant }: { i
   const own = sq ? invitation.recordLpImage : invitation.recordDaysImage
   const photo = own || invitation.media?.coverImage || ''
   const crop: Crop = own ? ((sq ? invitation.recordLpImageSettings : invitation.recordDaysImageSettings) || {}) : (invitation.media?.coverImageSettings || {})
-  const album = invitation.media?.coverImage || photo
-  const albumCrop: Crop = invitation.media?.coverImage ? (invitation.media?.coverImageSettings || {}) : crop
+  // LP 가운데 라벨: 따로 고른 사진 → 없으면 앨범 커버 → 없으면 인트로 사진
+  const album = invitation.recordDiscImage || invitation.media?.coverImage || photo
+  const albumCrop: Crop = invitation.recordDiscImage
+    ? (invitation.recordDiscImageSettings || {})
+    : invitation.media?.coverImage ? (invitation.media?.coverImageSettings || {}) : crop
   const mono = invitation.recordDaysTone !== 'color'
   const left = dday == null || dday < 0 ? 'with love' : dday === 0 ? 'D-DAY' : `D-${dday}`
   // 편지는 플레이어가 나온 뒤 한 글자씩 타자로 찍힌다

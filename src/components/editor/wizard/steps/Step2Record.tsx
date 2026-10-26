@@ -284,6 +284,30 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
                 ))}
               </div>
             </div>
+            {/* LP 가운데 사진 (선택) — 비우면 앨범 커버 사진 */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">LP 가운데 사진 <span className="text-xs font-normal text-gray-400">(선택)</span></Label>
+              <p className="text-[11px] text-gray-400">돌아가는 LP 가운데 동그란 라벨에 들어가요. 비우면 앨범 커버 사진이 들어가요.</p>
+              {invitation.recordDiscImage ? (
+                <div className="space-y-2">
+                  <InlineCropEditor key={invitation.recordDiscImage} imageUrl={invitation.recordDiscImage} settings={invitation.recordDiscImageSettings || {}}
+                    onUpdate={(s) => updateField('recordDiscImageSettings', { ...(invitation.recordDiscImageSettings || { scale: 1, positionX: 0, positionY: 0 }), ...s })}
+                    aspectRatio={1} containerWidth={140} />
+                  <div className="flex justify-center gap-2">
+                    <label className="px-3 py-1.5 text-xs bg-white border border-gray-200 hover:bg-gray-100 rounded-lg cursor-pointer">
+                      사진 변경
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) handleImageUpload(file, 'recordDiscImage', (url) => { updateField('recordDiscImage', url); updateField('recordDiscImageSettings', undefined) }) }} />
+                    </label>
+                    <button type="button" onClick={() => { updateField('recordDiscImage', ''); updateField('recordDiscImageSettings', undefined) }} className="px-3 py-1.5 text-xs bg-red-50 hover:bg-red-100 text-red-600 rounded-lg">삭제</button>
+                  </div>
+                </div>
+              ) : (
+                <label style={{ width: 140, aspectRatio: '1' }} className="mx-auto flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-full hover:border-gray-400 cursor-pointer bg-white">
+                  {uploadingImages.has('recordDiscImage') ? <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> : <span className="text-xs text-gray-500 text-center px-2">+ LP 사진</span>}
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) handleImageUpload(file, 'recordDiscImage', (url) => updateField('recordDiscImage', url)) }} />
+                </label>
+              )}
+            </div>
             {([['recordDaysBg', '배경색', '#FFFFFF', ['#FFFFFF', '#F6F1EA', '#EFE6E6', '#E4EAF1', '#E6EDE4', '#2B2A28', '#1E2A44']], ['recordDaysInk', '포인트 색 (제목·하트)', '#6E2B33', ['#6E2B33', '#1E2A44', '#2F4A3A', '#8A5A3C', '#C0587A', '#1c1c1c', '#F4F1EC']]] as const).map(([key, label, def, sw]) => (
               <div key={key}>
                 <Label className="text-sm font-medium mb-2 block">{label}</Label>

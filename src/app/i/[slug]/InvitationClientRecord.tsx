@@ -2744,6 +2744,8 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     recordDaysInk: (content as any).recordDaysInk,
     recordLpImage: (content as any).recordLpImage,
     recordLpImageSettings: (content as any).recordLpImageSettings,
+    recordDiscImage: (content as any).recordDiscImage,
+    recordDiscImageSettings: (content as any).recordDiscImageSettings,
   }
 }
 

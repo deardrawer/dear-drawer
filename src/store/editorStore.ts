@@ -508,6 +508,8 @@ export interface InvitationContent {
   recordDaysInk?: string        // 포인트색 — 제목·하트 (기본 와인)
   recordLpImage?: string        // LP 커버 인트로의 정사각 커버 사진 (나머지 설정은 함께한 날과 공용)
   recordLpImageSettings?: Record<string, number | undefined>
+  recordDiscImage?: string      // 함께한 날 · LP 커버 인트로: 돌아가는 LP 가운데 라벨 사진 (비우면 앨범 커버)
+  recordDiscImageSettings?: Record<string, number | undefined>
 
   // ===== 필름 인트로 스타일 =====
   // tudum·cinematic은 이전 스타일 (에디터에서는 더 고르지 않지만 기존 청첩장은 그대로 보인다)

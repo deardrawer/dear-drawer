@@ -222,6 +222,27 @@ export default function LoveStoryEditor({ value, onChange }: LoveStoryEditorProp
         />
       </label>
 
+      {/* 본문 정렬 */}
+      <div>
+        <span className="text-[10px] uppercase tracking-wider text-stone-400">본문 정렬</span>
+        <div className="mt-0.5 grid grid-cols-3 gap-1">
+          {([
+            { a: 'left', label: '왼쪽' },
+            { a: 'center', label: '가운데' },
+            { a: 'right', label: '오른쪽' },
+          ] as const).map(({ a, label }) => (
+            <button
+              key={a}
+              type="button"
+              onClick={() => onChange({ ...value, bodyAlign: a })}
+              className={`py-1.5 text-xs rounded-md border transition-colors ${(value.bodyAlign ?? 'left') === a ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 bg-white text-stone-500 hover:border-stone-400'}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {items.map((item, i) => (
         <div
           key={i}

@@ -195,6 +195,7 @@ export interface SectionContents {
     eyebrow: string
     items: LoveStoryItem[]
     toggle?: { enabled: boolean; label: string; style?: number }
+    bodyAlign?: 'left' | 'center' | 'right' // 본문 정렬 (기본 left)
   }
   video: {
     eyebrow: string

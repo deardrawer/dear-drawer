@@ -376,9 +376,11 @@ function PhotoSlideBox({
 }
 
 /* ==========================================================================
- * 사진 지연 로딩 (하객 페이지 전용, lazyImages)
- * - 처음엔 오프닝 사진만 받고, 나머지는 그 사진이 속한 섹션(.ts-sec)이 화면 아래 약 1.5화면 안으로 들어오면 받음
+ * 사진 순서 로딩 (하객 페이지 전용, lazyImages)
+ * - 처음엔 오프닝 사진만 받고, 오프닝 사진을 다 받으면(최대 2.5초) 나머지 사진을 전부 뒤에서 미리 받음
  *   → 카톡 첫 진입 때 사진 수십 장이 한꺼번에 받아지며 오프닝 사진이 늦어지는 문제 방지
+ *   → 갤러리 등 아래 사진도 스크롤해 내려가기 전에 미리 받아 둠 (스크롤 때 반쯤 그려진 사진 방지)
+ * - 그 전에 빠르게 스크롤해 섹션(.ts-sec)이 화면 아래 약 1.5화면 안으로 들어오면 그 섹션은 바로 받음
  * - 사진 자체가 아니라 섹션을 감시: 가로 슬라이드(갤러리·커플 사진)의 화면 밖 장도 섹션이 가까워지면 같이 받아 넘길 때 비지 않게
  * - 한 번 가까워진 섹션은 기억 → 자동 슬라이드로 새로 그려지는 썸네일도 첫 프레임부터 바로 표시(깜빡임 없음)
  * ========================================================================== */
@@ -389,8 +391,9 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 function useNearViewport(ref: React.RefObject<HTMLElement | null>, eager?: boolean): boolean {
   const lazy = useContext(LazyImagesContext) && !eager
   const [near, setNear] = useState(!lazy)
+  const shown = near || !lazy
   useIsoLayoutEffect(() => {
-    if (near) return
+    if (shown) return
     const el = ref.current
     if (!el || typeof IntersectionObserver === 'undefined') {
       setNear(true)
@@ -413,8 +416,8 @@ function useNearViewport(ref: React.RefObject<HTMLElement | null>, eager?: boole
     )
     io.observe(target)
     return () => io.disconnect()
-  }, [near, ref])
-  return near
+  }, [shown, ref])
+  return shown
 }
 
 /* ==========================================================================
@@ -2518,6 +2521,34 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
   const [rsvpInitAttendance, setRsvpInitAttendance] = useState<'attending' | 'not_attending' | undefined>(undefined)
   const [linkCopied, setLinkCopied] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  // 하객 페이지: 오프닝 사진을 다 받은 뒤(또는 최대 2.5초) 나머지 사진을 뒤에서 미리 받기 시작
+  const [imagesReleased, setImagesReleased] = useState(!lazyImages)
+  const openingIntroId = data.sectionOrder.find((id) => getSectionType(id) === 'intro' && !data.hiddenSections?.includes(id))
+  const openingPhotoUrl = openingIntroId && (data.sectionVariants[openingIntroId] ?? 1) !== 8 ? data.sections.intro?.photo?.url : undefined
+  useEffect(() => {
+    if (imagesReleased) return
+    let done = false
+    const release = () => {
+      if (done) return
+      done = true
+      setImagesReleased(true)
+    }
+    const fallback = setTimeout(release, 2500)
+    let after: ReturnType<typeof setTimeout> | undefined
+    if (openingPhotoUrl) {
+      // 같은 주소라 preload/화면용과 한 번만 받음 — 끝났는지만 확인
+      const img = new Image()
+      img.onload = img.onerror = () => { after = setTimeout(release, 200) }
+      img.src = openingPhotoUrl
+    } else {
+      after = setTimeout(release, 200)
+    }
+    return () => {
+      done = true
+      clearTimeout(fallback)
+      if (after) clearTimeout(after)
+    }
+  }, [imagesReleased, openingPhotoUrl])
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [lightboxImages, setLightboxImages] = useState<string[]>([])
 
@@ -5626,6 +5657,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
       const lsToggle = ls?.toggle
       const items = ls?.items ?? []
       if (items.length === 0) return null
+      // 본문 정렬 (기본 왼쪽 — 값 없으면 기존과 동일)
+      const lsAlign = ls?.bodyAlign && ls.bodyAlign !== 'left' ? ls.bodyAlign : undefined
 
       /** 아이템별 사진 배열 추출 헬퍼 */
       const getPhotos = (item: typeof items[number]) =>
@@ -5660,7 +5693,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               </div>
             )}
             {item.body && (
-              <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
+              <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, textAlign: lsAlign, color: '#5d5850', whiteSpace: 'pre-line' }}>
                 {item.body}
               </p>
             )}
@@ -5701,7 +5734,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                     </div>
                   )}
                   {item.body && (
-                    <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line', flex: 1 }}>
+                    <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, textAlign: lsAlign, color: '#5d5850', whiteSpace: 'pre-line', flex: 1 }}>
                       {item.body}
                     </p>
                   )}
@@ -5738,7 +5771,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                         </div>
                       )}
                       {item.body && (
-                        <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, whiteSpace: 'pre-line', opacity: 0.92 }}>
+                        <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, textAlign: lsAlign, whiteSpace: 'pre-line', opacity: 0.92 }}>
                           {item.body}
                         </p>
                       )}
@@ -5749,7 +5782,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               // 사진 없는 아이템: 텍스트만
               return item.body ? (
                 <div key={idx} className="ts-ls-stagger" style={{ '--ls-i': idx, padding: '24px 28px' } as React.CSSProperties}>
-                  <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
+                  <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, textAlign: lsAlign, color: '#5d5850', whiteSpace: 'pre-line' }}>
                     {item.body}
                   </p>
                 </div>
@@ -5789,7 +5822,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                   )}
                   {item.body && (
                     <div style={{ padding: '20px 20px', background: 'var(--card)' }}>
-                      <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
+                      <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, textAlign: lsAlign, color: '#5d5850', whiteSpace: 'pre-line' }}>
                         {item.body}
                       </p>
                     </div>
@@ -5848,7 +5881,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                       </div>
                     )}
                     {item.body && (
-                      <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
+                      <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, textAlign: lsAlign, color: '#5d5850', whiteSpace: 'pre-line' }}>
                         {item.body}
                       </p>
                     )}
@@ -6175,13 +6208,15 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
     ['--ts-font-scale' as string]: String(fontScale),
     ['--ts-intro-font-scale' as string]: String(introFontScale),
     ['--ts-eyebrow-scale' as string]: String(eyebrowScale),
+    // 좁은 폰 줄바꿈 고정용 본문 글자 배율 — --ts-fit 은 하객 페이지에서 폭 390 미만일 때만 1보다 작음(에디터는 없음 = 1)
+    ['--ts-font-scale-fit' as string]: `calc(${fontScale} * var(--ts-fit, 1))`,
     ['--ts-spacing-scale' as string]: String(spacingScale),
     ['--point' as string]: pointColor,
     ['--card' as string]: cardBg,
   } as React.CSSProperties
 
   return (
-    <LazyImagesContext.Provider value={!!lazyImages}>
+    <LazyImagesContext.Provider value={!!lazyImages && !imagesReleased}>
     <div className="ts-preview" style={previewFontStyle}>
       {/* 인트로는 sticky로 화면에 고정 — 본문이 그 위를 덮으며 올라옴 */}
       <div className="ts-intro-sticky">

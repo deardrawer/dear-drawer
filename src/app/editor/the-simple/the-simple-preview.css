@@ -4716,3 +4716,21 @@
 
 /* 핀치 줌 비활성화(페이지) — 스크롤·가로 스와이프는 허용 */
 html, body { touch-action: pan-x pan-y; -webkit-touch-callout: none; }
+
+/* 좁은 폰 줄바꿈 고정 (하객 페이지, 폭 390 미만) — 고객이 쓴 문단(줄바꿈 유지 글)만 폭 비율만큼 글자를 줄여
+ * 편집화면(390 기준)과 같은 자리에서 줄바꿈. 달력·날짜·제목·라벨·인트로는 원래 크기 그대로.
+ * --ts-ws: 띄어쓰기 폭이 글자와 같은 비율로 줄지 않는 폰트 보정 (InvitationClientTheSimple 에서 측정) */
+.ts-preview [style*="pre-line"],
+.ts-preview .ts-greet .ts-greet-body,
+.ts-preview .ts-g3-quote,
+.ts-preview .ts-couple .ts-couple-bio,
+.ts-preview .ts-c3-bio p,
+.ts-preview .ts-interview .ts-a,
+.ts-preview .ts-thanks .ts-thanks-body {
+  --ts-font-scale: var(--ts-font-scale-fit, 1);
+  word-spacing: var(--ts-ws, normal);
+}
+.ts-preview .ts-intro-sticky [style*="pre-line"] {
+  --ts-font-scale: var(--ts-intro-font-scale, 1);
+  word-spacing: normal;
+}

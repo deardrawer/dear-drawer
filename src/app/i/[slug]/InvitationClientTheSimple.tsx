@@ -184,6 +184,11 @@ interface InvitationClientTheSimpleProps {
   isSample?: boolean
 }
 
+const TS_FIT_BASE = 390
+const TS_FIT_GUTTER = 52 // .ts-sec 좌우 여백 26px × 2
+// 바로 바깥 상자(청첩장 루트)에 --ts-fit 을 넣음 — <html>에 넣으면 React 하이드레이션 불일치 경고
+const TS_FIT_SCRIPT = `(function(){try{var s=document.currentScript,r=s&&s.parentElement;if(!r)return;var de=document.documentElement;var w=Math.min(de.clientWidth||window.innerWidth||${TS_FIT_BASE},${TS_FIT_BASE});r.style.setProperty('--ts-fit',String(Math.min(1,(w-${TS_FIT_GUTTER})/${TS_FIT_BASE - TS_FIT_GUTTER})))}catch(e){}})()`
+
 /**
  * THE SIMPLE 템플릿 전용 게스트 뷰 클라이언트 컴포넌트.
  *
@@ -210,6 +215,56 @@ export default function InvitationClientTheSimple({
     return data.sections.intro?.photo?.url || undefined
   })()
   if (openingPhotoUrl) preload(openingPhotoUrl, { as: 'image', fetchPriority: 'high' })
+
+  // 좁은 폰 줄바꿈 고정 — 디자인 기준 폭은 390px(편집화면 미리보기와 같음). 폰이 390보다 좁으면 글 칸(폭 − 좌우 여백 52px)이
+  // 좁아져 줄바꿈이 달라지므로, 글자 크기를 그 비율만큼 줄여 편집화면과 같은 자리에서 줄바꿈되게 한다 (390 이상 폰은 그대로 1).
+  // 첫 화면부터 맞도록 HTML 안 인라인 스크립트로 먼저 넣고, 회전·창 크기 변경은 effect에서 갱신.
+  // 띄어쓰기 보정(--ts-ws): 일부 폰트(리디바탕 등)는 글자를 줄여도 띄어쓰기 폭이 같은 비율로 줄지 않아 문장이 ~1% 길어짐
+  //   → 기준(13px)과 줄인 크기의 띄어쓰기 폭을 실제로 재서, 모자라거나 넘치는 만큼 word-spacing 으로 맞춤 (차이 없으면 0)
+  const fitFontFamily = resolveKoreanFontFamily(data.fontStyle)
+  const fitRootRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const root = fitRootRef.current
+    if (!root) return
+    let seq = 0
+    const apply = () => {
+      const de = document.documentElement
+      const w = Math.min(de.clientWidth || window.innerWidth || TS_FIT_BASE, TS_FIT_BASE)
+      const fit = Math.min(1, (w - TS_FIT_GUTTER) / (TS_FIT_BASE - TS_FIT_GUTTER))
+      root.style.setProperty('--ts-fit', String(fit))
+      const my = ++seq
+      if (fit >= 1) {
+        root.style.removeProperty('--ts-ws')
+        return
+      }
+      document.fonts?.ready.then(() => {
+        if (my !== seq) return
+        const probe = document.createElement('span')
+        probe.style.cssText = `position:absolute;left:-9999px;top:0;visibility:hidden;white-space:pre;font-family:${fitFontFamily}`
+        document.body.appendChild(probe)
+        const spaceAt = (px: number) => {
+          probe.style.fontSize = `${px}px`
+          probe.textContent = '가 가'
+          const a = probe.getBoundingClientRect().width
+          probe.textContent = '가가'
+          return a - probe.getBoundingClientRect().width
+        }
+        const base = 13
+        const diff = spaceAt(base) * fit - spaceAt(base * fit)
+        probe.remove()
+        // em 단위로 넣어 글자 크기가 다른 곳에도 비례 적용
+        root.style.setProperty('--ts-ws', `${(diff / (base * fit)).toFixed(4)}em`)
+      })
+    }
+    apply()
+    window.addEventListener('resize', apply)
+    return () => {
+      seq++
+      window.removeEventListener('resize', apply)
+      root.style.removeProperty('--ts-fit')
+      root.style.removeProperty('--ts-ws')
+    }
+  }, [fitFontFamily])
 
   const [coverOpen, setCoverOpen] = useState(false)
   const [overlayFading, setOverlayFading] = useState(false)
@@ -361,6 +416,8 @@ export default function InvitationClientTheSimple({
 
   return (
     <div
+      ref={fitRootRef}
+      suppressHydrationWarning
       style={{
         background: '#f5f5f4',
         minHeight: '100vh',
@@ -368,6 +425,7 @@ export default function InvitationClientTheSimple({
         justifyContent: 'center',
       }}
     >
+      <script dangerouslySetInnerHTML={{ __html: TS_FIT_SCRIPT }} />
       {/* 워터마크 배너 */}
       {!isPaid && !isPreview && (
         <div style={{
@@ -661,6 +719,7 @@ function normalizeTheSimpleData(
       eyebrow: lovestoryRaw?.eyebrow || 'Love Story',
       items: normalizedLsItems,
       toggle: (sectionsRaw.lovestory as { toggle?: { enabled: boolean; label: string; style?: number } }).toggle,
+      bodyAlign: (sectionsRaw.lovestory as { bodyAlign?: 'left' | 'center' | 'right' }).bodyAlign,
     },
   }
 

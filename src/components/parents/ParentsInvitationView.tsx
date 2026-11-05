@@ -1,5 +1,6 @@
 'use client'
 
+import { preloadOpeningImage, usePrefetchAfter } from '@/lib/imageLoading'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { SectionHighlightProvider } from './SectionHighlightContext'
 import PinchZoomGuard from '@/components/invitation/PinchZoomGuard'
@@ -295,6 +296,11 @@ export default function ParentsInvitationView({
   // 현재 글자 크기 설정
   const currentFontConfig = FONT_SIZE_CONFIG[fontSize]
 
+
+  // 봉투 배경 사진 먼저 받기(우선순위 high) → 다 받으면 대표 사진·갤러리 앞 3장을 뒤에서 미리 받기
+  //   본문은 봉투를 연 뒤에야 그려지므로, 봉투를 여는 동안 받아 두면 열자마자 바로 보임
+  preloadOpeningImage(data.envelope.backgroundImage)
+  usePrefetchAfter(data.envelope.backgroundImage, [data.mainImage?.url, ...photos.slice(0, 3).map((p) => p.url)])
   return (
     <ThemeProvider themeId={data.colorTheme || 'burgundy'} customPrimary={data.customPrimaryColor} customAccent={data.customAccentColor} customBackground={data.customBackgroundColor} customText={data.customTextColor} customCardText={data.cardTextColor} tintedBg={data.tintedBg} tintedColor={data.tintedColor}>
       {/* 핀치 줌 비활성화(페이지) — 스크롤·가로 스와이프는 허용 */}

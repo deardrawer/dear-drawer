@@ -1,5 +1,6 @@
 'use client'
 
+import { preloadOpeningImage, usePrefetchAfter, useVisible } from '@/lib/imageLoading'
 import { FIXED_TEXT_WIDTH_CSS, useFrameWidthVar } from '@/lib/fixedTextWidth'
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
@@ -1456,6 +1457,8 @@ function SlideGallerySection({ invitation, themeColors, onOpenLightbox }: {
   const total = images.length
   const [activeIdx, setActiveIdx] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
+  // 화면에 보이는 동안만 자동 전환 — 갤러리에 도착하면 첫 사진부터
+  const autoVisible = useVisible(ref, total > 1, 0.25)
 
   const resetTimer = useCallback(() => {
     clearInterval(intervalRef.current)
@@ -1467,9 +1470,10 @@ function SlideGallerySection({ invitation, themeColors, onOpenLightbox }: {
   }, [total])
 
   useEffect(() => {
-    resetTimer()
+    if (autoVisible) resetTimer()
+    else clearInterval(intervalRef.current)
     return () => clearInterval(intervalRef.current)
-  }, [resetTimer])
+  }, [resetTimer, autoVisible])
 
   useEffect(() => {
     if (total > 0 && activeIdx >= total) setActiveIdx(0)
@@ -1581,6 +1585,8 @@ function FeatureGallerySection({ invitation, themeColors, onOpenLightbox }: {
   const total = images.length
   const [activeIdx, setActiveIdx] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
+  // 화면에 보이는 동안만 자동 전환 — 갤러리에 도착하면 첫 사진부터
+  const autoVisible = useVisible(ref, total > 1, 0.25)
 
   const resetTimer = useCallback(() => {
     clearInterval(intervalRef.current)
@@ -1592,9 +1598,10 @@ function FeatureGallerySection({ invitation, themeColors, onOpenLightbox }: {
   }, [total])
 
   useEffect(() => {
-    resetTimer()
+    if (autoVisible) resetTimer()
+    else clearInterval(intervalRef.current)
     return () => clearInterval(intervalRef.current)
-  }, [resetTimer])
+  }, [resetTimer, autoVisible])
 
   useEffect(() => {
     if (total > 0 && activeIdx >= total) setActiveIdx(0)
@@ -4051,6 +4058,11 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
     const t = setTimeout(finish, 400)
     return () => { clearTimeout(t); if (raf) cancelAnimationFrame(raf) }
   }, [effectiveIntroSettings?.introImage, invitation.media.coverImage])
+
+  // 인트로 사진 먼저 받기(우선순위 high) → 다 받으면 커버·갤러리 앞쪽 사진을 뒤에서 미리 받기 (인트로를 보는 동안)
+  const openingImageUrl: string | undefined = effectiveIntroSettings?.introImage || invitation.media.coverImage
+  preloadOpeningImage(openingImageUrl)
+  usePrefetchAfter(openingImageUrl, [invitation.media.coverImage, ...((invitation.gallery?.images || []) as string[]).slice(0, 4)])
 
   // Switch screen function - matching original template
   const switchScreen = (from: IntroScreen, to: IntroScreen) => {

@@ -1,5 +1,6 @@
 'use client'
 
+import { preloadOpeningImage } from '@/lib/imageLoading'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import RsvpForm from '@/components/invitation/RsvpForm'
@@ -5038,6 +5039,8 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
   const invitationId = invitation.id || ''
   const contentMode = data.contentMode || 'story'
   const concept = (data.designConcept || 'default') as DesignConcept
+  // 표지 사진 먼저 받기(우선순위 high) — 기본·책 컨셉의 사진 표지만 (종이 컨셉·엠보스 표지는 사진 없음)
+  if (concept !== 'paper' && (data.design?.coverDesign || 'full') !== 'emboss') preloadOpeningImage(data.media?.coverImage)
 
   // Font style
   const fontStyleKey = (data.fontStyle && data.fontStyle in essayFontStyles) ? data.fontStyle as EssayFontStyle : 'modern'

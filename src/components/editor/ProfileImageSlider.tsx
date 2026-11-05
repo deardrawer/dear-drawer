@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, memo } from 'react'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
+import { useVisible } from '@/lib/imageLoading'
 
 interface ImageSettings {
   scale: number
@@ -41,6 +42,9 @@ function ProfileImageSliderComponent({
   const [enableTransition, setEnableTransition] = useState(true) // transition 활성화 상태
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null)
   const slidesRef = useRef<HTMLDivElement>(null)
+  // 화면에 보이는 동안만 자동 넘김 — 섹션에 도착하면 첫 사진부터
+  const rootRef = useRef<HTMLDivElement>(null)
+  const autoVisible = useVisible(rootRef, autoPlay && images.length > 1, 0.25)
 
   // 실제 표시 인덱스 계산 (0-based)
   const getDisplayIndex = () => {
@@ -56,7 +60,7 @@ function ProfileImageSliderComponent({
 
   // Auto play functionality - 오른쪽으로만 진행
   useEffect(() => {
-    if (!autoPlay || images.length <= 1 || isPaused) {
+    if (!autoPlay || images.length <= 1 || isPaused || !autoVisible) {
       if (autoPlayRef.current) {
         clearInterval(autoPlayRef.current)
         autoPlayRef.current = null
@@ -76,7 +80,7 @@ function ProfileImageSliderComponent({
         clearInterval(autoPlayRef.current)
       }
     }
-  }, [autoPlay, autoPlayInterval, images.length, isPaused, isTransitioning])
+  }, [autoPlay, autoPlayInterval, images.length, isPaused, isTransitioning, autoVisible])
 
   // 무한 루프 처리 - 트랜지션 끝난 후 즉시 점프
   const handleTransitionEnd = () => {
@@ -192,7 +196,7 @@ function ProfileImageSliderComponent({
   ]
 
   return (
-    <div className={`relative w-full ${className}`}>
+    <div ref={rootRef} className={`relative w-full ${className}`}>
       {/* Slider container */}
       <div
         className="relative w-full aspect-[3/4] rounded-xl overflow-hidden"

@@ -14,6 +14,7 @@ import { parseDateOnly } from '@/lib/dateOnly'
 import { isDarkColor, contrastRatio } from '@/lib/colorUtils'
 import { GRIUN_FONTS } from '@/lib/griunFonts'
 import { INTER_MAX, INTER_SEQ, PHOTO_INTER_KEYS, TEXT_INTER_KEYS, interAnchor } from '@/lib/classicInterKeys'
+import { preloadOpeningImage, usePrefetchAfter, useVisible } from '@/lib/imageLoading'
 
 /**
  * THE CLASSIC (혼주용) — 클래식 스테이셔너리 청첩장
@@ -441,6 +442,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const galGo = (next: (i: number) => number) => { setGalSwipeIdx(next); setGalSwipeTick((t) => t + 1) }
   // 스와이프 갤러리 썸네일 스트립: 좌우 스크롤 가능 여부(끝단 페이드 힌트용)
   const galThumbRef = useRef<HTMLDivElement>(null)
+  // 스와이프 갤러리가 화면에 보이는 동안만 자동 넘김 (인트로 중·화면 밖에선 멈춤 → 도착하면 첫 사진부터)
+  const galSwipeRef = useRef<HTMLDivElement>(null)
+  const galSwipeVisible = useVisible(galSwipeRef, page === 'main', 0.25)
   const [galThumbEdge, setGalThumbEdge] = useState({ l: false, r: false })
   const measureGalThumbEdge = () => {
     const el = galThumbRef.current
@@ -1212,10 +1216,19 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 스와이프 갤러리: 자동 전환 (3.4초) — 사진이 바뀔 때마다(자동·Prev/Next·썸네일) 타이머를 새로 시작해,
   // 직접 넘긴 사진도 같은 시간 동안 보여준 뒤 넘어간다. 연속으로 눌러도 마지막 변경 시점부터 · 타이머는 항상 1개
   useEffect(() => {
-    if (galType !== 'swipe' || galCount <= 1) return
+    if (galType !== 'swipe' || galCount <= 1 || page !== 'main' || !galSwipeVisible) return
     const id = window.setTimeout(() => setGalSwipeIdx((i) => (i + 1) % galCount), 3400)
     return () => window.clearTimeout(id)
-  }, [galType, galCount, galSwipeIdx, galSwipeTick])
+  }, [galType, galCount, galSwipeIdx, galSwipeTick, page, galSwipeVisible])
+
+  // 오프닝 사진 먼저 받기(우선순위 high) → 다 받으면 본문 첫 사진(인사말 배경)·갤러리 앞쪽을 뒤에서 미리 받기
+  //   본문은 인트로를 넘긴 뒤에야 그려지므로, 인트로를 보는 동안 받아 두면 넘기자마자 바로 보임
+  const openingPhotoUrl = openingStyle === '사진 뒤집기' ? extractUrl(cc.classicFlipPhoto) : openingStyle !== '프레임' ? openBgImg : ''
+  if (page === 'intro') {
+    preloadOpeningImage(openingPhotoUrl)
+    if (openingStyle === '사진 뒤집기' && openBgImg) preloadOpeningImage(openBgImg)
+  }
+  usePrefetchAfter(page === 'intro' ? openingPhotoUrl || null : null, page === 'intro' ? [extractUrl(cc.classicGreetingBgImage), ...gallery.slice(0, 4)] : [])
 
   // 썸네일 스트립 끝단 페이드 힌트 초기 측정 (갤러리 렌더/개수 변경 시)
   useEffect(() => {
@@ -2490,7 +2503,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
           {/* 1C — 스와이프 카드 */}
           {galType === 'swipe' && (
-            <div style={{ margin: '-82px 0 -82px', padding: '76px 26px 74px', background: IVORY }}>
+            <div ref={galSwipeRef} style={{ margin: '-82px 0 -82px', padding: '76px 26px 74px', background: IVORY }}>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
                 <p className="cl-reveal cl-up" style={{ ...label(T_EYEBROW, 0.4, fgA('gallery', 0.5)), margin: 0 }}>{nameCase('GALLERY')}</p>
                 <p style={{ margin: 0, fontFamily: F_LABEL, fontSize: lfs(11), letterSpacing: '.06em', color: fgA('gallery', 0.5) }}>{galSwipeIdx + 1} / {galCount}</p>

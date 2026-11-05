@@ -4,6 +4,7 @@ import { Fragment, createContext, useContext, useMemo, useRef, useEffect, useLay
 import type { TheSimpleInvitationData, ImageWithSettings, TheSimpleImageSettings, GalleryImage } from './page'
 import { getSectionType } from './utils'
 import { useCroppedImageStyle, getImageCropStyleFallback } from '@/hooks/useCroppedImageStyle'
+import { useVisible } from '@/lib/imageLoading'
 import { resolveDisplayFontFamily, resolveKoreanFontFamily } from './fontOptions'
 import { loadKakaoMapSDK } from '@/lib/geunnalKakaoMap'
 import { ParkingIcon, BusIcon, SubwayIcon, TrainIcon, ExpressBusIcon, InfoIcon } from '@/components/parents/icons'
@@ -287,6 +288,8 @@ function PhotoSlideBox({
   const [currentIndex, setCurrentIndex] = useState(0)
   const [started, setStarted] = useState(delay === 0)
   const resetKey = useRef(0)
+  const visRef = useRef<HTMLDivElement>(null)
+  const visible = useVisible(visRef, photos.length > 1)
 
   // 초기 지연 타이머
   useEffect(() => {
@@ -297,12 +300,12 @@ function PhotoSlideBox({
 
   // 자동 전환 (5초 간격) — resetKey 변경 시 타이머 재시작
   useEffect(() => {
-    if (!started || photos.length <= 1) return
+    if (!started || !visible || photos.length <= 1) return
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % photos.length)
     }, 5000)
     return () => clearInterval(interval)
-  }, [started, photos.length, resetKey.current]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [started, visible, photos.length, resetKey.current]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 클릭 시 다음 사진으로 전환 + 자동 슬라이드 타이머 리셋
   const handleClick = () => {
@@ -320,7 +323,7 @@ function PhotoSlideBox({
   const widthStyle = typeof size === 'number' ? `${size}px` : size
 
   return (
-    <div className={className} style={{ position: 'relative', width: widthStyle, flexShrink: 0 }}>
+    <div ref={visRef} className={className} style={{ position: 'relative', width: widthStyle, flexShrink: 0 }}>
       <div
         onClick={handleClick}
         style={{
@@ -1334,6 +1337,8 @@ function GalleryV1Feature({ images, galleryEyebrow, onOpenLightbox }: GalleryAut
   const total = images.length
   const [activeIdx, setActiveIdx] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined)
+  const visRef = useRef<HTMLDivElement>(null)
+  const visible = useVisible(visRef, total > 0)
 
   const resetTimer = useCallback(() => {
     clearInterval(intervalRef.current)
@@ -1344,10 +1349,12 @@ function GalleryV1Feature({ images, galleryEyebrow, onOpenLightbox }: GalleryAut
     }
   }, [total])
 
+  // 화면에 보이는 동안만 자동 전환 (처음 보일 때 첫 사진부터)
   useEffect(() => {
-    resetTimer()
+    if (visible) resetTimer()
+    else clearInterval(intervalRef.current)
     return () => clearInterval(intervalRef.current)
-  }, [resetTimer])
+  }, [resetTimer, visible])
 
   useEffect(() => {
     if (total > 0 && activeIdx >= total) setActiveIdx(0)
@@ -1381,6 +1388,7 @@ function GalleryV1Feature({ images, galleryEyebrow, onOpenLightbox }: GalleryAut
       {galleryEyebrow && <div className="ts-eyebrow">{galleryEyebrow}</div>}
       {/* 메인 피처 — 무한 루프 페이드 전환 */}
       <div
+        ref={visRef}
         className="ts-anim-item ts-anim-delay-1"
         style={{ position: 'relative', aspectRatio: '4/5', overflow: 'hidden', background: '#eee', marginBottom: 6, cursor: 'pointer' }}
         onClick={() => onOpenLightbox?.(webUrls, activeIdx)}
@@ -1642,6 +1650,8 @@ function GalleryV2Slideshow({ images, galleryEyebrow, onOpenLightbox }: GalleryA
   const total = images.length
   const [activeIdx, setActiveIdx] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined)
+  const visRef = useRef<HTMLDivElement>(null)
+  const visible = useVisible(visRef, total > 0)
 
   const settingsFor = (i: number): TheSimpleImageSettings =>
     images[i]?.settings ?? { scale: 1, positionX: 0, positionY: 0 }
@@ -1655,10 +1665,12 @@ function GalleryV2Slideshow({ images, galleryEyebrow, onOpenLightbox }: GalleryA
     }
   }, [total])
 
+  // 화면에 보이는 동안만 자동 전환 (처음 보일 때 첫 사진부터)
   useEffect(() => {
-    resetTimer()
+    if (visible) resetTimer()
+    else clearInterval(intervalRef.current)
     return () => clearInterval(intervalRef.current)
-  }, [resetTimer])
+  }, [resetTimer, visible])
 
   useEffect(() => {
     if (total > 0 && activeIdx >= total) setActiveIdx(0)
@@ -1692,7 +1704,7 @@ function GalleryV2Slideshow({ images, galleryEyebrow, onOpenLightbox }: GalleryA
     <AnimatedSection className="ts-sec ts-gallery ts-anim-gallery-v2">
       {galleryEyebrow && <div className="ts-eyebrow">{galleryEyebrow}</div>}
       {/* 무한 루프 페이드 슬라이드 + 화살표 */}
-      <div style={{ position: 'relative' }}>
+      <div ref={visRef} style={{ position: 'relative' }}>
         <div
           className="ts-anim-item ts-anim-delay-1"
           style={{ position: 'relative', aspectRatio: '4/5', overflow: 'hidden', background: '#eee', cursor: 'pointer' }}

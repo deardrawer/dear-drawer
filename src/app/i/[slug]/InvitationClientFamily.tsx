@@ -1,5 +1,6 @@
 'use client'
 
+import { preloadOpeningImage, usePrefetchAfter, useVisible } from '@/lib/imageLoading'
 import { FIXED_TEXT_WIDTH_CSS, useFrameWidthVar } from '@/lib/fixedTextWidth'
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
@@ -1304,6 +1305,8 @@ function SlideGallerySection({ invitation, themeColors, onOpenLightbox }: {
   const total = images.length
   const [activeIdx, setActiveIdx] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
+  // 화면에 보이는 동안만 자동 전환 — 갤러리에 도착하면 첫 사진부터
+  const autoVisible = useVisible(ref, total > 1, 0.25)
 
   const resetTimer = useCallback(() => {
     clearInterval(intervalRef.current)
@@ -1315,9 +1318,10 @@ function SlideGallerySection({ invitation, themeColors, onOpenLightbox }: {
   }, [total])
 
   useEffect(() => {
-    resetTimer()
+    if (autoVisible) resetTimer()
+    else clearInterval(intervalRef.current)
     return () => clearInterval(intervalRef.current)
-  }, [resetTimer])
+  }, [resetTimer, autoVisible])
 
   useEffect(() => {
     if (total > 0 && activeIdx >= total) setActiveIdx(0)
@@ -1429,6 +1433,8 @@ function FeatureGallerySection({ invitation, themeColors, onOpenLightbox }: {
   const total = images.length
   const [activeIdx, setActiveIdx] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
+  // 화면에 보이는 동안만 자동 전환 — 갤러리에 도착하면 첫 사진부터
+  const autoVisible = useVisible(ref, total > 1, 0.25)
 
   const resetTimer = useCallback(() => {
     clearInterval(intervalRef.current)
@@ -1440,9 +1446,10 @@ function FeatureGallerySection({ invitation, themeColors, onOpenLightbox }: {
   }, [total])
 
   useEffect(() => {
-    resetTimer()
+    if (autoVisible) resetTimer()
+    else clearInterval(intervalRef.current)
     return () => clearInterval(intervalRef.current)
-  }, [resetTimer])
+  }, [resetTimer, autoVisible])
 
   useEffect(() => {
     if (total > 0 && activeIdx >= total) setActiveIdx(0)
@@ -2937,17 +2944,18 @@ function ParentIntroSection({
 }) {
   const { ref, isVisible } = useScrollAnimation()
   const [currentSlide, setCurrentSlide] = useState(0)
+  const autoVisible = useVisible(ref, images.length > 1, 0.25)
 
-  // 2장 이상일 때 자동 슬라이드
+  // 2장 이상일 때 자동 슬라이드 — 화면에 보이는 동안만 (도착하면 첫 사진부터)
   useEffect(() => {
-    if (images.length <= 1) return
+    if (images.length <= 1 || !autoVisible) return
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % images.length)
     }, 4000) // 4초마다 전환
 
     return () => clearInterval(interval)
-  }, [images.length])
+  }, [images.length, autoVisible])
 
   const sideLabel = side === 'groom' ? '아들' : '딸'
 
@@ -4289,6 +4297,15 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
   const effectiveIntroSettings = introSettings || invitation.intro || getDefaultIntroSettings('cinematic')
   // 인터랙티브 인트로는 4.5초 애니메이션+커버 대신 쓰이고, 끝나면 바로 초대글로 넘어간다
   const interactiveIntroId = isInteractiveIntro(effectiveIntroSettings?.presetId) && hasInteractiveRenderer(effectiveIntroSettings.presetId) ? effectiveIntroSettings.presetId : null
+
+  // 인트로 사진 먼저 받기(우선순위 high) → 다 받으면 커버·첫 디바이더·갤러리 앞쪽 사진을 뒤에서 미리 받기 (인트로를 보는 동안)
+  const openingImageUrl: string | undefined = effectiveIntroSettings?.introImage || invitation.media.coverImage
+  preloadOpeningImage(openingImageUrl)
+  usePrefetchAfter(openingImageUrl, [
+    invitation.media.coverImage,
+    (invitation as any).fullHeightDividers?.items?.[0]?.image,
+    ...((invitation.gallery?.images || []) as string[]).slice(0, 4),
+  ])
 
   // Handle intro animation complete
   const handleIntroComplete = useCallback(() => {

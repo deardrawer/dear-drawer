@@ -17,6 +17,7 @@ import '@/components/dday/dday-popup.css'
 import { YouTubeLite } from '@/components/invitation/YouTubeLite'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
 import { parseDateOnly } from '@/lib/dateOnly'
+import { preloadOpeningImage, usePrefetchAfter } from '@/lib/imageLoading'
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral'
@@ -2647,6 +2648,14 @@ function InvitationClientMagazineContent({
       : 'modern'
 
   const [currentPage, setCurrentPage] = useState<'cover' | 'main'>(skipIntro ? 'main' : 'cover')
+  // 표지 사진 먼저 받기(우선순위 high) → 다 받으면 갤러리 앞쪽을 뒤에서 미리 받기 (본문은 표지를 넘긴 뒤 그려짐)
+  //   클린 스타일은 사진 없음
+  const openingPhotoUrl = (invitation?.magazineIntroStyle || 'cover') === 'clean' ? '' : extractImageUrl(invitation?.media?.coverImage) || '/images/our-cover.png'
+  if (currentPage === 'cover') preloadOpeningImage(openingPhotoUrl)
+  usePrefetchAfter(
+    currentPage === 'cover' ? openingPhotoUrl || null : null,
+    currentPage === 'cover' ? ((invitation?.gallery?.images || []) as unknown[]).slice(0, 4).map(extractImageUrl) : []
+  )
   const [coverLeaving, setCoverLeaving] = useState(false) // 커버 → 본문 크로스페이드 중
   const audioRef = useRef<HTMLAudioElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)

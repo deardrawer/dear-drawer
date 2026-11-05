@@ -18,6 +18,7 @@ import { FRAME_EN_FONTS, FRAME_KO_FONTS, FRAME_FONTS_HREF } from '@/lib/filmFram
 import { FilmDotsCover } from '@/components/invitation/film/FilmDotsCover'
 import { FilmOttCover, FilmTicketCover } from '@/components/invitation/film/FilmDaysCovers'
 import { parseDateOnly } from '@/lib/dateOnly'
+import { preloadOpeningImage, usePrefetchAfter } from '@/lib/imageLoading'
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'film-dark' | 'film-light'
@@ -3005,6 +3006,20 @@ function InvitationClientFilmContent({
     : (invitation?.fontStyle && invitation.fontStyle in fontStyles) ? invitation.fontStyle as FontStyle : 'film'
 
   const [currentPage, setCurrentPage] = useState<'cover' | 'main'>(skipIntro ? 'main' : 'cover')
+  // 표지 사진 먼저 받기(우선순위 high) → 다 받으면 갤러리 앞쪽을 뒤에서 미리 받기 (본문은 표지를 넘긴 뒤 그려짐)
+  const openingPhotoUrl = (() => {
+    const st = invitation?.filmIntroStyle
+    const cover = extractImageUrl(invitation?.media?.coverImage)
+    if (st === 'ott' || st === 'ticket') return extractImageUrl(invitation?.filmDaysImage) || cover
+    if (st === 'dots') return extractImageUrl(invitation?.filmDotsImage) || cover
+    if (st === 'booth') return extractImageUrl(invitation?.filmBoothImages?.[0]) || cover
+    return cover
+  })()
+  if (currentPage === 'cover') preloadOpeningImage(openingPhotoUrl)
+  usePrefetchAfter(
+    currentPage === 'cover' ? openingPhotoUrl || null : null,
+    currentPage === 'cover' ? ((invitation?.gallery?.images || []) as unknown[]).slice(0, 4).map(extractImageUrl) : []
+  )
   const audioRef = useRef<HTMLAudioElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 

@@ -16,6 +16,7 @@ import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
 import '@/components/dday/dday-popup.css'
 import { parseDateOnly } from '@/lib/dateOnly'
+import { preloadOpeningImage, usePrefetchAfter } from '@/lib/imageLoading'
 
 // Preview context - skip scroll reveal animations in editor preview
 const PreviewModeContext = createContext(false)
@@ -2822,6 +2823,23 @@ function InvitationClientRecordContent({
     : (invitation?.fontStyle && invitation.fontStyle in fontStyles) ? invitation.fontStyle as FontStyle : 'modern'
 
   const [currentPage, setCurrentPage] = useState<'cover' | 'main'>(skipIntro ? 'main' : 'cover')
+  // 표지 사진 먼저 받기(우선순위 high) → 다 받으면 갤러리 앞쪽을 뒤에서 미리 받기 (본문은 표지를 넘긴 뒤 그려짐)
+  const openingPhotoUrl = (() => {
+    const st = invitation?.recordIntroStyle
+    const cover = extractImageUrl(invitation?.media?.coverImage)
+    if (st === 'lp') return extractImageUrl(invitation?.recordLpImage) || cover
+    if (st === 'days') return extractImageUrl(invitation?.recordDaysImage) || cover
+    return cover || '/images/our-cover.png'
+  })()
+  if (currentPage === 'cover' && (invitation?.recordIntroStyle === 'lp' || invitation?.recordIntroStyle === 'days')) {
+    // LP 가운데 라벨 사진(따로 고른 경우)도 첫 화면에 보임
+    preloadOpeningImage(extractImageUrl(invitation?.recordDiscImage))
+  }
+  if (currentPage === 'cover') preloadOpeningImage(openingPhotoUrl)
+  usePrefetchAfter(
+    currentPage === 'cover' ? openingPhotoUrl || null : null,
+    currentPage === 'cover' ? ((invitation?.gallery?.images || []) as unknown[]).slice(0, 4).map(extractImageUrl) : []
+  )
 
   // 페이지 레벨 핀치줌 방지
   useEffect(() => {

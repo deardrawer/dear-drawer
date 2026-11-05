@@ -1,5 +1,6 @@
 "use client";
 
+import { preloadOpeningImage } from "@/lib/imageLoading";
 import { useRef, useState, useEffect, type RefObject } from "react";
 import Image from "next/image";
 import {
@@ -420,6 +421,9 @@ export default function ThankYouPage({
     return <ReducedMotionView data={data} fontStyle={fontStyle} accentColor={accentColor} />;
   }
 
+
+  // 대표 사진 먼저 받기(우선순위 high) — 크롭된 사진은 next/image priority 가 안 걸려 따로 지정
+  preloadOpeningImage(data.heroImage);
   return (
     <div
       ref={containerRef}

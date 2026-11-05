@@ -1,5 +1,6 @@
 'use client'
 
+import { preloadOpeningImage } from '@/lib/imageLoading'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
@@ -470,10 +471,13 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fo
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const startTimeRef = useRef(Date.now())
   const pausedProgressRef = useRef(0)
+  // 첫 스토리 사진 먼저 받기(우선순위 high) · 지금 사진이 화면에 뜬 뒤부터 5초를 셈 (느린 카톡에서 첫 사진이 뜨기 전에 넘어가지 않게)
+  preloadOpeningImage(storyImages[0])
+  const currentShown = !!loadedImgs[currentIndex]
 
   // Auto-advance timer
   useEffect(() => {
-    if (isPaused) {
+    if (isPaused || !currentShown) {
       if (timerRef.current) clearInterval(timerRef.current)
       return
     }
@@ -500,7 +504,7 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fo
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [currentIndex, isPaused, storyImages.length])
+  }, [currentIndex, isPaused, storyImages.length, currentShown])
 
   // Reset progress on index change + notify complete
   useEffect(() => {
@@ -600,7 +604,8 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fo
       <div className="absolute inset-0 bg-neutral-900">
         {storyImages.map((img, i) => (
           // 초기 진입 버벅임 방지: 현재/다음 이미지만 마운트해 동시 디코딩 최소화
-          (i <= currentIndex + 1) ? (
+          // 다음 사진은 지금 사진을 다 받은 뒤에 받기 시작 (첫 사진과 대역폭을 나눠 쓰지 않게)
+          (i <= currentIndex || (i === currentIndex + 1 && loadedImgs[currentIndex])) ? (
             <img
               key={i}
               src={img}
@@ -608,6 +613,7 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fo
               decoding="async"
               fetchPriority={i === 0 ? 'high' : 'auto'}
               onLoad={() => setLoadedImgs((prev) => (prev[i] ? prev : { ...prev, [i]: true }))}
+              onError={() => setLoadedImgs((prev) => (prev[i] ? prev : { ...prev, [i]: true }))}
               ref={(el) => { if (el && el.complete && el.naturalWidth > 0) setLoadedImgs((prev) => (prev[i] ? prev : { ...prev, [i]: true })) }}
               className="absolute inset-0 w-full h-full object-cover"
               style={{
@@ -864,6 +870,8 @@ function StoryHighlights({
                   <img
                     src={firstImage || '/sample/cover.png'}
                     alt={room.title}
+                    decoding="async"
+                    fetchPriority="low"
                     className="w-full h-full rounded-full object-cover"
                   />
                 </div>
@@ -1440,7 +1448,7 @@ function PhotoGridRows({
                 style={{ background: '#FAFAFA', aspectRatio: '3/4' }}
                 onClick={() => onPhotoClick(roomIdx, baseIdx + colIdx)}
               >
-                <img src={img} alt="" className="w-full h-full object-cover" />
+                <img src={img} alt="" loading="lazy" decoding="async" fetchPriority="low" className="w-full h-full object-cover" />
               </button>
             ))}
             {/* Fill empty cells */}

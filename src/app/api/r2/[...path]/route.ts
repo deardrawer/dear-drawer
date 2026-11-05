@@ -13,6 +13,24 @@ const PRESET_AUDIO_PATH_REGEX = /^audio\/[a-zA-Z0-9_-]+\.mp3$/;
 // 하객 청첩장 동영상(mp4) — 파일 업로드 방식. 스트리밍 위해 Range 응답 필요(아이폰 재생 필수).
 const USER_VIDEO_PATH_REGEX = /^invitation\/[a-zA-Z0-9_-]+\/video\/[a-zA-Z0-9_-]+\.mp4$/;
 
+// 엣지 캐시 (Cloudflare Cache API) — 이미지 전체 응답만, 지역 데이터센터에 30일 보관
+// - 첫 하객 이후로는 R2까지 가지 않고 가까운 엣지에서 바로 응답 → 오프닝 사진 등 첫 로딩 단축
+// - 파일명이 업로드마다 새로 정해지는 이미지(UUID)만 대상. 같은 이름으로 덮어쓰는 파일
+//   (drawer-stamp · video-poster · capsule-*)은 제외 — 주소의 ?t= 로 갱신되긴 하지만 혹시 모를 옛 사진 노출 방지
+// - 동영상·오디오(Range 스트리밍)는 대상 아님. Cache API가 없는 환경(로컬 dev)에선 그냥 건너뜀
+const BROWSER_CACHE_CONTROL = "public, max-age=31536000, immutable";
+const EDGE_CACHE_CONTROL = "public, max-age=2592000";
+const FIXED_NAME_REGEX = /\/(drawer-stamp|video-poster|capsule-[a-zA-Z0-9_-]+)(_[a-z]+)?\.[a-z]+$/;
+
+function getEdgeCache(): Cache | null {
+  try {
+    const c = (globalThis as unknown as { caches?: { default?: Cache } }).caches;
+    return c?.default ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
@@ -74,6 +92,24 @@ export async function GET(
     // 3. Range 없음 — 전체 파일 서빙 (기존 동작)
     // temp 경로 포함 — 에디터에서 저장된 이미지가 temp 경로에 남아있을 수 있음
     // 파일명이 UUID이므로 보안 위험 최소, path validation이 보안 담당
+    const isImage = SAFE_PATH_REGEX.test(key) || isGeunnalImage;
+    const edgeCache = isImage && !FIXED_NAME_REGEX.test(key) ? getEdgeCache() : null;
+    const cacheKey = edgeCache ? new Request(request.url, { method: "GET" }) : null;
+
+    if (edgeCache && cacheKey) {
+      try {
+        const hit = await edgeCache.match(cacheKey);
+        if (hit) {
+          const hitHeaders = new Headers(hit.headers);
+          hitHeaders.set("Cache-Control", BROWSER_CACHE_CONTROL);
+          hitHeaders.set("X-Edge-Cache", "HIT");
+          return new NextResponse(hit.body, { status: 200, headers: hitHeaders });
+        }
+      } catch {
+        /* 캐시 조회 실패 → 아래에서 R2로 */
+      }
+    }
+
     const object = await env.R2.get(key);
 
     if (!object) {
@@ -83,8 +119,24 @@ export async function GET(
     const headers = new Headers();
     headers.set("Content-Type", object.httpMetadata?.contentType || "application/octet-stream");
     headers.set("ETag", object.httpEtag);
-    headers.set("Cache-Control", "public, max-age=31536000, immutable");
+    headers.set("Cache-Control", BROWSER_CACHE_CONTROL);
     headers.set("Accept-Ranges", "bytes");
+
+    if (edgeCache && cacheKey) {
+      try {
+        const [forClient, forCache] = object.body.tee();
+        const edgeHeaders = new Headers(headers);
+        edgeHeaders.set("Cache-Control", EDGE_CACHE_CONTROL);
+        const { ctx } = (await getCloudflareContext()) as unknown as { ctx: { waitUntil: (p: Promise<unknown>) => void } };
+        ctx.waitUntil(
+          edgeCache.put(cacheKey, new Response(forCache, { status: 200, headers: edgeHeaders })).catch(() => {})
+        );
+        headers.set("X-Edge-Cache", "MISS");
+        return new NextResponse(forClient, { status: 200, headers });
+      } catch {
+        /* 캐시 저장 준비 실패 → 아래 기존 응답 (tee 이전 실패만 여기로 옴) */
+      }
+    }
 
     return new NextResponse(object.body, {
       status: 200,

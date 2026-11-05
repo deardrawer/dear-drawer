@@ -394,7 +394,7 @@ export default function ParentsInvitationView({
                 {/* 음악 재생 버튼 - 우측 상단 */}
                 {data.bgm?.enabled && data.bgm.url && (
                   <>
-                    <audio ref={audioRef} loop preload="auto">
+                    <audio ref={audioRef} loop preload="none">
                       <source src={data.bgm.url} type="audio/mpeg" />
                     </audio>
                     <button

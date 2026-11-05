@@ -113,7 +113,7 @@ export default function InvitationClientThankYou({
       {/* BGM 토글 버튼 */}
       {bgmEnabled && bgmUrl && (
         <>
-          <audio ref={audioRef} src={bgmUrl} loop preload="auto" />
+          <audio ref={audioRef} src={bgmUrl} loop preload="none" />
           <button
             onClick={toggleBgm}
             className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center hover:bg-black/50 transition-colors"

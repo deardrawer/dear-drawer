@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { preload } from 'react-dom'
 import TheSimplePreview from '@/app/editor/the-simple/TheSimplePreview'
 import TapToOpenCover from '@/app/editor/the-simple/TapToOpenCover'
 import type {
@@ -11,6 +12,7 @@ import type {
 } from '@/app/editor/the-simple/page'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
+import { getSectionType } from '@/app/editor/the-simple/utils'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 import type { Invitation } from '@/types/invitation'
@@ -198,6 +200,17 @@ export default function InvitationClientTheSimple({
   // content 가 null 이거나 잘못 파싱된 경우를 대비한 최소 fallback
   const data: TheSimpleInvitationData = normalizeTheSimpleData(content, invitation)
   const hasCover = (data.coverVariant ?? 0) > 0
+
+  // 오프닝 사진 먼저 받기 — 서버 렌더 때 <head>에 preload(우선순위 high)로 넣어 폰트·스크립트보다 먼저 받게.
+  // 표지(탭해서 열기)가 있으면 본문은 탭한 뒤에야 그려지므로, 표지를 보는 동안 미리 받아 두는 효과.
+  // 화면에 실제로 그려지는 주소(intro.photo.url)와 똑같아야 중복 다운로드가 없음. V8은 사진 없는 인트로.
+  const openingPhotoUrl = (() => {
+    const introId = data.sectionOrder.find((id) => getSectionType(id) === 'intro' && !data.hiddenSections?.includes(id))
+    if (!introId || (data.sectionVariants[introId] ?? 1) === 8) return undefined
+    return data.sections.intro?.photo?.url || undefined
+  })()
+  if (openingPhotoUrl) preload(openingPhotoUrl, { as: 'image', fetchPriority: 'high' })
+
   const [coverOpen, setCoverOpen] = useState(false)
   const [overlayFading, setOverlayFading] = useState(false)
   const [overlayGone, setOverlayGone] = useState(false)
@@ -406,7 +419,7 @@ export default function InvitationClientTheSimple({
           position: 'relative',
         }}
       >
-        {(!hasCover || coverOpen || curtainRevealed) && <TheSimplePreview data={data} skipIntroBgFade={hasCover} onVideoPlay={handleVideoPlay} onVideoStop={handleVideoStop} />}
+        {(!hasCover || coverOpen || curtainRevealed) && <TheSimplePreview data={data} skipIntroBgFade={hasCover} onVideoPlay={handleVideoPlay} onVideoStop={handleVideoStop} lazyImages />}
       </WatermarkOverlay>
 
       {/* 네비게이션 (GuestFloatingButton) */}
@@ -513,7 +526,7 @@ export default function InvitationClientTheSimple({
       {/* BGM */}
       {hasBgm && (
         <>
-          <audio ref={audioRef} loop preload="auto">
+          <audio ref={audioRef} loop preload="none">
             <source src={data.bgm!.url} type="audio/mpeg" />
           </audio>
           <MusicToggle

@@ -2905,7 +2905,7 @@ function InvitationClientMagazineContent({
 
                   {/* BGM */}
                   {invitation.bgm?.enabled && invitation.bgm?.url && (
-                    <audio ref={audioRef} loop preload="auto">
+                    <audio ref={audioRef} loop preload="none">
                       <source src={invitation.bgm.url} type="audio/mpeg" />
                     </audio>
                   )}

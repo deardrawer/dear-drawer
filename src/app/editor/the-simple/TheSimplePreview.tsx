@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useMemo, useRef, useEffect, useState, useCallback } from 'react'
+import { Fragment, createContext, useContext, useMemo, useRef, useEffect, useLayoutEffect, useState, useCallback } from 'react'
 import type { TheSimpleInvitationData, ImageWithSettings, TheSimpleImageSettings, GalleryImage } from './page'
 import { getSectionType } from './utils'
 import { useCroppedImageStyle, getImageCropStyleFallback } from '@/hooks/useCroppedImageStyle'
@@ -87,6 +87,8 @@ interface TheSimplePreviewProps {
   onVideoPlay?: () => void
   /** 동영상 종료/닫기 콜백 (BGM 페이드인 등) */
   onVideoStop?: () => void
+  /** 하객 페이지 전용 — 오프닝 사진 외 사진은 섹션이 화면 가까이 올 때 받기 (에디터 미리보기는 즉시) */
+  lazyImages?: boolean
 }
 
 /* ==========================================================================
@@ -374,6 +376,48 @@ function PhotoSlideBox({
 }
 
 /* ==========================================================================
+ * 사진 지연 로딩 (하객 페이지 전용, lazyImages)
+ * - 처음엔 오프닝 사진만 받고, 나머지는 그 사진이 속한 섹션(.ts-sec)이 화면 아래 약 1.5화면 안으로 들어오면 받음
+ *   → 카톡 첫 진입 때 사진 수십 장이 한꺼번에 받아지며 오프닝 사진이 늦어지는 문제 방지
+ * - 사진 자체가 아니라 섹션을 감시: 가로 슬라이드(갤러리·커플 사진)의 화면 밖 장도 섹션이 가까워지면 같이 받아 넘길 때 비지 않게
+ * - 한 번 가까워진 섹션은 기억 → 자동 슬라이드로 새로 그려지는 썸네일도 첫 프레임부터 바로 표시(깜빡임 없음)
+ * ========================================================================== */
+const LazyImagesContext = createContext(false)
+const nearSections = typeof WeakSet !== 'undefined' ? new WeakSet<Element>() : null
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
+
+function useNearViewport(ref: React.RefObject<HTMLElement | null>, eager?: boolean): boolean {
+  const lazy = useContext(LazyImagesContext) && !eager
+  const [near, setNear] = useState(!lazy)
+  useIsoLayoutEffect(() => {
+    if (near) return
+    const el = ref.current
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setNear(true)
+      return
+    }
+    const target = (el.closest('.ts-sec, section') as HTMLElement | null) || el
+    if (nearSections?.has(target)) {
+      setNear(true)
+      return
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          nearSections?.add(target)
+          setNear(true)
+          io.disconnect()
+        }
+      },
+      { rootMargin: '1200px 0px 1200px 0px' }
+    )
+    io.observe(target)
+    return () => io.disconnect()
+  }, [near, ref])
+  return near
+}
+
+/* ==========================================================================
  * GalleryImg — 갤러리 이미지 공통 렌더러 (imageSettings 적용)
  * ========================================================================== */
 interface GalleryImgProps {
@@ -387,7 +431,8 @@ interface GalleryImgProps {
 
 function GalleryImg({ src, settings, aspectRatio = '1 / 1', className = '', style, onClick }: GalleryImgProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const exactStyle = useCroppedImageStyle(src ?? undefined, settings, containerRef)
+  const near = useNearViewport(containerRef)
+  const exactStyle = useCroppedImageStyle(near ? src ?? undefined : undefined, settings, containerRef)
 
   const containerStyle: React.CSSProperties = {
     aspectRatio: typeof aspectRatio === 'number' ? String(aspectRatio) : aspectRatio,
@@ -398,6 +443,7 @@ function GalleryImg({ src, settings, aspectRatio = '1 / 1', className = '', styl
     ...style,
   }
   if (!src) return <div className={className} style={containerStyle} />
+  if (!near) return <div ref={containerRef} className={className} onClick={onClick} style={containerStyle} />
 
   // 픽셀 정확값 우선, 없으면 fallback
   const bg = exactStyle || getImageCropStyleFallback(src, settings ?? { scale: 1, positionX: 0, positionY: 0 })
@@ -422,11 +468,15 @@ interface CropBgProps {
   settings?: TheSimpleImageSettings
   className?: string
   style?: React.CSSProperties
+  /** 오프닝(인트로) 사진 — 지연 로딩 없이 바로 */
+  eager?: boolean
 }
 
-function CropBg({ src, settings, className, style }: CropBgProps) {
+function CropBg({ src, settings, className, style, eager }: CropBgProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const exactStyle = useCroppedImageStyle(src, settings, containerRef)
+  const near = useNearViewport(containerRef, eager)
+  const exactStyle = useCroppedImageStyle(near ? src : undefined, settings, containerRef)
+  if (!near) return <div ref={containerRef} className={className} style={style} />
   const bg = exactStyle || getImageCropStyleFallback(src, settings ?? { scale: 1, positionX: 0, positionY: 0 })
   return <div ref={containerRef} className={className} style={{ ...bg, ...style }} />
 }
@@ -2463,7 +2513,7 @@ function RsvpModal({
  * 각 섹션 렌더러는 `variant` 번호를 받아 UI 대안을 분기합니다.
  * 아직 포팅되지 않은 variant는 자동으로 V1 JSX로 폴백합니다.
  */
-export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, onVideoStop }: TheSimplePreviewProps) {
+export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, onVideoStop, lazyImages }: TheSimplePreviewProps) {
   const [rsvpOpen, setRsvpOpen] = useState(false)
   const [rsvpInitAttendance, setRsvpInitAttendance] = useState<'attending' | 'not_attending' | undefined>(undefined)
   const [linkCopied, setLinkCopied] = useState(false)
@@ -2591,7 +2641,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
         if (photo?.url) {
           return (
             <>
-              <CropBg src={photo.url} settings={photo.settings} className="ts-in-bg" style={{ position: 'absolute', inset: 0 }} />
+              <CropBg eager src={photo.url} settings={photo.settings} className="ts-in-bg" style={{ position: 'absolute', inset: 0 }} />
               {intro.overlayColor && (
                 <div style={{ position: 'absolute', inset: 0, background: intro.overlayColor, pointerEvents: 'none', zIndex: 1 }} />
               )}
@@ -2635,7 +2685,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
             <div className={`ts-in1${textPosCls}${introTextCls}`}>
               {photo?.url
                 ? <>
-                    <CropBg src={photo.url} settings={photo.settings} className={`bg ${skipIntroBgFade ? 'ts-in-anim-cover' : 'ts-in-anim'}`} style={{ position: 'absolute', inset: 0 }} />
+                    <CropBg eager src={photo.url} settings={photo.settings} className={`bg ${skipIntroBgFade ? 'ts-in-anim-cover' : 'ts-in-anim'}`} style={{ position: 'absolute', inset: 0 }} />
                     {intro.overlayColor && (
                       <div style={{ position: 'absolute', inset: 0, background: intro.overlayColor, pointerEvents: 'none', zIndex: 1 }} />
                     )}
@@ -2749,7 +2799,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               <div className="ts-in4-gate ts-in-anim">
                 {intro.photo?.url
                   ? <>
-                      <CropBg src={intro.photo.url} settings={intro.photo.settings} className="ts-in-bg" style={{ position: 'absolute', inset: 0 }} />
+                      <CropBg eager src={intro.photo.url} settings={intro.photo.settings} className="ts-in-bg" style={{ position: 'absolute', inset: 0 }} />
                       {intro.overlayColor && (
                         <div style={{ position: 'absolute', inset: 0, background: intro.overlayColor, pointerEvents: 'none', zIndex: 1 }} />
                       )}
@@ -2963,7 +3013,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               {/* 사진 — 정사각형 프레임 */}
               {intro.photo?.url && (
                 <div className="ts-in10-photo ts-in-anim">
-                  <CropBg src={intro.photo.url} settings={intro.photo.settings} className="ts-in10-img" style={{ position: 'absolute', inset: 0 }} />
+                  <CropBg eager src={intro.photo.url} settings={intro.photo.settings} className="ts-in10-img" style={{ position: 'absolute', inset: 0 }} />
                   {intro.overlayColor && (
                     <div style={{ position: 'absolute', inset: 0, background: intro.overlayColor, pointerEvents: 'none', zIndex: 1 }} />
                   )}
@@ -4691,13 +4741,18 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
 
       // V5 · 노트 스타일 · 좌측 정렬 리스트
       if (v === 5) {
+        // V5 · 카드 목록: 라벨 · 제목 · 본문만 같은 세로줄로 (번호·기호 없이)
+        // 여백: 라벨 줄은 줄 높이를 글자에 딱 맞추고(line-height 1), 본문 마지막 줄 아래 반행간(약 4px)만큼
+        // 아래 간격을 줄여 점선 위아래 · 카드 위아래가 같은 간격으로 보이게
+        const GAP = 18
+        const BODY_TAIL = 4 // 본문(12px · 행간 1.75) 마지막 줄 아래 반행간
         return (
           <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key={`guide-${v}`}>
             <div className="ts-eyebrow">{guide.eyebrow}</div>
             <div
               style={{
                 marginTop: 10,
-                padding: '20px 18px',
+                padding: `${GAP + 2}px 20px ${GAP + 2 - BODY_TAIL}px`,
                 border: '1px solid var(--line)',
                 background: 'var(--card)',
               }}
@@ -4706,20 +4761,13 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                 <div
                   key={i}
                   style={{
-                    paddingBottom: i === guide.items.length - 1 ? 0 : 14,
-                    marginBottom: i === guide.items.length - 1 ? 0 : 14,
+                    paddingTop: i === 0 ? 0 : GAP,
+                    paddingBottom: i === guide.items.length - 1 ? 0 : GAP - BODY_TAIL,
                     borderBottom:
                       i === guide.items.length - 1 ? 'none' : '1px dashed var(--line)',
                   }}
                 >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'baseline',
-                      gap: 8,
-                      marginBottom: 4,
-                    }}
-                  >
+                  <div style={{ lineHeight: 1 }}>
                     <span
                       style={{
                         fontFamily: 'var(--font-display)',
@@ -4730,7 +4778,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                         whiteSpace: 'pre-line',
                       }}
                     >
-                      — {item.label}
+                      {item.label}
                     </span>
                   </div>
                   <div
@@ -4738,8 +4786,9 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                       fontFamily: 'var(--font-ko)',
                       fontSize: 'calc(14px * var(--ts-font-scale, 1))',
                       fontWeight: 600,
+                      lineHeight: 1.4,
                       color: 'var(--ink)',
-                      marginBottom: 4,
+                      marginTop: 8,
                       whiteSpace: 'pre-line',
                     }}
                   >
@@ -4747,6 +4796,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                   </div>
                   <p
                     style={{
+                      margin: '4px 0 0',
                       fontFamily: 'var(--font-ko)',
                       fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                       color: '#5d5850',
@@ -6131,6 +6181,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
   } as React.CSSProperties
 
   return (
+    <LazyImagesContext.Provider value={!!lazyImages}>
     <div className="ts-preview" style={previewFontStyle}>
       {/* 인트로는 sticky로 화면에 고정 — 본문이 그 위를 덮으며 올라옴 */}
       <div className="ts-intro-sticky">
@@ -6436,6 +6487,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
         )
       })()}
     </div>
+    </LazyImagesContext.Provider>
   )
 }
 

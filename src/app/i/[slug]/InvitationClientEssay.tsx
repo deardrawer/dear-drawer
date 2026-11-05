@@ -5181,7 +5181,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
         <div className={`essay-font-container theme-${themeKey}`} style={{ wordBreak: 'keep-all', overflowWrap: 'anywhere', ...customHighlightStyle }}>
           <BookConcept data={data} invitationId={invitationId} isSample={isSample} />
         </div>
-        {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
+        {hasBgm && <audio ref={audioRef} loop preload="none"><source src={bgm.url} type="audio/mpeg" /></audio>}
         {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} showNotification={bgm.showNotification} notificationText={bgm.notificationText} />}
         </div>
         {showDdayPopup && ddayPopup?.enabled && data.wedding?.showDate !== false && (
@@ -5241,7 +5241,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
           <PaperConcept data={data} invitationId={invitationId} isSample={isSample} />
         </div>
         {!isPreview && <ScrollHintOverlay theme={theme} />}
-        {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
+        {hasBgm && <audio ref={audioRef} loop preload="none"><source src={bgm.url} type="audio/mpeg" /></audio>}
         {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} showNotification={bgm.showNotification} notificationText={bgm.notificationText} />}
         </div>
         {showDdayPopup && ddayPopup?.enabled && data.wedding?.showDate !== false && (
@@ -5290,7 +5290,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
         <EssayFooter theme={theme} />
       </div>
       {!isPreview && <ScrollHintOverlay theme={theme} />}
-      {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
+      {hasBgm && <audio ref={audioRef} loop preload="none"><source src={bgm.url} type="audio/mpeg" /></audio>}
       {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} showNotification={bgm.showNotification} notificationText={bgm.notificationText} />}
       </div>
       {showDdayPopup && ddayPopup?.enabled && data.wedding?.showDate !== false && (

@@ -2059,7 +2059,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         {/* 배경음악 */}
         {bgmUrl && (
           <div style={{ position: 'sticky', top: 14, zIndex: 30, height: 0, display: 'flex', justifyContent: 'flex-end', padding: '0 14px', pointerEvents: 'none' }}>
-            <audio ref={bgmRef} src={bgmUrl} loop preload="auto" />
+            <audio ref={bgmRef} src={bgmUrl} loop preload="none" />
             <button
               type="button"
               aria-label={tr('배경음악', 'Background music')}

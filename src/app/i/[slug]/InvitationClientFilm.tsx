@@ -3228,7 +3228,7 @@ function InvitationClientFilmContent({
                     </>
                   )}
                   {invitation.bgm?.enabled && invitation.bgm?.url && (
-                    <audio ref={audioRef} loop preload="auto"><source src={invitation.bgm.url} type="audio/mpeg" /></audio>
+                    <audio ref={audioRef} loop preload="none"><source src={invitation.bgm.url} type="audio/mpeg" /></audio>
                   )}
                 </div>
               </WatermarkOverlay>

@@ -3657,7 +3657,7 @@ function InvitationClientExhibitContent({
 
           {/* BGM Audio */}
           {bgmEnabled && (
-            <audio ref={audioRef} loop preload="auto">
+            <audio ref={audioRef} loop preload="none">
               <source src={content.bgm.url} type="audio/mpeg" />
             </audio>
           )}

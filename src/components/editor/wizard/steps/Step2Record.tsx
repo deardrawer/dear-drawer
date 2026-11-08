@@ -1,5 +1,6 @@
 'use client'
 
+import { DAYS_INK_DEFAULT, LP_INK_DEFAULT } from '@/components/invitation/record/RecordIntros'
 import { useState, useCallback } from 'react'
 import { useEditorStore } from '@/store/editorStore'
 import { Input } from '@/components/ui/input'
@@ -308,7 +309,7 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
                 </label>
               )}
             </div>
-            {([['recordDaysBg', '배경색', '#FFFFFF', ['#FFFFFF', '#F6F1EA', '#EFE6E6', '#E4EAF1', '#E6EDE4', '#2B2A28', '#1E2A44']], ['recordDaysInk', '포인트 색 (제목·하트)', '#6E2B33', ['#6E2B33', '#1E2A44', '#2F4A3A', '#8A5A3C', '#C0587A', '#1c1c1c', '#F4F1EC']]] as const).map(([key, label, def, sw]) => (
+            {([['recordDaysBg', '배경색', '#FFFFFF', ['#FFFFFF', '#F6F1EA', '#EFE6E6', '#E4EAF1', '#E6EDE4', '#2B2A28', '#1E2A44']], ['recordDaysInk', '포인트 색 (제목·하트)', daysLp ? LP_INK_DEFAULT : DAYS_INK_DEFAULT, daysLp ? ['#2F4A3A', '#1E2A44', '#6E2B33', '#8A5A3C', '#C0587A', '#1c1c1c', '#F4F1EC'] : ['#1E2A44', '#2F4A3A', '#6E2B33', '#8A5A3C', '#C0587A', '#1c1c1c', '#F4F1EC']]] as const).map(([key, label, def, sw]) => (
               <div key={key}>
                 <Label className="text-sm font-medium mb-2 block">{label}</Label>
                 <div className="flex flex-wrap items-center gap-2">
@@ -347,7 +348,7 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">짧은 편지</Label>
               <Textarea value={invitation.recordDaysMessage ?? ''} rows={3} maxLength={140} className="resize-none"
-                placeholder={"It's been {N} days since you said yes to me,\nand they have been the best days of my life. love you."} onChange={(e) => updateField('recordDaysMessage', e.target.value)} />
+                placeholder={"{N} days of you and me —\nand we're just getting started."} onChange={(e) => updateField('recordDaysMessage', e.target.value)} />
               <p className="text-[11px] text-gray-400">비우면 위 문장이 들어가요 · 사진 카드 아래 날짜 태그는 예식일이에요</p>
             </div>
           </div>

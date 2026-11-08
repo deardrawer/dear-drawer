@@ -505,7 +505,7 @@ export interface InvitationContent {
   recordDaysArtist?: string     // 비우면 두 사람 이름
   recordDaysMessage?: string    // 아래 짧은 편지
   recordDaysBg?: string         // 배경색 (기본 흰색)
-  recordDaysInk?: string        // 포인트색 — 제목·하트 (기본 와인)
+  recordDaysInk?: string        // 포인트색 — 제목·하트 (기본: 함께한 날 딥 네이비 · LP 커버 포레스트 그린)
   recordLpImage?: string        // LP 커버 인트로의 정사각 커버 사진 (나머지 설정은 함께한 날과 공용)
   recordLpImageSettings?: Record<string, number | undefined>
   recordDiscImage?: string      // 함께한 날 · LP 커버 인트로: 돌아가는 LP 가운데 라벨 사진 (비우면 앨범 커버)

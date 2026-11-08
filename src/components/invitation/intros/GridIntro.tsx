@@ -151,11 +151,15 @@ function Half({ part, cs, style, children }: { part: 'top' | 'bottom'; cs: numbe
 // 플립 한 번: 이전 면(prev)의 윗부분이 아래로 접히고(앞 절반), 다음 면(next)의 아랫부분이 내려와 덮는다(뒤 절반)
 // paused 동안은 시작 전 모습(이전 면) 그대로 — 미리 그려 두었다가 한꺼번에 시작할 때
 function Flap({ prev, next, cs, dur, delay = 0, paused = false, nextTopBelow = false }: { prev: React.ReactNode; next: React.ReactNode; cs: number; dur: number; delay?: number; paused?: boolean; nextTopBelow?: boolean }) {
+  // 끝 플립(nextTopBelow)에선 다 넘어간 순간 아래 남은 이전 면을 지운다 (가장자리 틈으로 비치지 않게)
+  const hideBelow: React.CSSProperties | undefined = nextTopBelow
+    ? { animation: `ddFlapHide 1ms linear ${delay + dur}ms both`, animationPlayState: paused ? 'paused' : 'running' }
+    : undefined
   const play = paused ? 'paused' : 'running'
   return (
     <>
       {!nextTopBelow && <Half part="top" cs={cs}>{next}</Half>}
-      <Half part="bottom" cs={cs}>{prev}</Half>
+      <Half part="bottom" cs={cs} style={hideBelow}>{prev}</Half>
       <Half part="top" cs={cs} style={{ transformOrigin: '50% 100%', animation: `ddFlapTop ${dur / 2}ms cubic-bezier(.5,0,.75,.4) ${delay}ms both`, animationPlayState: play }}>{prev}</Half>
       <Half part="bottom" cs={cs} style={{ transformOrigin: '50% 0%', animation: `ddFlapBot ${dur / 2}ms cubic-bezier(.2,.6,.35,1) ${delay + dur / 2}ms both`, animationPlayState: play }}>{next}</Half>
     </>
@@ -313,7 +317,7 @@ export default function GridIntro({ w, h, opts, data, finished, reduced, signal,
         const pos = { position: 'absolute' as const, left: c * cell, width: cs, height: hh, backfaceVisibility: 'hidden' as const, WebkitBackfaceVisibility: 'hidden' as const }
         return (
           <Fragment key={i}>
-            <div style={{ ...pos, top: r * cell + hh, ...half(r, c, true, true), boxShadow: `inset 1px 0 0 ${LINE}${right}${bottomEdge}` }} />
+            <div style={{ ...pos, top: r * cell + hh, ...half(r, c, true, true), boxShadow: `inset 1px 0 0 ${LINE}${right}${bottomEdge}`, animation: `ddFlapHide 1ms linear ${delay + FLIP_DUR}ms both`, animationPlayState: play }} />
             <div style={{ ...pos, top: r * cell, ...half(r, c, false, true), boxShadow: `inset 1px 1px 0 ${LINE}${right}`, transformOrigin: '50% 100%', willChange: 'transform', animation: `ddFlapTop ${FLIP_DUR / 2}ms cubic-bezier(.5,0,.75,.4) ${delay}ms both`, animationPlayState: play }} />
             <div style={{ ...pos, top: r * cell + hh, ...half(r, c, true, false), transformOrigin: '50% 0%', willChange: 'transform', animation: `ddFlapBot ${FLIP_DUR / 2}ms cubic-bezier(.2,.6,.35,1) ${delay + FLIP_DUR / 2}ms both`, animationPlayState: play }} />
           </Fragment>
@@ -369,6 +373,7 @@ export default function GridIntro({ w, h, opts, data, finished, reduced, signal,
       <style jsx global>{`
         @keyframes ddFlapTop { from { transform: perspective(260px) rotateX(0deg); } to { transform: perspective(260px) rotateX(-90deg); } }
         @keyframes ddFlapFade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes ddFlapHide { from { opacity: 1; } to { opacity: 0; } }
         @keyframes ddFlapBot { from { transform: perspective(260px) rotateX(90deg); } to { transform: perspective(260px) rotateX(0deg); } }
       `}</style>
     </div>

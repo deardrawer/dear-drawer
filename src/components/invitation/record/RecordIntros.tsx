@@ -1,8 +1,9 @@
 'use client'
 
 // 레코드 템플릿 인트로 (CD PLAYER 는 InvitationClientRecord 의 VinylRecordCover)
-//  · 함께한 날: 'N DAYS TOGETHER' 제목 + 흑백 사진 카드(날짜 태그) + 작은 LP 수록곡 줄 + 짧은 편지 + 크레딧 한 줄.
-//  · LP 커버: 큰 숫자 제목 + 작은 정사각 앨범 커버 뒤로 LP 가 미끄러져 나와 돈다 + 날짜 스티커 + 크레딧 (함께한 날 설정 공용, 사진만 따로).
+//  · 함께한 날: '결혼식 날짜 — dear love — 연도' 한 줄 + 큰 숫자 'N' · 이탤릭 'days together' 제목 + 흑백 사진 카드
+//    + 작은 LP 수록곡 줄 + 짧은 편지 + 크레딧 한 줄.
+//  · LP 커버: 같은 맨 위 한 줄 + 큰 숫자 제목 + 작은 정사각 앨범 커버 뒤로 LP 가 미끄러져 나와 돈다 + 날짜 스티커 + 크레딧 (함께한 날 설정 공용, 사진만 따로).
 import { useEffect, useState } from 'react'
 import { getBgmPresetByUrl } from '@/lib/bgmPresets'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
@@ -51,7 +52,9 @@ const dayStart = (v?: string) => {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v || '')
   return m ? new Date(+m[1], +m[2] - 1, +m[3]).getTime() : null
 }
-const DAYS_WINE = '#6E2B33'
+// 기본 포인트 색 (직접 고르지 않았을 때) — 함께한 날: 딥 네이비 · LP 커버: 포레스트 그린
+export const DAYS_INK_DEFAULT = '#1E2A44'
+export const LP_INK_DEFAULT = '#2F4A3A'
 /** 배경이 어두운지 (글자색을 밝게 바꿀지) */
 const isDarkHex = (hex: string) => {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim()); if (!m) return false
@@ -94,8 +97,8 @@ export function RecordDaysCover({ invitation, onEnter, isPreview, variant }: { i
   const shownN = together != null ? count : null
   const title = invitation.recordDaysTitle?.trim() ? fill(invitation.recordDaysTitle, shownN) : together != null ? `${shownN} DAYS\nTOGETHER` : 'FOREVER\nTOGETHER'
   const message = invitation.recordDaysMessage?.trim() ? fill(invitation.recordDaysMessage, together) : together != null
-    ? `It's been ${together} days since you said yes to me,\nand they have been the best days of my life. love you.`
-    : 'Every day with you has been the best day of my life.\nNow we are starting forever. love you.'
+    ? `${together.toLocaleString('en-US')} days of you and me —\nand we're just getting started.`
+    : "Every day of you and me —\nand we're just getting started."
   const label = invitation.recordDaysLabel ?? 'dear love'
   const wd = invitation.wedding?.date ? parseDateOnly(invitation.wedding.date) : null
   const year = wd && !isNaN(wd.getTime()) ? wd.getFullYear() : today != null ? new Date(today).getFullYear() : ''
@@ -135,12 +138,16 @@ export function RecordDaysCover({ invitation, onEnter, isPreview, variant }: { i
   const icon = { width: 12, height: 12, fill: '#1c1c1c' }
   // 배경·포인트(제목·하트) 색은 자유롭게. 배경이 어두우면 글자·버튼을 밝게
   const bg = invitation.recordDaysBg || '#FFFFFF'
-  const point = invitation.recordDaysInk || DAYS_WINE
+  const point = invitation.recordDaysInk || (variant?.photo === 'square' ? LP_INK_DEFAULT : DAYS_INK_DEFAULT)
   const dark = isDarkHex(bg)
   const ink = dark ? '#F4F1EC' : '#1c1c1c'
   // 기본(함께한 날) = 가로 사진 + 작은 LP 수록곡 줄 + 크레딧. card·pills 는 예전 구성 (비교용으로만 남김)
   const V = { player: variant?.player || 'lp', photo: variant?.photo || 'wide', title: variant?.title || 'stack', footer: variant?.footer || 'credit' }
   const bigN = V.title === 'bignum' && together != null && !invitation.recordDaysTitle?.trim()
+  // 함께한 날(가로 사진) 전용 모양 — LP 커버(정사각)는 예전 그대로
+  const isDays = V.photo !== 'square'
+  const daysBig = isDays && together != null && !invitation.recordDaysTitle?.trim()
+  const wedMD = wed != null && wd ? `${String(wd.getMonth() + 1).padStart(2, '0')}.${String(wd.getDate()).padStart(2, '0')}` : ''
   const rule = dark ? 'rgba(255,255,255,.22)' : 'rgba(0,0,0,.14)'
   const venue = invitation.wedding?.showVenue === false ? '' : (invitation.wedding?.venue?.name || '')
   const zilla = "'Zilla Slab', 'Rockwell', serif"
@@ -167,19 +174,27 @@ export function RecordDaysCover({ invitation, onEnter, isPreview, variant }: { i
       <style dangerouslySetInnerHTML={{ __html: '@keyframes rdUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}@keyframes rdRise{from{transform:translateY(105%)}to{transform:none}}@keyframes rdDotL{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}@keyframes rdDotR{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}@keyframes rdDev{0%{filter:blur(10px) brightness(1.7) saturate(0)}100%{filter:none}}@keyframes rdDrop{0%{opacity:0;transform:translate(-50%,-22px) rotate(-9deg) scale(1.08)}55%{opacity:1;transform:translate(-50%,3px) rotate(2deg) scale(1)}100%{opacity:1;transform:translate(-50%,0) rotate(0)}}@keyframes rdEq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}@keyframes rdBreath{0%,100%{opacity:.75}50%{opacity:1}}@keyframes rdSpin{to{transform:rotate(360deg)}}@keyframes rdSlide{from{transform:translateX(0)}to{transform:translateX(46%)}}@keyframes rdSticker{0%{opacity:0;transform:scale(1.7) rotate(-34deg)}70%{opacity:1;transform:scale(.94) rotate(-8deg)}100%{opacity:1;transform:scale(1) rotate(-10deg)}}' }} />
       {today != null && <>
         {gap(2.6)}
-        {/* dear love · 연도 */}
-        <div style={{ textAlign: 'center', fontFamily: serif, ...up(0.2) }}>
-          {label && <div style={{ display: 'flex', alignItems: 'center', gap: 22, fontSize: 12.5 }}>
-            <span style={{ width: 3, height: 3, borderRadius: 9, background: ink, animation: 'rdDotL 1.2s cubic-bezier(.2,.7,.2,1) .35s both' }} />{label}<span style={{ width: 3, height: 3, borderRadius: 9, background: ink, animation: 'rdDotR 1.2s cubic-bezier(.2,.7,.2,1) .35s both' }} />
-          </div>}
-          {year !== '' && <div style={{ fontSize: 8.5, marginTop: 2, letterSpacing: '.04em' }}>{year}</div>}
+        {/* 맨 위 — '결혼식 날짜 — dear love — 연도' 한 줄 (함께한 날 · LP 커버 공통) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: serif, fontSize: 11, letterSpacing: '.06em', ...nums, ...up(0.2) }}>
+          {wedMD && <span style={{ fontSize: 9.5, letterSpacing: '.18em', opacity: 0.6 }}>{wedMD}</span>}
+          {wedMD && label && <span style={{ width: 18, height: 1, background: ink, opacity: 0.4, animation: 'rdDotL 1.2s cubic-bezier(.2,.7,.2,1) .35s both' }} />}
+          {label && <span style={{ fontStyle: 'italic' }}>{label}</span>}
+          {(label || wedMD) && year !== '' && <span style={{ width: 18, height: 1, background: ink, opacity: 0.4, animation: 'rdDotR 1.2s cubic-bezier(.2,.7,.2,1) .35s both' }} />}
+          {year !== '' && <span style={{ fontSize: 9.5, letterSpacing: '.18em', opacity: 0.6 }}>{year}</span>}
         </div>
         {gap(2.4)}
-        {/* N DAYS TOGETHER — 큰 숫자형 / 두 줄형 */}
-        {bigN ? (
+        {/* N DAYS TOGETHER — 함께한 날: 큰 숫자 + 이탤릭 'days together' · LP 커버: 큰 숫자형 · 직접 쓴 제목·날짜 미입력: 두 줄형 */}
+        {daysBig ? (
           <div style={{ textAlign: 'center', color: point }}>
             <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontFamily: zilla, fontWeight: 600, fontSize: 72, lineHeight: 0.95, letterSpacing: '-.03em', ...nums, animation: 'rdRise 1.1s cubic-bezier(.2,.7,.2,1) .6s both' }}>{count}</div>
+              <div style={{ fontFamily: zilla, fontWeight: 600, fontSize: 46, lineHeight: 0.98, letterSpacing: '-.02em', ...nums, animation: 'rdRise 1.1s cubic-bezier(.2,.7,.2,1) .6s both' }}>{count.toLocaleString('en-US')}</div>
+            </div>
+            <div style={{ fontFamily: serif, fontStyle: 'italic', fontSize: 17, marginTop: 3, ...up(0.95) }}>days together</div>
+          </div>
+        ) : bigN ? (
+          <div style={{ textAlign: 'center', color: point }}>
+            <div style={{ overflow: 'hidden' }}>
+              <div style={{ fontFamily: zilla, fontWeight: 600, fontSize: 72, lineHeight: 0.95, letterSpacing: '-.03em', ...nums, animation: 'rdRise 1.1s cubic-bezier(.2,.7,.2,1) .6s both' }}>{count.toLocaleString('en-US')}</div>
             </div>
             <div style={{ fontFamily: serif, fontSize: 11, letterSpacing: '.34em', marginTop: 8, paddingLeft: '.34em', ...up(1.0) }}>DAYS TOGETHER</div>
           </div>
@@ -210,7 +225,7 @@ export function RecordDaysCover({ invitation, onEnter, isPreview, variant }: { i
               {tag && (
                 <div style={{ position: 'absolute', ...(V.player === 'lp' ? { left: -14, bottom: -12 } : { right: -14, top: -14 }), width: 52, height: 52, borderRadius: '50%', background: point, color: isDarkHex(point) ? '#FFF8F0' : '#1c1c1c', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,.18)', fontFamily: serif, ...nums, animation: 'rdSticker .8s cubic-bezier(.2,.7,.2,1) 2.9s both' }}>
                   <svg viewBox="0 0 24 24" width="9" height="9" fill="currentColor" aria-hidden><path d="M12 21s-7.5-4.6-10-9.3C.3 8.2 2.3 4 6.2 4c2.3 0 3.8 1.3 4.6 2.6h2.4C14 5.3 15.5 4 17.8 4c3.9 0 5.9 4.2 4.2 7.7C19.5 16.4 12 21 12 21z" /></svg>
-                  <span style={{ fontSize: 11.5, lineHeight: 1.1, marginTop: 1 }}>{tag.slice(0, 5)}</span>
+                  <span style={{ fontSize: 11.5, lineHeight: 1.1, marginTop: 1 }}>{wedMD || tag.slice(0, 5)}</span>
                   <span style={{ fontSize: 8.5, letterSpacing: '.08em', opacity: 0.85 }}>20{tag.slice(6)}</span>
                 </div>
               )}
@@ -225,14 +240,14 @@ export function RecordDaysCover({ invitation, onEnter, isPreview, variant }: { i
               {photo && <CroppedImageDiv src={photo} crop={crop} className="absolute inset-0"
                 style={{ ...(crop.cropWidth ? {} : { backgroundSize: 'cover', backgroundPosition: 'center' }), filter: mono ? 'grayscale(1) contrast(1.06)' : undefined }} />}
             </div>
-            {tag && (
+            {tag && !isDays && (
               <div style={{ position: 'absolute', left: '50%', bottom: -15, display: 'flex', alignItems: 'center', gap: 7, padding: '6px 22px', background: '#fff', borderRadius: 6, border: '1px solid #ECE7E7', boxShadow: '0 2px 8px rgba(0,0,0,.08)', color: '#1c1c1c', fontFamily: serif, fontSize: 12.5, whiteSpace: 'nowrap', animation: 'rdDrop .9s cubic-bezier(.2,.7,.2,1) 2.9s both' }}>
                 <svg viewBox="0 0 24 24" width="13" height="13" fill={point} aria-hidden><path d="M12 21s-7.5-4.6-10-9.3C.3 8.2 2.3 4 6.2 4c2.3 0 3.8 1.3 4.6 2.6h2.4C14 5.3 15.5 4 17.8 4c3.9 0 5.9 4.2 4.2 7.7C19.5 16.4 12 21 12 21z" /></svg>
                 {tag}
               </div>
             )}
           </div>
-          <div style={{ height: tag ? 26 : 12 }} />
+          <div style={{ height: tag && !isDays ? 26 : 16 }} />
           </>
         )}
         {gap(0.25)}
@@ -280,14 +295,15 @@ export function RecordDaysCover({ invitation, onEnter, isPreview, variant }: { i
         )}
         {gap(1.7)}
         {/* 짧은 편지 */}
-        <p style={{ margin: 0, width: '78%', textAlign: 'center', whiteSpace: 'pre-line', fontFamily: serif, fontSize: 10, lineHeight: 1.4, color: ink, opacity: 0.9 }}>{message.slice(0, typed)}<span style={{ opacity: 0 }}>{message.slice(typed)}</span></p>
+        <p style={{ margin: 0, width: '78%', textAlign: 'center', whiteSpace: 'pre-line', fontFamily: serif, fontSize: isDays ? 10.5 : 10, fontStyle: isDays ? 'italic' : undefined, lineHeight: 1.45, color: ink, opacity: 0.9 }}>{message.slice(0, typed)}<span style={{ opacity: 0 }}>{message.slice(typed)}</span></p>
         {gap(1.3)}
         {V.footer === 'credit' ? (
           /* 레코드 크레딧 한 줄 + 재생 안내 */
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: serif, fontSize: 10, letterSpacing: '.06em', opacity: 0.8, ...nums, ...up(typedEnd + 0.2) }}>
               <span style={{ width: 16, height: 1, background: ink, opacity: 0.5 }} />
-              {[left === 'with love' ? '' : left, tag, venue].filter(Boolean).join('  ·  ')}
+              {/* 날짜는 맨 위 한 줄에 있어 크레딧에선 뺌 */}
+              {[left === 'with love' ? '' : left, venue].filter(Boolean).join('  ·  ')}
               <span style={{ width: 16, height: 1, background: ink, opacity: 0.5 }} />
             </div>
             <div style={{ fontFamily: sans, fontSize: 10.5, display: 'flex', alignItems: 'center', gap: 6, color: dark ? '#fff' : '#555', animation: `rdUp 1s cubic-bezier(.2,.7,.2,1) ${typedEnd + 0.5}s both, rdBreath 2.2s ease-in-out ${typedEnd + 1.5}s infinite` }}>

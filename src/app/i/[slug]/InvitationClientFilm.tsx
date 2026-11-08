@@ -422,8 +422,6 @@ function FilmBoothCover({ invitation, onEnter, isPreview }: {
   const [gGiven, gSur] = boothSplitName(invitation.filmBoothGroomEn || invitation.groom?.nameEn, invitation.groom?.name)
   const [bGiven, bSur] = boothSplitName(invitation.filmBoothBrideEn || invitation.bride?.nameEn, invitation.bride?.name)
   const up = (s: string) => /[a-z]/i.test(s) ? s.toUpperCase() : s
-  const ini = (g: string, s: string) => /[a-z]/i.test(g) ? [g, s].filter(Boolean).map(t => (t[0] || '').toUpperCase()).join('.') : ''
-  const lead = ((invitation.filmBoothLead as string) || 'Please join us\nin celebration of our\nupcoming wedding.').split('\n').slice(0, 4)
 
   const w = invitation.wedding
   const d = w?.date ? parseDateOnly(w.date) : null
@@ -437,7 +435,6 @@ function FilmBoothCover({ invitation, onEnter, isPreview }: {
     showVenue ? (w?.venue?.name || '') : '',
   ].filter(Boolean)
   const whenSub = showVenue ? [w?.venue?.hall || ''].filter(Boolean) : []
-  const digits = dateOk ? [...String(d!.getFullYear()).split(''), '', String(d!.getMonth() + 1), String(d!.getDate()), ...(isNaN(hh) ? [] : [String(hh)])] : []
 
   // 촬영: 칸마다 3·2·1 → 플래시 → 현상
   const [started, setStarted] = useState(false)
@@ -461,33 +458,43 @@ function FilmBoothCover({ invitation, onEnter, isPreview }: {
   }, [started, developed, done])
   const onTap = () => { if (!started) setStarted(true); else if (done) onEnter() }
 
-  const pad = 16
-  const line: React.CSSProperties = { position: 'absolute', left: pad, right: pad, display: 'flex', justifyContent: 'space-between' }
+  // 화면 구성 — 위: PHOTO BOOTH · No.월일 / 가운데: 흰 테두리 세 컷 사진 띠(아래 여백에 이름) / 아래: 구분선 · 날짜·시간 · 장소
+  const infoSub = [when[2], ...whenSub].filter(Boolean)
+  const infoLines = (when[0] || when[1] ? 1 : 0) + infoSub.length
+  const infoH = infoLines ? Math.round(infoLines * 16.3 + 9) : 0
+  const boothNo = dateOk ? `${String(d!.getMonth() + 1).padStart(2, '0')}${String(d!.getDate()).padStart(2, '0')}` : ''
+  const stripNames = [gGiven, bGiven].filter(Boolean).map(up).join(' & ')
   return (
     <div onClick={onTap} className="relative w-full" style={{ height: isPreview ? '660px' : '100dvh', overflow: 'hidden', background: bg, color: ink, fontFamily: MONO, fontSize: 10.5, lineHeight: 1.45, cursor: 'pointer' }}>
       <style dangerouslySetInnerHTML={{ __html: FILM_BOOTH_CSS }} />
-      <div style={{ ...line, top: 20 }}>{[up(gGiven), up(gSur), '&', up(bGiven), up(bSur)].map((t, i) => <span key={i}>{t}</span>)}</div>
-      <p style={{ position: 'absolute', left: pad, top: 48, margin: 0, whiteSpace: 'pre-line' }}>{lead.join('\n')}</p>
-      {/* 세 컷 스트립 */}
-      {/* 스트립은 화면 높이에 맞춰 이니셜 줄 위에서 끝난다 (세로가 짧은 화면에서도 겹치지 않게) */}
-      <div style={{ position: 'absolute', right: '7%', top: '15%', height: 'calc(85% - 124px)', aspectRatio: '1 / 3.55', maxWidth: '36%', display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {shots.map((s, i) => (
-          <div key={i} style={{ position: 'relative', flex: '1 1 0', minHeight: 0, background: '#2a2d30', overflow: 'hidden' }}>
-            {s.src && (
-              <div style={{ position: 'absolute', inset: 0, opacity: i < developed ? 1 : 0, filter: i < developed ? (mono ? 'grayscale(1) contrast(1.15)' : 'none') : 'brightness(2.2) contrast(.6)', transition: 'opacity 1.6s ease, filter 2.4s ease' }}>
-                <CroppedImageDiv src={s.src} crop={s.crop} className="w-full h-full" />
-              </div>
-            )}
-            {count?.i === i && <b style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d9e3ea', fontWeight: 400, fontSize: 30 }}>{count.n}</b>}
-          </div>
-        ))}
+      <div style={{ position: 'absolute', left: 20, right: 20, top: 24, display: 'flex', justifyContent: 'space-between', fontSize: 9, letterSpacing: '.16em', opacity: 0.7, whiteSpace: 'nowrap' }}>
+        <span>PHOTO BOOTH</span>{boothNo && <span>No. {boothNo}</span>}
       </div>
-      <p style={{ position: 'absolute', left: pad, bottom: 104, margin: 0 }}>
-        {when.map((t, i) => <span key={i} style={{ display: 'block' }}>{t}</span>)}
-        {whenSub.map((t, i) => <span key={'s' + i} style={{ display: 'block', paddingLeft: '3.2em' }}>{t}</span>)}
-      </p>
-      <div style={{ ...line, left: 'auto', width: '36%', bottom: 92 }}><span>{ini(gGiven, gSur)}</span><span>{ini(bGiven, bSur)}</span></div>
-      {digits.length > 0 && <div style={{ ...line, bottom: 64 }}>{digits.map((t, i) => <span key={i}>{t}</span>)}</div>}
+      {/* 날짜 묶음은 안내 문구 바로 위, 사진 띠는 머리글과 날짜 사이 정가운데 (띠 위·아래 여백 같게)
+          띠는 비율(1:3.1)을 지키며 폭(최대 48%)·남는 높이 중 작은 쪽에 맞춤 — 어떤 폰에서도 사진 비율이 같게 (위아래 여백 최소 20px) */}
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 38, bottom: 64, containerType: 'size', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ flex: '1 1 0', minHeight: 20 }} />
+        <div style={{ position: 'relative', flex: '0 0 auto', width: `min(48cqw, calc((100cqh - ${infoH + 40}px) / 3.1))`, aspectRatio: '1 / 3.1', padding: '7px 7px 0', background: '#F4F1EC', boxShadow: dark ? '0 14px 34px rgba(0,0,0,.5)' : '0 12px 28px rgba(0,0,0,.18)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {shots.map((s, i) => (
+            <div key={i} style={{ position: 'relative', flex: '1 1 0', minHeight: 0, background: '#2a2d30', overflow: 'hidden' }}>
+              {s.src && (
+                <div style={{ position: 'absolute', inset: 0, opacity: i < developed ? 1 : 0, filter: i < developed ? (mono ? 'grayscale(1) contrast(1.15)' : 'none') : 'brightness(2.2) contrast(.6)', transition: 'opacity 1.6s ease, filter 2.4s ease' }}>
+                  <CroppedImageDiv src={s.src} crop={s.crop} className="w-full h-full" />
+                </div>
+              )}
+              {count?.i === i && <b style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d9e3ea', fontWeight: 400, fontSize: 30 }}>{count.n}</b>}
+            </div>
+          ))}
+          <div style={{ flex: '0 0 auto', padding: '4px 0 9px', textAlign: 'center', color: '#2B2B2B', fontSize: 8.5, letterSpacing: '.12em', whiteSpace: 'nowrap', overflow: 'hidden' }}>{stripNames || '\u00a0'}</div>
+        </div>
+        <div style={{ flex: '1 1 0', minHeight: 20 }} />
+        {infoLines > 0 && (
+          <div style={{ alignSelf: 'stretch', margin: '0 20px', lineHeight: 1.55, borderTop: `1px solid ${dark ? 'rgba(238,241,243,.25)' : 'rgba(28,32,36,.2)'}`, paddingTop: 8 }}>
+            {(when[0] || when[1]) && <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}><span>{when[0]}</span><span>{when[1]}</span></div>}
+            {infoSub.map((t, i) => <div key={i} style={{ opacity: 0.7 }}>{t}</div>)}
+          </div>
+        )}
+      </div>
       <FilmTapCue text="화면을 눌러 청첩장을 열어주세요" color={ink} show={done} delay={0.6} />
       <div key={flashKey} style={{ position: 'absolute', inset: 0, background: '#fff', opacity: 0, pointerEvents: 'none', animation: flashKey ? 'fbFlash .55s ease-out' : undefined }} />
     </div>

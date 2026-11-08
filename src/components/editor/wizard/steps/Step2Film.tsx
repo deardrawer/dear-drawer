@@ -661,7 +661,7 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
                 </label>
               ))}
             </div>
-            <p className="text-[11px] text-gray-400">맨 위 줄과 이니셜에 써져요 · &lsquo;이름 성&rsquo; 순서로 띄어 쓰면 성까지 나눠 들어가요 · 비워두면 한글 이름</p>
+            <p className="text-[11px] text-gray-400">사진 띠 아래에 이름(성 제외)이 인쇄돼요 · &lsquo;이름 성&rsquo; 순서로 띄어 쓰면 이름만 들어가요 · 비워두면 한글 이름</p>
           </div>
 
           <div className="p-4 bg-gray-50 rounded-lg space-y-3">
@@ -674,13 +674,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
             </div>
           </div>
 
-          <div className="p-4 bg-gray-50 rounded-lg space-y-2">
-            <h4 className="text-sm font-medium text-gray-800">초대 문구</h4>
-            <textarea rows={3} value={invitation.filmBoothLead ?? ''} onChange={(e) => updateField('filmBoothLead', e.target.value.split('\n').slice(0, 4).join('\n'))}
-              placeholder={'Please join us\nin celebration of our\nupcoming wedding.'}
-              className="w-full border border-gray-200 rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:border-gray-600 bg-white resize-none font-mono" />
-            <p className="text-[11px] text-gray-400">왼쪽 위에 타자기 글씨로 들어가요 (4줄까지) · 비워두면 기본 문구 · 맨 위 이름·성, 아래 날짜·시간·장소·이니셜은 청첩장 정보에서 자동으로 들어가요 (영문 이름이 있으면 영문, &lsquo;Jihoon Han&rsquo;처럼 쓰면 성까지)</p>
-          </div>
         </section>
       )}
 

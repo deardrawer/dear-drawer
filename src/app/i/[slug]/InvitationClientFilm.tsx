@@ -1337,7 +1337,8 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
             <div style={{ position: 'absolute', width: '20px', height: '20px', borderRadius: '50%', background: bgOverride || tc.sectionBg, top: '100%', left: '-10px', transform: 'translateY(-50%)' }} />
             <div style={{ position: 'absolute', width: '20px', height: '20px', borderRadius: '50%', background: bgOverride || tc.sectionBg, top: '100%', right: '-10px', transform: 'translateY(-50%)' }} />
 
-            <div className="flex items-center justify-between mb-4">
+            {/* 도장(오른쪽 위)이 아래 부모님 이름을 가리지 않게 간격 확보 */}
+            <div className="flex items-center justify-between" style={{ marginBottom: '34px' }}>
               <span style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontStyle: 'italic', fontSize: dfs(11), letterSpacing: '0.03em', color: tc.accent }}>Reserved for You</span>
               <span style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontStyle: 'italic', fontSize: dfs(11), letterSpacing: '0.03em', color: cg }}>Premiere</span>
             </div>

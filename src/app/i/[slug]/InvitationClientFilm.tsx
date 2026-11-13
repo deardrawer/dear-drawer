@@ -796,12 +796,13 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
 }
 
 // ===== Sticky-Stack Movie Scenes =====
-function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
-  item: any; idx: number; total: number; groomName: string; brideName: string; fonts: FontConfig; tc: ColorConfig
+function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc, show }: {
+  item: any; idx: number; total: number; groomName: string; brideName: string; fonts: FontConfig; tc: ColorConfig; show: boolean
 }) {
   const dfs = (px: number) => `${Math.round(px * (fonts.ds || 1))}px`
   const images = (item.images || []).map(extractImageUrl).filter(Boolean)
-  const { ref, isVisible } = useScrollReveal()
+  // 본문은 섹션 제목·진행바와 같은 시점에 등장 (카드 혼자 화면 절반 위로 올라와야 보이던 탓에 중간 스크롤에서 빈칸으로 남던 문제)
+  const isVisible = show
   // Scene은 어두운 배경 위에 직접 렌더 → 밝은 텍스트 사용 (HTML: #ffffff)
   const ct = tc.text
   const cg = tc.gray
@@ -903,7 +904,6 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
 
   return (
     <div
-      ref={ref}
       className="scene-card-inner"
       style={{
         padding: '0',
@@ -989,8 +989,25 @@ function FilmScenes({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
   const { ref, isVisible } = useScrollReveal()
 
   const handleTap = useCallback(() => {
+    if (Date.now() - swipedAt.current < 500) return // 방금 밀어서 넘겼으면 뒤따르는 탭은 무시
     setActiveScene(prev => (prev + 1) % interviews.length)
   }, [interviews.length])
+
+  // 좌우로 밀기: 왼쪽 → 다음, 오른쪽 → 이전 (세로 스크롤과 헷갈리지 않게 가로 움직임이 확실할 때만)
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
+  const swipedAt = useRef(0)
+  const onTouchStart = (e: React.TouchEvent) => { const t = e.touches[0]; touchStart.current = { x: t.clientX, y: t.clientY } }
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const st = touchStart.current
+    touchStart.current = null
+    if (!st || interviews.length < 2) return
+    const t = e.changedTouches[0]
+    const dx = t.clientX - st.x, dy = t.clientY - st.y
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.2) return
+    swipedAt.current = Date.now()
+    const n = interviews.length
+    setActiveScene(prev => (dx < 0 ? prev + 1 : prev - 1 + n) % n)
+  }
 
   if (interviews.length === 0) return null
 
@@ -1027,7 +1044,9 @@ function FilmScenes({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
       {/* Current story card */}
       <div
         onClick={handleTap}
-        style={{ padding: '0 16px', cursor: 'pointer', opacity: 0, ...(isVisible ? { animation: 'film-fadeSlideUp 0.8s ease 0.3s both' } : {}) }}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        style={{ padding: '0 16px', cursor: 'pointer', touchAction: 'pan-y', opacity: 0, ...(isVisible ? { animation: 'film-fadeSlideUp 0.8s ease 0.3s both' } : {}) }}
       >
         <div key={activeScene} style={{ animation: 'film-fadeSlideUp 0.4s ease both' }}>
           <div style={{ padding: '8px 20px 4px', marginBottom: '4px' }}>
@@ -1035,7 +1054,7 @@ function FilmScenes({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
               {String(activeScene + 1).padStart(2, '0')} / {String(interviews.length).padStart(2, '0')}
             </span>
           </div>
-          <FilmSceneCard item={item} idx={activeScene} total={interviews.length} groomName={groomName} brideName={brideName} fonts={fonts} tc={tc} />
+          <FilmSceneCard item={item} idx={activeScene} total={interviews.length} groomName={groomName} brideName={brideName} fonts={fonts} tc={tc} show={isVisible} />
         </div>
 
         {/* Tap hint */}
@@ -1200,6 +1219,9 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox, bgOverride }: {
         {images.length > 0 && (() => {
           const hasMoreGrid = images.length > 6 && !showAllGrid
           const visibleGridImages = hasMoreGrid ? images.slice(0, 6) : images
+          // 마지막 줄이 3장으로 안 채워지면 마지막 사진을 가로로 — 1장 남으면 한 줄 전체(3:2), 2장 남으면 두 칸 차지
+          const gridRem = visibleGridImages.length % 3
+          const lastIdx = visibleGridImages.length - 1
           return (
             <div className="px-5 mt-8">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '3px' }}>
@@ -1207,7 +1229,8 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox, bgOverride }: {
                   const imgSettings = (invitation.gallery as any)?.imageSettings?.[i] || {}
                   return (
                     <div key={i} className="relative overflow-hidden" style={{
-                      aspectRatio: '3/4', cursor: 'pointer',
+                      ...(i === lastIdx && gridRem === 1 ? { gridColumn: '1 / -1', aspectRatio: '3/2' } : i === lastIdx && gridRem === 2 ? { gridColumn: 'span 2' } : { aspectRatio: '3/4' }),
+                      cursor: 'pointer',
                       opacity: 0,
                       ...(isVisible ? { animation: `${i % 2 === 0 ? 'film-photoScale' : 'film-photoScaleAlt'} 1s cubic-bezier(0.22,1,0.36,1) ${0.3 + i * 0.15}s both` } : {}),
                     }}
@@ -1303,9 +1326,9 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
         {/* ===== TICKET CARD ===== */}
         <div className="premiere-ticket" style={{ background: tc.cardBg, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.06)', position: 'relative', alignSelf: 'stretch' }}>
 
-          {/* ADMIT TWO stamp overlay */}
+          {/* WITH LOVE stamp overlay */}
           <div className={`premiere-stamp ${isVisible ? 'stamp-visible' : ''}`} style={{ color: tc.accent, borderColor: tc.accent }}>
-            <span style={{ fontFamily: fonts.displayKr, fontSize: dfs(7), letterSpacing: '2px', color: tc.accent, fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}>Admit<br />Two</span>
+            <span style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontStyle: 'italic', fontSize: dfs(9.5), letterSpacing: '0.02em', color: tc.accent, fontWeight: 600, textAlign: 'center', lineHeight: 1.25 }}>With<br />Love</span>
           </div>
 
           {/* Ticket Top - Title Area */}
@@ -1315,8 +1338,8 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
             <div style={{ position: 'absolute', width: '20px', height: '20px', borderRadius: '50%', background: bgOverride || tc.sectionBg, top: '100%', right: '-10px', transform: 'translateY(-50%)' }} />
 
             <div className="flex items-center justify-between mb-4">
-              <span style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '4px', color: tc.accent }}>Admit Two</span>
-              <span style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '2px', color: cg }}>Premiere</span>
+              <span style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontStyle: 'italic', fontSize: dfs(11), letterSpacing: '0.03em', color: tc.accent }}>Reserved for You</span>
+              <span style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontStyle: 'italic', fontSize: dfs(11), letterSpacing: '0.03em', color: cg }}>Premiere</span>
             </div>
 
             {/* Parents + Names */}
@@ -1397,7 +1420,7 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
             {/* Venue */}
             {w.showVenue !== false && (
             <div style={{ background: getAccentTint(tc.accent, 0.85), borderRadius: '8px', padding: '16px', textAlign: 'center' }}>
-              <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(7), letterSpacing: '4px', color: tc.accent, marginBottom: '8px' }}>Theater</div>
+              <div style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontStyle: 'italic', fontSize: dfs(11), letterSpacing: '0.03em', color: tc.accent, marginBottom: '8px' }}>Theater</div>
               <p style={{ fontFamily: fonts.displayKr, fontSize: '16px', fontWeight: 500, color: ct }}>{w.venue?.name || ''}</p>
               {w.venue?.hall && !w.venue?.hideHall && (
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', color: cg, marginTop: '4px' }}>{w.venue.hall}</p>
@@ -1463,31 +1486,31 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
           <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '10px', alignSelf: 'stretch', width: '100%' }}>
             {w.directions.car && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>By Car</div>
+                <div style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontStyle: 'italic', fontSize: dfs(11), letterSpacing: '0.03em', color: tc.accent, marginBottom: '6px' }}>By Car</div>
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.6, color: cg, whiteSpace: 'pre-line' }}>{w.directions.car}</p>
               </div>
             )}
             {w.directions.publicTransport && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Public Transit</div>
+                <div style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontStyle: 'italic', fontSize: dfs(11), letterSpacing: '0.03em', color: tc.accent, marginBottom: '6px' }}>Public Transit</div>
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.6, color: cg, whiteSpace: 'pre-line' }}>{w.directions.publicTransport}</p>
               </div>
             )}
             {w.directions.train && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Train</div>
+                <div style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontStyle: 'italic', fontSize: dfs(11), letterSpacing: '0.03em', color: tc.accent, marginBottom: '6px' }}>Train</div>
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.6, color: cg, whiteSpace: 'pre-line' }}>{typeof w.directions.train === 'string' ? w.directions.train : ''}</p>
               </div>
             )}
             {w.directions.expressBus && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Express Bus</div>
+                <div style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontStyle: 'italic', fontSize: dfs(11), letterSpacing: '0.03em', color: tc.accent, marginBottom: '6px' }}>Express Bus</div>
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.6, color: cg, whiteSpace: 'pre-line' }}>{typeof w.directions.expressBus === 'string' ? w.directions.expressBus : ''}</p>
               </div>
             )}
             {w.directions.extraInfoEnabled && w.directions.extraInfoText && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>{(w.directions.extraInfoTitle || 'Info').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}</div>
+                <div style={/^[\x20-\x7E]*$/.test(w.directions.extraInfoTitle || 'Info') ? { fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontStyle: 'italic', fontSize: dfs(11), letterSpacing: '0.03em', color: tc.accent, marginBottom: '6px' } : { fontFamily: fonts.displayKr, fontSize: dfs(9), letterSpacing: '0.08em', color: tc.accent, marginBottom: '6px' }}>{(w.directions.extraInfoTitle || 'Info').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}</div>
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.6, color: cg, whiteSpace: 'pre-line' }}>{w.directions.extraInfoText}</p>
               </div>
             )}

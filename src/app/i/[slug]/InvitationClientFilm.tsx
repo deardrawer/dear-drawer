@@ -154,6 +154,23 @@ function RevealSection({ children, className, style, sectionKey, margin, bare }:
   )
 }
 
+// Hook: 지금 화면 근처에 있는지 (들어오면 true, 벗어나면 false)
+// 화면 밖에서도 계속 도는 애니메이션·타이머를 멈춰, 빠르게 스크롤할 때 폰이 다른 일로 바쁘지 않게
+function useOnScreen(elRef: React.RefObject<HTMLElement | null>, margin = 200) {
+  const [onScreen, setOnScreen] = useState(true)
+  useEffect(() => {
+    const el = elRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    if (el.closest('.film-preview-mode')) return
+    const scrollEl = el.closest('.mobile-frame-content') as HTMLElement | null
+    const root = scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight + 1 ? scrollEl : null
+    const observer = new IntersectionObserver(([entry]) => setOnScreen(entry.isIntersecting), { root, rootMargin: `${margin}px 0px ${margin}px 0px` })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [elRef, margin])
+  return onScreen
+}
+
 // Hook: detect parent RevealSection's revealed state
 function useParentReveal(elRef: React.RefObject<HTMLElement | null>) {
   const [isVisible, setIsVisible] = useState(false)
@@ -227,7 +244,7 @@ function MusicToggle({ audioRef, isVisible, shouldAutoPlay, tc, showNotification
     <div className="fixed top-4 right-4 z-50">
       {notifVisible && !isPlaying && (
         <div className="absolute right-12 top-1 whitespace-nowrap rounded-full shadow-lg"
-          style={{ animation: 'fadeInUp 0.3s ease-out', background: 'rgba(255,255,255,0.97)', padding: '8px 16px', backdropFilter: 'blur(8px)', border: '1px solid rgba(0,0,0,0.08)' }}>
+          style={{ animation: 'fadeInUp 0.3s ease-out', background: 'rgba(255,255,255,0.97)', padding: '8px 16px', border: '1px solid rgba(0,0,0,0.08)' }}>
           <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 {notificationText || '배경음악이 준비되어 있어요'}</span>
         </div>
       )}
@@ -235,7 +252,7 @@ function MusicToggle({ audioRef, isVisible, shouldAutoPlay, tc, showNotification
         <span className="absolute inset-0 rounded-full animate-ping" style={{ background: 'rgba(0,0,0,0.1)' }} />
       )}
       <button onClick={toggle} className="relative w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-110"
-        style={{ background: `${tc.sectionBg}E6`, backdropFilter: 'blur(10px)', border: `1px solid ${tc.divider}40`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+        style={{ background: `${tc.sectionBg}F2`, border: `1px solid ${tc.divider}40`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
         {isPlaying ? (
           <svg className="w-4 h-4" style={{ color: tc.text }} viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" /></svg>
         ) : (
@@ -1107,10 +1124,11 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox, bgOverride }: {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const pausedRef = useRef(false)
   const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const onScreen = useOnScreen(ref)
 
-  // Auto-scroll: 이미지를 복제하여 무한 루프 스크롤
+  // Auto-scroll: 이미지를 복제하여 무한 루프 스크롤 (화면 밖으로 나가면 멈춤)
   useEffect(() => {
-    if (!isVisible || images.length <= 1) return
+    if (!isVisible || !onScreen || images.length <= 1) return
 
     const scrollEl = scrollRef.current?.querySelector('.filmstrip-scroll') as HTMLDivElement | null
     if (!scrollEl) return
@@ -1162,7 +1180,7 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox, bgOverride }: {
       scrollEl.removeEventListener('mousedown', pauseAutoScroll)
       scrollEl.removeEventListener('wheel', pauseAutoScroll)
     }
-  }, [isVisible, images.length])
+  }, [isVisible, onScreen, images.length])
 
   if (images.length === 0) return null
 
@@ -1760,8 +1778,10 @@ function GuidanceSection({ invitation, fonts, tc, bgOverride }: { invitation: an
 function CreditsSection({ invitation, fonts, tc, bgOverride }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string }) {
   const dfs = (px: number) => `${Math.round(px * (fonts.ds || 1))}px`
   const { ref, isVisible } = useScrollReveal()
+  const onScreen = useOnScreen(ref)
   const thankYou = invitation.content?.thankYou
   if (!thankYou) return null
+  const playState = onScreen ? 'running' : 'paused'
 
   // Star positions (10 stars with varied sizes, positions, timing)
   const stars = [
@@ -1787,6 +1807,7 @@ function CreditsSection({ invitation, fonts, tc, bgOverride }: { invitation: any
             width: '2px', height: '2px', background: '#fff', borderRadius: '50%',
             opacity: 0,
             animation: isVisible ? `twinkle ${s.dur} ease-in-out ${s.delay} infinite` : 'none',
+            animationPlayState: playState,
             ['--brightness' as string]: s.brightness,
           } as React.CSSProperties} />
         ))}
@@ -1794,7 +1815,7 @@ function CreditsSection({ invitation, fonts, tc, bgOverride }: { invitation: any
       <div className="transition-all duration-1000" style={{ opacity: isVisible ? 1 : 0 }}>
         {/* Credits viewport */}
         <div className="credits-viewport">
-          <div className={`credits-roll ${isVisible ? 'credits-animate' : ''}`}>
+          <div className={`credits-roll ${isVisible ? 'credits-animate' : ''}`} style={{ animationPlayState: playState }}>
             {/* Title - section-sub-title style (accent italic) */}
             <div className="text-center mb-12">
               <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>
@@ -1939,6 +1960,7 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOver
   useEffect(() => {
     if (!useCarousel) return
     carouselTimer.current = setInterval(() => {
+      if (!reviewsOnScreenRef.current) return
       const currentIdx = carouselIdxRef.current
       setCarouselExit(currentIdx)
       setCarouselIdx((currentIdx + 1) % messages.length)
@@ -1954,6 +1976,7 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOver
     setCarouselIdx(idx)
     setTimeout(() => setCarouselExit(-1), 600)
     carouselTimer.current = setInterval(() => {
+      if (!reviewsOnScreenRef.current) return
       const currentIdx = carouselIdxRef.current
       setCarouselExit(currentIdx)
       setCarouselIdx((currentIdx + 1) % messages.length)
@@ -1976,6 +1999,9 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOver
   }
 
   const { ref, isVisible } = useScrollReveal()
+  const reviewsOnScreen = useOnScreen(ref)
+  const reviewsOnScreenRef = useRef(true)
+  reviewsOnScreenRef.current = reviewsOnScreen
   const cdiv = tc.cardText ? getAccentTint(tc.accent, 0.70) : tc.divider
   const isDark = !!tc.cardText
   const inputStyle: React.CSSProperties = { fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `1px solid ${cdiv}`, background: tc.cardBg, outline: 'none', color: tc.cardText || tc.text, width: '100%' }
@@ -2188,9 +2214,10 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
   const w = invitation.wedding || {}
   const date = w.date ? parseDateOnly(w.date) : null
   const revealedClass = isVisible ? 'rsvp-section-revealed' : ''
+  const rsvpOnScreen = useOnScreen(ref)
 
   return (
-    <div ref={ref} className={`px-6 ${revealedClass}`} style={{ backgroundColor: bgOverride || tc.sectionBg, position: 'relative', overflow: 'hidden' }}>
+    <div ref={ref} className={`px-6 ${revealedClass}${rsvpOnScreen ? '' : ' rsvp-offscreen'}`} style={{ backgroundColor: bgOverride || tc.sectionBg, position: 'relative', overflow: 'hidden' }}>
       {/* RSVP section */}
       {invitation.rsvpEnabled && <>
       {/* Phase 1: "NOW SHOWING" / "YOUR RESERVATION" intro text */}
@@ -2823,6 +2850,7 @@ const globalStyles = `
   .rsvp-section-revealed .rsvp-form-animated > *:nth-child(5) { animation: rsvpFieldIn 0.5s ease 3.4s both; }
   .rsvp-section-revealed .rsvp-form-animated > *:nth-child(6) { animation: rsvpFieldIn 0.5s ease 3.55s both; }
   .rsvp-section-revealed .rsvp-confirm-btn { animation: rsvpFieldIn 0.5s ease 3.55s both, confirmGlow 2s ease-in-out 4.2s infinite alternate; }
+  .rsvp-offscreen .rsvp-confirm-btn { animation-play-state: paused; }
   .rsvp-gift-section { opacity: 0; transform: translateY(20px); }
   .rsvp-section-revealed .rsvp-gift-section { animation: rsvpFieldIn 0.8s ease 4.2s both; }
 

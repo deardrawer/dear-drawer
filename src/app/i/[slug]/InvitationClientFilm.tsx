@@ -265,18 +265,19 @@ function MusicToggle({ audioRef, isVisible, shouldAutoPlay, tc, showNotification
 
 // ===== Frame Intro Cover (사진 프레임) =====
 type FrameBox = { x: number; y: number; w: number; h: number }
-const FILM_FRAME_CFG: Record<string, { box: FrameBox; slots?: FrameBox[] }> = {
-  '10': { box: { x: 20.9, y: 35.6, w: 58.2, h: 28.6 } },
-  '4': { box: { x: 31.4, y: 32.6, w: 37.2, h: 34.7 } },
-  '9': { box: { x: 21.9, y: 24.2, w: 62.6, h: 46.8 } },
-  '5': { box: { x: 18.1, y: 37.6, w: 63.7, h: 24.9 } },
-  '12': { box: { x: 25.2, y: 33.4, w: 48.7, h: 33.1 } },
-  '8': { box: { x: 27.7, y: 26.9, w: 44.4, h: 51.2 }, slots: [{ x: 27.8, y: 26.9, w: 44.3, h: 25.1 }, { x: 27.7, y: 52.9, w: 44.4, h: 25.1 }] },
+// outer: 프레임 그림이 차지하는 위·아래 끝 (무대 높이 %) — 글자를 프레임 가장자리 기준으로 띄운다
+const FILM_FRAME_CFG: Record<string, { box: FrameBox; outer: { top: number; bottom: number }; slots?: FrameBox[] }> = {
+  '10': { box: { x: 20.9, y: 35.6, w: 58.2, h: 28.6 }, outer: { top: 26.72, bottom: 73.23 } },
+  '4': { box: { x: 31.4, y: 32.6, w: 37.2, h: 34.7 }, outer: { top: 26.93, bottom: 73.07 } },
+  '9': { box: { x: 21.9, y: 24.2, w: 62.6, h: 46.8 }, outer: { top: 21.88, bottom: 78.18 } },
+  '5': { box: { x: 18.1, y: 37.6, w: 63.7, h: 24.9 }, outer: { top: 33.85, bottom: 66.15 } },
+  '12': { box: { x: 25.2, y: 33.4, w: 48.7, h: 33.1 }, outer: { top: 30.99, bottom: 68.96 } },
+  '8': { box: { x: 27.7, y: 26.9, w: 44.4, h: 51.2 }, outer: { top: 25.31, bottom: 79.64 }, slots: [{ x: 27.8, y: 26.9, w: 44.3, h: 25.1 }, { x: 27.7, y: 52.9, w: 44.4, h: 25.1 }] },
 }
 const FILM_FRAME_ANIM_CSS = `
 @keyframes ffZoom { 0%{opacity:0;transform:scale(1.13);filter:blur(6px)} 55%{opacity:1} 100%{opacity:1;transform:scale(1);filter:blur(0)} }
 @keyframes ffUp { 0%{opacity:0;transform:translateY(20px);filter:blur(4px)} 100%{opacity:1;transform:translateY(0);filter:blur(0)} }
-@keyframes ffLetter { 0%{opacity:0;letter-spacing:14px;transform:translateY(12px)} 100%{opacity:1;letter-spacing:4px;transform:translateY(0)} }
+@keyframes ffLetter { 0%{opacity:0;letter-spacing:.5em;transform:translateY(12px)} 100%{opacity:1;letter-spacing:.22em;transform:translateY(0)} }
 `
 
 function FilmFrameCover({ invitation, fonts, tc, onEnter, isPreview }: {
@@ -326,12 +327,19 @@ function FilmFrameCover({ invitation, fonts, tc, onEnter, isPreview }: {
   }, [enF.family, koF.family])
 
   const CB = 'cubic-bezier(.16,1,.3,1)'
+  // 폰 화면 캡처(폭 1032) 기준 크기 — 무대 폭에 비례해 어느 폰에서든 같은 비율
+  const u = (px: number) => `${(px / 10.32).toFixed(3)}cqw`
+  const outer = cfg.outer
+  // 글자까지 포함한 전체 묶음이 화면 위아래 여백이 비슷하게 오도록 무대를 살짝 올림 (프레임이 큰 디자인은 덜 올림)
+  const lift = ({ '9': 27, '8': 40 } as Record<string, number>)[frameId] ?? 53
+  // 무대(9:16)가 화면보다 길면 위아래가 잘리므로, 아래 글자 묶음은 실제 보이는 화면 안에서 끝나게
+  const visibleBottom = `max(14px, calc((${(100 * 16 / 9).toFixed(2)}cqw - ${isPreview ? '660px' : '100dvh'}) / 2 + 14px - ${u(lift)}))`
 
   return (
     <div onClick={onEnter} className="relative w-full" style={{ height: isPreview ? '660px' : '100dvh', overflow: 'hidden', background: bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
       <style dangerouslySetInnerHTML={{ __html: FILM_FRAME_ANIM_CSS }} />
       {/* 스테이지 (9:16, 너비 100% = 좌우 꽉) */}
-      <div style={{ position: 'relative', flexShrink: 0, width: '100%', aspectRatio: '9 / 16', background: bgColor }}>
+      <div style={{ position: 'relative', flexShrink: 0, width: '100%', aspectRatio: '9 / 16', background: bgColor, containerType: 'inline-size', transform: `translateY(calc(-1 * ${u(lift)}))` }}>
         {/* 무대: 프레임+사진 시네마 줌 */}
         <div style={{ position: 'absolute', inset: 0, animation: `ffZoom 3.6s ${CB} both` }}>
           {cfg.slots ? (
@@ -355,24 +363,30 @@ function FilmFrameCover({ invitation, fonts, tc, onEnter, isPreview }: {
             </div>
           )}
         </div>
-        {/* 상단 글자 */}
-        <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: `${box.y}%`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: textColor, padding: '0 20px' }}>
-          {frameLabel && <div style={{ fontFamily: labelFont, fontSize: '11px', letterSpacing: '4px', fontWeight: 600, animation: `ffLetter 2.1s ${CB} 1.3s both` }}>{frameLabel}</div>}
-          {frameTitle && <div style={{ fontFamily: nameFont, fontSize: '30px', marginTop: '6px', whiteSpace: 'pre-line', animation: `ffUp 1.9s ${CB} 2.1s both` }}>{frameTitle}</div>}
+        {/* 상단 글자 — 이름 아래가 프레임 위 끝에서 80 떨어지게 */}
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: `calc(${100 - outer.top}% + ${u(80)})`, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', color: textColor, padding: '0 20px' }}>
+          {frameLabel && <div style={{ fontFamily: labelFont, fontSize: u(28), letterSpacing: '.22em', fontWeight: 600, lineHeight: 1.2, animation: `ffLetter 2.1s ${CB} 1.3s both` }}>{frameLabel}</div>}
+          {frameTitle && <div style={{ fontFamily: nameFont, fontSize: u(68), letterSpacing: '.04em', lineHeight: 1.15, marginTop: frameLabel ? u(30) : 0, whiteSpace: 'pre-line', animation: `ffUp 1.9s ${CB} 2.1s both` }}>{frameTitle}</div>}
         </div>
-        {/* 하단 글자 */}
-        <div style={{ position: 'absolute', left: 0, right: 0, top: `${box.y + box.h}%`, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: textColor, padding: '0 20px', gap: '10px' }}>
-          {w?.showDate !== false && <div style={{ fontFamily: enFont, fontSize: '18px', fontStyle: 'italic', animation: `ffUp 1.9s ${CB} 2.9s both` }}>{dateStr}</div>}
-          {w?.showVenue !== false && venueName && <div style={{ fontFamily: koF.family || fonts.body, fontSize: '13px', letterSpacing: '1px', animation: `ffUp 1.9s ${CB} 3.5s both` }}>{venueName}</div>}
+        {/* 하단 글자 — 날짜는 프레임 아래 끝에서 88, 장소는 날짜 아래 20, 안내 버튼은 장소 아래 56 (버튼 아래 여백이 위쪽과 균형 맞게)
+            (프레임이 커서 자리가 모자라면 간격이 함께 줄어 버튼이 화면 밖으로 나가지 않음) */}
+        <div style={{ position: 'absolute', left: 0, right: 0, top: `${outer.bottom}%`, bottom: visibleBottom, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', color: textColor, padding: '0 20px' }}>
+          <div style={{ flex: '0 1 auto', height: u(88), minHeight: u(24) }} />
+          {w?.showDate !== false && <div style={{ flex: 'none', fontFamily: enFont, fontSize: u(54), fontStyle: 'italic', lineHeight: 1.2, animation: `ffUp 1.9s ${CB} 2.9s both` }}>{dateStr}</div>}
+          {w?.showDate !== false && w?.showVenue !== false && venueName && <div style={{ flex: '0 1 auto', height: u(20), minHeight: 4 }} />}
+          {w?.showVenue !== false && venueName && <div style={{ flex: 'none', fontFamily: koF.family || fonts.body, fontSize: u(33), letterSpacing: '.06em', lineHeight: 1.3, animation: `ffUp 1.9s ${CB} 3.5s both` }}>{venueName}</div>}
+          <div style={{ flex: '0 1 auto', height: u(56), minHeight: u(20) }} />
+          <FilmTapCue text="화면을 눌러 청첩장을 열어주세요" color={textColor} show delay={5.4}
+            wrapStyle={{ position: 'static', flex: 'none' }} pillStyle={{ fontSize: u(27), padding: `${u(20)} ${u(46)}` }} />
+          <div style={{ flex: '1 1 0' }} />
         </div>
       </div>
-      <FilmTapCue text="화면을 눌러 청첩장을 열어주세요" color={textColor} show delay={5.4} />
     </div>
   )
 }
 
 /** 인트로 화면 아래 '화면을 눌러…' 안내 (프레임·포토부스 공용) */
-function FilmTapCue({ text, color, show, delay = 0 }: { text: string; color: string; show: boolean; delay?: number }) {
+function FilmTapCue({ text, color, show, delay = 0, wrapStyle, pillStyle }: { text: string; color: string; show: boolean; delay?: number; wrapStyle?: React.CSSProperties; pillStyle?: React.CSSProperties }) {
   const dark = boothIsDark(color)   // 글자색이 어두우면 밝은 알약, 밝으면 어두운 알약
   // 처음부터 show 인 경우 CSS transition 이 돌지 않아 바로 보이던 문제 → 타이머로 연출이 끝난 뒤 켠다
   const [ready, setReady] = useState(false)
@@ -384,10 +398,10 @@ function FilmTapCue({ text, color, show, delay = 0 }: { text: string; color: str
   const on = show && ready
   return (
     <div style={{ position: 'absolute', left: 0, right: 0, bottom: 22, display: 'flex', justifyContent: 'center', pointerEvents: 'none', zIndex: 5,
-      opacity: on ? 1 : 0, transition: 'opacity .8s ease' }}>
+      opacity: on ? 1 : 0, transition: 'opacity .8s ease', ...wrapStyle }}>
       <span style={{ padding: '6px 14px', borderRadius: 999, fontFamily: "'Noto Sans KR', sans-serif", fontSize: 11.5, letterSpacing: '.02em',
         color, background: dark ? 'rgba(255,255,255,.55)' : 'rgba(0,0,0,.28)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
-        animation: on ? 'ftCue 2s ease-in-out infinite' : undefined }}>{text}</span>
+        animation: on ? 'ftCue 2s ease-in-out infinite' : undefined, ...pillStyle }}>{text}</span>
       <style dangerouslySetInnerHTML={{ __html: '@keyframes ftCue{0%,100%{opacity:.7;transform:translateY(0)}50%{opacity:1;transform:translateY(-2px)}}' }} />
     </div>
   )
@@ -563,11 +577,11 @@ function ChapterOne({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
         <div className="flex items-center justify-center gap-3 mb-3" style={{
           opacity: isVisible ? 1 : 0, transition: 'opacity 0.8s ease 0.2s',
         }}>
-          <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const }}>PROLOGUE</span>
+          <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '3.5px', color: tc.gray, textTransform: 'uppercase' as const }}>PROLOGUE</span>
         </div>
         <h2 style={{
           fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', color: tc.accent,
-          letterSpacing: isVisible ? '2px' : '12px',
+          letterSpacing: isVisible ? '0.5px' : '12px',
           opacity: isVisible ? 1 : 0,
           transition: 'all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s',
         }}>
@@ -690,6 +704,147 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
   // (clip-path 는 폰 브라우저가 매 프레임 다시 그려 큰 사진과 겹치면 버벅일 수 있음 · transform 은 화면 합치기만)
   const wipe = (delay: number) => `transform 1.2s cubic-bezier(0.77, 0, 0.175, 1) ${delay}s`
 
+  // 소개 스타일 — cards(기본 포스터 카드) · widescreen(와이드 스틸+자막) · polaroid(폴라로이드) · credits(엔딩 크레딧) · casting(캐스팅 카드) · maincast(출연진)
+  const castStyle: string = invitation.filmCastStyle || 'cards'
+  const people = [
+    { key: 'g', name: groomName, image: groomImage, crop: groomProfile?.imageSettings?.[0] || {}, tag: groomProfile?.tag as string | undefined, roleEn: 'The Groom', roleKo: '신랑', no: '01', time: '00:12:04' },
+    { key: 'b', name: brideName, image: brideImage, crop: brideProfile?.imageSettings?.[0] || {}, tag: brideProfile?.tag as string | undefined, roleEn: 'The Bride', roleKo: '신부', no: '02', time: '00:47:31' },
+  ]
+  const photo = (pp: typeof people[number], style?: React.CSSProperties) => pp.image
+    ? <CroppedImageDiv src={pp.image} crop={pp.crop} className="w-full h-full" style={style} />
+    : <div className="w-full h-full" style={{ background: tc.cardBg }} />
+  const appear = (delay: number, from = 'translateY(14px)'): React.CSSProperties => ({
+    opacity: isVisible ? 1 : 0, transform: isVisible ? 'none' : from,
+    transition: `opacity 0.8s ease ${delay}s, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s`,
+  })
+  const smallLabel: React.CSSProperties = { fontFamily: fonts.body, fontSize: '8px', letterSpacing: '3px', color: tc.accent }
+  const nameStyle: React.CSSProperties = { fontFamily: fonts.displayKr, fontSize: '15px', letterSpacing: '2px', color: tc.text, fontWeight: 500 }
+  const tagStyle: React.CSSProperties = { fontFamily: fonts.body, fontSize: '10.5px', color: tc.gray, lineHeight: 1.6, whiteSpace: 'pre-line', wordBreak: 'keep-all' }
+
+  const altCast = (() => {
+    if (castStyle === 'credits') {
+      // 엔딩 크레딧: 작은 원형 얼굴 + 이름 ······ as 배역
+      return (
+        <div className="px-1">
+          {people.map((pp, i) => (
+            <div key={pp.key} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 0', borderTop: i ? `1px solid ${tc.divider}` : 'none', ...appear(0.2 + i * 0.35) }}>
+              <div style={{ width: '58px', height: '58px', borderRadius: '50%', overflow: 'hidden', flex: 'none' }}>{photo(pp)}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                  <span style={{ ...nameStyle, whiteSpace: 'nowrap' }}>{pp.name}</span>
+                  <span style={{ flex: 1, minWidth: '12px', borderBottom: `1px dotted ${tc.gray}80`, transformOrigin: 'left', transform: `translateY(-4px) scaleX(${isVisible ? 1 : 0})`, transition: `transform 0.9s ease ${0.5 + i * 0.35}s` }} />
+                  <span style={{ fontFamily: fonts.display, fontStyle: 'italic', fontSize: dfs(14), color: tc.accent, whiteSpace: 'nowrap' }}>as {pp.roleEn}</span>
+                </div>
+                {pp.tag && <p style={{ ...tagStyle, marginTop: '4px' }}>{pp.tag}</p>}
+              </div>
+            </div>
+          ))}
+          <div style={{ textAlign: 'center', marginTop: '22px', ...smallLabel, color: tc.gray, ...appear(1.1) }}>AND INTRODUCING · YOU</div>
+        </div>
+      )
+    }
+    if (castStyle === 'casting') {
+      // 캐스팅 프로필 카드: 작은 증명사진 + 배역·한 줄 소개
+      const ct = tc.cardText || tc.text
+      const cg = tc.cardGray || tc.gray
+      const key: React.CSSProperties = { fontFamily: fonts.body, fontSize: '7.5px', letterSpacing: '2px', color: tc.accent, width: '34px', flex: 'none', paddingTop: '2px', fontWeight: 500 }
+      return (
+        <div>
+          {people.map((pp, i) => (
+            <div key={pp.key} style={{ display: 'flex', gap: '14px', background: tc.cardBg, borderRadius: '4px', padding: '14px', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', position: 'relative', marginTop: i ? '12px' : 0, ...appear(0.2 + i * 0.35, `translateX(${i ? 24 : -24}px)`) }}>
+              <div style={{ width: '72px', aspectRatio: '3 / 4', flex: 'none', borderRadius: '2px', overflow: 'hidden' }}>{photo(pp)}</div>
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingRight: '28px' }}>
+                <span style={smallLabel}>LEAD ROLE</span>
+                <div style={{ ...nameStyle, color: ct, marginTop: '6px' }}>{pp.name}</div>
+                <div style={{ display: 'flex', gap: '8px', fontFamily: fonts.body, fontSize: '10px', color: cg, marginTop: '4px' }}><span style={key}>ROLE</span>{pp.roleKo}</div>
+                {pp.tag && <div style={{ display: 'flex', gap: '8px', fontFamily: fonts.body, fontSize: '10px', color: cg, marginTop: '3px', lineHeight: 1.5 }}><span style={key}>NOTE</span><span style={{ whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{pp.tag}</span></div>}
+              </div>
+              <span style={{ position: 'absolute', top: '12px', right: '14px', fontFamily: fonts.body, fontSize: '7px', letterSpacing: '2px', color: cg, opacity: 0.55 }}>No. {pp.no}</span>
+            </div>
+          ))}
+        </div>
+      )
+    }
+    if (castStyle === 'maincast') {
+      // 출연진: 원형 얼굴 둘 + 가운데 &, 아래 신랑·신부
+      const circle = (pp: typeof people[number], i: number) => (
+        <div style={{ textAlign: 'center', minWidth: 0, ...appear(0.2 + i * 0.3, `translateX(${i ? 16 : -16}px)`) }}>
+          <div style={{ width: '92px', height: '92px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 18px', boxShadow: `0 0 0 4px ${tc.cardBg}, 0 0 0 5px ${tc.divider}` }}>{photo(pp)}</div>
+          <div style={nameStyle}>{pp.name}</div>
+          <div style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.accent, marginTop: '7px', letterSpacing: '2px' }}>{pp.roleKo}</div>
+          {pp.tag && <>
+            <div style={{ width: '18px', height: '1px', background: tc.divider, margin: '12px auto 10px' }} />
+            <p style={{ ...tagStyle, padding: '0 4px' }}>{pp.tag}</p>
+          </>}
+        </div>
+      )
+      return (
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'start' }}>
+            {circle(people[0], 0)}
+            <div style={{ fontFamily: fonts.display, fontStyle: 'italic', fontSize: '22px', color: tc.accent, height: '92px', display: 'flex', alignItems: 'center', padding: '0 6px', opacity: isVisible ? 0.8 : 0, transition: 'opacity 0.8s ease 0.6s' }}>&amp;</div>
+            {circle(people[1], 1)}
+          </div>
+          <div style={{ marginTop: '40px', textAlign: 'center', ...appear(1.0) }}>
+            <div style={{ width: '1px', height: '22px', background: tc.divider, margin: '0 auto 14px' }} />
+            <span style={{ fontFamily: fonts.display, fontStyle: 'italic', fontSize: dfs(13), color: tc.gray }}>&ldquo;two leads, one story&rdquo;</span>
+          </div>
+        </div>
+      )
+    }
+    if (castStyle === 'polaroid') {
+      // 폴라로이드: 두 장을 살짝 엇갈리게 기울이고, 아래에 각자 한 마디
+      return (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', padding: '0 2px' }}>
+          {people.map((pp, i) => (
+            <div key={pp.key} style={{ minWidth: 0, ...appear(0.2 + i * 0.35, `translateY(18px) rotate(${i ? 5 : -5}deg)`) }}>
+              <div style={{ background: '#FBFBFA', padding: '7% 7% 22%', borderRadius: '2px', boxShadow: '0 1px 2px rgba(0,0,0,0.08), 0 6px 14px rgba(0,0,0,0.08)', transform: i ? 'translateY(8px) rotate(2.2deg)' : 'rotate(-2deg)' }}>
+                <div style={{ aspectRatio: '46 / 62', overflow: 'hidden' }}>{photo(pp)}</div>
+              </div>
+              <div style={{ marginTop: '16px', textAlign: 'center' }}>
+                <span style={{ display: 'block', ...smallLabel, fontSize: '7.5px' }}>{pp.key === 'g' ? 'GROOM' : 'BRIDE'}</span>
+                <div style={{ ...nameStyle, marginTop: '6px' }}>{pp.name}</div>
+                {pp.tag && <p style={{ ...tagStyle, fontSize: '11.5px', marginTop: '6px' }}>&ndash; {pp.tag}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+    if (castStyle === 'widescreen') {
+      // 와이드 스틸 + 자막: 위아래 검은 띠의 영화 장면, 한 줄 소개는 자막으로
+      const tcStyle: React.CSSProperties = { position: 'absolute', top: '3px', fontFamily: fonts.body, fontSize: '6.5px', letterSpacing: '2px', color: '#bbb' }
+      return (
+        <div style={{ margin: '0 -24px' }}>
+          {people.map((pp, i) => (
+            <div key={pp.key}>
+              <div style={{ position: 'relative', background: '#000', padding: '14px 0', opacity: isVisible ? 1 : 0, transition: `opacity 0.9s ease ${0.2 + i * 0.4}s` }}>
+                <div style={{ aspectRatio: '2.35 / 1', overflow: 'hidden' }}>
+                  {(() => {
+                    const zoom: React.CSSProperties = { transform: isVisible ? 'scale(1)' : 'scale(1.08)', transition: `transform 2.4s cubic-bezier(0.16, 1, 0.3, 1) ${0.2 + i * 0.4}s` }
+                    // 가로로 자른 사진이 아니면(다른 스타일에서 세로로 잘라둔 경우) 가운데 대신 얼굴이 있는 위쪽을 보여줌
+                    const c = pp.crop as { cropWidth?: number; cropHeight?: number }
+                    const wideCrop = !!(c.cropWidth && c.cropHeight && c.cropWidth / c.cropHeight > 1.2)
+                    if (!pp.image || wideCrop) return photo(pp, zoom)
+                    return <div className="w-full h-full" style={{ backgroundImage: `url(${pp.image})`, backgroundSize: 'cover', backgroundPosition: 'center 22%', ...zoom }} />
+                  })()}
+                </div>
+                <span style={{ ...tcStyle, left: '12px' }}>SCENE {pp.no}</span>
+                <span style={{ ...tcStyle, right: '12px' }}>{pp.time}</span>
+                <div style={{ position: 'absolute', left: '12px', right: '12px', bottom: '22px', textAlign: 'center', color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.8)', fontFamily: "'Noto Sans KR', sans-serif", opacity: isVisible ? 1 : 0, transition: `opacity 0.6s ease ${1.0 + i * 0.4}s` }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '1px', color: '#F7D774' }}>{pp.name}</div>
+                  {pp.tag && <div style={{ fontSize: '13px', marginTop: '2px', whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{pp.tag}</div>}
+                </div>
+              </div>
+              <div style={{ textAlign: 'center', ...smallLabel, color: tc.gray, margin: i ? '12px 0 0' : '12px 0 22px', opacity: isVisible ? 1 : 0, transition: `opacity 0.6s ease ${1.0 + i * 0.4}s` }}>{pp.roleEn.toUpperCase()}</div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+    return null
+  })()
+
   return (
     <div ref={ref} style={{ backgroundColor: bgOverride || tc.sectionBg }}>
       {/* CAST section */}
@@ -699,14 +854,15 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
           {/* Chapter label */}
           <div className="text-center mb-6">
             <div className="flex items-center justify-center gap-3 mb-3">
-              <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const }}>INTRODUCE</span>
+              <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '3.5px', color: tc.gray, textTransform: 'uppercase' as const }}>INTRODUCE</span>
             </div>
-            <h2 style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>
+            <h2 style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '0.5px', color: tc.accent }}>
               The Couple
             </h2>
           </div>
 
-          {/* Poster-style profile cards with scale reveal */}
+          {/* Poster-style profile cards with scale reveal (기본) — 다른 소개 스타일이면 그 모양으로 */}
+          {altCast || (
           <div className="grid grid-cols-2 gap-3">
             {/* Groom */}
             <div>
@@ -805,6 +961,7 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
               </div>
             </div>
           </div>
+          )}
         </div>
       </div>
 
@@ -1034,10 +1191,10 @@ function FilmScenes({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
     <div ref={ref} style={{ backgroundColor: bgOverride || tc.sectionBg, display: 'flex', flexDirection: 'column', minHeight: 'auto', padding: '20px 0' }}>
       {/* Section label */}
       <div className="text-center pt-10 pb-8 px-6" style={{ opacity: 0, ...(isVisible ? { animation: 'film-fadeSlideUp 0.8s ease both' } : {}) }}>
-        <div style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const, marginBottom: '6px' }}>
+        <div style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '3.5px', color: tc.gray, textTransform: 'uppercase' as const, marginBottom: '6px' }}>
           THE BEGINNING
         </div>
-        <h2 style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>
+        <h2 style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '0.5px', color: tc.accent }}>
           Our Story
         </h2>
       </div>
@@ -1189,10 +1346,10 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox, bgOverride }: {
       <div className="transition-all duration-1000" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}>
         {/* Chapter label */}
         <div className="text-center mb-8 px-6">
-          <div style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const, marginBottom: '6px' }}>
+          <div style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '3.5px', color: tc.gray, textTransform: 'uppercase' as const, marginBottom: '6px' }}>
             FILMSTRIP
           </div>
-          <h2 style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>
+          <h2 style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '0.5px', color: tc.accent }}>
             Gallery
           </h2>
         </div>
@@ -1299,10 +1456,10 @@ function FilmVideoSection({ invitation, fonts, tc, bgOverride, onPlay, onStop }:
     <div className="py-8 px-5" style={{ backgroundColor: bgOverride || tc.background }}>
       {/* Chapter label */}
       <div className="text-center mb-8">
-        <div style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const, marginBottom: '6px' }}>
+        <div style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '3.5px', color: tc.gray, textTransform: 'uppercase' as const, marginBottom: '6px' }}>
           MOVIE
         </div>
-        <h2 style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>
+        <h2 style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '0.5px', color: tc.accent }}>
           {youtube.title || 'Featured Film'}
         </h2>
       </div>
@@ -1335,10 +1492,10 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
         <div className="text-center" style={{ marginBottom: '24px' }}>
           <div className="flex items-center justify-center gap-3" style={{ marginBottom: '12px' }}>
             <div style={{ height: '1px', width: '20px', background: tc.divider }} />
-            <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const }}>THE PREMIERE</span>
+            <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '3.5px', color: tc.gray, textTransform: 'uppercase' as const }}>THE PREMIERE</span>
             <div style={{ height: '1px', width: '20px', background: tc.divider }} />
           </div>
-          <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>Wedding Day</div>
+          <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '0.5px', color: tc.accent }}>Wedding Day</div>
         </div>
 
         {/* ===== TICKET CARD ===== */}
@@ -1716,10 +1873,10 @@ function GuidanceSection({ invitation, fonts, tc, bgOverride }: { invitation: an
         <div className="text-center mb-8 px-6">
           <div className="flex items-center justify-center gap-3" style={{ marginBottom: '12px' }}>
             <div style={{ height: '1px', width: '20px', background: tc.divider }} />
-            <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const }}>INFORMATION</span>
+            <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '3.5px', color: tc.gray, textTransform: 'uppercase' as const }}>INFORMATION</span>
             <div style={{ height: '1px', width: '20px', background: tc.divider }} />
           </div>
-          <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>Notice</div>
+          <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '0.5px', color: tc.accent }}>Notice</div>
         </div>
 
         {invitation.guidance?.image && (
@@ -1818,7 +1975,7 @@ function CreditsSection({ invitation, fonts, tc, bgOverride }: { invitation: any
           <div className={`credits-roll ${isVisible ? 'credits-animate' : ''}`} style={{ animationPlayState: playState }}>
             {/* Title - section-sub-title style (accent italic) */}
             <div className="text-center mb-12">
-              <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>
+              <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '0.5px', color: tc.accent }}>
                 {(thankYou.title || 'Special Thanks').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}
               </div>
             </div>
@@ -2038,9 +2195,9 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOver
       {/* Chapter label area - MESSAGES / REVIEWS */}
       <div className="text-center" style={{ marginBottom: '32px' }}>
         <div className="flex items-center justify-center gap-3" style={{ marginBottom: '8px' }}>
-          <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const }}>MESSAGES</span>
+          <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '3.5px', color: tc.gray, textTransform: 'uppercase' as const }}>MESSAGES</span>
         </div>
-        <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>Guestbook</div>
+        <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '0.5px', color: tc.accent }}>Guestbook</div>
       </div>
       <div className="text-center mb-6">
         <p key={qIdx} className={`gb-question-highlight ${isVisible ? 'highlight-visible' : ''}`}
@@ -2133,6 +2290,8 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOver
 }
 
 // ===== Ticket-style RSVP =====
+const ADMIT_WORDS = ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten']
+
 function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
   invitation: any; invitationId: string; fonts: FontConfig; tc: ColorConfig; bgOverride?: string
 }) {
@@ -2183,7 +2342,7 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
   if (submitted) {
     return (
       <div className="px-6 py-16 text-center" style={{ backgroundColor: bgOverride || tc.sectionBg }}>
-        <div style={{ fontFamily: fonts.display, fontSize: dfs(13), letterSpacing: '6px', color: tc.text, marginBottom: '8px' }}>Confirmed</div>
+        <div style={{ fontFamily: fonts.display, fontSize: dfs(13), letterSpacing: '3.5px', color: tc.text, marginBottom: '8px' }}>Confirmed</div>
         <p style={{ fontFamily: fonts.body, fontSize: '13px', color: tc.gray }}>참석 여부가 전달되었습니다.</p>
       </div>
     )
@@ -2238,9 +2397,9 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
       <div className="rsvp-reveal">
         {/* Ticket card */}
         <div className="rsvp-ticket-flash" style={{ background: tc.cardBg, border: `1px solid ${cdiv}`, position: 'relative', overflow: 'hidden' }}>
-          {/* CONFIRMED stamp */}
+          {/* R.S.V.P stamp (아직 답하기 전이라 '확정' 대신 회신 요청) */}
           <div className="rsvp-stamp" style={{ color: tc.accent, borderColor: tc.accent }}>
-            <span style={{ fontFamily: fonts.display, fontSize: dfs(6), letterSpacing: '1.5px', color: tc.accent, fontWeight: 600, textAlign: 'center', lineHeight: 1.2 }}>Confirmed</span>
+            <span style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontStyle: 'italic', fontSize: dfs(9.5), letterSpacing: '0.04em', color: tc.accent, fontWeight: 600, textAlign: 'center', lineHeight: 1.2 }}>R.S.V.P</span>
           </div>
 
           {/* Ticket top - event info */}
@@ -2248,17 +2407,20 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
             <div className="ticket-notch-left" style={{ background: bgOverride || tc.sectionBg }} />
             <div className="ticket-notch-right" style={{ background: bgOverride || tc.sectionBg }} />
 
-            <div className="flex items-center justify-between mb-3">
-              <span style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '4px', color: tc.accent }}>Admit One</span>
-              <span style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '2px', color: tc.cardGray || tc.gray }}>
-                {date && w.showDate !== false ? `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')}` : ''}
+            {/* 참석 인원에 맞춰 Admit One · Two · Three … */}
+            <div className="mb-3">
+              <span style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontStyle: 'italic', fontSize: dfs(11), letterSpacing: '0.03em', color: tc.accent }}>
+                Admit {attendance === 'yes' ? (ADMIT_WORDS[guestCount - 1] || guestCount) : 'One'}
               </span>
             </div>
-            <div style={{ fontFamily: fonts.display, fontSize: dfs(22), fontStyle: 'italic', letterSpacing: '2px', color: tc.cardText || tc.text, marginBottom: '4px' }}>
+            <div style={{ fontFamily: fonts.display, fontSize: dfs(22), fontStyle: 'italic', letterSpacing: '0.5px', color: tc.cardText || tc.text, marginBottom: '4px' }}>
               Reservation
             </div>
             <div style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.cardGray || tc.gray }}>
-              {w.showVenue !== false ? (w.venue?.name || '') : ''} {w.showDate !== false ? (w.timeDisplay || w.time || '') : ''}
+              {[
+                w.showVenue !== false ? (w.venue?.name || '') : '',
+                w.showDate !== false ? [date ? `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')}` : '', w.timeDisplay || w.time || ''].filter(Boolean).join(' ') : '',
+              ].filter(Boolean).join(' · ')}
             </div>
           </div>
 
@@ -2332,7 +2494,7 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
                 <div className="flex items-center gap-2">
                   <button onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
                     style={{ width: '30px', height: '30px', border: `1px solid ${cdiv}`, background: 'transparent', cursor: 'pointer', fontSize: '14px', color: tc.cardText || tc.text }}>-</button>
-                  <span style={{ fontFamily: fonts.display, fontSize: dfs(14), width: '28px', textAlign: 'center', color: tc.cardText || tc.text }}>{guestCount}</span>
+                  <span style={{ fontFamily: fonts.body, fontSize: dfs(14), width: '28px', textAlign: 'center', color: tc.cardText || tc.text }}>{guestCount}</span>
                   <button onClick={() => setGuestCount(guestCount + 1)}
                     style={{ width: '30px', height: '30px', border: `1px solid ${cdiv}`, background: 'transparent', cursor: 'pointer', fontSize: '14px', color: tc.cardText || tc.text }}>+</button>
                 </div>
@@ -2441,7 +2603,7 @@ function FilmFooter({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
       {/* Spotlight cone */}
       <div className={`fin-spotlight ${vis}`} style={{ background: `radial-gradient(ellipse at 50% 0%, ${tc.accent}1F 0%, transparent 70%)` }} />
       {/* FIN. text with letter-spacing reveal */}
-      <div className={`fin-text-anim ${vis}`} style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.text, position: 'relative', zIndex: 1 }}>
+      <div className={`fin-text-anim ${vis}`} style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '0.5px', color: tc.text, position: 'relative', zIndex: 1 }}>
         Thank You
       </div>
       {/* Expanding accent line */}
@@ -2742,7 +2904,7 @@ const globalStyles = `
   @keyframes finReveal {
     0% { opacity: 0; letter-spacing: 12px; filter: blur(4px); }
     60% { opacity: 1; filter: blur(0); }
-    100% { opacity: 0.6; letter-spacing: 2px; filter: blur(0); }
+    100% { opacity: 0.6; letter-spacing: 0.5px; filter: blur(0); }
   }
   @keyframes fadeUp {
     0% { opacity: 0; transform: translateY(10px); }
@@ -2981,6 +3143,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     displayFont: (content as any).displayFont,
     filmIntroStyle: (content as any).filmIntroStyle,
     filmFrameId: (content as any).filmFrameId,
+    filmCastStyle: (content as any).filmCastStyle,
     filmFrameColorMode: (content as any).filmFrameColorMode,
     filmFrameColor: (content as any).filmFrameColor,
     filmFrameTextColor: (content as any).filmFrameTextColor,

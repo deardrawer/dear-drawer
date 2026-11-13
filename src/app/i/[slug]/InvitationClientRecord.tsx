@@ -1,7 +1,7 @@
 'use client'
 
 import { RecordDaysCover, RecordLpCover } from '@/components/invitation/record/RecordIntros'
-import { useState, useEffect, useRef, useCallback, createContext, useContext, Fragment } from 'react'
+import { useState, useEffect, useRef, useCallback, createContext, useContext, Fragment, useSyncExternalStore } from 'react'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -218,10 +218,48 @@ const TRACK_CONFIG: Record<string, { duration: string; bpm: number }> = {
   'bonus': { duration: '2:33', bpm: 60 },
 }
 
+// Hook: 지금 화면 근처에 있는지 (들어오면 true, 벗어나면 false)
+// 화면 밖에서도 계속 도는 애니메이션·타이머를 멈춰, 빠르게 스크롤할 때 폰이 다른 일로 바쁘지 않게
+function useOnScreen(elRef: React.RefObject<HTMLElement | null>, margin = 200) {
+  const isPreview = useContext(PreviewModeContext)
+  const [onScreen, setOnScreen] = useState(true)
+  useEffect(() => {
+    if (isPreview) return
+    const el = elRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const scrollEl = el.closest('.mobile-frame-content') as HTMLElement | null
+    const root = scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight + 1 ? scrollEl : null
+    const observer = new IntersectionObserver(([entry]) => setOnScreen(entry.isIntersecting), { root, rootMargin: `${margin}px 0px ${margin}px 0px` })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [elRef, margin, isPreview])
+  return onScreen
+}
+
+// 현재 트랙·스크롤 진행률 저장소 — 상단 헤더·미니 플레이어만 다시 그리게 (청첩장 전체가 스크롤마다 다시 그려지지 않게)
+type TrackState = { currentTrack: number; progress: number }
+type ProgressStore = { get: () => TrackState; set: (currentTrack: number, progress: number) => void; subscribe: (fn: () => void) => () => void }
+function createProgressStore(): ProgressStore {
+  let value: TrackState = { currentTrack: 1, progress: 0 }
+  const subs = new Set<() => void>()
+  return {
+    get: () => value,
+    set: (currentTrack, progress) => {
+      if (currentTrack === value.currentTrack && progress === value.progress) return
+      value = { currentTrack, progress }
+      subs.forEach((fn) => fn())
+    },
+    subscribe: (fn) => { subs.add(fn); return () => { subs.delete(fn) } },
+  }
+}
+function WithProgress({ store, render }: { store: ProgressStore; render: (progress: number, currentTrack: number) => React.ReactNode }) {
+  const { currentTrack, progress } = useSyncExternalStore(store.subscribe, store.get, store.get)
+  return <>{render(progress, currentTrack)}</>
+}
+
 // ===== useCurrentTrack Hook =====
 function useCurrentTrack() {
-  const [currentTrack, setCurrentTrack] = useState(1)
-  const [progress, setProgress] = useState(0)
+  const [progressStore] = useState(createProgressStore)
   const trackRefs = useRef<(HTMLDivElement | null)[]>([])
 
   const setTrackRef = useCallback((index: number) => (el: HTMLDivElement | null) => {
@@ -245,8 +283,6 @@ function useCurrentTrack() {
         if (dist < closestDist) { closestDist = dist; closestIdx = idx }
       })
 
-      setCurrentTrack(closestIdx + 1)
-
       // Calculate progress within current track section
       const currentEl = refs[closestIdx]
       if (currentEl) {
@@ -255,16 +291,21 @@ function useCurrentTrack() {
         const sectionHeight = rect.height
         const scrollInSection = window.scrollY + window.innerHeight - sectionTop
         const prog = Math.max(0, Math.min(1, scrollInSection / sectionHeight))
-        setProgress(prog)
+        progressStore.set(closestIdx + 1, Math.round(prog * 1000) / 1000)
+        return
       }
+      progressStore.set(closestIdx + 1, progressStore.get().progress)
     }
 
-    window.addEventListener('scroll', handleScroll, { passive: true })
+    // 스크롤 이벤트마다가 아니라 화면을 그릴 때 한 번만 계산
+    let raf = 0
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; handleScroll() }) }
+    window.addEventListener('scroll', onScroll, { passive: true })
     handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    return () => { window.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf) }
+  }, [progressStore])
 
-  return { currentTrack, progress, setTrackRef }
+  return { progressStore, setTrackRef }
 }
 
 // ===== Music Toggle =====
@@ -316,7 +357,7 @@ function MusicToggle({ audioRef, isVisible, shouldAutoPlay, tc, showNotification
     <div className="fixed top-4 right-4 z-50">
       {notifVisible && !isPlaying && (
         <div className="absolute right-12 top-1 whitespace-nowrap rounded-full shadow-lg"
-          style={{ animation: 'fadeInUp 0.3s ease-out', background: 'rgba(255,255,255,0.97)', padding: '8px 16px', backdropFilter: 'blur(8px)', border: '1px solid rgba(0,0,0,0.08)' }}>
+          style={{ animation: 'fadeInUp 0.3s ease-out', background: 'rgba(255,255,255,0.97)', padding: '8px 16px', border: '1px solid rgba(0,0,0,0.08)' }}>
           <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 {notificationText || '배경음악이 준비되어 있어요'}</span>
         </div>
       )}
@@ -324,7 +365,7 @@ function MusicToggle({ audioRef, isVisible, shouldAutoPlay, tc, showNotification
         <span className="absolute inset-0 rounded-full animate-ping" style={{ background: 'rgba(0,0,0,0.1)' }} />
       )}
       <button onClick={toggle} className="relative w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-110"
-        style={{ background: `${tc.sectionBg}E6`, backdropFilter: 'blur(10px)', border: `1px solid ${tc.divider}40`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+        style={{ background: `${tc.sectionBg}F2`, border: `1px solid ${tc.divider}40`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
         {isPlaying ? (
           <svg className="w-4 h-4" style={{ color: tc.text }} viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" /></svg>
         ) : (
@@ -478,7 +519,7 @@ function RecordHeader({ invitation, fonts, tc, currentTrack, progress, isCrossfa
   if (isCrossfade) {
     // Crossfade mode: compact header, no progress bar (progress in mini player)
     return (
-      <div className="sticky top-0 z-40" style={{ backgroundColor: `${tc.background}F0`, backdropFilter: 'blur(12px)' }}>
+      <div className="sticky top-0 z-40" style={{ backgroundColor: `${tc.background}F7` }}>
         <div className="px-5 py-3 flex items-center justify-center gap-3">
           <div className="equalizer-container flex items-end gap-[2px]" style={{ height: '14px' }}>
             <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0s' }} />
@@ -500,7 +541,7 @@ function RecordHeader({ invitation, fonts, tc, currentTrack, progress, isCrossfa
 
   // Scroll mode: original header with progress bar
   return (
-    <div className="sticky top-0 z-40" style={{ backgroundColor: `${tc.background}F0`, backdropFilter: 'blur(12px)' }}>
+    <div className="sticky top-0 z-40" style={{ backgroundColor: `${tc.background}F7` }}>
       <div className="px-5 py-3 flex items-center justify-center gap-3">
         {/* 3-bar equalizer */}
         <div className="equalizer-container flex items-end gap-[2px]" style={{ height: '14px' }}>
@@ -531,6 +572,7 @@ function WaveformDivider({ tc }: { tc: ColorConfig }) {
   const ref = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(isPreview)
   const [isPulsing, setIsPulsing] = useState(isPreview)
+  const onScreen = useOnScreen(ref)
   useEffect(() => {
     if (isPreview) { setIsVisible(true); setIsPulsing(true); return }
     const el = ref.current
@@ -556,7 +598,7 @@ function WaveformDivider({ tc }: { tc: ColorConfig }) {
               opacity: isVisible ? 0.65 : 0,
               transform: isVisible ? 'scaleY(1)' : 'scaleY(0)',
               transition: `opacity 0.4s ease ${i * 35}ms, transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 35}ms`,
-              ...(isPulsing && !isPreview ? { animation: `eqPulse 0.8s ease-in-out infinite alternate`, animationDelay: `${(i % 5) * 100}ms` } : {}),
+              ...(isPulsing && !isPreview ? { animation: `eqPulse 0.8s ease-in-out infinite alternate`, animationDelay: `${(i % 5) * 100}ms`, animationPlayState: onScreen ? 'running' : 'paused' } : {}),
             }} />
           )
         })}
@@ -759,6 +801,55 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
   const brideName = invitation.bride?.name || ''
 
   const isPortrait = invitation.profileFrameShape === 'portrait'
+  const isLp = invitation.profileFrameShape === 'lp'
+
+  // LP: 정사각 재킷 사진 + 뒤에서 옆으로 빠져나오는 레코드 (신랑 SIDE A · 신부 SIDE B, 지그재그)
+  const lpRow = (side: 'A' | 'B', image: string, imgSettings: any, name: string, tag: string | undefined, delay: number) => {
+    const rev = side === 'B'
+    return (
+      <div style={{ display: 'flex', flexDirection: rev ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: rev ? 0 : '34px' }}>
+        <div style={{ position: 'relative', width: '48%', aspectRatio: '1', flex: 'none' }}>
+          {/* 레코드: 처음엔 재킷 뒤에 숨어 있다가 옆으로 빠져나옴 */}
+          <div style={{
+            position: 'absolute', top: '5%', width: '90%', height: '90%', left: rev ? '-27%' : '37%', borderRadius: '50%',
+            background: 'repeating-radial-gradient(circle, #1b1b1b 0 2px, #262626 2px 3px)', boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateX(0) rotate(0deg)' : `translateX(${rev ? '41%' : '-41%'}) rotate(${rev ? '120deg' : '-120deg'})`,
+            transition: `transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${delay + 0.5}s, opacity 0.3s ease ${delay + 0.5}s`,
+          }}>
+            <div style={{ position: 'absolute', inset: '33%', borderRadius: '50%', background: tc.primary }} />
+            <div style={{ position: 'absolute', inset: '48%', borderRadius: '50%', background: '#1b1b1b' }} />
+          </div>
+          {/* 재킷 사진 */}
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: '3px', overflow: 'hidden', boxShadow: '0 6px 18px rgba(0,0,0,0.14)',
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateX(0)' : `translateX(${rev ? '40px' : '-40px'})`,
+            transition: `opacity 0.8s ease ${delay}s, transform 1s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s`,
+          }}>
+            {image ? (
+              <CroppedImageDiv src={image} crop={imgSettings} className="w-full h-full" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center" style={{ background: tc.sectionBg, border: `1px solid ${tc.divider}` }}>
+                <span style={{ fontFamily: fonts.display, fontSize: '24px', color: tc.primary, opacity: 0.3 }}>{rev ? '\u266B' : '\u266A'}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <div style={{
+          flex: 1, minWidth: 0, [rev ? 'paddingRight' : 'paddingLeft']: 'calc(13% + 14px)', textAlign: rev ? 'right' : 'left',
+          opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
+          transition: `opacity 0.6s ease ${delay + 0.9}s, transform 0.6s ease ${delay + 0.9}s`,
+        }}>
+          <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary }}>{dt(`SIDE ${side}`)}</div>
+          <p style={{ fontFamily: fonts.displayKr, fontSize: '14px', fontWeight: 500, letterSpacing: '2px', color: tc.text, marginTop: '8px' }}>{name}</p>
+          {tag && (
+            <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginTop: '4px', lineHeight: 1.5, whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{tag}</p>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div ref={(el) => { (ref as any).current = el; trackRef(el) }} className="px-5 py-10" style={{ backgroundColor: bgOverride || 'transparent' }}>
@@ -772,7 +863,12 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
         </span>
       </div>
 
-      {isPortrait ? (
+      {isLp ? (
+        <div>
+          {lpRow('A', groomImage, groomImgSettings, groomName, groomProfile?.tag, 0.1)}
+          {lpRow('B', brideImage, brideImgSettings, brideName, brideProfile?.tag, 0.5)}
+        </div>
+      ) : isPortrait ? (
         /* Portrait: Film-style grid cards */
         <div className="grid grid-cols-2 gap-3 px-2">
           {/* Groom card */}
@@ -1197,6 +1293,9 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
   const [transitioning, setTransitioning] = useState(false)
   const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const galleryOnScreen = useOnScreen(ref)
+  const galleryOnScreenRef = useRef(true)
+  galleryOnScreenRef.current = galleryOnScreen
 
   const changeImage = (newIdx: number) => {
     if (newIdx === currentIdx || transitioning) return
@@ -1212,6 +1311,7 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
   const startAutoPlay = () => {
     if (autoPlayRef.current) clearInterval(autoPlayRef.current)
     autoPlayRef.current = setInterval(() => {
+      if (!galleryOnScreenRef.current) return
       setCurrentIdx(prev => {
         const next = (prev + 1) % images.length
         setTransitioning(true)
@@ -2212,7 +2312,7 @@ function MiniPlayerBar({ currentTrack, progress, isAudioPlaying, fonts, tc, onPr
       <div style={{
         position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: '430px', height: '64px',
-        background: `${tc.cardBg}F0`, backdropFilter: 'blur(16px)',
+        background: `${tc.cardBg}F7`,
         borderTop: `1px solid ${tc.divider}40`,
         display: 'flex', alignItems: 'center', padding: '0 16px',
         zIndex: 90,
@@ -2283,7 +2383,7 @@ function MiniPlayerBar({ currentTrack, progress, isAudioPlaying, fonts, tc, onPr
     <div style={{
       position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
       width: '100%', maxWidth: '430px', height: '56px',
-      background: `${tc.cardBg}F0`, backdropFilter: 'blur(16px)',
+      background: `${tc.cardBg}F7`,
       borderTop: `1px solid ${tc.divider}40`,
       display: 'flex', alignItems: 'center', padding: '0 16px', gap: '12px',
       zIndex: 90,
@@ -2329,7 +2429,8 @@ function MiniPlayerBar({ currentTrack, progress, isAudioPlaying, fonts, tc, onPr
             width: '2px', borderRadius: '1px',
             background: tc.primary,
             opacity: isAudioPlaying ? 0.7 : 0.2,
-            height: isAudioPlaying ? undefined : '4px',
+            height: '14px', transformOrigin: 'bottom',
+            transform: isAudioPlaying ? undefined : 'scaleY(0.2857)',
             animation: isAudioPlaying ? `equalizerBar 0.8s ease-in-out ${i * 0.15}s infinite alternate` : 'none',
           }} />
         ))}
@@ -2544,11 +2645,12 @@ const globalStyles = `
 
   /* Equalizer bar animation */
   @keyframes equalizerBar {
-    0% { height: 4px; }
-    100% { height: 14px; }
+    0% { transform: scaleY(0.2857); }
+    100% { transform: scaleY(1); }
   }
 
   .equalizer-bar {
+    height: 14px; transform-origin: bottom;
     animation: equalizerBar 0.6s ease-in-out infinite alternate;
     border-radius: 1px;
   }
@@ -2951,7 +3053,7 @@ function InvitationClientRecordContent({
   const dt = (text: string) => isScriptFont ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
 
   // Track current track via scroll (used in preview/scroll mode)
-  const { currentTrack, progress, setTrackRef } = useCurrentTrack()
+  const { progressStore, setTrackRef } = useCurrentTrack()
 
   // === Crossfade state removed - now using normal scroll ===
 
@@ -3126,7 +3228,7 @@ function InvitationClientRecordContent({
                   ) : isPreview ? (
                     /* === Editor preview: scroll layout with unified track headers === */
                     <>
-                      <RecordHeader invitation={invitation} fonts={fonts} tc={tc} currentTrack={currentTrack} progress={progress} />
+                      <WithProgress store={progressStore} render={(progress, currentTrack) => <RecordHeader invitation={invitation} fonts={fonts} tc={tc} currentTrack={currentTrack} progress={progress} />} />
                       {sectionList.map((section) => (
                         <div key={section.id} className="crossfade-track-page" style={{ minHeight: 'auto' }}>
                           {/* Unified track header */}
@@ -3156,7 +3258,7 @@ function InvitationClientRecordContent({
                   ) : (
                     /* === Guest view: normal scroll === */
                     <>
-                      <RecordHeader invitation={invitation} fonts={fonts} tc={tc} currentTrack={currentTrack} progress={progress} isCrossfade={false} />
+                      <WithProgress store={progressStore} render={(progress, currentTrack) => <RecordHeader invitation={invitation} fonts={fonts} tc={tc} currentTrack={currentTrack} progress={progress} isCrossfade={false} />} />
                       <div
                         className="crossfade-container"
                         style={{ flex: 1 }}
@@ -3226,11 +3328,11 @@ function InvitationClientRecordContent({
                       weddingDate: invitation.wedding?.showDate !== false ? (invitation.wedding?.date || '') : '', weddingTime: invitation.wedding?.showDate !== false ? (invitation.wedding?.timeDisplay || invitation.wedding?.time || '') : '',
                       thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || extractImageUrl(invitation.media?.coverImage) || extractImageUrl(invitation.gallery?.images?.[0]) || '',
                       shareTitle: content?.meta?.title, shareDescription: content?.meta?.description, kakaoThumbnailRatio: content?.meta?.kakaoThumbnailRatio }} />
-                  <MiniPlayerBar currentTrack={currentTrack} progress={progress} isAudioPlaying={isAudioPlaying} fonts={fonts} tc={tc} />
+                  <WithProgress store={progressStore} render={(progress, currentTrack) => <MiniPlayerBar currentTrack={currentTrack} progress={progress} isAudioPlaying={isAudioPlaying} fonts={fonts} tc={tc} />} />
                 </>
               )}
               {currentPage === 'main' && isPreview && (
-                <MiniPlayerBar currentTrack={currentTrack} progress={progress} isAudioPlaying={isAudioPlaying} fonts={fonts} tc={tc} />
+                <WithProgress store={progressStore} render={(progress, currentTrack) => <MiniPlayerBar currentTrack={currentTrack} progress={progress} isAudioPlaying={isAudioPlaying} fonts={fonts} tc={tc} />} />
               )}
               {invitation.bgm?.enabled && invitation.bgm?.url && (
                 <MusicToggle audioRef={audioRef} isVisible={currentPage === 'main'} shouldAutoPlay={currentPage === 'main' && invitation.bgm?.autoplay === true} tc={tc} showNotification={invitation.bgm?.showNotification} notificationText={invitation.bgm?.notificationText} />

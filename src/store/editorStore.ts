@@ -453,7 +453,7 @@ export interface InvitationContent {
   profileOrder: 'groom-first' | 'bride-first'
 
   // ===== 프로필 프레임 형태 (원형/세로사각형) =====
-  profileFrameShape?: 'circle' | 'portrait'
+  profileFrameShape?: 'circle' | 'portrait' | 'lp'
 
   // ===== 디자인 설정 =====
   design: DesignSettings
@@ -516,6 +516,8 @@ export interface InvitationContent {
   filmIntroStyle?: 'frame' | 'booth' | 'dots' | 'ott' | 'ticket'
   // 프레임 인트로 설정
   filmFrameId?: string
+  // 커플 소개(CAST) 스타일 — 비우면 cards(포스터 카드)
+  filmCastStyle?: 'cards' | 'widescreen' | 'polaroid' | 'credits' | 'casting' | 'maincast'
   filmFrameColorMode?: 'original' | 'custom'
   filmFrameColor?: string
   filmFrameTextColor?: string

@@ -287,6 +287,22 @@ export default function Step3Record({}: Step3RecordProps) {
               }`} />
               사각형
             </button>
+            <button
+              type="button"
+              onClick={() => updateField('profileFrameShape', 'lp')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm transition-colors ${
+                invitation.profileFrameShape === 'lp'
+                  ? 'border-gray-900 bg-gray-900 text-white'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {/* 정사각 재킷 + 옆으로 빠져나온 레코드 */}
+              <div className="relative w-6 h-5">
+                <div className={`absolute left-2 top-0.5 w-4 h-4 rounded-full ${invitation.profileFrameShape === 'lp' ? 'bg-white/60' : 'bg-gray-400'}`} />
+                <div className={`absolute left-0 top-0 w-5 h-5 rounded-sm border-2 ${invitation.profileFrameShape === 'lp' ? 'border-white bg-gray-900' : 'border-gray-400 bg-white'}`} />
+              </div>
+              LP
+            </button>
           </div>
         </div>
 
@@ -296,7 +312,7 @@ export default function Step3Record({}: Step3RecordProps) {
           <div className="flex items-start gap-4">
             {invitation.groom.profile.images[0] ? (
               <div className="relative flex-shrink-0">
-                <div className={invitation.profileFrameShape === 'portrait' ? 'w-[57px] h-[76px] rounded-lg overflow-hidden border border-gray-200' : 'w-[76px] h-[76px] rounded-full overflow-hidden border border-gray-200'}>
+                <div className={invitation.profileFrameShape === 'portrait' ? 'w-[57px] h-[76px] rounded-lg overflow-hidden border border-gray-200' : `w-[76px] h-[76px] ${invitation.profileFrameShape === 'lp' ? 'rounded-md' : 'rounded-full'} overflow-hidden border border-gray-200`}>
                   <img src={invitation.groom.profile.images[0]} alt="신랑" className="w-full h-full object-cover" />
                 </div>
                 <button
@@ -311,7 +327,7 @@ export default function Step3Record({}: Step3RecordProps) {
               </div>
             ) : (
               <label className="flex-shrink-0 cursor-pointer">
-                <div className={invitation.profileFrameShape === 'portrait' ? 'w-[57px] h-[76px] rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors' : 'w-[76px] h-[76px] rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors'}>
+                <div className={invitation.profileFrameShape === 'portrait' ? 'w-[57px] h-[76px] rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors' : `w-[76px] h-[76px] ${invitation.profileFrameShape === 'lp' ? 'rounded-md' : 'rounded-full'} border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors`}>
                   {uploadingImages.has('groom-profile') ? (
                     <div className="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full" />
                   ) : (
@@ -364,7 +380,7 @@ export default function Step3Record({}: Step3RecordProps) {
           <div className="flex items-start gap-4">
             {invitation.bride.profile.images[0] ? (
               <div className="relative flex-shrink-0">
-                <div className={invitation.profileFrameShape === 'portrait' ? 'w-[57px] h-[76px] rounded-lg overflow-hidden border border-gray-200' : 'w-[76px] h-[76px] rounded-full overflow-hidden border border-gray-200'}>
+                <div className={invitation.profileFrameShape === 'portrait' ? 'w-[57px] h-[76px] rounded-lg overflow-hidden border border-gray-200' : `w-[76px] h-[76px] ${invitation.profileFrameShape === 'lp' ? 'rounded-md' : 'rounded-full'} overflow-hidden border border-gray-200`}>
                   <img src={invitation.bride.profile.images[0]} alt="신부" className="w-full h-full object-cover" />
                 </div>
                 <button
@@ -379,7 +395,7 @@ export default function Step3Record({}: Step3RecordProps) {
               </div>
             ) : (
               <label className="flex-shrink-0 cursor-pointer">
-                <div className={invitation.profileFrameShape === 'portrait' ? 'w-[57px] h-[76px] rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors' : 'w-[76px] h-[76px] rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors'}>
+                <div className={invitation.profileFrameShape === 'portrait' ? 'w-[57px] h-[76px] rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors' : `w-[76px] h-[76px] ${invitation.profileFrameShape === 'lp' ? 'rounded-md' : 'rounded-full'} border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors`}>
                   {uploadingImages.has('bride-profile') ? (
                     <div className="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full" />
                   ) : (

@@ -20,6 +20,8 @@ interface Step3FilmProps {
 
 export default function Step3Film({}: Step3FilmProps) {
   const { invitation, updateField, updateNestedField, addInterview, removeInterview, toggleSectionVisibility, setActiveSection } = useEditorStore()
+  // 커플 소개 스타일별 프로필 사진 비율 (원형·작은 사진은 얼굴 위주로 자르기 쉽게)
+  const castCropAspect = ({ widescreen: 2.35, polaroid: 46 / 62, credits: 1, casting: 3 / 4, maincast: 1 } as Record<string, number>)[((invitation as any).filmCastStyle as string) || 'cards'] ?? 2 / 3
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
   const [showParents, setShowParents] = useState(true)
 
@@ -224,6 +226,25 @@ export default function Step3Film({}: Step3FilmProps) {
           <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>프로필 사진과 한줄 소개를 입력하면 CAST 섹션에 표시됩니다.</p>
         </div>
 
+        {/* 소개 스타일 */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">소개 스타일</Label>
+          {([['사진 크게', [['cards', '포스터 카드'], ['widescreen', '와이드 스틸'], ['polaroid', '폴라로이드']]], ['사진 작게', [['credits', '엔딩 크레딧'], ['casting', '캐스팅 카드'], ['maincast', '출연진']]]] as const).map(([group, opts]) => (
+            <div key={group} className="flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] w-12 shrink-0" style={{ color: 'var(--ed-text-muted)' }}>{group}</span>
+              {opts.map(([id, label]) => {
+                const on = (((invitation as any).filmCastStyle as string) || 'cards') === id
+                return (
+                  <button key={id} type="button" onClick={() => updateField('filmCastStyle' as any, id)}
+                    className={`px-3 py-2 rounded-lg border text-xs transition-colors ${on ? 'border-[color:var(--ed-accent)] bg-[color:var(--ed-accent)] text-[#F5F0ED]' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'}`}>
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+          ))}
+        </div>
+
         {/* 신랑 프로필 */}
         <div className="p-4 bg-gray-50 rounded-lg space-y-3">
           <Label className="text-sm font-medium">신랑</Label>
@@ -285,7 +306,7 @@ export default function Step3Film({}: Step3FilmProps) {
                 imageUrl={invitation.groom.profile.images[0]}
                 settings={invitation.groom.profile.imageSettings?.[0] || { scale: 1.0, positionX: 0, positionY: 0 }}
                 onUpdate={(s) => updateNestedField('groom.profile.imageSettings', [{ ...(invitation.groom.profile.imageSettings?.[0] || {}), ...s }])}
-                aspectRatio={2/3}
+                aspectRatio={castCropAspect}
                 containerWidth={120}
               />
             </div>
@@ -353,7 +374,7 @@ export default function Step3Film({}: Step3FilmProps) {
                 imageUrl={invitation.bride.profile.images[0]}
                 settings={invitation.bride.profile.imageSettings?.[0] || { scale: 1.0, positionX: 0, positionY: 0 }}
                 onUpdate={(s) => updateNestedField('bride.profile.imageSettings', [{ ...(invitation.bride.profile.imageSettings?.[0] || {}), ...s }])}
-                aspectRatio={2/3}
+                aspectRatio={castCropAspect}
                 containerWidth={120}
               />
             </div>

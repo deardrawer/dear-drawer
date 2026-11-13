@@ -660,6 +660,18 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
   const brideImage = extractImageUrl(brideProfile?.images?.[0])
   const groomName = invitation.groom?.name || ''
   const brideName = invitation.bride?.name || ''
+  // 등장 직전까지 가려져 있어 폰(갤럭시·아이폰)이 보이는 순간에야 사진을 해석(디코딩)하며 툭 끊길 수 있음 → 미리 해석해 둔다
+  useEffect(() => {
+    ;[groomImage, brideImage].forEach((src) => {
+      if (!src) return
+      const im = new Image()
+      im.src = src
+      if (typeof im.decode === 'function') im.decode().catch(() => {})
+    })
+  }, [groomImage, brideImage])
+  // 사진 카드가 아래→위로 걷히며 열림 — clip-path 대신 가림막·내용을 반대로 움직여(transform) 같은 모습을 낸다
+  // (clip-path 는 폰 브라우저가 매 프레임 다시 그려 큰 사진과 겹치면 버벅일 수 있음 · transform 은 화면 합치기만)
+  const wipe = (delay: number) => `transform 1.2s cubic-bezier(0.77, 0, 0.175, 1) ${delay}s`
 
   return (
     <div ref={ref} style={{ backgroundColor: bgOverride || tc.sectionBg }}>
@@ -681,13 +693,9 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
           <div className="grid grid-cols-2 gap-3">
             {/* Groom */}
             <div>
-              <div style={{
-                aspectRatio: '2/3',
-                borderRadius: '4px',
-                overflow: 'hidden',
-                clipPath: isVisible ? 'inset(0 0 0 0)' : 'inset(100% 0 0 0)',
-                transition: 'clip-path 1.2s cubic-bezier(0.77, 0, 0.175, 1) 0.2s',
-              }}>
+              <div style={{ aspectRatio: '2/3', borderRadius: '4px', overflow: 'hidden', position: 'relative', isolation: 'isolate', transform: 'translateZ(0)' }}>
+                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', transform: isVisible ? 'translateY(0)' : 'translateY(101%)', transition: wipe(0.2), willChange: 'transform' }}>
+                <div style={{ position: 'absolute', inset: 0, transform: isVisible ? 'translateY(0)' : 'translateY(-101%)', transition: wipe(0.2), willChange: 'transform' }}>
                 <div className="relative w-full h-full">
                   {groomImage ? (
                     <CroppedImageDiv
@@ -697,6 +705,7 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
                       style={{
                         transform: `${isVisible ? 'scale(1)' : 'scale(1.2)'} ${(groomProfile?.imageSettings?.[0] && !groomProfile.imageSettings[0].cropWidth) ? `translate(${groomProfile.imageSettings[0].positionX || 0}%, ${groomProfile.imageSettings[0].positionY || 0}%)` : ''}`,
                         transition: 'transform 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s',
+                        willChange: 'transform',
                       }}
                     />
                   ) : (
@@ -708,6 +717,8 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
                       </svg>
                     </div>
                   )}
+                </div>
+                </div>
                 </div>
               </div>
               {/* Name + tag + role label below photo */}
@@ -730,13 +741,9 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
             </div>
             {/* Bride */}
             <div>
-              <div style={{
-                aspectRatio: '2/3',
-                borderRadius: '4px',
-                overflow: 'hidden',
-                clipPath: isVisible ? 'inset(0 0 0 0)' : 'inset(100% 0 0 0)',
-                transition: 'clip-path 1.2s cubic-bezier(0.77, 0, 0.175, 1) 0.6s',
-              }}>
+              <div style={{ aspectRatio: '2/3', borderRadius: '4px', overflow: 'hidden', position: 'relative', isolation: 'isolate', transform: 'translateZ(0)' }}>
+                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', transform: isVisible ? 'translateY(0)' : 'translateY(101%)', transition: wipe(0.6), willChange: 'transform' }}>
+                <div style={{ position: 'absolute', inset: 0, transform: isVisible ? 'translateY(0)' : 'translateY(-101%)', transition: wipe(0.6), willChange: 'transform' }}>
                 <div className="relative w-full h-full">
                   {brideImage ? (
                     <CroppedImageDiv
@@ -746,6 +753,7 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
                       style={{
                         transform: `${isVisible ? 'scale(1)' : 'scale(1.2)'} ${(brideProfile?.imageSettings?.[0] && !brideProfile.imageSettings[0].cropWidth) ? `translate(${brideProfile.imageSettings[0].positionX || 0}%, ${brideProfile.imageSettings[0].positionY || 0}%)` : ''}`,
                         transition: 'transform 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.6s',
+                        willChange: 'transform',
                       }}
                     />
                   ) : (
@@ -757,6 +765,8 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
                       </svg>
                     </div>
                   )}
+                </div>
+                </div>
                 </div>
               </div>
               {/* Name + tag + role label below photo */}

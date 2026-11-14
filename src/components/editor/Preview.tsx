@@ -227,6 +227,7 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     magazineIntroStyle: (invitation as any).magazineIntroStyle,
     filmIntroStyle: (invitation as any).filmIntroStyle,
     filmFrameId: (invitation as any).filmFrameId,
+    filmFrameTexture: (invitation as any).filmFrameTexture,
     filmCastStyle: (invitation as any).filmCastStyle,
     filmFrameColorMode: (invitation as any).filmFrameColorMode,
     filmFrameColor: (invitation as any).filmFrameColor,

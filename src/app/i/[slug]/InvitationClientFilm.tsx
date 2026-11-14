@@ -274,8 +274,15 @@ const FILM_FRAME_CFG: Record<string, { box: FrameBox; outer: { top: number; bott
   '12': { box: { x: 25.2, y: 33.4, w: 48.7, h: 33.1 }, outer: { top: 30.99, bottom: 68.96 } },
   '8': { box: { x: 27.7, y: 26.9, w: 44.4, h: 51.2 }, outer: { top: 25.31, bottom: 79.64 }, slots: [{ x: 27.8, y: 26.9, w: 44.3, h: 25.1 }, { x: 27.7, y: 52.9, w: 44.4, h: 25.1 }] },
 }
-// 배경 종이 결 (아주 고운 노이즈)
-const FRAME_PAPER_TEXTURE = "data:image/svg+xml;utf8," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.25  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>")
+// 배경 종이 결 — 고운 입자(어둡게 얹힘) + 밝은 섬유 반점(밝게 얹힘)
+const FRAME_PAPER_TEXTURE = "data:image/svg+xml;utf8," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' seed='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.3  0 0 0 0 0.28  0 0 0 0 0.26  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>")
+const FRAME_PAPER_FIBER = "data:image/svg+xml;utf8," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.12 0.35' numOctaves='2' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.5 -0.2'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>")
+// 배경 니트(저지) 결 — 세로로 촘촘한 골 + 세로로 늘어진 실 얼룩
+const FRAME_KNIT_NOISE = "data:image/svg+xml;utf8," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7 0.16' numOctaves='2' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.3  0 0 0 0 0.25  0 0 0 0 0.22  0 0 0 0.45 0'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>")
+const FRAME_TEXTURE_STYLE: Record<string, React.CSSProperties> = {
+  paper: { backgroundImage: `url("${FRAME_PAPER_TEXTURE}")`, backgroundSize: '200px 200px', opacity: 0.5 },
+  knit: { backgroundImage: `repeating-linear-gradient(90deg, rgba(60,40,35,0.16) 0 0.8px, rgba(255,255,255,0.10) 0.8px 1.6px, rgba(60,40,35,0.05) 1.6px 2.2px), url("${FRAME_KNIT_NOISE}")`, backgroundSize: 'auto, 240px 240px', opacity: 0.6 },
+}
 const FILM_FRAME_ANIM_CSS = `
 @keyframes ffZoom { 0%{opacity:0;transform:scale(1.13);filter:blur(6px)} 55%{opacity:1} 100%{opacity:1;transform:scale(1);filter:blur(0)} }
 @keyframes ffUp { 0%{opacity:0;transform:translateY(20px);filter:blur(4px)} 100%{opacity:1;transform:translateY(0);filter:blur(0)} }
@@ -348,8 +355,9 @@ function FilmFrameCover({ invitation, fonts, tc, onEnter, isPreview }: {
   return (
     <div onClick={onEnter} className="relative w-full" style={{ height: isPreview ? '660px' : '100dvh', overflow: 'hidden', background: bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
       <style dangerouslySetInnerHTML={{ __html: FILM_FRAME_ANIM_CSS }} />
-      {/* 배경 종이 결 — 단색 판 대신 카드 종이처럼 (아주 옅게) */}
-      <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: `url("${FRAME_PAPER_TEXTURE}")`, backgroundSize: '220px 220px', opacity: 0.22, mixBlendMode: 'multiply' }} />
+      {/* 배경 질감 — 종이(기본) · 니트 (편집기에서 선택) */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', mixBlendMode: 'multiply', ...(FRAME_TEXTURE_STYLE[invitation.filmFrameTexture as string] || FRAME_TEXTURE_STYLE.paper) }} />
+      {invitation.filmFrameTexture !== 'knit' && <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: `url("${FRAME_PAPER_FIBER}")`, backgroundSize: '300px 300px', mixBlendMode: 'screen', opacity: 0.35 }} />}
       {/* 스테이지 (9:16, 너비 100% = 좌우 꽉) */}
       <div style={{ position: 'relative', flexShrink: 0, width: '100%', aspectRatio: '9 / 16', containerType: 'inline-size', transform: `translateY(calc(-1 * ${u(lift)}))` }}>
         {/* 무대: 프레임+사진 시네마 줌 */}
@@ -3163,6 +3171,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     displayFont: (content as any).displayFont,
     filmIntroStyle: (content as any).filmIntroStyle,
     filmFrameId: (content as any).filmFrameId,
+    filmFrameTexture: (content as any).filmFrameTexture,
     filmCastStyle: (content as any).filmCastStyle,
     filmFrameColorMode: (content as any).filmFrameColorMode,
     filmFrameColor: (content as any).filmFrameColor,

@@ -560,6 +560,23 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
                 <ColorField label="배경색" value={(invitation as any).filmFrameBgColor || '#e3e0d9'} onChange={(hex) => updateField('filmFrameBgColor' as any, hex)} />
               </div>
             </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-sm text-gray-700">배경 질감</span>
+                <p className="text-xs text-gray-500">니트는 진한 배경색에서 잘 보여요</p>
+              </div>
+              <div className="flex items-center gap-2">
+                {([['paper', '종이'], ['knit', '니트']] as const).map(([id, label]) => {
+                  const on = (((invitation as any).filmFrameTexture as string) || 'paper') === id
+                  return (
+                    <button key={id} type="button" onClick={() => updateField('filmFrameTexture' as any, id)}
+                      className={`px-3 py-1.5 rounded-lg border text-xs transition-colors ${on ? 'border-[color:var(--ed-accent)] bg-[color:var(--ed-accent)] text-[#F5F0ED]' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'}`}>
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
           </div>
 
           {/* 필름(2컷): 두 번째 사진 */}

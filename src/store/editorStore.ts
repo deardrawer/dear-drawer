@@ -516,6 +516,8 @@ export interface InvitationContent {
   filmIntroStyle?: 'frame' | 'booth' | 'dots' | 'ott' | 'ticket'
   // 프레임 인트로 설정
   filmFrameId?: string
+  // 프레임 인트로 배경 질감 — 비우면 paper(종이)
+  filmFrameTexture?: 'paper' | 'knit'
   // 커플 소개(CAST) 스타일 — 비우면 cards(포스터 카드)
   filmCastStyle?: 'cards' | 'widescreen' | 'polaroid' | 'credits' | 'casting' | 'maincast'
   filmFrameColorMode?: 'original' | 'custom'

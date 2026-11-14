@@ -274,6 +274,8 @@ const FILM_FRAME_CFG: Record<string, { box: FrameBox; outer: { top: number; bott
   '12': { box: { x: 25.2, y: 33.4, w: 48.7, h: 33.1 }, outer: { top: 30.99, bottom: 68.96 } },
   '8': { box: { x: 27.7, y: 26.9, w: 44.4, h: 51.2 }, outer: { top: 25.31, bottom: 79.64 }, slots: [{ x: 27.8, y: 26.9, w: 44.3, h: 25.1 }, { x: 27.7, y: 52.9, w: 44.4, h: 25.1 }] },
 }
+// 배경 종이 결 (아주 고운 노이즈)
+const FRAME_PAPER_TEXTURE = "data:image/svg+xml;utf8," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.25  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>")
 const FILM_FRAME_ANIM_CSS = `
 @keyframes ffZoom { 0%{opacity:0;transform:scale(1.13);filter:blur(6px)} 55%{opacity:1} 100%{opacity:1;transform:scale(1);filter:blur(0)} }
 @keyframes ffUp { 0%{opacity:0;transform:translateY(20px);filter:blur(4px)} 100%{opacity:1;transform:translateY(0);filter:blur(0)} }
@@ -334,12 +336,22 @@ function FilmFrameCover({ invitation, fonts, tc, onEnter, isPreview }: {
   const lift = ({ '9': 27, '8': 40 } as Record<string, number>)[frameId] ?? 53
   // 무대(9:16)가 화면보다 길면 위아래가 잘리므로, 아래 글자 묶음은 실제 보이는 화면 안에서 끝나게
   const visibleBottom = `max(14px, calc((${(100 * 16 / 9).toFixed(2)}cqw - ${isPreview ? '660px' : '100dvh'}) / 2 + 14px - ${u(lift)}))`
+  // 날짜 옆 요일 (2027.09.25 Sat.) · 장소 줄 앞에 예식 시간 (오후 1시 30분 | 더채플앳청담)
+  const dayAbbr = w?.date ? ['Sun.', 'Mon.', 'Tue.', 'Wed.', 'Thu.', 'Fri.', 'Sat.'][weddingDate.getDay()] : ''
+  const timeStr = w?.showDate !== false ? (w?.timeDisplay || w?.time || '') : ''
+  const placeStr = w?.showVenue !== false ? venueName : ''
+  // 프레임이 바닥 위에 놓인 듯한 은은한 그림자 (오벌은 테두리가 두꺼워 더 약하게)
+  const frameShadow = frameId === '9'
+    ? 'drop-shadow(0 6px 12px rgba(70, 52, 40, 0.09)) drop-shadow(0 1px 2px rgba(70, 52, 40, 0.06))'
+    : 'drop-shadow(0 12px 22px rgba(70, 52, 40, 0.16)) drop-shadow(0 2px 4px rgba(70, 52, 40, 0.10))'
 
   return (
     <div onClick={onEnter} className="relative w-full" style={{ height: isPreview ? '660px' : '100dvh', overflow: 'hidden', background: bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
       <style dangerouslySetInnerHTML={{ __html: FILM_FRAME_ANIM_CSS }} />
+      {/* 배경 종이 결 — 단색 판 대신 카드 종이처럼 (아주 옅게) */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: `url("${FRAME_PAPER_TEXTURE}")`, backgroundSize: '220px 220px', opacity: 0.22, mixBlendMode: 'multiply' }} />
       {/* 스테이지 (9:16, 너비 100% = 좌우 꽉) */}
-      <div style={{ position: 'relative', flexShrink: 0, width: '100%', aspectRatio: '9 / 16', background: bgColor, containerType: 'inline-size', transform: `translateY(calc(-1 * ${u(lift)}))` }}>
+      <div style={{ position: 'relative', flexShrink: 0, width: '100%', aspectRatio: '9 / 16', containerType: 'inline-size', transform: `translateY(calc(-1 * ${u(lift)}))` }}>
         {/* 무대: 프레임+사진 시네마 줌 */}
         <div style={{ position: 'absolute', inset: 0, animation: `ffZoom 3.6s ${CB} both` }}>
           {cfg.slots ? (
@@ -355,11 +367,13 @@ function FilmFrameCover({ invitation, fonts, tc, onEnter, isPreview }: {
           )}
           {/* 프레임 오버레이 */}
           {colorMode === 'original' ? (
-            <img src={frameUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }} />
+            <img src={frameUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', pointerEvents: 'none', filter: frameShadow }} />
           ) : (
-            <div style={{ position: 'absolute', inset: 0, isolation: 'isolate', pointerEvents: 'none', WebkitMaskImage: `url(${frameUrl})`, maskImage: `url(${frameUrl})`, WebkitMaskSize: '100% 100%', maskSize: '100% 100%' }}>
-              <div style={{ position: 'absolute', inset: 0, background: frameColor }} />
-              <img src={frameUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', mixBlendMode: 'multiply' }} />
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', filter: frameShadow }}>
+              <div style={{ position: 'absolute', inset: 0, isolation: 'isolate', WebkitMaskImage: `url(${frameUrl})`, maskImage: `url(${frameUrl})`, WebkitMaskSize: '100% 100%', maskSize: '100% 100%' }}>
+                <div style={{ position: 'absolute', inset: 0, background: frameColor }} />
+                <img src={frameUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', mixBlendMode: 'multiply' }} />
+              </div>
             </div>
           )}
         </div>
@@ -372,9 +386,15 @@ function FilmFrameCover({ invitation, fonts, tc, onEnter, isPreview }: {
             (프레임이 커서 자리가 모자라면 간격이 함께 줄어 버튼이 화면 밖으로 나가지 않음) */}
         <div style={{ position: 'absolute', left: 0, right: 0, top: `${outer.bottom}%`, bottom: visibleBottom, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', color: textColor, padding: '0 20px' }}>
           <div style={{ flex: '0 1 auto', height: u(88), minHeight: u(24) }} />
-          {w?.showDate !== false && <div style={{ flex: 'none', fontFamily: enFont, fontSize: u(54), fontStyle: 'italic', lineHeight: 1.2, animation: `ffUp 1.9s ${CB} 2.9s both` }}>{dateStr}</div>}
-          {w?.showDate !== false && w?.showVenue !== false && venueName && <div style={{ flex: '0 1 auto', height: u(20), minHeight: 4 }} />}
-          {w?.showVenue !== false && venueName && <div style={{ flex: 'none', fontFamily: koF.family || fonts.body, fontSize: u(33), letterSpacing: '.06em', lineHeight: 1.3, animation: `ffUp 1.9s ${CB} 3.5s both` }}>{venueName}</div>}
+          {w?.showDate !== false && <div style={{ flex: 'none', fontFamily: enFont, fontSize: u(54), fontStyle: 'italic', lineHeight: 1.2, animation: `ffUp 1.9s ${CB} 2.9s both` }}>{dateStr}{dayAbbr && <> {dayAbbr}</>}</div>}
+          {w?.showDate !== false && (timeStr || placeStr) && <div style={{ flex: '0 1 auto', height: u(20), minHeight: 4 }} />}
+          {(timeStr || placeStr) && (
+            <div style={{ flex: 'none', fontFamily: koF.family || fonts.body, fontSize: u(33), letterSpacing: '.06em', lineHeight: 1.3, animation: `ffUp 1.9s ${CB} 3.5s both` }}>
+              {timeStr}
+              {timeStr && placeStr && <span style={{ display: 'inline-block', width: '1px', height: '0.8em', background: 'currentColor', opacity: 0.45, margin: '0 0.7em', verticalAlign: '-0.05em' }} />}
+              {placeStr}
+            </div>
+          )}
           <div style={{ flex: '0 1 auto', height: u(56), minHeight: u(20) }} />
           <FilmTapCue text="화면을 눌러 청첩장을 열어주세요" color={textColor} show delay={5.4}
             wrapStyle={{ position: 'static', flex: 'none' }} pillStyle={{ fontSize: u(27), padding: `${u(20)} ${u(46)}` }} />

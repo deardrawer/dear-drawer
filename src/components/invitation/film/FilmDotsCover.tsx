@@ -54,7 +54,8 @@ export function FilmDotsCover({ invitation, onEnter, isPreview }: { invitation: 
   const deco = invitation.filmDotsDeco || 'flourish'
   const caption = (invitation.filmDotsCaption) || '화면을 눌러 청첩장을 열어주세요'
   // 도트 자수는 영문 필기체 전용: 직접 쓴 영문 > 청첩장 영문 이름 > Groom & Bride
-  const latin = (v?: string) => (v || '').replace(/[^A-Za-z .'-]/g, '').trim()
+  // 필기체는 대문자만으로 쓰면 어색해 단어 첫 글자만 대문자로 (JIHOON → Jihoon)
+  const latin = (v?: string) => (v || '').replace(/[^A-Za-z .'-]/g, '').trim().toLowerCase().replace(/(^|\s)[a-z]/g, (m) => m.toUpperCase())
   const line1 = latin(invitation.filmDotsGroomEn) || latin(invitation.groom?.nameEn) || 'Groom'
   const line2 = latin(invitation.filmDotsBrideEn) || latin(invitation.bride?.nameEn) || 'Bride'
   const [fontOk, setFontOk] = useState(false)

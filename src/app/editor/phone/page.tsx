@@ -2783,10 +2783,14 @@ function PhoneEditorContent() {
           <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-8">{decoSheet}</div>
         </div>
       ) : (
-        <div className="shrink-0 grid grid-cols-1 gap-2 px-3 pt-2 border-t bg-white/90" style={{ borderColor: 'var(--ed-border)', paddingBottom: 'calc(8px + env(safe-area-inset-bottom))' }}>
-          {mobMode === 'deco'
-            ? <button type="button" onClick={toView} className="h-11 rounded-xl text-sm font-semibold text-white" style={{ background: 'var(--ed-accent)' }}>완료</button>
-            : <button type="button" onClick={toDeco} className="h-11 rounded-xl text-sm font-semibold text-white" style={{ background: 'var(--ed-accent)' }}>✎ 꾸미기</button>}
+        <div className="shrink-0 px-3 pt-2 border-t bg-white/90" style={{ borderColor: 'var(--ed-border)', paddingBottom: 'calc(8px + env(safe-area-inset-bottom))' }}>
+          {/* 꾸미기 ↔ 미리보기 (하객이 보는 그대로 눌러 보기) */}
+          <div className="grid grid-cols-2 p-1 rounded-xl border bg-white" style={{ borderColor: 'var(--ed-border)' }}>
+            {([['deco', '✎ 꾸미기', toDeco], ['view', '▶ 미리보기', toView]] as const).map(([m, l, go]) => (
+              <button key={m} type="button" onClick={() => { if (mobMode !== m) go() }} className="h-10 rounded-lg text-sm font-semibold transition-colors"
+                style={mobMode === m ? { background: 'var(--ed-accent)', color: '#F5F0ED' } : { color: 'var(--ed-text-muted)' }}>{l}</button>
+            ))}
+          </div>
         </div>
       )}
     </div>

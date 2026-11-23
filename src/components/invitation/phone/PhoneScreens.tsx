@@ -17,7 +17,7 @@ import { loadKakaoMapSDK } from '@/lib/geunnalKakaoMap'
 import { getBgmPresetByUrl } from '@/lib/bgmPresets'
 import {
   krPhoneFamily, homePagesOf, FOLDER_DEFAULT_APPS, defaultSearchItems, youtubeId, APP_META, GRID, PHONE_W, SIZE_SPAN, POSTER_PHOTO_H,
-  cellX, cellY, cellHFor, HOME_BOTTOM, spanH, spanW, ddayCount, PHONE_H, ddayText, weddingParts,
+  cellX, cellY, cellHFor, spanH, spanW, ddayCount, PHONE_H, ddayText, weddingParts,
   titleFontOf, numberFontOf, titleNames, coverOf, lettersOf, letterLockedUntil, isWeddingDay, LETTER_KINDS, letterHandOf, isDark, themeOf, parseWeddingDate, screenStyle, isEmptyApp, isAppOff, screenCoverOf, foldersOf, withLockNumber, screenText, dockOf, GIFT_TITLE, GIFT_MESSAGE,
   type PhoneAppId, type PhoneData, type PhoneLetter, type PhoneImageSettings, type PhoneScreenId, type PhoneTheme, type PhoneWidget, type PhoneSearchItem, type WidgetSize, type PhoneTitleFont,
 } from './phoneTypes'
@@ -2243,10 +2243,9 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
-  const ch = cellHFor(screenH)
-  // 칸을 더 낮출 수 없을 만큼 짧은 화면 — 위젯 장을 통째로 살짝 줄여 아래 바와 겹치지 않게 (하객 화면만)
-  const gridNeed = GRID.top + GRID.rows * ch + (GRID.rows - 1) * GRID.gapY
-  const gridScale = editing ? 1 : Math.max(0.78, Math.min(1, (screenH - HOME_BOTTOM - 28) / gridNeed))
+  // 짧은 화면(카카오톡 등) 하객 화면 — 칸을 낮추면 위젯 글이 잘리므로, 위젯 · 하단 바를 설계 높이 그대로 그린 뒤 통째로 줄임 (바탕은 꽉 채움)
+  const homeK = !editing && screenH < PHONE_H - 24 ? screenH / PHONE_H : 1
+  const ch = cellHFor(homeK < 1 ? PHONE_H : screenH)
   const onPhoto = t.homeBg === 'photo'
   // 바탕 흐림 — 가장자리가 비지 않게 살짝 키움
   const hb = Math.max(0, Math.min(40, data.phone.homeBlur ?? 0))
@@ -2284,6 +2283,7 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
         <div style={{ position: 'absolute', left: cellX(editing.ghost.col), top: cellY(editing.ghost.row, ch), width: spanW(editing.ghost.size), height: spanH(editing.ghost.size, ch), borderRadius: 22, background: editing.ghost.ok ? `${accent}33` : 'rgba(200,60,60,0.18)', border: `2px solid ${editing.ghost.ok ? accent : '#C83C3C'}`, pointerEvents: 'none' }} />
       )}
 
+      <div style={homeK < 1 ? { position: 'absolute', top: 0, left: (PHONE_W * (1 - homeK)) / 2, width: PHONE_W, height: PHONE_H, transform: `scale(${homeK})`, transformOrigin: '0 0' } : { display: 'contents' }}>
       <HomeRevealCtx.Provider value={!!reveal}>
       {/* 홈 화면 장 — 에디터는 고치는 장 하나, 하객은 옆으로 넘김 */}
       <div ref={pagerRef} onScroll={multi ? (e => { const el = e.currentTarget; setPg(Math.round(el.scrollLeft / Math.max(1, el.clientWidth))) }) : undefined}
@@ -2308,7 +2308,7 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
         onClickCapture={multi ? (e => { if (mDragging) { e.preventDefault(); e.stopPropagation() } }) : undefined}
         style={multi ? { position: 'absolute', inset: 0, display: 'flex', overflowX: 'auto', overflowY: 'hidden', scrollSnapType: mDragging ? 'none' : 'x mandatory', cursor: mDragging ? 'grabbing' : undefined, scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } : { position: 'absolute', inset: 0, pointerEvents: 'none' }}>
       {shownPages.map(pgIdx => (
-      <div key={pgIdx} style={{ ...(multi ? { position: 'relative', flex: '0 0 100%', height: '100%', scrollSnapAlign: 'start' } : { position: 'absolute', inset: 0 }), ...(gridScale < 1 ? { transform: `scale(${gridScale})`, transformOrigin: '50% 0' } : {}) }}>
+      <div key={pgIdx} style={{ ...(multi ? { position: 'relative', flex: '0 0 100%', height: '100%', scrollSnapAlign: 'start' } : { position: 'absolute', inset: 0 }) }}>
       {data.phone.widgets.filter(w => (w.page || 0) === pgIdx).map(w => {
         if (!editing && w.type === 'app' && isEmptyApp(data, w.props.app || 'memo')) return null
         const offInEditor = !!editing && w.type === 'app' && isAppOff(data, w.props.app || 'memo')
@@ -2403,6 +2403,7 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
           )
         })}
       </div>}
+      </div>
     </div>
   )
 }
@@ -5573,7 +5574,10 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
   useEffect(() => {
     if (!invitationId) return
     window.addEventListener('pf-open-gesture', goFullscreen)
-    return () => window.removeEventListener('pf-open-gesture', goFullscreen)
+    // 휴대폰에서 전체 화면이 거절됐거나(앱 안 브라우저가 가끔 거절) 뒤로 가기로 풀렸으면 — 다음 터치 때 다시
+    const retap = () => { if (screen !== 'lock' && !document.fullscreenElement && window.matchMedia('(pointer: coarse)').matches) goFullscreen() }
+    window.addEventListener('click', retap, true)
+    return () => { window.removeEventListener('pf-open-gesture', goFullscreen); window.removeEventListener('click', retap, true) }
   })
   // 주소창 색 — 지금 화면 맨 위 색을 브라우저 바에 (하객 화면만)
   const rootRef = useRef<HTMLDivElement>(null)

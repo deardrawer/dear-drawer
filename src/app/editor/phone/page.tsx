@@ -392,6 +392,7 @@ function PhoneEditorContent() {
   }, [undo, redo])
   const setPhone = (patch: Partial<PhoneData['phone']>) => update(d => ({ ...d, phone: { ...d.phone, ...patch } }))
   const setWidgets = (fn: (ws: PhoneWidget[]) => PhoneWidget[]) => update(d => ({ ...d, phone: { ...d.phone, widgets: fn(d.phone.widgets) } }))
+  const [infoErr, setInfoErr] = useState(false) // 저장하려다 이름 · 연락처가 비어 있었음 → 빈 칸 표시
   const flash = (s: string) => { setNotice(s); setTimeout(() => setNotice(''), 2200) }
 
   const adminHeaders = useCallback((): Record<string, string> => {
@@ -408,7 +409,12 @@ function PhoneEditorContent() {
       .then(r => r.json() as Promise<{ content?: string | null }>)
       .then(res => {
         if (off || !res.content) return
-        try { setData(normalizePhoneData(JSON.parse(res.content))); past.current = []; future.current = []; setHist({ undo: 0, redo: 0 }) } catch { /* 기본값 그대로 */ }
+        try {
+          const d = normalizePhoneData(JSON.parse(res.content))
+          // 이름 · 연락처는 고객이 직접 — 샘플 값은 입력 칸 안내 글씨로만
+          const blank = (x: PhoneData['groom']) => ({ ...x, name: '', lastName: '', firstName: '', nameEn: '', phone: '' })
+          setData({ ...d, groom: blank(d.groom), bride: blank(d.bride) }); past.current = []; future.current = []; setHist({ undo: 0, redo: 0 })
+        } catch { /* 기본값 그대로 */ }
       })
       .catch(() => { /* 기본값 그대로 */ })
     return () => { off = true }
@@ -437,7 +443,9 @@ function PhoneEditorContent() {
      '전체 설정'(full)은 듀얼 화면 (위: 미리보기 고정 · 아래: 설정 스크롤, 가운데 막대로 비율 조절) */
   const [mobMode, setMobMode] = useState<'view' | 'deco' | 'full'>('view')
   const [sheet, setSheet] = useState<{ kind: 'add' } | { kind: 'focus'; parts: { panel: PanelId; secs: string[] | null }[] } | null>(null)
-  const [sheetBig, setSheetBig] = useState(false)
+  // 휴대폰 설정 시트 높이 (화면 높이 비율) — 손잡이를 끌어 늘리고 줄임, 처음엔 반
+  const [sheetFrac, setSheetFrac] = useState(0.5)
+  const sheetDrag = useRef<{ y: number; f: number; moved: boolean } | null>(null)
   const decoAreaRef = useRef<HTMLDivElement>(null)
   const decoDownOnWidget = useRef(false)
   const mobInit = useRef(false)
@@ -454,23 +462,28 @@ function PhoneEditorContent() {
       const desk = window.innerWidth >= 1024
       setMob(!desk); setVh(window.innerHeight)
       // 휴대폰으로 처음 열면 하객처럼 보는 화면부터
-      if (!desk && !mobInit.current) { mobInit.current = true; setPreview(true); setPreviewStart('lock'); setPreviewKey(k => k + 1) }
+      if (!desk && !mobInit.current) {
+        mobInit.current = true
+        // 새 청첩장은 결혼식 정보부터 (꾸미기 + 정보 시트), 고치던 청첩장은 하객처럼 보는 화면부터
+        if (!editId) { setPreview(false); setMobMode('deco'); setSheet({ kind: 'focus', parts: [{ panel: 'info', secs: null }] }) }
+        else { setPreview(true); setPreviewStart('lock'); setPreviewKey(k => k + 1) }
+      }
       // 머리 줄(56) · 위아래 여백(48) · 편집/미리보기 버튼(62) · 폰 테두리(20)
       if (desk) setScale(Math.min(1, (window.innerHeight - 56 - 48 - 62 - 20) / PHONE_H))
       else if (mobMode === 'full') {
-        const h = Math.round((window.innerHeight - MOB_TOP - MOB_NAV - MOB_BAR) * split)
-        // 편집/미리보기 버튼(44) · 위아래 여백(16) · 폰 테두리(20)
-        setScale(Math.max(0.2, Math.min(1, (window.innerWidth - 32) / PHONE_W, (h - 44 - 16 - 20) / PHONE_H)))
+        // 나눠 보기: 폰은 화면 폭에 맞춘 크기 그대로 — 위 칸이 작으면 줄이지 않고 위아래로 넘겨 봄
+        setScale(Math.max(0.2, Math.min(0.92, (window.innerWidth - 40) / PHONE_W)))
       }
     }
     fit(); window.addEventListener('resize', fit)
     return () => window.removeEventListener('resize', fit)
-  }, [split, mobMode])
-  // 꾸미기 · 보기 — 남은 칸에 폰을 꽉 맞춤 (시트가 열리면 폰이 작아짐)
+  }, [split, mobMode, editId])
+  // 꾸미기 · 보기 — 남은 칸에 폰을 꽉 맞춤. 설정 시트가 열려도 폰은 그 크기 그대로 (줄이지 않고 누른 곳이 보이게 넘김)
+  const sheetOpenRef = useRef(false)
   useEffect(() => {
     const el = decoAreaRef.current
     if (!el || !mob || mobMode === 'full') return
-    const fit = () => { const r = el.getBoundingClientRect(); if (r.height > 0) setScale(Math.max(0.2, Math.min(1, (r.width - 32) / PHONE_W, (r.height - 46) / PHONE_H))) }
+    const fit = () => { if (sheetOpenRef.current) return; const r = el.getBoundingClientRect(); if (r.height > 0) setScale(Math.max(0.2, Math.min(1, (r.width - 32) / PHONE_W, (r.height - 46) / PHONE_H))) }
     fit()
     const ro = new ResizeObserver(fit); ro.observe(el)
     return () => ro.disconnect()
@@ -575,7 +588,8 @@ function PhoneEditorContent() {
   const [newDrag, setNewDrag] = useState<{ x: number; y: number; label: string } | null>(null)
   const dragClick = useRef(false)
   const startNewDrag = (e: ReactPointerEvent, spec: { type: WidgetType; size: WidgetSize; variant: number; app?: PhoneAppId; label: string }) => {
-    if (e.button !== 0) return
+    // 휴대폰(설정 시트)에선 끌어 놓기 없음 — 손가락으로 시트를 넘기면 끌기로 오인해 표시가 남음. '홈 화면에 추가'로 넣음
+    if (e.button !== 0 || mob) return
     const sx = e.clientX, sy = e.clientY
     const span = SIZE_SPAN[spec.size]
     let moved = false
@@ -594,8 +608,12 @@ function PhoneEditorContent() {
       last = { col, row, ok: !!placeWithReflow(pageWs, { id: '__new', type: spec.type, col: -1, row: -1, size: spec.size, variant: 0, props: {} }, col, row) }
       setDrag({ id: 'new', ghost: { col, row, size: spec.size, ok: last.ok } })
     }
+    const cancel = () => {
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', cancel)
+      setNewDrag(null); setDrag(null)
+    }
     const up = () => {
-      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', cancel)
       setNewDrag(null); setDrag(null)
       if (!moved) return
       // 끌기로 끝났으면 뒤따르는 click(그냥 누르기)은 무시
@@ -608,7 +626,7 @@ function PhoneEditorContent() {
       setWidgets(() => withOthers(next))
       setDraft(null); setSelectedId(w.id); setPanel('home')
     }
-    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up)
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', cancel)
   }
   /* 손잡이로 크기 바꾸기 — 끈 만큼 가까운 크기(1×1 · 2×2 · 4×2 · 4×1)로 맞춤 */
   const onResizePointerDown = (e: ReactPointerEvent, w: PhoneWidget) => {
@@ -650,7 +668,14 @@ function PhoneEditorContent() {
       router.push(`/login?redirect=${encodeURIComponent(cur)}`)
       return
     }
-    if (!data.groom.name.trim() || !data.bride.name.trim()) { flash('신랑 · 신부 이름을 넣어 주세요'); setSelectedId(null); setPanel('info'); return }
+    const telOk = (v?: string) => (v || '').replace(/\D/g, '').length >= 9
+    if (!data.groom.name.trim() || !data.bride.name.trim() || !telOk(data.groom.phone) || !telOk(data.bride.phone)) {
+      setInfoErr(true)
+      flash(!data.groom.name.trim() || !data.bride.name.trim() ? '신랑 · 신부 이름을 넣어 주세요' : '신랑 · 신부 연락처를 넣어 주세요')
+      setSelectedId(null); setDraft(null); setPanel('info')
+      if (mob) { setPreview(false); setMobMode('deco'); setSheet({ kind: 'focus', parts: [{ panel: 'info', secs: null }] }) }
+      return
+    }
     setIsSaving(true)
     try {
       const payload: Record<string, unknown> = {
@@ -1057,11 +1082,11 @@ function PhoneEditorContent() {
       <div className={`space-y-2.5 ${role === 'bride' ? 'pt-4 border-t' : ''}`} style={{ borderColor: 'var(--ed-border)' }}>
         <h4 className="text-[13px] font-semibold" style={{ color: 'var(--ed-accent)' }}>{title}</h4>
         <div className="grid grid-cols-[88px_1fr] gap-2">
-          <Field label="성"><input className={inputCls} placeholder={role === 'groom' ? '한' : '윤'} value={last} onChange={e => setName(e.target.value, first)} /></Field>
-          <Field label="이름"><input className={inputCls} placeholder={role === 'groom' ? '지훈' : '서연'} value={first} onChange={e => setName(last, e.target.value)} /></Field>
+          <Field label="성 *"><input className={inputCls + (infoErr && !p.name.trim() ? ' !border-red-400' : '')} placeholder={role === 'groom' ? '한' : '윤'} value={last} onChange={e => setName(e.target.value, first)} /></Field>
+          <Field label="이름 *"><input className={inputCls + (infoErr && !p.name.trim() ? ' !border-red-400' : '')} placeholder={role === 'groom' ? '지훈' : '서연'} value={first} onChange={e => setName(last, e.target.value)} /></Field>
         </div>
         <Field label="영문 이름"><input className={inputCls} placeholder={role === 'groom' ? 'Jihoon' : 'Seoyeon'} value={p.nameEn || ''} onChange={e => setP({ nameEn: e.target.value })} /></Field>
-        <Field label="연락처"><input className={inputCls} type="tel" inputMode="numeric" placeholder="010-0000-0000" value={p.phone || ''} onChange={e => setP({ phone: formatPhone(e.target.value) })} /></Field>
+        <Field label="연락처 *"><input className={inputCls + (infoErr && (p.phone || '').replace(/\D/g, '').length < 9 ? ' !border-red-400' : '')} type="tel" inputMode="numeric" placeholder="010-0000-0000" value={p.phone || ''} onChange={e => setP({ phone: formatPhone(e.target.value) })} /></Field>
       </div>
     )
   }
@@ -2644,7 +2669,7 @@ function PhoneEditorContent() {
 
   /* ───── 휴대폰 꾸미기 ───── */
   const decoOn = mob && mobMode === 'deco' && !preview
-  const closeSheet = () => { setSheet(null); setSelectedId(null); setDraft(null); setSheetBig(false) }
+  const closeSheet = () => { setSheet(null); setSelectedId(null); setDraft(null); setSheetFrac(0.5) }
   const openFocus = (parts: { panel: PanelId; secs: string[] | null }[]) => { setSelectedId(null); setDraft(null); setSheet({ kind: 'focus', parts }) }
   // 폰에서 누른 곳 → 그 설정 묶음
   const ED_MAP: Record<string, { panel: PanelId; secs: string[] | null }[]> = {
@@ -2685,6 +2710,24 @@ function PhoneEditorContent() {
     : sheet?.kind === 'add' ? widgetAddBox
     : sheet?.kind === 'focus' ? sheet.parts.map((x, i) => <SecFocus.Provider key={i} value={x.secs}>{panelFor(x.panel)}</SecFocus.Provider>)
     : null
+  // 시트가 열리면 누른 자리가 시트 위 보이는 칸 가운데쯤 오도록 넘김
+  const decoTapY = useRef<number | null>(null)
+  const sheetOpen = !!decoSheet
+  sheetOpenRef.current = sheetOpen
+  useEffect(() => {
+    const area = decoAreaRef.current
+    if (!area) return
+    if (!sheetOpen) { area.scrollTop = 0; return }
+    const y = decoTapY.current
+    if (y == null) return
+    const id = requestAnimationFrame(() => {
+      const ph = phoneRef.current
+      if (!ph) return
+      const top = ph.getBoundingClientRect().top - area.getBoundingClientRect().top + area.scrollTop
+      area.scrollTo({ top: Math.max(0, top + y - area.clientHeight * 0.45), behavior: 'smooth' })
+    })
+    return () => cancelAnimationFrame(id)
+  }, [sheetOpen, selectedId, sheet, draft, screen])
   const decoPill = (label: string, on: boolean, onClick: () => void, dashed = false) => (
     <button key={label} type="button" onClick={onClick} className={`shrink-0 h-8 px-3.5 rounded-full text-[12.5px] font-semibold border ${dashed ? 'border-dashed' : ''}`}
       style={on ? { background: 'var(--ed-accent)', color: '#F5F0ED', borderColor: 'transparent' } : { background: '#FFFFFF', color: dashed ? 'var(--ed-accent)' : 'var(--ed-text)', borderColor: 'var(--ed-border)' }}>{label}</button>
@@ -2692,8 +2735,7 @@ function PhoneEditorContent() {
   const goScreen = (sc: PhoneScreenId, page?: number) => { closeSheet(); navHist.current = []; lockReturn.current = null; setScreen(sc); if (page !== undefined) setHomePage(page) }
   const toView = () => { closeSheet(); setMobMode('view'); setPreview(true); setPreviewStart(screen); setPreviewKey(k => k + 1) }
   const toDeco = () => { setPreview(false); setMobMode('deco') }
-  const toFull = () => { closeSheet(); setPreview(false); setMobMode('full'); setMobileTab('settings') }
-  const sheetH = Math.round((vh - 56) * (sheetBig ? 0.72 : 0.48))
+  const sheetH = Math.round(vh * sheetFrac)
   const mobileDeco = (
     <div className="flex-1 min-h-0 flex flex-col">
       {mobMode === 'deco' && (
@@ -2718,24 +2760,30 @@ function PhoneEditorContent() {
           </div>
         </div>
       )}
-      <div ref={decoAreaRef} className="flex-1 min-h-0 flex items-center justify-center relative overflow-hidden">
-        <div onClickCapture={onDecoClick} onPointerDownCapture={e => { decoDownOnWidget.current = !!(e.target as HTMLElement).closest('[data-widget-id]'); if (decoOn && screen === 'lock') e.stopPropagation() }}
-          className="-translate-y-1.5" style={decoOn ? { outline: '2px dashed rgba(122,90,68,0.45)', outlineOffset: 8, borderRadius: 50 * scale + 10 } : undefined}>{canvas}</div>
+      <div ref={decoAreaRef} className={`flex-1 min-h-0 flex justify-center relative ${sheetOpen ? 'items-start overflow-y-auto overflow-x-hidden pt-3 pb-6' : 'items-center overflow-hidden'}`}>
+        <div onClickCapture={onDecoClick} onPointerDownCapture={e => { const r = phoneRef.current?.getBoundingClientRect(); decoTapY.current = r ? e.clientY - r.top : null; decoDownOnWidget.current = !!(e.target as HTMLElement).closest('[data-widget-id]'); if (decoOn && screen === 'lock') e.stopPropagation() }}
+          className="-translate-y-1.5">{canvas}</div>
         {decoOn && !decoSheet && <p className="absolute bottom-1.5 left-0 right-0 text-center text-[11.5px] pointer-events-none" style={{ color: 'var(--ed-text-muted)' }}>고칠 곳을 누르면 설정이 열립니다</p>}
         {canvasOverlays}
       </div>
       {decoSheet ? (
-        <div className="shrink-0 flex flex-col rounded-t-2xl border-t" style={{ height: sheetH, background: '#FBF9F6', borderColor: 'var(--ed-border)', boxShadow: '0 -10px 30px rgba(44,40,36,0.12)', transition: 'height 0.25s ease' }}>
+        <div className="shrink-0 flex flex-col rounded-t-2xl border-t" style={{ height: sheetH, background: '#FBF9F6', borderColor: 'var(--ed-border)', boxShadow: '0 -10px 30px rgba(44,40,36,0.12)', transition: sheetDrag.current ? 'none' : 'height 0.25s ease' }}>
           <div className="shrink-0 h-9 flex items-center justify-between px-2">
             <span className="w-9" />
-            <button type="button" aria-label={sheetBig ? '설정창 작게' : '설정창 크게'} onClick={() => setSheetBig(v => !v)} className="h-9 px-6 flex items-center"><span className="block w-10 h-1 rounded-full" style={{ background: 'rgba(44,40,36,0.25)' }} /></button>
+            {/* 손잡이 — 위아래로 끌어 높이 조절 · 누르면 반 ↔ 크게 */}
+            <button type="button" aria-label="설정창 높이 조절" className="h-9 px-8 flex items-center touch-none cursor-row-resize"
+              onPointerDown={e => { sheetDrag.current = { y: e.clientY, f: sheetFrac, moved: false }; try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* noop */ } }}
+              onPointerMove={e => { const d = sheetDrag.current; if (!d) return; if (Math.abs(e.clientY - d.y) > 4) d.moved = true; if (d.moved) setSheetFrac(Math.max(0.22, Math.min(0.85, d.f - (e.clientY - d.y) / vh))) }}
+              onPointerUp={() => { const d = sheetDrag.current; sheetDrag.current = null; if (d && !d.moved) setSheetFrac(f => (f < 0.6 ? 0.78 : 0.5)) }}
+              onPointerCancel={() => { sheetDrag.current = null }}>
+              <span className="block w-10 h-1 rounded-full" style={{ background: 'rgba(44,40,36,0.25)' }} />
+            </button>
             <button type="button" aria-label="닫기" onClick={() => { closeSheet(); if (isAppScr) goScreen('home') }} className="w-9 h-9 flex items-center justify-center text-lg" style={{ color: 'var(--ed-text-muted)' }}>×</button>
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-8">{decoSheet}</div>
         </div>
       ) : (
-        <div className="shrink-0 grid grid-cols-2 gap-2 px-3 pt-2 border-t bg-white/90" style={{ borderColor: 'var(--ed-border)', paddingBottom: 'calc(8px + env(safe-area-inset-bottom))' }}>
-          <button type="button" onClick={toFull} className="h-11 rounded-xl border text-sm font-semibold bg-white" style={{ borderColor: 'var(--ed-border)', color: 'var(--ed-text)' }}>전체 설정</button>
+        <div className="shrink-0 grid grid-cols-1 gap-2 px-3 pt-2 border-t bg-white/90" style={{ borderColor: 'var(--ed-border)', paddingBottom: 'calc(8px + env(safe-area-inset-bottom))' }}>
           {mobMode === 'deco'
             ? <button type="button" onClick={toView} className="h-11 rounded-xl text-sm font-semibold text-white" style={{ background: 'var(--ed-accent)' }}>완료</button>
             : <button type="button" onClick={toDeco} className="h-11 rounded-xl text-sm font-semibold text-white" style={{ background: 'var(--ed-accent)' }}>✎ 꾸미기</button>}
@@ -2749,7 +2797,7 @@ function PhoneEditorContent() {
       {newDrag && (
         <div style={{ position: 'fixed', left: newDrag.x, top: newDrag.y, transform: 'translate(-50%, -130%)', zIndex: 100, pointerEvents: 'none' }}
           className="text-[12.5px] font-medium text-white">
-          <span className="px-3 py-1.5 rounded-full shadow-lg" style={{ background: 'var(--ed-accent)' }}>+ {newDrag.label}</span>
+          <span className="px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap" style={{ background: 'var(--ed-accent)' }}>+ {newDrag.label}</span>
         </div>
       )}
       <audio ref={bgmPreviewRef} onEnded={() => setBgmPlaying(null)} className="hidden" />
@@ -2959,10 +3007,10 @@ function PhoneEditorContent() {
         </aside>
 
         {/* 가운데: 폰 캔버스 */}
-        <main className="lg:flex-1 flex flex-col items-center justify-start max-lg:shrink-0 max-lg:overflow-hidden max-lg:pt-2 lg:justify-center lg:h-[calc(100vh-56px)] order-1 lg:order-2 relative"
+        <main className="lg:flex-1 flex flex-col items-center justify-start max-lg:shrink-0 max-lg:overflow-y-auto max-lg:overflow-x-hidden max-lg:pt-2 max-lg:pb-6 lg:justify-center lg:h-[calc(100vh-56px)] order-1 lg:order-2 relative"
           style={mob ? { height: mobPreviewH } : undefined}>
           {/* 편집(누르면 그 위젯 설정) ↔ 미리보기(하객처럼 누르면 화면 열림) */}
-          <div className="mb-2 lg:mb-[22px] inline-flex p-1 rounded-full border bg-white text-[13px] shadow-sm" style={{ borderColor: 'var(--ed-border)' }}>
+          <div className="mb-2 lg:mb-[22px] inline-flex p-1 rounded-full border bg-white text-[13px] shadow-sm max-lg:sticky max-lg:top-0 max-lg:z-20 max-lg:shrink-0" style={{ borderColor: 'var(--ed-border)' }}>
             {([[false, '✎ 편집'], [true, '▶ 미리보기']] as const).map(([v, l]) => (
               <button key={l} type="button" onClick={() => { if (preview !== v) { setPreview(v); setPreviewStart('lock'); setPreviewKey(k => k + 1); setSelectedId(null) } }}
                 className="h-8 px-4 rounded-full font-medium transition-colors" style={preview === v ? { background: 'var(--ed-accent)', color: '#F5F0ED' } : { color: 'var(--ed-text-muted)' }}>{l}</button>

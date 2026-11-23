@@ -1781,7 +1781,8 @@ function SlideToOpen({ onOpen, onDark, accent }: { onOpen?: () => void; onDark: 
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
-  const finish = () => { setX(span); setTimeout(() => { onOpen?.(); setX(0) }, 260) }
+  // 전체 화면 요청은 손가락을 뗀 그 순간에 (카카오톡 등 앱 안 브라우저는 잠깐 뒤에 부르면 거절함) → PhoneFlow 가 받음
+  const finish = () => { window.dispatchEvent(new Event('pf-open-gesture')); setX(span); setTimeout(() => { onOpen?.(); setX(0) }, 260) }
   const ink = onDark ? '#FFFFFF' : '#2A2A2A'
   const dim = onDark ? 'rgba(255,255,255,0.62)' : 'rgba(40,40,40,0.45)'
   const ratio = Math.min(1, x / span)
@@ -5559,6 +5560,11 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
       else el.webkitRequestFullscreen?.()
     } catch { /* 지원 안 함 */ }
   }
+  useEffect(() => {
+    if (!invitationId) return
+    window.addEventListener('pf-open-gesture', goFullscreen)
+    return () => window.removeEventListener('pf-open-gesture', goFullscreen)
+  })
   // 주소창 색 — 지금 화면 맨 위 색을 브라우저 바에 (하객 화면만)
   const rootRef = useRef<HTMLDivElement>(null)
   useEffect(() => {

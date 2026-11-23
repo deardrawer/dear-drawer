@@ -491,6 +491,31 @@ const defaultData: ParentsInvitationData = {
   fontStyle: 'elegant',
 }
 
+/** 휴대폰 미리보기 — 실제 폰 크기(360×760)로 그린 뒤 남은 칸에 맞춰 줄임 (칸이 낮아도 봉투 배치가 찌그러지지 않게) */
+const PV_W = 360
+const PV_H = 760
+function ScaledPhoneBox({ children }: { children: React.ReactNode }) {
+  const boxRef = useRef<HTMLDivElement>(null)
+  const [sc, setSc] = useState(0.8)
+  useEffect(() => {
+    const el = boxRef.current
+    if (!el) return
+    const fit = () => { const r = el.getBoundingClientRect(); if (r.width > 0 && r.height > 0) setSc(Math.min(1, r.width / PV_W, r.height / PV_H)) }
+    fit()
+    const ro = new ResizeObserver(fit); ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  return (
+    <div ref={boxRef} className="flex-1 min-h-0 w-full flex justify-center items-start overflow-hidden">
+      <div style={{ width: PV_W * sc, height: PV_H * sc, flexShrink: 0 }}>
+        <div className="relative shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ width: PV_W, height: PV_H, transform: `scale(${sc})`, transformOrigin: '0 0' }}>
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ParentsEditorContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -981,7 +1006,7 @@ function ParentsEditorContent() {
                       본문
                     </button>
                   </div>
-                  <div className="w-[320px] relative shadow-2xl bg-white overflow-hidden border border-gray-200 flex-1" style={{ maxHeight: '630px' }}>
+                  <ScaledPhoneBox>
                     <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                       <ParentsPreview key={previewKey} data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} activeSection={activeSection} />
                     </div>
@@ -995,7 +1020,7 @@ function ParentsEditorContent() {
                         fontFamily={resolveKoreanFontFamily(data.fontStyle)}
                       />
                     )}
-                  </div>
+                  </ScaledPhoneBox>
                 </div>
               )
             })()}

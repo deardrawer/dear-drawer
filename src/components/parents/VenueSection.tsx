@@ -293,17 +293,15 @@ export default function VenueSection({
     >
       <p style={{ ...cCaption, ...cStagger(hasAppeared, 0) }}>오시는 길</p>
       <div style={cStagger(hasAppeared, 0.15)}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
-        <h2 style={{ ...cTitle(24, 0), flex: 1, minWidth: 0 }}>{venue.name}</h2>
-        {venue.address && (
-          <button type="button" onClick={handleAddressCopy} style={{ ...cMiniPill(addressCopied), height: 30, padding: '0 12px', fontSize: 13 }}>
-            {addressCopied ? '복사됨' : '주소 복사'}
-          </button>
-        )}
-      </div>
+      <h2 style={{ ...cTitle(24, 0), marginTop: 12 }}>{venue.name}</h2>
       <p style={{ margin: '6px 0 0', fontSize: 14.5, lineHeight: 1.6, color: C_TXT_SUB, wordBreak: 'keep-all' }}>
         {[venue.address, venue.hall].map(v => (v || '').trim()).filter(Boolean).join(' · ')}
       </p>
+      {venue.address && (
+        <button type="button" onClick={handleAddressCopy} style={{ ...cMiniPill(addressCopied), height: 30, padding: '0 12px', fontSize: 13, marginTop: 12 }}>
+          {addressCopied ? '복사됨' : '주소 복사'}
+        </button>
+      )}
       </div>
 
       {/* 지도 */}

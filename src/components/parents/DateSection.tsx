@@ -61,7 +61,6 @@ export default function DateSection({
     : ''
   const timeKorean = timeText ? `${DAY_NAMES[date.getDay()]} ${timeText}` : DAY_NAMES[date.getDay()]
   const venueText = [venueName, venueHall].map(v => (v || '').trim()).filter(Boolean).join(' ')
-  const subLine = venueText ? `${timeKorean} · ${venueText}` : timeKorean
 
   const firstDayOfMonth = new Date(year, month - 1, 1).getDay()
   const daysInMonth = new Date(year, month, 0).getDate()
@@ -94,7 +93,10 @@ export default function DateSection({
           <div style={{ fontFamily: C_SERIF, fontSize: 46, lineHeight: 1.1, marginTop: 14, color: C_TXT }}>
             {MONTHS_EN[month - 1]} {day}, {year}
           </div>
-          <p style={{ fontSize: 15, color: C_TXT_BODY, margin: '10px 0 0', wordBreak: 'keep-all' }}>{subLine}</p>
+          <p style={{ fontSize: 15, lineHeight: 1.6, color: C_TXT_BODY, margin: '10px 0 0', wordBreak: 'keep-all' }}>
+            {timeKorean}
+            {venueText && <span style={{ display: 'block' }}>{venueText}</span>}
+          </p>
         </div>
       </div>
 

@@ -2752,6 +2752,9 @@ function PhoneEditorContent() {
             {Array.from({ length: pageCount }, (_, i) => decoPill(pageCount > 1 ? `홈 ${i + 1}` : '홈 화면', screen === 'home' && curPage === i, () => goScreen('home', i)))}
             {isAppScr && decoPill(SCREENS.find(x => x.id === screen)?.label || '', true, () => {})}
             {screen === 'home' && decoPill('+ 위젯', sheet?.kind === 'add' || !!draft, () => { clearTap(); setSelectedId(null); setDraft(null); setSheet({ kind: 'add' }) }, true)}
+            {/* 홈 화면 장 더하기 · 마지막 빈 장 지우기 (PC 의 '화면' 줄과 같음) */}
+            {pageCount < HOME_PAGES_MAX && decoPill('+ 화면', false, () => { closeSheet(); setPhone({ homePages: pageCount + 1 }); goScreen('home', pageCount); flash(`홈 ${pageCount + 1} 화면을 더했어요`) }, true)}
+            {screen === 'home' && pageCount > 1 && curPage === pageCount - 1 && decoPill('화면 삭제', false, () => { if (pageWs.length) { flash('위젯을 먼저 빼 주세요'); return } setPhone({ homePages: pageCount - 1 }); goScreen('home', pageCount - 2) })}
           </div>
           <div className="flex items-center gap-1.5 overflow-x-auto text-[12px]" style={{ scrollbarWidth: 'none' }}>
             <select aria-label="화면 고르기" className="shrink-0 h-7 pl-2.5 pr-1 rounded-full border bg-white font-medium" style={{ borderColor: 'var(--ed-border)', color: 'var(--ed-text)' }}

@@ -112,7 +112,6 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
       {/* 마음 전하실 곳 (계좌) */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">마음 전하실 곳</h3>
-        <p className="text-sm text-gray-500">토글을 켠 계좌만 청첩장 &quot;마음 전하실 곳&quot;에 표시됩니다.</p>
 
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">안내 문구 (선택)</Label>
@@ -123,7 +122,6 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
             placeholder={'참석이 어려우신 분들을 위해\n마음 전하실 곳을 안내드립니다.'}
             className="text-sm resize-none"
           />
-          <p className="text-[10px] text-gray-400 leading-tight">비워두면 기본 문구가 표시됩니다. 줄바꿈 가능.</p>
         </div>
 
         <div className="space-y-3 p-4 rounded-lg border" style={{ backgroundColor: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
@@ -144,7 +142,6 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
       {/* 결혼식 안내 (Information) */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">결혼식 안내</h3>
-        <p className="text-sm text-gray-500">예정된 안내는 토글로 켜서 사용하고, 필요하면 항목을 추가하세요.</p>
 
         <ClassicGuideEditor
           sectionEnabled={data.content.classicGuideEnabled ?? false}
@@ -158,7 +155,6 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <div>
             <p className="text-sm font-medium text-gray-700">안내 섹션 배경 (선택)</p>
-            <p className="text-[10px] text-gray-400 leading-tight">결혼식 안내 섹션 전체 배경 사진 + 오버레이</p>
           </div>
           <ClassicPhotoField
             value={data.content.classicInfoSectionBg}
@@ -182,7 +178,6 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
             <ColorField label="이미지 배경 텍스트" value={data.content.classicInfoImgTextColor || '#FFFFFF'} onChange={(hex) => updateNestedData('content.classicInfoImgTextColor', hex)} />
             <div className="flex flex-col">
               <span className="text-sm text-gray-700">이미지 배경 텍스트</span>
-              <span className="text-[10px] text-gray-400 leading-tight">배경 사진 위 제목 글자색</span>
             </div>
           </div>
         </div>
@@ -191,7 +186,6 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
       {/* RSVP */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">참석 여부 (RSVP)</h3>
-        <p className="text-sm text-gray-500">참석 여부 버튼을 누르면 상세 입력 폼이 열립니다. 받을 항목을 선택하세요.</p>
 
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <div className="space-y-1.5">
@@ -301,7 +295,6 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
       {/* 섹션 순서 (가장 마지막) */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">섹션 순서</h3>
-        <p className="text-sm text-gray-500">청첩장에 표시되는 순서입니다. 위·아래 화살표로 순서를 바꾸세요.</p>
         <div className="space-y-2">
           {sectionOrder.map((key, i) => (
             <div

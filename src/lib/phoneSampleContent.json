@@ -1,0 +1,542 @@
+{
+ "groom": {
+  "name": "한지훈",
+  "phone": "010-1234-5678",
+  "accounts": [
+   {
+    "relation": "신랑",
+    "bank": "국민은행",
+    "number": "123-456-789012",
+    "holder": "한지훈"
+   },
+   {
+    "relation": "아버지",
+    "bank": "우리은행",
+    "number": "1002-345-678901",
+    "holder": "한영수"
+   }
+  ],
+  "lastName": "한",
+  "firstName": "지훈",
+  "nameEn": "Jihoon",
+  "avatarKind": "photo",
+  "family": [
+   {
+    "relation": "아버지",
+    "name": "한영수",
+    "phone": "010-2222-3333",
+    "avatarKind": "emoji",
+    "avatarEmoji": "👨"
+   },
+   {
+    "relation": "어머니",
+    "name": "김미경",
+    "phone": "010-4444-5555",
+    "avatarKind": "emoji",
+    "avatarEmoji": "👩"
+   }
+  ],
+  "avatarPhoto": "/samples/phone/2b34552d-bbf4-453b-bfd9-ebfbc072e655_web.webp",
+  "avatarCrop": {
+   "cropX": 0.020000000000000018,
+   "cropY": 0.15749394961993385,
+   "cropWidth": 0.98,
+   "cropHeight": 0.5612025769506085
+  }
+ },
+ "bride": {
+  "name": "윤서연",
+  "phone": "010-9876-5432",
+  "accounts": [
+   {
+    "relation": "신부",
+    "bank": "신한은행",
+    "number": "110-123-456789",
+    "holder": "윤서연"
+   },
+   {
+    "relation": "어머니",
+    "bank": "하나은행",
+    "number": "620-123456-789",
+    "holder": "이선영"
+   }
+  ],
+  "lastName": "윤",
+  "firstName": "서연",
+  "nameEn": "Seoyeon",
+  "avatarKind": "photo",
+  "family": [
+   {
+    "relation": "아버지",
+    "name": "윤정호",
+    "phone": "010-6666-7777",
+    "avatarKind": "emoji",
+    "avatarEmoji": "🧑"
+   },
+   {
+    "relation": "어머니",
+    "name": "이선영",
+    "phone": "010-8888-9999",
+    "avatarKind": "emoji",
+    "avatarEmoji": "👩‍🦳"
+   }
+  ],
+  "avatarPhoto": "/samples/phone/0924377b-ae7a-4d40-bcd7-49790462400d_web.webp",
+  "avatarCrop": {
+   "cropX": 0.020000000000000018,
+   "cropY": 0.13866071428571428,
+   "cropWidth": 0.98,
+   "cropHeight": 0.55125
+  }
+ },
+ "wedding": {
+  "date": "2027-05-22",
+  "time": "14:00",
+  "timeDisplay": "오후 2시",
+  "venue": {
+   "name": "더채플앳청담",
+   "hall": "그랜드볼룸 5층",
+   "address": "서울 강남구 선릉로 757"
+  },
+  "showDate": true,
+  "showVenue": true
+ },
+ "phone": {
+  "theme": "white",
+  "accent": "#3E4A3D",
+  "wallpaper": "/samples/phone/54cfa24e-6bb0-4aab-9aba-344dfe857cac_web.webp",
+  "lockNotice": "저희 두 사람, 5월의 어느 토요일에 결혼합니다.",
+  "usePasscode": true,
+  "widgets": [
+   {
+    "id": "h-cover",
+    "type": "photo",
+    "col": 0,
+    "row": 0,
+    "size": "L",
+    "variant": 0,
+    "props": {
+     "src": "/sample/movie/447e4f00-faeb-4228-96dd-faef58c8718f_web.webp",
+     "crop": {
+      "cropX": 0.020000000000000018,
+      "cropY": 0.13906154274575327,
+      "cropWidth": 0.98,
+      "cropHeight": 0.3171150097465887
+     }
+    }
+   },
+   {
+    "id": "h-names",
+    "type": "quote",
+    "col": 0,
+    "row": 2,
+    "size": "W",
+    "variant": 2,
+    "props": {
+     "text": "All our days led us here.\n\n함께한 모든 날이\n우리를 여기까지 데려왔습니다.",
+     "clear": true,
+     "align": "center",
+     "valign": "middle",
+     "textScale": 1.05,
+     "latinScale": 1.1
+    }
+   },
+   {
+    "id": "h-dday",
+    "type": "dday",
+    "col": 0,
+    "row": 3,
+    "size": "M",
+    "variant": 4,
+    "props": {
+     "label": "우리 결혼식까지",
+     "clear": true
+    }
+   },
+   {
+    "id": "h-cal",
+    "type": "calendar",
+    "col": 2,
+    "row": 3,
+    "size": "M",
+    "variant": 0,
+    "props": {
+     "clear": true
+    }
+   },
+   {
+    "id": "h-intro",
+    "type": "intro",
+    "col": 0,
+    "row": 5,
+    "size": "H",
+    "variant": 3,
+    "props": {}
+   },
+   {
+    "id": "h-gb",
+    "type": "guestbook",
+    "col": 0,
+    "row": 6,
+    "size": "W",
+    "variant": 0,
+    "props": {}
+   },
+   {
+    "id": "w-mwm5esy7-zvhn",
+    "type": "folder",
+    "col": 2,
+    "row": 5,
+    "size": "S",
+    "variant": 0,
+    "props": {
+     "apps": [
+      "story",
+      "album",
+      "intro",
+      "video"
+     ],
+     "label": "지훈🖤서연",
+     "clear": false
+    }
+   },
+   {
+    "id": "w-mwm817oa-9gyx",
+    "type": "app",
+    "col": 3,
+    "row": 5,
+    "size": "S",
+    "variant": 0,
+    "props": {
+     "app": "camera"
+    }
+   }
+  ],
+  "story": [
+   {
+    "side": "date",
+    "text": "처음 만난 날",
+    "date": "2021-04-10",
+    "src": "/sample/movie/6801de6c-33fe-4dca-b6c5-84b0caa9ea3c_web.webp"
+   },
+   {
+    "side": "p",
+    "text": "비가 막 그친 오후, 같은 버스를 기다리다 처음 인사를 나눴어요."
+   },
+   {
+    "side": "a",
+    "text": "혹시 이 버스 성수동 가나요?"
+   },
+   {
+    "side": "b",
+    "text": "저도 거기 가요. 같이 타요."
+   },
+   {
+    "side": "date",
+    "text": "여름, 첫 여행",
+    "date": "2022-08-14",
+    "src": "/sample/movie/deeaeb10-1c7b-430b-b442-32f15db58057_web.webp"
+   },
+   {
+    "side": "p",
+    "text": "갑자기 쏟아진 소나기에 우산 하나를 나눠 쓰고 한참을 웃었어요."
+   },
+   {
+    "side": "b",
+    "text": "비 오는 날이 이렇게 좋을 줄 몰랐어."
+   },
+   {
+    "side": "date",
+    "text": "프러포즈",
+    "date": "2026-03-01",
+    "src": "/sample/movie/b21858b0-4bfd-412f-9f47-7e7c8eb49214_web.webp"
+   },
+   {
+    "side": "a",
+    "text": "앞으로의 모든 봄을 너랑 보내고 싶어."
+   },
+   {
+    "side": "b",
+    "text": "좋아. 우리 평생 같이 가자."
+   },
+   {
+    "side": "date",
+    "text": "그리고 오늘",
+    "date": "2027-05-22",
+    "src": "/sample/movie/0aba4872-30f3-4c1b-a848-06d7504413d0_web.webp"
+   },
+   {
+    "side": "p",
+    "text": "같은 방향으로 걸어온 두 사람이 이제 한 길을 걸으려 합니다. 그 첫걸음을 함께 축하해 주세요."
+   }
+  ],
+  "memo": [
+   "예식 후 같은 층 연회장에서 식사가 준비되어 있어요.",
+   "화환은 정중히 사양합니다."
+  ],
+  "appStyle": "invite",
+  "greeting": "서로의 계절이 되어 준 두 사람이\n이제 같은 계절을 함께 걸으려 합니다.\n오셔서 축하해 주세요.",
+  "lockStyle": "poster",
+  "fonts": {
+   "title": "instrument",
+   "number": "serif",
+   "lockNumber": "instrument",
+   "body": "gulim"
+  },
+  "accentText": "#6B7B68",
+  "homeBgColor": "#FFFFFF",
+  "cardColor": "#F4F4F5",
+  "barColor": "#F4F4F5",
+  "iconStyle": "accent",
+  "lockBg": "#FFFFFF",
+  "lockCaption": "our wedding day",
+  "lockClockColor": "#3E4A3D",
+  "lockTextColor": "#3E4A3D",
+  "lockNoticeShow": true,
+  "lockNoticeStyle": "message",
+  "lockVenue": false,
+  "dock": [
+   "memo",
+   "rsvp",
+   "gift",
+   "call"
+  ],
+  "storyTitle": "Our Story",
+  "storyStyle": "journal",
+  "memoStyle": "mappass",
+  "mapProvider": "kakao",
+  "directions": [
+   {
+    "kind": "subway",
+    "text": "2호선 선릉역 1번 출구에서 도보 5분"
+   },
+   {
+    "kind": "bus",
+    "text": "선릉역 정류장 하차 (간선 146 · 341 · 360)"
+   },
+   {
+    "kind": "parking",
+    "text": "건물 지하 B2~B4 주차장 · 2시간 무료"
+   }
+  ],
+  "giftStyle": "mail",
+  "callStyle": "invite",
+  "albumStyle": "photos",
+  "albumFolders": [
+   {
+    "name": "웨딩 촬영",
+    "images": [
+     "/sample/movie/447e4f00-faeb-4228-96dd-faef58c8718f_web.webp",
+     "/sample/movie/c3ba2f27-653f-42fd-bd38-8d2412e7ee83_web.webp",
+     "/sample/movie/3b4ca0a9-84bd-408d-ac46-079d81992729_web.webp",
+     "/sample/movie/34ef83d3-c823-494d-bafb-2fa1ac2e3a67_web.webp",
+     "/sample/movie/0aba4872-30f3-4c1b-a848-06d7504413d0_web.webp"
+    ]
+   },
+   {
+    "name": "우리의 날들",
+    "images": [
+     "/sample/movie/6801de6c-33fe-4dca-b6c5-84b0caa9ea3c_web.webp",
+     "/sample/movie/4a2d77dc-fb38-46e5-be37-1d5c2a5a6288_web.webp",
+     "/sample/movie/7920881d-7c92-4ecb-9590-6990a608e9ae_web.webp",
+     "/sample/movie/deeaeb10-1c7b-430b-b442-32f15db58057_web.webp",
+     "/sample/movie/b21858b0-4bfd-412f-9f47-7e7c8eb49214_web.webp"
+    ]
+   }
+  ],
+  "rsvpStyle": "invite",
+  "schedule": [
+   {
+    "time": "14:00",
+    "end": "14:40",
+    "title": "예식"
+   },
+   {
+    "time": "14:40",
+    "end": "15:00",
+    "title": "사진 촬영"
+   },
+   {
+    "time": "15:00",
+    "end": "16:30",
+    "title": "식사"
+   }
+  ],
+  "guestbookStyle": "post",
+  "glassTone": "dark",
+  "homePattern": false,
+  "statusBar": true,
+  "photoMono": true,
+  "introStyle": "portrait",
+  "hiddenApps": [],
+  "intro": {
+   "metDate": "2021-04-10",
+   "groom": {
+    "photo": "/samples/phone/a8a5cf76-5cfa-44ec-93a4-d427b52aad6e_web.webp",
+    "bio": "웃음이 많은 사람, 커피는 늘 아메리카노",
+    "items": [
+     {
+      "q": "MBTI",
+      "a": "ENFP"
+     },
+     {
+      "q": "생일",
+      "a": "3월 14일"
+     },
+     {
+      "q": "좋아하는 것",
+      "a": "캠핑 · 사진 찍기"
+     },
+     {
+      "q": "서연의 첫인상",
+      "a": "눈이 반짝이던 사람"
+     }
+    ],
+    "photoCrop": {
+     "cropX": 0,
+     "cropY": 0.10131725417439705,
+     "cropWidth": 0.98,
+     "cropHeight": 0.7381818181818182
+    },
+    "bg": "/samples/phone/59dc9f2e-8ce1-42d0-a977-073517e64e88_web.webp"
+   },
+   "bride": {
+    "photo": "/samples/phone/335e6dfb-43e3-4b2e-9bf5-dabbeb0861e3_web.webp",
+    "bio": "비 오는 날을 좋아하는 차분한 사람",
+    "items": [
+     {
+      "q": "MBTI",
+      "a": "ISFJ"
+     },
+     {
+      "q": "생일",
+      "a": "9월 2일"
+     },
+     {
+      "q": "좋아하는 것",
+      "a": "빵 굽기 · 산책"
+     },
+     {
+      "q": "지훈의 첫인상",
+      "a": "말을 걸어 준 다정한 사람"
+     }
+    ],
+    "photoCrop": {
+     "cropX": 0.01714285714285715,
+     "cropY": 0.10938775510204082,
+     "cropWidth": 0.98,
+     "cropHeight": 0.7381818181818182
+    },
+    "bg": "/samples/phone/fc2b5783-898f-421a-a52b-327a4a319c71_web.webp"
+   }
+  },
+  "wallpaperCrop": {
+   "cropX": 0.020000000000000018,
+   "cropY": 0.07792429792429789,
+   "cropWidth": 0.98,
+   "cropHeight": 0.7203418803418804
+  },
+  "lockClock": {
+   "size": 1,
+   "y": -44
+  },
+  "posterH": 550,
+  "posterFade": 20,
+  "screenPhotos": {
+   "gift": {
+    "src": "/sample/movie/c3ba2f27-653f-42fd-bd38-8d2412e7ee83_web.webp",
+    "crop": {
+     "cropX": 0.020000000000000018,
+     "cropY": 0.07252747252747252,
+     "cropWidth": 0.98,
+     "cropHeight": 0.5025641025641026
+    }
+   },
+   "guestbook": {
+    "src": "/samples/phone/6f0da473-0f97-4a47-bc5d-ea9bbe38f0d1_web.webp",
+    "crop": {
+     "cropX": 0.020000000000000018,
+     "cropY": 0.049523809523809526,
+     "cropWidth": 0.98,
+     "cropHeight": 0.6533333333333333
+    }
+   },
+   "rsvp": {
+    "src": "/samples/phone/54cfa24e-6bb0-4aab-9aba-344dfe857cac_web.webp",
+    "crop": {
+     "cropX": 0.020000000000000018,
+     "cropY": 0.0032234432234432286,
+     "cropWidth": 0.98,
+     "cropHeight": 0.6030769230769231
+    }
+   }
+  },
+  "guestbookTitle": "축하해주셔서 감사합니다",
+  "videos": [
+   {
+    "url": "https://youtu.be/iK1eXqrFZ6s",
+    "title": "행복하게 살겠습니다."
+   }
+  ],
+  "screenText": {
+   "video": {
+    "title": "MOVIE"
+   }
+  },
+  "lockSearch": true,
+  "lockSearchY": 24,
+  "lockSearchStyle": 0,
+  "lockNoticeY": -72,
+  "lockSearches": [
+   {
+    "label": "더채플앳청담",
+    "app": "memo",
+    "pin": true
+   },
+   {
+    "label": "지훈 서연",
+    "app": "intro"
+   },
+   {
+    "label": "참석 회신",
+    "app": "rsvp",
+    "pin": true
+   },
+   {
+    "label": "축의금 계좌",
+    "app": "gift"
+   },
+   {
+    "label": "웨딩 사진",
+    "app": "album"
+   }
+  ]
+ },
+ "gallery": {
+  "images": [
+   "/sample/movie/447e4f00-faeb-4228-96dd-faef58c8718f_web.webp",
+   "/sample/movie/c3ba2f27-653f-42fd-bd38-8d2412e7ee83_web.webp",
+   "/sample/movie/3b4ca0a9-84bd-408d-ac46-079d81992729_web.webp",
+   "/sample/movie/34ef83d3-c823-494d-bafb-2fa1ac2e3a67_web.webp",
+   "/sample/movie/0aba4872-30f3-4c1b-a848-06d7504413d0_web.webp",
+   "/sample/movie/6801de6c-33fe-4dca-b6c5-84b0caa9ea3c_web.webp",
+   "/sample/movie/4a2d77dc-fb38-46e5-be37-1d5c2a5a6288_web.webp",
+   "/sample/movie/7920881d-7c92-4ecb-9590-6990a608e9ae_web.webp",
+   "/sample/movie/deeaeb10-1c7b-430b-b442-32f15db58057_web.webp",
+   "/sample/movie/b21858b0-4bfd-412f-9f47-7e7c8eb49214_web.webp"
+  ]
+ },
+ "rsvpEnabled": true,
+ "rsvpAllowGuestCount": true,
+ "meta": {
+  "title": "한지훈 ♥ 윤서연 결혼합니다",
+  "description": "2027년 5월 22일 토요일 오후 2시 · 더채플앳청담",
+  "ogImage": "/sample/movie/447e4f00-faeb-4228-96dd-faef58c8718f_web.webp"
+ },
+ "rsvpMealOption": true,
+ "bgm": {
+  "enabled": true,
+  "url": "/api/r2/audio/wedding-bgm.mp3",
+  "autoplay": true
+ }
+}

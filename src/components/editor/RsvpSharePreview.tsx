@@ -22,7 +22,7 @@ export default function RsvpSharePreview({
           <img src={image} alt="" className="w-full object-cover" style={{ aspectRatio: '1.91 / 1' }} />
         ) : (
           <div className="flex w-full items-center justify-center bg-gray-50 text-[10px] text-gray-400" style={{ aspectRatio: '1.91 / 1' }}>
-            썸네일 없음 (올리면 이미지 카드로 공유)
+            썸네일 없음
           </div>
         )}
         <div className="px-2.5 py-2">

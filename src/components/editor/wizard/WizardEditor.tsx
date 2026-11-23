@@ -113,7 +113,7 @@ export default function WizardEditor({
           <div className="md:hidden mx-4 mt-3 mb-1 px-4 py-3 bg-amber-50/80 border border-amber-200/60 rounded-xl flex items-start gap-3">
             <Monitor className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <p className="text-[12px] leading-relaxed text-amber-800 flex-1">
-              PC에서 작성하시면 미리보기를 함께 보며 더 편리하게 편집할 수 있어요.
+              PC에서는 미리보기를 함께 보며 편집할 수 있습니다.
             </p>
             <button
               onClick={() => setShowDesktopBanner(false)}

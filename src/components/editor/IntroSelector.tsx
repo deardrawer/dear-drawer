@@ -212,9 +212,9 @@ function StyleOptionsForm({ styleId, gallery }: { styleId: IntroStyleId; gallery
     return (
       <div className="flex items-start justify-between gap-2 mt-1">
         <p className="text-[11px] text-gray-400">
-          {custom ? '직접 쓴 문구가 쓰이고 있어요'
-            : data.noWedding ? '노웨딩이라 소식을 전하는 문구로 자동으로 바뀌었어요'
-            : '날짜·장소를 모두 끄면 노웨딩 문구로 자동으로 바뀌어요'}
+          {custom ? '직접 쓴 문구가 적용되어 있습니다'
+            : data.noWedding ? '노웨딩이라 소식을 전하는 문구로 자동으로 바뀌었습니다'
+            : '날짜·장소를 모두 끄면 노웨딩 문구로 자동으로 바뀝니다'}
         </p>
         {custom && (
           <button type="button" onClick={() => set(key, undefined)} className="shrink-0 inline-flex items-center gap-1 text-[11px] text-gray-500 hover:text-gray-700">
@@ -262,7 +262,7 @@ function StyleOptionsForm({ styleId, gallery }: { styleId: IntroStyleId; gallery
 
   return (
     <div className="space-y-7">
-      <Section title="이름" hint="이 인트로에만 쓰는 이름이에요 · 성을 넣을지, 한글·영문 중 무엇으로 쓸지 적은 그대로 나와요 · 비워두면 청첩장 정보의 이름">
+      <Section title="이름" hint="이 인트로에만 적용되며, 입력한 그대로 표시됩니다">
         <div className="grid grid-cols-2 gap-2">
           {([['groomName', '신랑', data.groomEn || data.groomName], ['brideName', '신부', data.brideEn || data.brideName]] as const).map(([key, label, ph]) => (
             <div key={key}>
@@ -273,7 +273,7 @@ function StyleOptionsForm({ styleId, gallery }: { styleId: IntroStyleId; gallery
         </div>
       </Section>
       {photos.map((f) => (
-        <Section key={f.key} title={f.label} hint={f.help || '사진을 끌어 위치를, 모서리를 끌어 크기를 정해요'}>
+        <Section key={f.key} title={f.label} hint={f.help}>
           <PhotoField
             value={typeof opts[f.key] === 'string' ? (opts[f.key] as string) : ''}
             fallbackSrc={f.defaultSrc || photoOf({}, f.key, data, f.fallback)}
@@ -334,12 +334,12 @@ function StyleOptionsForm({ styleId, gallery }: { styleId: IntroStyleId; gallery
             <ChoiceInput field={f} value={opts[f.key]} onChange={(v) => set(f.key, v)} hideLabel />
             {storyNeedEn && (
               <p className="rounded-lg bg-gray-50 px-3 py-2 text-[11px] leading-relaxed text-gray-500">
-                <span className="text-gray-700">스토리형은 영문 이름으로 써져요. 지금은 &lsquo;Groom &amp; Bride&rsquo;로 보여요.</span> 위 &lsquo;이름&rsquo;에 신랑·신부를 <b>둘 다</b> 영문으로 적어주세요.
+                <span className="text-gray-700">스토리형은 영문 이름으로 표시됩니다. 지금은 &lsquo;Groom &amp; Bride&rsquo;로 보입니다.</span> 위 &lsquo;이름&rsquo;에 신랑·신부를 <b>둘 다</b> 영문으로 입력해야 합니다.
               </p>
             )}
             {needEn && (
               <p className="rounded-lg bg-gray-50 px-3 py-2 text-[11px] leading-relaxed text-gray-500">
-                <span className="text-gray-700">영문 이름이 없어 &lsquo;Save the date&rsquo;로 보여요.</span> 이름을 서명체로 쓰려면 위 &lsquo;이름&rsquo;에 신랑·신부를 <b>둘 다</b> 영문으로 적어주세요. 다른 문구는 &lsquo;서명체 문구&rsquo;에 적으면 돼요.
+                <span className="text-gray-700">영문 이름이 없어 &lsquo;Save the date&rsquo;로 보입니다.</span> 이름을 서명체로 쓰려면 위 &lsquo;이름&rsquo;에 신랑·신부를 <b>둘 다</b> 영문으로 입력해야 합니다. 다른 문구는 &lsquo;서명체 문구&rsquo;에 입력합니다.
               </p>
             )}
           </Section>
@@ -379,7 +379,7 @@ function CinematicSettings({ gallery }: { gallery: string[] }) {
 
   return (
     <div className="space-y-7">
-      <Section title="인트로 사진" hint="비워두면 커버 사진이 쓰여요">
+      <Section title="인트로 사진">
         <PhotoField value={intro.introImage || ''} crop={intro.introImageSettings as Crop | undefined} aspect={9 / 16} gallery={gallery}
           onPhoto={(url) => { set('introImage', url); set('introImageSettings', undefined) }}
           onCrop={(c) => set('introImageSettings', c as unknown as IntroSettings['introImageSettings'])} />
@@ -449,7 +449,7 @@ function CinematicSettings({ gallery }: { gallery: string[] }) {
         </div>
       </Section>
 
-      <Section title="커버 제목" hint={`인트로가 끝난 뒤 커버 화면 가운데 크게 보이는 문구예요 (기본 ‘${coverDefault}’ · Enter로 줄바꿈)`}>
+      <Section title="커버 제목" hint="Enter로 줄바꿈">
         <textarea value={invitation.wedding?.title ?? ''} rows={2} placeholder={coverDefault}
           onChange={(e) => {
             updateNestedField('wedding.title', e.target.value)
@@ -458,7 +458,7 @@ function CinematicSettings({ gallery }: { gallery: string[] }) {
           className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm leading-relaxed resize-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
       </Section>
 
-      <Section title="커버 사진" hint="인트로 다음에 나오는 첫 화면 사진이에요">
+      <Section title="커버 사진">
         <PhotoField value={invitation.media?.coverImage || ''} crop={invitation.media?.coverImageSettings as Crop | undefined} aspect={9 / 16} gallery={gallery}
           onPhoto={(url) => updateNestedField('media.coverImage', url)}
           onCrop={(c) => updateNestedField('media.coverImageSettings', c)} />
@@ -494,7 +494,6 @@ export default function IntroSelector({ onBack, preview }: IntroSelectorProps) {
         )}
         <div className="flex-1">
           <h2 className="font-semibold text-gray-900">인트로</h2>
-          <p className="text-xs text-gray-500">하객이 청첩장을 열면 가장 먼저 보는 화면이에요</p>
         </div>
       </div>
 
@@ -505,7 +504,7 @@ export default function IntroSelector({ onBack, preview }: IntroSelectorProps) {
           <section className="space-y-2.5">
             <div>
               <h3 className="text-sm font-semibold text-gray-900">결혼식 정보 표시</h3>
-              <p className="text-[11px] text-gray-400 mt-0.5">청첩장 전체에 함께 적용돼요 · 노웨딩이면 둘 다 꺼주세요</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">청첩장 전체에 적용됩니다 · 노웨딩이면 둘 다 끄면 됩니다</p>
             </div>
             <div className="rounded-xl border divide-y">
               <label className="flex items-center justify-between px-3 py-2.5 cursor-pointer">
@@ -519,7 +518,7 @@ export default function IntroSelector({ onBack, preview }: IntroSelectorProps) {
             </div>
             {!showDate && !showVenue && (
               <p className="rounded-lg bg-gray-50 px-3 py-2 text-[11px] leading-relaxed text-gray-500">
-                <span className="text-gray-700">노웨딩</span> · &lsquo;초대합니다&rsquo; 같은 기본 문구는 소식을 전하는 문구로 자동으로 바뀌고, 직접 고친 문구는 그대로 쓰여요.
+                <span className="text-gray-700">노웨딩</span> · &lsquo;초대합니다&rsquo; 같은 기본 문구는 소식을 전하는 문구로 자동으로 바뀌고, 직접 고친 문구는 그대로 유지됩니다.
               </p>
             )}
           </section>
@@ -528,7 +527,6 @@ export default function IntroSelector({ onBack, preview }: IntroSelectorProps) {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">넘김 안내 문구</h3>
-                <p className="text-[11px] text-gray-400 mt-0.5">인트로가 끝나면 하단에 스크롤·터치로 넘기는 방법을 안내해요</p>
               </div>
               <Switch checked={invitation.intro?.guideEnabled ?? false} onCheckedChange={(c) => updateNestedField('intro.guideEnabled', c)} />
             </div>
@@ -540,7 +538,7 @@ export default function IntroSelector({ onBack, preview }: IntroSelectorProps) {
                 </div>
                 <Input value={invitation.intro?.guideText ?? ''} placeholder="터치하거나 아래로 넘겨주세요"
                   onChange={(e) => updateNestedField('intro.guideText', Array.from(e.target.value).slice(0, 30).join(''))} />
-                <p className="text-[11px] text-gray-400 mt-1">비워두면 기본 문구가 보여요 · 모든 인트로 스타일에 적용돼요</p>
+                <p className="text-[11px] text-gray-400 mt-1">모든 인트로 스타일에 적용됩니다</p>
               </div>
             )}
           </section>

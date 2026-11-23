@@ -294,13 +294,6 @@ export default function MetaEditor({
         )}
       </div>
 
-      {/* OG 이미지 미설정 시 안내 */}
-      {!ogUrl && kakaoUrl && (
-        <p className="text-[10px] text-stone-500 -mt-2">
-          OG 이미지를 설정하지 않으면 카카오 썸네일이 기본으로 사용됩니다.
-        </p>
-      )}
-
       {/* ═══ 카카오톡 공유 썸네일 ═══ */}
       <div>
         <label className="block text-[11px] font-medium text-stone-600 mb-1.5">
@@ -344,10 +337,6 @@ export default function MetaEditor({
             <span className="text-[9px] text-stone-300">&gt;</span>
           </div>
         </div>
-
-        <p className="text-[10px] text-stone-400 mb-2">
-          기기나 앱 버전에 따라 모양이 다를 수 있습니다.
-        </p>
 
         {/* 썸네일 이미지 사이즈 안내 */}
         <div className="bg-stone-50 rounded-lg px-3 py-2 mb-2">
@@ -435,9 +424,6 @@ export default function MetaEditor({
             placeholder={autoTitle}
             className="w-full text-[13px] border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:border-stone-400"
           />
-          <p className="text-[10px] text-stone-400 mt-1">
-            링크 공유 시 표시되는 제목입니다. 비워두면 &ldquo;{autoTitle}&rdquo;로 표시됩니다.
-          </p>
         </div>
         <div>
           <label className="block text-[11px] font-medium text-stone-600 mb-1">공유 설명</label>
@@ -448,11 +434,6 @@ export default function MetaEditor({
             rows={2}
             className="w-full text-[13px] border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:border-stone-400 resize-none"
           />
-          <p className="text-[10px] text-stone-400 mt-1">
-            {autoDescription
-              ? '비워두면 날짜, 시간, 장소가 자동으로 표시됩니다.'
-              : '기본 정보에서 날짜와 장소를 입력하면 자동으로 채워집니다.'}
-          </p>
         </div>
       </div>
 

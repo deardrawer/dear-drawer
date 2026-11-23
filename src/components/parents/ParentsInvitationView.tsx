@@ -15,8 +15,10 @@ import WeddingInfoSection from './WeddingInfoSection'
 import AccountSection from './AccountSection'
 import ShareSection from './ShareSection'
 import RsvpModal from './RsvpModal'
-import { COLOR_THEMES, FONT_STYLES, type ParentsInvitationContent, type GuestInfo } from './types'
+import { COLOR_THEMES, FONT_STYLES, resolveHeadingFont, type ParentsInvitationContent, type GuestInfo } from './types'
 import { ThemeProvider, SectionTint } from './ThemeContext'
+import { C_BG, C_INK, C_SANS, C_SUB, cCaption, cTitle, isDarkColor, onPointColor, sectionTone } from './cStyle'
+import { buildParentsCover } from './coverInfo'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
@@ -193,10 +195,17 @@ export default function ParentsInvitationView({
     cardTextLight: data.cardTextColor || baseTheme.textLight,
   }
 
-  // 섹션별 틴트 on/off — 전역 틴트 켜짐 + 해당 섹션이 제외목록에 없으면 틴트
-  const baseBg = data.customBackgroundColor || baseTheme.background
-  const tintOff = data.tintOffSections || []
-  const secTinted = (k: string) => !!data.tintedBg && !tintOff.includes(k)
+  // C안: 배경은 항상 흰색, 포인트는 고객이 메인 컬러를 직접 고른 경우에만
+  const point = data.customPrimaryColor || C_INK  // 고객이 고른 색 그대로
+  const pointOnDark = data.customPrimaryColor && !isDarkColor(data.customPrimaryColor) ? data.customPrimaryColor : '#FFFFFF'
+
+
+  // 섹션 배경 (C안): 기본 배경 + 틴티드 배경, 고객이 고른 섹션만 틴티드
+  //   예전 tintedBg / tintOffSections 값은 사용하지 않음 (기존 청첩장은 C안 흰 바탕 그대로)
+  const baseBg = data.sectionBaseColor || C_BG
+  const tintBg = data.sectionTintColor || (data.customPrimaryColor ? `color-mix(in srgb, ${point} 7%, #FFFFFF)` : '#F4F4F5')
+  const tintedSections = data.tintedSections || []
+  const secTinted = (k: string) => tintedSections.includes(k)
 
   // 폰트 스타일
   const fontStyle = FONT_STYLES[data.fontStyle || 'elegant']
@@ -212,6 +221,9 @@ export default function ParentsInvitationView({
 
   // 자녀 이름 (sender side에 따라) - 인사말에는 이름만 사용
   const childFirstName = data.sender.side === 'groom' ? data.groom.firstName : data.bride.firstName
+
+  // ── C안 첫 화면용 문구 (기존 데이터로만 구성, 영문 이름은 입력값 우선) ──
+  const { coverNames, childLine, dateVenueLine, groomEn, brideEn, textDateLine, textVenueLine, fromNames } = buildParentsCover(data)
 
   // 고인 표시 스타일
   const deceasedStyle = data.deceasedDisplayStyle || 'flower'
@@ -307,11 +319,25 @@ export default function ParentsInvitationView({
       <style dangerouslySetInnerHTML={{ __html: 'html, body { touch-action: pan-x pan-y; -webkit-touch-callout: none; }' }} />
       <PinchZoomGuard />
       {/* 전체 화면 배경색 (max-w-[390px] 바깥 영역 커버) */}
-      <div style={{ backgroundColor: theme.background, minHeight: '100vh' }}>
+      <div style={{ backgroundColor: baseBg, minHeight: '100vh' }}>
       <div
-        className={`relative max-w-[390px] mx-auto min-h-screen overflow-hidden ${fontStyle.className}`}
+        className="relative max-w-[390px] mx-auto min-h-screen overflow-hidden"
         style={{
-          backgroundColor: theme.background,
+          ...sectionTone(baseBg),
+          ['--parents-title-light' as string]: data.titleColor || C_INK,
+          ['--parents-caption-light' as string]: data.captionColor || (data.customPrimaryColor ? point : C_SUB),
+          color: C_INK,
+          // C안: 화면 글씨는 Pretendard, 고객이 고른 서체는 본문 단락(--parents-body-font)에만 적용
+          fontFamily: C_SANS,
+          ['--parents-body-font' as string]: fontStyle.cssVariable,
+          ['--parents-heading-font' as string]: resolveHeadingFont(data.headingFont),
+          ['--parents-point-light' as string]: point,
+          ['--parents-on-point-light' as string]: onPointColor(point),
+          // 어두운 섹션 위: 고른 포인트가 어두우면(잘 안 보이면) 흰색으로
+          ['--parents-point-dark' as string]: pointOnDark,
+          ['--parents-on-point-dark' as string]: onPointColor(pointOnDark),
+          WebkitFontSmoothing: 'antialiased',
+          wordBreak: 'keep-all',
           // 글자 크기(zoom)는 본문에서만 적용 (봉투는 제외)
           ...(isEnvelopeOpen ? {
             zoom: currentFontConfig.zoom,
@@ -338,6 +364,15 @@ export default function ParentsInvitationView({
           backgroundImage={data.envelope.backgroundImage}
           backgroundImageSettings={data.envelope.backgroundImageSettings}
           hintTextColor={data.envelope.hintTextColor}
+          textOnly={!!data.envelope.textOnly}
+          letterBg={data.envelope.letterBg}
+          textDateLine={textDateLine}
+          textVenueLine={textVenueLine}
+          fromNames={fromNames}
+          deceasedStyle={deceasedStyle}
+          coverNames={coverNames}
+          childLine={childLine}
+          dateVenueLine={dateVenueLine}
         />
       )}
 
@@ -358,18 +393,18 @@ export default function ParentsInvitationView({
                     top: '20px',
                     left: '20px',
                     zIndex: 100,
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-                    borderRadius: '20px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+                    boxShadow: 'inset 0 0 0 1px rgba(31,29,26,0.14)',
+                    borderRadius: '999px',
                     padding: '8px 14px',
                     height: '40px',
                   }}
                   title={`글자 크기: ${currentFontConfig.label}`}
                 >
-                  <span style={{ color: theme.primary, fontSize: '16px', fontWeight: 600 }}>
+                  <span style={{ color: C_INK, fontSize: '16px', fontWeight: 600 }}>
                     가
                   </span>
-                  <span style={{ color: '#666', fontSize: '11px', fontWeight: 500 }}>
+                  <span style={{ color: C_SUB, fontSize: '12px', fontWeight: 500 }}>
                     {currentFontConfig.label}
                   </span>
                 </button>
@@ -384,13 +419,12 @@ export default function ParentsInvitationView({
                       left: '50%',
                       transform: 'translateX(-50%)',
                       zIndex: 100,
-                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                      backgroundColor: 'rgba(31, 29, 26, 0.86)',
                       color: '#fff',
                       padding: '10px 16px',
-                      borderRadius: '20px',
+                      borderRadius: '999px',
                       fontSize: '13px',
                       whiteSpace: 'nowrap',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                     }}
                   >
                     {fontSizeToastMessage}
@@ -411,17 +445,18 @@ export default function ParentsInvitationView({
                         top: '20px',
                         right: '20px',
                         zIndex: 100,
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.94)',
+                        boxShadow: 'inset 0 0 0 1px rgba(31,29,26,0.14)',
                       }}
+                      aria-label={isPlaying ? '음악 끄기' : '음악 켜기'}
                     >
                       {isPlaying ? (
-                        <svg className="w-5 h-5" fill={theme.primary} viewBox="0 0 24 24">
+                        <svg className="w-5 h-5" fill={C_INK} viewBox="0 0 24 24">
                           <rect x="6" y="4" width="4" height="16" rx="1" />
                           <rect x="14" y="4" width="4" height="16" rx="1" />
                         </svg>
                       ) : (
-                        <svg className="w-5 h-5" fill={theme.primary} viewBox="0 0 24 24">
+                        <svg className="w-5 h-5" fill={C_INK} viewBox="0 0 24 24">
                           <path d="M8 5v14l11-7z" />
                         </svg>
                       )}
@@ -431,8 +466,9 @@ export default function ParentsInvitationView({
               </>
             )}
             <div id="preview-greeting">
-              <SectionTint tinted={secTinted('greeting')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
+              <SectionTint tinted={secTinted('greeting')} tintColor={tintBg} baseBackground={baseBg} tintedText={data.tintedTextColor}>
               <GreetingSection
+                title={data.greetingTitle}
                 childName={childFirstName || '○○'}
                 greeting={data.greeting}
                 parentSignature={hasSenderDeceased ? senderSignatureNode : (senderNames.length > 0 ? `${senderNames.join(' · ')} 올림` : '')}
@@ -440,11 +476,11 @@ export default function ParentsInvitationView({
               />
               </SectionTint>
             </div>
-            {data.timelineEnabled !== false && (
+            {data.timelineEnabled !== false && (!data.timeline || data.timeline.length > 0) && (
               <div id="preview-timeline">
                 <SectionDivider />
-                <SectionTint tinted={secTinted('timeline')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
-                  <TimelineSection items={data.timeline} />
+                <SectionTint tinted={secTinted('timeline')} tintColor={tintBg} baseBackground={baseBg} tintedText={data.tintedTextColor}>
+                  <TimelineSection items={data.timeline} title={data.timelineTitle} />
                 </SectionTint>
               </div>
             )}
@@ -500,14 +536,18 @@ export default function ParentsInvitationView({
                 ) : undefined
 
                 return (
-                  <SectionTint tinted={secTinted('couple')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
+                  <SectionTint tinted={secTinted('couple')} tintColor={tintBg} baseBackground={baseBg} tintedText={data.tintedTextColor}>
                   <MainPhotoSection
                     photos={photos}
                     mainImage={data.mainImage}
                     mainImageFrame={data.mainImageFrame}
                     galleryBg={baseBg}
+                    part="couple"
+                    photoShape={data.mainPhotoShape}
                     coupleHeadline={data.coupleHeadline}
-                    groomName={data.coupleShowLastName ? `${(data.groom.lastName || '').trim()}${(data.groom.firstName || '').trim()}` || '민수' : ((data.groom.firstName || '').trim() || '민수')}
+                    groomNameEn={groomEn}
+                    brideNameEn={brideEn}
+                    groomName={data.coupleShowLastName ? `${(data.groom.lastName || '').trim()}${(data.groom.firstName || '').trim()}` || '지훈' : ((data.groom.firstName || '').trim() || '지훈')}
                     brideName={data.coupleShowLastName ? `${(data.bride.lastName || '').trim()}${(data.bride.firstName || '').trim()}` || '서연' : ((data.bride.firstName || '').trim() || '서연')}
                     coupleConnector={data.coupleConnector}
                     groomParents={groomParentsText}
@@ -530,19 +570,17 @@ export default function ParentsInvitationView({
               return (
                 <div id="preview-youtube">
                   <SectionDivider />
-                  <section className="px-8 py-16 flex flex-col items-center" style={{ backgroundColor: theme.background }}>
+                  <SectionTint tinted={secTinted('youtube')} tintColor={tintBg}>
+                  <section style={{ padding: '72px 28px 80px' }}>
+                    <p style={cCaption}>영상</p>
                     {data.youtube.title && (
-                      <h2
-                        className="font-serif text-lg font-semibold text-center mb-8 tracking-wider"
-                        style={{ color: theme.text }}
-                      >
-                        {data.youtube.title}
-                      </h2>
+                      <h2 style={cTitle(22, 12)}>{data.youtube.title}</h2>
                     )}
-                    <div className="w-full max-w-[400px] aspect-video rounded-lg overflow-hidden shadow-md">
+                    <div className="w-full aspect-video overflow-hidden" style={{ borderRadius: 4, marginTop: 24, backgroundColor: '#000' }}>
                       <YouTubeLite videoId={videoId} onPlay={handleVideoPlay} onStop={handleVideoStop} />
                     </div>
                   </section>
+                  </SectionTint>
                 </div>
               )
             })()}
@@ -550,10 +588,12 @@ export default function ParentsInvitationView({
               {data.wedding.showDate !== false && (
                 <>
               <SectionDivider />
-              <SectionTint tinted={secTinted('date')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
+              <SectionTint tinted={secTinted('date')} tintColor={tintBg} baseBackground={baseBg} tintedText={data.tintedTextColor}>
               <DateSection
                 weddingDate={data.wedding.date || '2027-01-09'}
                 weddingTimeDisplay={data.wedding.timeDisplay || ''}
+                venueName={data.wedding.showVenue !== false ? data.wedding.venue?.name : undefined}
+                venueHall={data.wedding.showVenue !== false ? data.wedding.venue?.hall : undefined}
               />
               </SectionTint>
                 </>
@@ -562,7 +602,7 @@ export default function ParentsInvitationView({
                 <>
               <SectionDivider />
               <div id="preview-venue">
-              <SectionTint tinted={secTinted('venue')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
+              <SectionTint tinted={secTinted('venue')} tintColor={tintBg} baseBackground={baseBg} tintedText={data.tintedTextColor}>
               <VenueSection
                 venue={{
                   name: data.wedding.venue.name || '예식장',
@@ -607,6 +647,18 @@ export default function ParentsInvitationView({
                 </>
               )}
             </div>
+            {/* 갤러리 — C안: 오시는 길 다음에 사진을 모아 보여줌 */}
+            <div id="preview-gallery">
+              <SectionTint tinted={secTinted('gallery')} tintColor={tintBg}>
+              <MainPhotoSection
+                part="gallery"
+                photos={photos}
+                mainImage={data.mainImage}
+                isPreview={isPreview}
+                zoomEnabled={data.gallery?.zoomEnabled === true}
+              />
+              </SectionTint>
+            </div>
             {/* 결혼식 안내 - 활성화된 항목이 있을 때만 표시 */}
             {data.weddingInfo?.enabled && (
               data.weddingInfo?.flowerGift?.enabled ||
@@ -619,7 +671,7 @@ export default function ParentsInvitationView({
             ) && (
               <div id="preview-weddingInfo">
                 <SectionDivider />
-                <SectionTint tinted={secTinted('weddingInfo')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
+                <SectionTint tinted={secTinted('weddingInfo')} tintColor={tintBg} baseBackground={baseBg} tintedText={data.tintedTextColor}>
                 <WeddingInfoSection
                   enabled={data.weddingInfo?.enabled}
                   flowerGift={data.weddingInfo?.flowerGift}
@@ -638,13 +690,13 @@ export default function ParentsInvitationView({
             {data.accounts?.enabled !== false && accounts.length > 0 && (
               <div id="preview-accounts">
                 <SectionDivider />
-                <SectionTint tinted={secTinted('account')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
+                <SectionTint tinted={secTinted('account')} tintColor={tintBg} baseBackground={baseBg} tintedText={data.tintedTextColor}>
                   <AccountSection accounts={accounts} />
                 </SectionTint>
               </div>
             )}
             <SectionDivider />
-            <SectionTint tinted={secTinted('share')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
+            <SectionTint tinted={secTinted('share')} tintColor={tintBg} baseBackground={baseBg} tintedText={data.tintedTextColor}>
             <ShareSection
               shareTitle={data.meta?.title || `${data.groom?.lastName || ''}${data.groom?.firstName || ''} ❤️ ${data.bride?.lastName || ''}${data.bride?.firstName || ''}의 결혼식`}
               shareDescription={data.meta?.description}
@@ -655,6 +707,8 @@ export default function ParentsInvitationView({
                 || data.mainImage?.url
               }
               kakaoThumbnailRatio={data.meta?.kakaoThumbnailRatio}
+              signature={senderSignature}
+              showCaption
             />
             </SectionTint>
             {data.rsvpEnabled !== false && (
@@ -671,7 +725,7 @@ export default function ParentsInvitationView({
           data={ddayPopup}
           weddingDate={data.wedding?.date}
           onDismiss={() => setShowDdayPopup(false)}
-          pointColor={theme.accent}
+          pointColor={point}
           fontFamily={resolveKoreanFontFamily(data.fontStyle)}
         />
       )}

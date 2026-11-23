@@ -9,7 +9,7 @@ import ParentsPreview from './ParentsPreview'
 import ParentsWizardEditor from './wizard/ParentsWizardEditor'
 import ShareModal from '@/components/share/ShareModal'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
-import { COLOR_THEMES, type ColorThemeId } from '@/components/parents/types'
+import { type ColorThemeId } from '@/components/parents/types'
 import type { DdayPopupData } from '@/lib/ddayPopupTypes'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
@@ -45,6 +45,7 @@ export interface ShuttleInfo {
   returnTime: string
   vehicleNumber: string
   notes: string[]
+  image?: ImageCropData  // 안내 사진 (선택)
 }
 
 // 이미지 크롭 데이터 타입
@@ -75,6 +76,7 @@ export interface ParentsInvitationData {
   groom: {
     lastName: string  // 성
     firstName: string // 이름
+    nameEn?: string   // 영문 이름 (비우면 자동 로마자)
     fatherName: string
     motherName: string
     fatherDeceased?: boolean
@@ -84,6 +86,7 @@ export interface ParentsInvitationData {
   bride: {
     lastName: string  // 성
     firstName: string // 이름
+    nameEn?: string   // 영문 이름 (비우면 자동 로마자)
     fatherName: string
     motherName: string
     fatherDeceased?: boolean
@@ -167,18 +170,24 @@ export interface ParentsInvitationData {
       cropHeight?: number
     }
     hintTextColor?: string // 안내 문구 글자색
+    textOnly?: boolean // 첫 화면 사진 없이 글자만 (기본: 사진 사용)
+    letterBg?: string // 편지 화면 배경: white | gray | ink | point | #RRGGBB (기본 흰색)
+    headline?: string // 첫 화면 자녀 문장 (비우면 자동 문구)
   }
 
   // 본문 인사말
   greeting: string
+  greetingTitle?: string  // 인사말 제목 (비우면 기본 문구)
 
   // 타임라인
   timelineEnabled: boolean
+  timelineTitle?: string  // 타임라인 제목 (비우면 기본 문구)
   timeline: TimelineItem[]
 
   // 메인 이미지 (크롭 정보 포함)
   mainImage: ImageCropData
-  mainImageFrame?: string  // 메인사진 프레임 옵션 (프레임 id, 없으면 프레임 없음)
+  mainImageFrame?: string  // 메인사진 프레임 옵션 (C안에서는 사용 안 함, 저장값만 유지)
+  mainPhotoShape?: 'basic' | 'bleed' | 'arch' | 'mat'  // C안 사진 모양 (기본 basic)
   coupleHeadline?: string  // 커플 이름 위 커스텀 문구
   coupleShowLastName?: boolean
   coupleConnector?: 'and' | 'heart'
@@ -196,16 +205,19 @@ export interface ParentsInvitationData {
     flowerGift: {
       enabled: boolean
       content: string
+      image?: ImageCropData  // 안내 사진 (선택)
     }
     // 화환 안내
     wreath: {
       enabled: boolean
       content: string
+      image?: ImageCropData  // 안내 사진 (선택)
     }
     // 화동 안내
     flowerChild: {
       enabled: boolean
       content: string
+      image?: ImageCropData  // 안내 사진 (선택)
     }
     // 피로연 안내
     reception: {
@@ -213,18 +225,20 @@ export interface ParentsInvitationData {
       content: string
       venue: string
       datetime: string
+      image?: ImageCropData  // 안내 사진 (선택)
     }
     // 포토부스 안내
     photoBooth: {
       enabled: boolean
       content: string
+      image?: ImageCropData  // 안내 사진 (선택)
     }
     // 셔틀버스
     shuttle: ShuttleInfo
     // 항목 순서
     itemOrder: string[]
     // 사용자 정의 안내 항목
-    customItems?: { id?: string; enabled?: boolean; title?: string; content?: string; emoji?: string }[]
+    customItems?: { id?: string; enabled?: boolean; title?: string; content?: string; emoji?: string; image?: ImageCropData }[]
   }
 
   // 계좌 안내
@@ -292,6 +306,12 @@ export interface ParentsInvitationData {
   // 디자인
   colorTheme: ColorThemeId
   fontStyle: 'elegant' | 'soft' | 'classic' | 'brush' | 'modern' | 'friendly' | 'ridibatang' | 'gangwon' | 'okticon'
+  headingFont?: string  // 메인(제목) 서체 id (비우면 조선일보명조)
+  captionColor?: string // 부제 색 (비우면 포인트 색 또는 보조 회색)
+  titleColor?: string   // 제목 색 (비우면 먹색)
+  sectionBaseColor?: string  // C안 기본 배경 (비우면 흰색)
+  sectionTintColor?: string  // C안 틴티드 배경 (비우면 자동)
+  tintedSections?: string[]  // 틴티드 배경 섹션 키 (기본 없음)
   customPrimaryColor?: string
   customAccentColor?: string
   customBackgroundColor?: string
@@ -876,7 +896,7 @@ function ParentsEditorContent() {
             {!isMobile && (
               <div className="sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex flex-col justify-center items-center" style={{ width: `${previewColW}px`, minWidth: `${previewColW}px`, height: 'calc(100vh - 88px)' }}>
                 {(() => {
-                  const currentTheme = COLOR_THEMES[data.colorTheme || 'burgundy']
+                  const currentTheme = { primary: 'var(--ed-accent)' } // 미리보기 탭은 에디터 강조색 (C안: 파스텔 테마 미사용)
                   const showTabs = currentWizardStep !== 2 && currentWizardStep !== 3
                   return (
                     <>
@@ -927,7 +947,7 @@ function ParentsEditorContent() {
 
             {/* 모바일: 미리보기 모드 (항상 마운트, CSS로 숨김) */}
             {isMobile && (() => {
-              const currentTheme = COLOR_THEMES[data.colorTheme || 'burgundy']
+              const currentTheme = { primary: 'var(--ed-accent)' } // 미리보기 탭은 에디터 강조색 (C안: 파스텔 테마 미사용)
               return (
                 <div className="w-full flex flex-col items-center relative overflow-hidden" style={{ height: `${splitRatio}%`, flexShrink: 0, transform: 'translateZ(0)' }}>
                   <button
@@ -1091,7 +1111,7 @@ function ParentsEditorContent() {
                 저장하지 않은 변경사항이 있어요
               </h3>
               <p className="text-sm text-gray-500 text-center mt-2">
-                지금 나가면 작업한 내용이 사라집니다.<br />저장하고 나가시겠어요?
+                지금 나가면 작업한 내용이 사라집니다.
               </p>
             </div>
             <div className="flex gap-3 mt-6">

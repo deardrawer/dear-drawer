@@ -8,6 +8,7 @@ import InvitationClientExhibit from "./InvitationClientExhibit";
 import InvitationClientEssay from "./InvitationClientEssay";
 import InvitationClientThankYou from "./InvitationClientThankYou";
 import InvitationClientTheSimple from "./InvitationClientTheSimple";
+import InvitationClientPhone from "./InvitationClientPhone";
 import InvitationClientClassic from "./InvitationClientClassic";
 
 /**
@@ -57,6 +58,7 @@ export function InvitationBody({
   const ClientComponent =
     t === 'narrative-classic' ? InvitationClientClassic :
     t === 'narrative-the-simple' ? InvitationClientTheSimple :
+    t === 'narrative-phone' ? InvitationClientPhone :
     t === 'narrative-essay' ? InvitationClientEssay :
     t === 'narrative-exhibit' ? InvitationClientExhibit :
     t === 'narrative-record' ? InvitationClientRecord :

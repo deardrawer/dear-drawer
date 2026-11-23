@@ -36,15 +36,9 @@ export default function ThankYouStep4Message() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* 안내 */}
-      <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>커튼이 닫힌 후 스크롤에 따라 제목 → 본문 → 서명 순서로 나타나는 감사 메시지입니다.</p>
-      </div>
-
       {/* 제목 */}
       <div>
         <label className="block text-sm font-medium text-[#2C2824] mb-2">제목</label>
-        <p className="text-xs text-gray-400 mb-2">첫 번째로 크게 표시되는 제목</p>
         <input
           type="text"
           value={data.closingLines[0] || ''}
@@ -57,7 +51,7 @@ export default function ThankYouStep4Message() {
       {/* 본문 (통합) */}
       <div>
         <label className="block text-sm font-medium text-[#2C2824] mb-2">본문</label>
-        <p className="text-xs text-gray-400 mb-2">감사의 마음을 전하는 내용을 작성해주세요. 스크롤에 따라 문단별로 순차적으로 나타납니다. Enter로 줄바꿈, 빈 줄로 문단 구분이 가능합니다.</p>
+        <p className="text-xs text-gray-400 mb-2">빈 줄로 문단이 구분됩니다.</p>
         <textarea
           value={bodyText}
           onChange={(e) => handleBodyChange(e.target.value)}
@@ -70,7 +64,6 @@ export default function ThankYouStep4Message() {
       {/* 서명 */}
       <div>
         <label className="block text-sm font-medium text-[#2C2824] mb-2">서명</label>
-        <p className="text-xs text-gray-400 mb-2">마지막에 작게 표시되는 서명</p>
         <input
           type="text"
           value={data.closingLines[4] || ''}
@@ -90,7 +83,6 @@ export default function ThankYouStep4Message() {
           <div className="flex items-center gap-3">
             <div className="text-left">
               <p className="text-sm font-medium text-[#2C2824]">사진 공유 요청</p>
-              <p className="text-xs text-gray-400">감사 인사 후 사진 공유 팝업이 표시됩니다</p>
             </div>
           </div>
           <div className={`w-10 h-6 rounded-full transition-colors relative ${photoShare.enabled ? 'bg-[#A37E69]' : 'bg-gray-200'}`}>
@@ -119,7 +111,6 @@ export default function ThankYouStep4Message() {
                 placeholder="https://photos.google.com/share/..."
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A37E69] focus:ring-1 focus:ring-[#A37E69]/20 transition-colors"
               />
-              <p className="text-xs text-gray-400 mt-1.5">구글 포토, 네이버 MYBOX 등 공유 앨범 링크를 입력하세요</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-[#2C2824] mb-2">버튼 텍스트</label>
@@ -133,14 +124,6 @@ export default function ThankYouStep4Message() {
             </div>
           </div>
         )}
-      </div>
-
-      {/* 미리보기 안내 */}
-      <div className="p-4 bg-gray-50 rounded-xl">
-        <p className="text-xs text-gray-500 leading-relaxed">
-          커튼이 닫힌 후 스크롤에 따라 제목 → 본문(문단별) → 서명 순서로 나타납니다.
-          <br />Enter로 줄바꿈, 빈 줄(Enter 2번)로 문단을 나눌 수 있습니다.
-        </p>
       </div>
     </div>
   )

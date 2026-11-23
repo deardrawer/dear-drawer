@@ -266,16 +266,6 @@ export default function Step6Publish({
 
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 */}
-      <div className="space-y-1">
-        <p className="text-base font-medium" style={{ color: 'var(--ed-text)' }}>
-          거의 다 왔어요!
-        </p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          청첩장을 발행하면 바로 공유할 수 있어요.
-        </p>
-      </div>
-
       {/* 청첩장 주소 표시 */}
       {invitationUrl && (
         <section className="space-y-4">
@@ -449,7 +439,6 @@ export default function Step6Publish({
         <p className="font-medium text-gray-900">알려드립니다</p>
         <ul className="space-y-1 list-disc list-inside">
           <li>발행 후에도 청첩장 내용은 수정할 수 있습니다.</li>
-          <li>카카오톡, 문자 메시지로 쉽게 공유할 수 있습니다.</li>
         </ul>
       </div>
 
@@ -522,7 +511,7 @@ export default function Step6Publish({
                 <div className="flex-1">
                   <p className="text-sm font-medium mb-1" style={{ color: 'var(--ed-text)' }}>워터마크 제거</p>
                   <p className="text-xs mb-3" style={{ color: 'var(--ed-text-muted)' }}>
-                    결제 후 워터마크가 제거된 깔끔한 청첩장을 공유하세요
+                    결제 후 워터마크 없이 공유할 수 있습니다.
                   </p>
                   <Button
                     onClick={handleRemoveWatermark}

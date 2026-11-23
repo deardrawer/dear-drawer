@@ -257,7 +257,7 @@ export default function RsvpEditor({ value, variant = 1, shareSlug, invitationId
           </button>
         </label>
         <p className="mt-1 text-[11px] text-stone-400 leading-relaxed">
-          청첩장 전체 대신 <b className="text-stone-500">RSVP 폼만</b> 별도 URL로 공유합니다. 현재 RSVP 설정을 그대로 사용합니다.
+          <b className="text-stone-500">RSVP 폼만</b> 별도 URL로 공유합니다.
         </p>
         {value.sharedRsvpEnabled && (
           rsvpUrl ? (
@@ -293,7 +293,7 @@ export default function RsvpEditor({ value, variant = 1, shareSlug, invitationId
               value={value.sharedRsvpPhoto}
               onChange={(url) => onChange({ ...value, sharedRsvpPhoto: url })}
               label="RSVP 링크 상단 사진 (선택)"
-              hint="RSVP 페이지 맨 위에 원형으로 표시됩니다. 비우면 표시되지 않습니다."
+              hint="RSVP 페이지 맨 위에 원형으로 표시됩니다."
               circle
             />
           </div>
@@ -329,7 +329,7 @@ export default function RsvpEditor({ value, variant = 1, shareSlug, invitationId
               카카오톡으로 공유
             </button>
             <p className="text-[10px] leading-tight text-stone-400">
-              제목·설명을 비우면 기본 문구가 사용됩니다. <b className="text-stone-500">카카오톡으로 공유</b> 버튼은 수정 즉시 반영됩니다. 링크를 복사해 붙여넣는 경우엔 <span className="text-stone-500">저장 후</span> 카카오 캐시 갱신이 필요할 수 있어요.
+              링크를 복사해 붙여넣는 경우 <span className="text-stone-500">저장 후</span> 카카오 캐시 갱신이 필요할 수 있습니다.
             </p>
           </div>
         )}

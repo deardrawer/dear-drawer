@@ -136,17 +136,11 @@ export default function ParentsStep5Guests({
 
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 */}
-      <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-        게스트별로 맞춤 청첩장 링크를 생성하고 관리할 수 있습니다.
-      </p>
-
       {/* 게스트 관리 페이지 버튼 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">
           게스트 관리
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>게스트를 추가하고 개별 링크를 생성할 수 있습니다.</p>
 
         {invitationId ? (
           <a
@@ -161,7 +155,7 @@ export default function ParentsStep5Guests({
         ) : (
           <div className="text-center py-4 px-4 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-500">
-              게스트를 관리하려면 먼저 청첩장을 저장해주세요
+              청첩장을 저장한 후 게스트를 관리할 수 있습니다.
             </p>
           </div>
         )}
@@ -270,7 +264,7 @@ export default function ParentsStep5Guests({
         <section className="space-y-4">
           <h3 className="text-base font-semibold text-gray-900">미리보기 게스트 선택</h3>
           <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
-            게스트를 선택하면 봉투 미리보기에서 확인할 수 있어요
+            게스트를 선택하면 봉투 미리보기에 반영됩니다.
             {selectedGuest && (
               <span className="ml-2 font-medium" style={{ color: 'var(--ed-text)' }}>
                 (선택: {selectedGuest.name})
@@ -345,7 +339,6 @@ export default function ParentsStep5Guests({
         <div className="text-center py-8 text-gray-400">
           <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p className="text-sm">등록된 게스트가 없습니다</p>
-          <p className="text-xs mt-1">관리 페이지에서 게스트를 추가해주세요</p>
         </div>
       )}
 
@@ -355,17 +348,6 @@ export default function ParentsStep5Guests({
           <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
         </div>
       )}
-
-      {/* 도움말 */}
-      <div className="p-4 bg-gray-50 rounded-lg text-sm text-gray-600 space-y-2">
-        <p className="font-medium text-gray-900">게스트 관리 안내</p>
-        <ul className="space-y-1 list-disc list-inside">
-          <li>게스트별로 맞춤 청첩장 링크를 생성할 수 있습니다.</li>
-          <li>게스트별로 다른 인사말과 메시지를 설정할 수 있습니다.</li>
-          <li>열람 여부와 RSVP 응답을 확인할 수 있습니다.</li>
-          <li>게스트 목록을 CSV로 내보낼 수 있습니다.</li>
-        </ul>
-      </div>
     </div>
   )
 }

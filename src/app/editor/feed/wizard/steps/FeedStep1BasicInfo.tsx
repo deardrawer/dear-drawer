@@ -124,10 +124,7 @@ export default function FeedStep1BasicInfo({
       {/* 안내 가이드 */}
       <div className="px-6 pt-6 pb-4">
         <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-          <p className="text-sm font-medium mb-1" style={{ color: 'var(--ed-text)' }}>디자인 설정</p>
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-            표시 아이디와 배경음악을 설정해주세요.
-          </p>
+          <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>디자인 설정</p>
         </div>
       </div>
 
@@ -136,7 +133,6 @@ export default function FeedStep1BasicInfo({
         <h3 className="text-sm font-semibold text-gray-900 mb-2">
           표시 아이디
         </h3>
-        <p className="text-sm mb-3" style={{ color: 'var(--ed-text-muted)' }}>인스타그램 프로필에 표시될 아이디를 설정해주세요.</p>
         <input
           className={inputClass}
           value={data.displayId}
@@ -151,7 +147,6 @@ export default function FeedStep1BasicInfo({
         <h3 className="text-sm font-semibold text-gray-900 mb-2">
           폰트 스타일
         </h3>
-        <p className="text-sm mb-3" style={{ color: 'var(--ed-text-muted)' }}>텍스트의 글꼴을 선택해주세요.</p>
 
         <div className="grid grid-cols-1 gap-1.5">
           {([

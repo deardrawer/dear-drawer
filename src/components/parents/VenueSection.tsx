@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSectionHighlight } from './SectionHighlightContext'
-import { useTheme } from './ThemeContext'
-import { BusIcon, SubwayIcon, ExpressBusIcon, TrainIcon, ParkingIcon } from './icons'
+import { C_TXT_BODY, C_FIELD, C_TXT, C_HAIR, C_TXT_SUB, cCaption, cDim, cMiniPill, cPill, cStagger, cTitle } from './cStyle'
 
 interface SubwayLine {
   line: string
@@ -44,14 +43,6 @@ interface VenueSectionProps {
   }
 }
 
-const stagger = (hasAppeared: boolean, delay: number) => ({
-  opacity: hasAppeared ? 1 : 0,
-  transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
-  filter: hasAppeared ? 'blur(0px)' : 'blur(6px)',
-  transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
-  transitionDelay: hasAppeared ? `${delay}s` : '0s',
-})
-
 export default function VenueSection({
   venue = {
     name: '더채플앳청담',
@@ -61,7 +52,6 @@ export default function VenueSection({
   directions,
 }: VenueSectionProps) {
   const { ref, isActive, hasAppeared } = useSectionHighlight('venue')
-  const theme = useTheme()
   // showDirectionsModal 제거 - 교통편 안내 항상 펼침
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInitialized = useRef(false)
@@ -166,12 +156,12 @@ export default function VenueSection({
           })
           marker.setMap(map)
 
-          // 테마컬러 말풍선 (중앙정렬 pill + 아래 꼬리)
-          const accent = theme.accent || '#8A9A7B'
+          // 먹색 말풍선 (중앙정렬 pill + 아래 꼬리)
+          const accent = '#1F1D1A'
           const overlayEl = document.createElement('div')
           overlayEl.style.cssText = 'position:relative;transform:translateY(-8px);display:flex;flex-direction:column;align-items:center;'
           overlayEl.innerHTML =
-            `<div style="background:${accent};color:#fff;font-size:12px;font-weight:500;letter-spacing:0.3px;line-height:1;padding:7px 14px;border-radius:16px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.18);text-align:center;">${venue.name}</div>` +
+            `<div style="background:${accent};color:#fff;font-size:12px;font-weight:500;letter-spacing:0.3px;line-height:1;padding:7px 14px;border-radius:16px;white-space:nowrap;text-align:center;">${venue.name}</div>` +
             `<div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid ${accent};margin-top:-1px;"></div>`
           const overlay = new window.kakao.maps.CustomOverlay({
             position: new window.kakao.maps.LatLng(lat, lng),
@@ -216,308 +206,174 @@ export default function VenueSection({
 
   const hasDirections = directions && (directions.bus || directions.subway || directions.expressBus || directions.train || directions.parking || (directions.extraInfoEnabled && directions.extraInfoText))
 
+  // 교통편 행 (라벨 + 내용) — 상자 없이 가는 선으로만 구분
+  const rows: { label: string; content: React.ReactNode }[] = []
+  const subLine = (t?: string) => t ? <span style={{ display: 'block', fontSize: 13.5, color: C_TXT_SUB, marginTop: 2 }}>{t}</span> : null
+
+  if (directions?.subway && (directions.subway.station || (directions.subway.lines && directions.subway.lines.length > 0))) {
+    const list = directions.subway.lines && directions.subway.lines.length > 0
+      ? directions.subway.lines
+      : [{ line: directions.subway.line || '', station: directions.subway.station || '', exit: directions.subway.exit || '' }]
+    rows.push({
+      label: '지하철',
+      content: (
+        <>
+          {list.map((item, idx) => (
+            <span key={idx} style={{ display: 'block' }}>
+              {[item.line, item.station, item.exit].map(v => (v || '').trim()).filter(Boolean).join(' ')}
+            </span>
+          ))}
+          {subLine(directions.subway.walk)}
+        </>
+      ),
+    })
+  }
+  if (directions?.bus && directions.bus.lines) {
+    rows.push({ label: '버스', content: <>{directions.bus.lines}{subLine(directions.bus.stop)}</> })
+  }
+  if (directions?.expressBus && (directions.expressBus.stop || directions.expressBus.route || (directions.expressBus.stops && directions.expressBus.stops.length > 0))) {
+    rows.push({
+      label: '고속버스',
+      content: directions.expressBus.stops && directions.expressBus.stops.length > 0 ? (
+        <>
+          {directions.expressBus.stops.map((item, idx) => (
+            <span key={idx} style={{ display: 'block', marginTop: idx ? 6 : 0 }}>
+              {item.stop}
+              {subLine(item.note)}
+            </span>
+          ))}
+        </>
+      ) : (
+        <>
+          {directions.expressBus.route && <span style={{ display: 'block' }}>{directions.expressBus.route}</span>}
+          {directions.expressBus.stop && <span style={{ display: 'block' }}>{directions.expressBus.stop}</span>}
+          {subLine(directions.expressBus.note)}
+        </>
+      ),
+    })
+  }
+  if (directions?.train && (directions.train.station || directions.train.line || (directions.train.stations && directions.train.stations.length > 0))) {
+    rows.push({
+      label: '기차',
+      content: directions.train.stations && directions.train.stations.length > 0 ? (
+        <>
+          {directions.train.stations.map((item, idx) => (
+            <span key={idx} style={{ display: 'block', marginTop: idx ? 6 : 0 }}>
+              {item.station}
+              {subLine(item.note)}
+            </span>
+          ))}
+        </>
+      ) : (
+        <>
+          {directions.train.line && <span style={{ display: 'block' }}>{directions.train.line}</span>}
+          {directions.train.station && <span style={{ display: 'block' }}>{directions.train.station}</span>}
+          {subLine(directions.train.note)}
+        </>
+      ),
+    })
+  }
+  if (directions?.parking && directions.parking.capacity) {
+    rows.push({
+      label: '주차',
+      content: (
+        <>
+          {directions.parking.capacity}
+          {directions.parking.free && <span style={{ display: 'block' }}>{directions.parking.free}</span>}
+          {subLine(directions.parking.note)}
+        </>
+      ),
+    })
+  }
+
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="py-16 flex flex-col items-center justify-center"
-      style={{
-        backgroundColor: theme.background,
-        filter: isActive ? 'none' : 'grayscale(30%)',
-        opacity: isActive ? 1 : 0.3,
-        transition: 'filter 0.5s, opacity 0.5s',
-      }}
+      style={{ backgroundColor: 'transparent', padding: '72px 28px 80px', ...cDim(isActive) }}
     >
-      {/* LOCATION label */}
-      <p
-        className="text-[10px] tracking-[6px] mb-6"
-        style={{
-          color: isActive ? `${theme.accent}80` : '#bbb',
-          fontWeight: 300,
-          ...stagger(hasAppeared, 0),
-        }}
-      >
-        LOCATION
-      </p>
-
-      <div
-        className="text-center mb-8 w-full px-8"
-        style={stagger(hasAppeared, 0.15)}
-      >
-        <p
-          className="text-xl mb-1.5 tracking-[2px]"
-          style={{ color: isActive ? theme.text : '#999', fontWeight: 500 }}
-        >
-          {venue.name}
-        </p>
-        {venue.hall && (
-          <p
-            className="text-[13px] tracking-[1px] mb-1.5"
-            style={{ color: theme.primary, fontWeight: 300 }}
-          >
-            {venue.hall}
-          </p>
-        )}
-        <div className="flex items-center justify-center gap-1.5">
-          <p
-            className="text-[13px] tracking-[0.5px]"
-            style={{ color: isActive ? theme.text : '#999', fontWeight: 500 }}
-          >
-            {venue.address}
-          </p>
-          <button
-            type="button"
-            onClick={handleAddressCopy}
-            className="flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] tracking-[0.5px] transition-all duration-200"
-            style={{
-              backgroundColor: addressCopied ? '#22c55e' : (isActive ? `${theme.accent}12` : '#eee'),
-              color: addressCopied ? '#FFFFFF' : (isActive ? theme.accent : '#aaa'),
-            }}
-          >
-            {addressCopied ? '복사됨' : '복사'}
+      <p style={{ ...cCaption, ...cStagger(hasAppeared, 0) }}>오시는 길</p>
+      <div style={cStagger(hasAppeared, 0.15)}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
+        <h2 style={{ ...cTitle(24, 0), flex: 1, minWidth: 0 }}>{venue.name}</h2>
+        {venue.address && (
+          <button type="button" onClick={handleAddressCopy} style={{ ...cMiniPill(addressCopied), height: 30, padding: '0 12px', fontSize: 13 }}>
+            {addressCopied ? '복사됨' : '주소 복사'}
           </button>
-        </div>
+        )}
+      </div>
+      <p style={{ margin: '6px 0 0', fontSize: 14.5, lineHeight: 1.6, color: C_TXT_SUB, wordBreak: 'keep-all' }}>
+        {[venue.address, venue.hall].map(v => (v || '').trim()).filter(Boolean).join(' · ')}
+      </p>
       </div>
 
-      {/* Map with rounded corners and shadow - scale-up entrance */}
+      {/* 지도 */}
       <div
-        className="w-full px-6 mb-5"
+        ref={mapWrapRef}
         style={{
+          position: 'relative', marginTop: 24, borderRadius: 4, overflow: 'hidden', backgroundColor: C_FIELD,
           opacity: hasAppeared ? 1 : 0,
           transform: hasAppeared ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.97)',
-          filter: hasAppeared ? 'blur(0px)' : 'blur(6px)',
-          transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
+          transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
           transitionDelay: hasAppeared ? '0.3s' : '0s',
         }}
       >
         <div
-          ref={mapWrapRef}
-          className="rounded-[5px] overflow-hidden"
-          style={{
-            position: 'relative',
-            boxShadow: isActive ? '0 4px 24px rgba(0,0,0,0.06)' : '0 2px 8px rgba(0,0,0,0.02)',
-            transition: 'box-shadow 0.5s',
-          }}
+          ref={mapContainerRef}
+          className="w-full"
+          style={{ aspectRatio: '16 / 10', backgroundColor: C_FIELD }}
         >
-          <div
-            ref={mapContainerRef}
-            className="w-full aspect-[16/10]"
-            style={{ backgroundColor: '#E8E4DC' }}
-          >
-            {mapError && (
-              <div className="w-full h-full flex items-center justify-center text-sm text-gray-400">
-                주소를 확인해주세요
-              </div>
-            )}
-          </div>
-          {/* 지도 스크롤 가로채기 방지 오버레이 — 1차 터치: 안내, 2차 터치: 활성화 */}
-          {!mapActive && !mapError && (
-            <div
-              onClick={handleOverlayTap}
-              style={{
-                position: 'absolute', inset: 0, zIndex: 2, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(255,255,255,0.01)',
-              }}
-            >
-              {mapState === 'hint' && (
-                <span
-                  style={{
-                    padding: '6px 14px', borderRadius: 20,
-                    background: 'rgba(0,0,0,0.45)', color: '#fff',
-                    fontSize: 11, letterSpacing: '0.02em', pointerEvents: 'none',
-                  }}
-                >
-                  지도를 한 번 더 터치하면 이동할 수 있어요
-                </span>
-              )}
+          {mapError && (
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: C_TXT_SUB }}>
+              주소를 확인해 주세요
             </div>
           )}
         </div>
+        {/* 지도 스크롤 가로채기 방지 오버레이 — 1차 터치: 안내, 2차 터치: 활성화 */}
+        {!mapActive && !mapError && (
+          <div
+            onClick={handleOverlayTap}
+            style={{
+              position: 'absolute', inset: 0, zIndex: 2, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(255,255,255,0.01)',
+            }}
+          >
+            {mapState === 'hint' && (
+              <span
+                style={{
+                  padding: '7px 14px', borderRadius: 999,
+                  background: 'rgba(31,29,26,0.72)', color: '#fff',
+                  fontSize: 12, pointerEvents: 'none',
+                }}
+              >
+                한 번 더 누르면 지도를 움직일 수 있어요
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Navigation chip buttons */}
-      <div
-        className="grid grid-cols-3 gap-2 mb-6 px-4"
-        style={stagger(hasAppeared, 0.5)}
-      >
-        <button
-          onClick={openNaverMap}
-          className="flex items-center justify-center px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-full whitespace-nowrap transition-all duration-200"
-          style={{
-            backgroundColor: isActive ? theme.accent : '#c9c2b8',
-            color: '#FFFFFF',
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
-        >
-네이버지도
-        </button>
-        <button
-          onClick={openKakaoMap}
-          className="flex items-center justify-center px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-full whitespace-nowrap transition-all duration-200"
-          style={{
-            backgroundColor: isActive ? theme.accent : '#c9c2b8',
-            color: '#FFFFFF',
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
-        >
-카카오맵
-        </button>
-        <button
-          onClick={openTmap}
-          className="flex items-center justify-center px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-full whitespace-nowrap transition-all duration-200"
-          style={{
-            backgroundColor: isActive ? theme.accent : '#c9c2b8',
-            color: '#FFFFFF',
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
-        >
-          T맵
-        </button>
+      {/* 지도 앱 버튼 */}
+      <div style={{ display: 'flex', gap: 8, marginTop: 12, ...cStagger(hasAppeared, 0.5) }}>
+        <button type="button" onClick={openNaverMap} style={cPill(false, 48)}>네이버지도</button>
+        <button type="button" onClick={openKakaoMap} style={cPill(false, 48)}>카카오맵</button>
+        <button type="button" onClick={openTmap} style={cPill(false, 48)}>티맵</button>
       </div>
 
       {hasDirections && (
-        <div
-          className="w-full px-6"
-          style={stagger(hasAppeared, 0.65)}
-        >
-          <div
-            className="text-center text-xs tracking-[2px] mb-4"
-            style={{ color: isActive ? theme.textLight : '#999', fontWeight: 400 }}
-          >
-            오시는 길 안내
-          </div>
-
-          <div
-            className="overflow-hidden rounded-[5px]"
-            style={{
-              border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,
-            }}
-          >
-            <div className="p-4" style={{ backgroundColor: '#FEFDFB' }}>
-              {directions?.bus && directions.bus.lines && (
-                <div className="mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <BusIcon size={18} color={theme.accent} />
-                    <h4 className="font-medium text-xs" style={{ color: '#1A1A1A' }}>버스</h4>
-                  </div>
-                  <div className="text-xs leading-relaxed pl-6" style={{ color: '#666' }}>
-                    <p className="mb-0.5">{directions.bus.lines}</p>
-                    {directions.bus.stop && (
-                      <p className="text-[10px] mt-1" style={{ color: '#999' }}>{directions.bus.stop}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {directions?.subway && (directions.subway.station || (directions.subway.lines && directions.subway.lines.length > 0)) && (
-                <div className="mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <SubwayIcon size={18} color={theme.accent} />
-                    <h4 className="font-medium text-xs" style={{ color: '#1A1A1A' }}>지하철</h4>
-                  </div>
-                  <div className="text-xs leading-relaxed pl-6 space-y-1" style={{ color: '#666' }}>
-                    {directions.subway.lines && directions.subway.lines.length > 0 ? (
-                      directions.subway.lines.map((item, idx) => (
-                        <p key={idx} className="mb-0.5">
-                          {item.line && `${item.line} `}
-                          <span style={{ color: theme.accent }}>{item.station}</span>
-                          {item.exit && ` ${item.exit}`}
-                        </p>
-                      ))
-                    ) : (
-                      <p className="mb-0.5">
-                        {directions.subway.line && `${directions.subway.line} `}
-                        <span style={{ color: theme.accent }}>{directions.subway.station}</span>
-                        {directions.subway.exit && ` ${directions.subway.exit}`}
-                      </p>
-                    )}
-                    {directions.subway.walk && (
-                      <p className="text-[10px] mt-1" style={{ color: '#999' }}>{directions.subway.walk}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {directions?.expressBus && (directions.expressBus.stop || directions.expressBus.route || (directions.expressBus.stops && directions.expressBus.stops.length > 0)) && (
-                <div className="mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <ExpressBusIcon size={18} color={theme.accent} />
-                    <h4 className="font-medium text-xs" style={{ color: '#1A1A1A' }}>고속버스</h4>
-                  </div>
-                  <div className="text-xs leading-relaxed pl-6 space-y-1" style={{ color: '#666' }}>
-                    {directions.expressBus.stops && directions.expressBus.stops.length > 0 ? (
-                      directions.expressBus.stops.map((item, idx) => (
-                        <div key={idx}>
-                          {item.stop && <p className="mb-0.5"><span style={{ color: theme.accent }}>{item.stop}</span></p>}
-                          {item.note && <p className="text-[10px] mt-0.5" style={{ color: '#999' }}>{item.note}</p>}
-                        </div>
-                      ))
-                    ) : (
-                      <>
-                        {directions.expressBus.route && <p className="mb-0.5">{directions.expressBus.route}</p>}
-                        {directions.expressBus.stop && <p className="mb-0.5"><span style={{ color: theme.accent }}>{directions.expressBus.stop}</span></p>}
-                        {directions.expressBus.note && <p className="text-[10px] mt-1" style={{ color: '#999' }}>{directions.expressBus.note}</p>}
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {directions?.train && (directions.train.station || directions.train.line || (directions.train.stations && directions.train.stations.length > 0)) && (
-                <div className="mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrainIcon size={18} color={theme.accent} />
-                    <h4 className="font-medium text-xs" style={{ color: '#1A1A1A' }}>기차 (KTX/SRT)</h4>
-                  </div>
-                  <div className="text-xs leading-relaxed pl-6 space-y-1" style={{ color: '#666' }}>
-                    {directions.train.stations && directions.train.stations.length > 0 ? (
-                      directions.train.stations.map((item, idx) => (
-                        <div key={idx}>
-                          {item.station && <p className="mb-0.5"><span style={{ color: theme.accent }}>{item.station}</span></p>}
-                          {item.note && <p className="text-[10px] mt-0.5" style={{ color: '#999' }}>{item.note}</p>}
-                        </div>
-                      ))
-                    ) : (
-                      <>
-                        {directions.train.line && <p className="mb-0.5">{directions.train.line}</p>}
-                        {directions.train.station && <p className="mb-0.5"><span style={{ color: theme.accent }}>{directions.train.station}</span></p>}
-                        {directions.train.note && <p className="text-[10px] mt-1" style={{ color: '#999' }}>{directions.train.note}</p>}
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {directions?.parking && directions.parking.capacity && (
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <ParkingIcon size={18} color={theme.accent} />
-                    <h4 className="font-medium text-xs" style={{ color: '#1A1A1A' }}>주차 안내</h4>
-                  </div>
-                  <div className="text-xs leading-relaxed pl-6" style={{ color: '#666' }}>
-                    <p className="mb-0.5">{directions.parking.capacity}</p>
-                    {directions.parking.free && (
-                      <p className="mb-0.5">{directions.parking.free}</p>
-                    )}
-                    {directions.parking.note && (
-                      <p className="text-[10px] mt-1" style={{ color: '#999' }}>{directions.parking.note}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {directions?.extraInfoEnabled && directions?.extraInfoText && (
-                <div className="mt-4 pt-4 border-t" style={{ borderColor: '#E8E4DC' }}>
-                  <div className="text-xs leading-relaxed whitespace-pre-line" style={{ color: '#666' }}>
-                    {directions.extraInfoText}
-                  </div>
-                </div>
-              )}
+        <div style={{ marginTop: 28, ...cStagger(hasAppeared, 0.65) }}>
+          {rows.map((r) => (
+            <div key={r.label} style={{ display: 'flex', gap: 16, padding: '15px 0', borderTop: `1px solid ${C_HAIR}` }}>
+              <span style={{ width: 56, flexShrink: 0, fontSize: 14, color: C_TXT_SUB, lineHeight: 1.6 }}>{r.label}</span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 15, color: C_TXT, lineHeight: 1.6, wordBreak: 'keep-all' }}>{r.content}</span>
             </div>
-          </div>
+          ))}
+          {directions?.extraInfoEnabled && directions?.extraInfoText && (
+            <div style={{ padding: '15px 0', borderTop: `1px solid ${C_HAIR}`, fontSize: 14.5, lineHeight: 1.7, color: C_TXT_BODY, whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>
+              {directions.extraInfoText}
+            </div>
+          )}
+          <div style={{ borderTop: `1px solid ${C_HAIR}` }} />
         </div>
       )}
     </section>

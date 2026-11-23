@@ -12,7 +12,7 @@ export default function RsvpShareThumb({
   value,
   onChange,
   label = '공유 썸네일',
-  hint = '비우면 청첩장 대표 사진이 자동 사용됩니다. 권장 1200×630.',
+  hint = '권장 1200×630',
   circle = false,
 }: {
   invitationId?: string
@@ -52,7 +52,7 @@ export default function RsvpShareThumb({
           {uploading ? '업로드 중…' : '＋ 썸네일 업로드'}
         </button>
       )}
-      <p className="text-[10px] text-gray-400 leading-tight">{hint}</p>
+      {hint && <p className="text-[10px] text-gray-400 leading-tight">{hint}</p>}
       {err && <p className="text-[10px] text-red-500">{err}</p>}
       <input
         ref={inputRef}

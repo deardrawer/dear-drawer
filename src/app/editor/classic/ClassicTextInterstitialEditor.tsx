@@ -127,10 +127,7 @@ export default function ClassicTextInterstitialEditor({ value, onChange, onRemov
 
   return (
     <div className="space-y-4">
-      <p className="text-[11px] text-gray-500 leading-snug">직접 쓴 글이나 저작권이 끝난 글을 권장해요. 다른 사람의 시·가사를 쓸 땐 출처를 꼭 적어주세요.</p>
-      {list.length === 0 && (
-        <p className="text-xs text-gray-400">글 간지가 없습니다. 추가하지 않으면 청첩장에 표시되지 않아요.</p>
-      )}
+      <p className="text-[11px] text-gray-500 leading-snug">다른 사람의 시 · 가사는 출처를 함께 적어야 합니다.</p>
 
       {list.map((it, i) => {
         const d = CLASSIC_TEXT_INTER_DEFAULTS[it.type] || CLASSIC_TEXT_INTER_DEFAULTS.verse
@@ -195,21 +192,21 @@ export default function ClassicTextInterstitialEditor({ value, onChange, onRemov
               {it.type === 'verse' && (
                 <>
                   {txt('verseText', '본문', { area: true, rows: 4 })}
-                  {txt('versePull', '강조 한 줄 (선택)', { hint: '따옴표는 자동으로 붙어요.' })}
+                  {txt('versePull', '강조 한 줄 (선택)', { hint: '따옴표는 자동으로 붙습니다.' })}
                   {txt('verseSign', '서명')}
                 </>
               )}
 
               {it.type === 'quote' && (
                 <>
-                  {txt('quoteText', '원문', { area: true, hint: '영문 문장이면 단어마다 차례로 떠올라요.' })}
+                  {txt('quoteText', '원문', { area: true, hint: '영문 문장이면 단어마다 차례로 나타납니다.' })}
                   <label className="flex items-center gap-2 text-[11px] text-gray-500">
                     <Switch checked={it.quoteMark !== false} onCheckedChange={(v) => update(i, { quoteMark: v })} />
                     큰 따옴표 표시
                   </label>
                   {txt('quoteTrans', '번역 (선택)', { area: true, rows: 2 })}
                   {txt('quoteSource', '출처')}
-                  <Field label="배경 사진 (선택)" hint="사진을 넣으면 배경색으로 어둡게 덮어 글이 잘 보이게 해요.">
+                  <Field label="배경 사진 (선택)" hint="사진을 넣으면 배경색으로 어둡게 덮어 글이 잘 보입니다.">
                     <ClassicPhotoField
                       value={it.quoteBg}
                       onChange={(p) => update(i, { quoteBg: p || undefined })}
@@ -239,7 +236,7 @@ export default function ClassicTextInterstitialEditor({ value, onChange, onRemov
                   {txt('promTitle', '영문 제목')}
                   {txt('promSub', '한글 부제')}
                   {txt('promItems', '항목', { area: true, rows: 5, hint: '한 줄에 하나씩' })}
-                  {txt('promSide', '세로 글씨 (선택)', { hint: '오른쪽에 세로로 작게 들어가요.' })}
+                  {txt('promSide', '세로 글씨 (선택)', { hint: '오른쪽에 세로로 작게 들어갑니다.' })}
                   {txt('promNote', '아래 작은 문구')}
                   {txt('promSign', '서명')}
                 </>
@@ -321,7 +318,7 @@ export default function ClassicTextInterstitialEditor({ value, onChange, onRemov
                 </div>
               )}
               <GriunGlyphNote koId={koId} text={shownVals.join(' ')} fallbackLabel="청첩장 본문 글꼴" />
-              <Field label="배경" hint="기본·틴티드 배경은 디자인 탭의 색 설정을 따라요.">
+              <Field label="배경" hint="기본 · 틴티드 배경은 디자인 탭의 색 설정을 따릅니다.">
                 <div className="flex flex-wrap items-center gap-2">
                   <Segment options={BG_MODES} value={bgMode} onPick={(v) => update(i, { bgMode: v })} />
                   {bgMode === 'custom' && (
@@ -339,7 +336,7 @@ export default function ClassicTextInterstitialEditor({ value, onChange, onRemov
                   </div>
                 </Field>
               )}
-              <Field label="글자색 (선택)" hint="비워두면 배경 밝기에 맞춰 자동으로 정해져요.">
+              <Field label="글자색 (선택)" hint="비워 두면 배경 밝기에 맞춰 자동으로 정해집니다.">
                 <div className="flex items-center gap-2">
                   <ColorField label="글자색" value={it.textColor || '#351714'} onChange={(hex) => update(i, { textColor: hex })} />
                   {it.textColor ? (
@@ -371,7 +368,7 @@ export default function ClassicTextInterstitialEditor({ value, onChange, onRemov
                     <Switch checked={it.cardTexture !== false} onCheckedChange={(v) => update(i, { cardTexture: v })} />
                     종이 질감
                   </label>
-                  <Field label="배경 사진 (선택)" hint="카드 뒤에 사진을 깔아요. 배경색으로 살짝 덮어 카드가 잘 보이게 해요. 카드 글자색은 카드 색에 맞춰 자동으로 정해져요.">
+                  <Field label="배경 사진 (선택)" hint="카드 뒤에 사진을 깝니다. 배경색으로 살짝 덮어 카드가 잘 보이고, 카드 글자색은 카드 색에 맞춰 자동으로 정해집니다.">
                     <ClassicPhotoField
                       value={it.cardBg}
                       onChange={(p) => update(i, { cardBg: p || undefined })}

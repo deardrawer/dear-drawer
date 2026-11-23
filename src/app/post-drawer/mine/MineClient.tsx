@@ -78,10 +78,10 @@ function ddayLabel(days: number | null): string {
   return `결혼 ${days}일째`
 }
 
-export default function MineClient() {
+export default function MineClient({ initialView = 'home' }: { initialView?: 'home' | 'invitations' | 'share' } = {}) {
   const [state, setState] = useState<'loading' | 'auth' | 'empty' | 'ok' | 'error'>('loading')
   const [data, setData] = useState<Overview | null>(null)
-  const [view, setView] = useState<'home' | 'invitations' | 'share'>('home') // 서랍 홈 / 내 청첩장 / 하객 사진 공유
+  const [view, setView] = useState<'home' | 'invitations' | 'share'>(initialView) // 서랍 홈 / 내 청첩장 / 하객 사진 공유
   const [msgTab, setMsgTab] = useState<string>('all')
   const [copied, setCopied] = useState<string | null>(null)
   const [pwDraft, setPwDraft] = useState<Record<string, string>>({})
@@ -264,7 +264,13 @@ export default function MineClient() {
   return (
     <div className="pd">
       <nav className="nav">
-        {view === 'home' ? (
+        {view === 'share' && initialView === 'share' ? (
+          // 내 청첩장 페이지에서 바로 들어온 경우 — 돌아가는 곳도 내 청첩장
+          <Link href="/my-invitations" className="back" aria-label="내 청첩장으로">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+            내 청첩장
+          </Link>
+        ) : view === 'home' ? (
           <Link href="/post-drawer" className="back" aria-label="POST DRAWER로">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
             POST DRAWER
@@ -290,7 +296,6 @@ export default function MineClient() {
           <p className="sub">두 사람에게 도착한 마음을 다시 꺼내봅니다.</p>
           <div className="acts">
             <button type="button" className="btn btn-m btn-solid" onClick={() => setView('invitations')}>내 청첩장</button>
-            <button type="button" className="btn btn-m btn-assist" onClick={() => setView('share')}>사진 공유</button>
           </div>
         </header>
 

@@ -75,12 +75,6 @@ export default function Step3Record({}: Step3RecordProps) {
 
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 */}
-      <div className="space-y-1">
-        <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>본문 콘텐츠 작성</p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인사말, 프로필, 러브스토리 등 청첩장 콘텐츠를 작성해주세요.</p>
-      </div>
-
       {/* TRACK 01: 인사말 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -204,8 +198,6 @@ export default function Step3Record({}: Step3RecordProps) {
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           명언 / 가사
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>좋아하는 명언이나 노래 가사를 추가해보세요</p>
-
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">인용구</Label>
           <Textarea
@@ -251,10 +243,6 @@ export default function Step3Record({}: Step3RecordProps) {
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           프로필
         </h3>
-        <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>프로필 사진과 한줄 소개를 입력하면 CAST 섹션에 표시됩니다.</p>
-        </div>
-
         {/* 프레임 형태 선택 */}
         <div className="space-y-2">
           <Label className="text-sm font-medium">프레임 형태</Label>
@@ -467,10 +455,6 @@ export default function Step3Record({}: Step3RecordProps) {
               <p className="text-xs text-gray-500">비워두면 제목이 표시되지 않습니다.</p>
             </div>
 
-            <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-              <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>두 사람의 이야기를 앨범 트랙처럼 담아보세요.</p>
-            </div>
-
             {invitation.content.interviews.every(i => !i.question && !i.answer) && (
               <div className="flex justify-end">
                 <button onClick={applySampleInterviews} className="text-xs text-stone-500 hover:text-stone-700">
@@ -650,7 +634,6 @@ export default function Step3Record({}: Step3RecordProps) {
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
           <div>
             <Label className="text-sm font-medium">사진 확대(줌) 허용</Label>
-            <p className="text-xs text-gray-500">끄면 하객이 갤러리 사진을 확대할 수 없어요</p>
           </div>
           <Switch
             checked={invitation.gallery.zoomEnabled === true}
@@ -658,7 +641,7 @@ export default function Step3Record({}: Step3RecordProps) {
           />
         </div>
         {invitation.gallery.zoomEnabled === true && (
-          <p className="text-xs text-gray-500 leading-snug">사진은 2.5배까지 확대돼요. 더 크게 선명하게 확대하고 싶은 사진은 사진에 마우스를 올려 &apos;고화질&apos;로 다시 올려 주세요.</p>
+          <p className="text-xs text-gray-500 leading-snug">사진은 2.5배까지 확대됩니다. 선명한 확대가 필요한 사진은 마우스를 올려 &apos;고화질&apos;로 다시 올릴 수 있습니다.</p>
         )}
       </section>
 
@@ -673,8 +656,6 @@ export default function Step3Record({}: Step3RecordProps) {
             onCheckedChange={(checked) => updateNestedField('youtube.enabled', checked)}
           />
         </div>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>유튜브 영상을 추가하세요. 갤러리 아래에 표시됩니다.</p>
-
         {invitation.youtube?.enabled && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
             <div className="space-y-1.5">
@@ -890,12 +871,9 @@ export default function Step3Record({}: Step3RecordProps) {
         </div>
 
         {invitation.sectionVisibility.guidance && (<div className="space-y-4">
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>하객분들께 전달할 안내사항을 작성해주세요.</p>
-
           {/* 웨딩사진 */}
           <div className="p-4 rounded-lg space-y-3" style={{ background: 'var(--ed-surface-2)' }}>
             <Label className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>웨딩사진</Label>
-            <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>안내사항 상단에 표시될 웨딩사진을 추가해주세요.</p>
 
             {invitation.guidance?.image ? (
               <div className="space-y-3">
@@ -1155,15 +1133,12 @@ export default function Step3Record({}: Step3RecordProps) {
             onCheckedChange={() => toggleSectionVisibility('guestbook')}
           />
         </div>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
-
         {invitation.sectionVisibility.guestbook && (
           <div className="space-y-4">
             {/* 포스트잇 질문 표시 토글 */}
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div>
                 <p className="text-sm font-medium text-gray-800">포스트잇에 질문 표시</p>
-                <p className="text-xs text-gray-500">방명록 카드에 질문을 함께 보여줍니다</p>
               </div>
               <Switch
                 checked={invitation.content.guestbookShowQuestion !== false}
@@ -1175,8 +1150,6 @@ export default function Step3Record({}: Step3RecordProps) {
                 <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>질문 설정 (최대 10개)</p>
                 <span className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>{invitation.content.guestbookQuestions?.length || 0}/10</span>
               </div>
-              <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>하객분들에게 보여질 질문을 설정하세요.</p>
-
               <div className="space-y-2">
                 {(invitation.content.guestbookQuestions || []).map((question, index) => (
                   <div key={index} className="flex items-center gap-2">

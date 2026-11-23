@@ -11,6 +11,7 @@ import InvitationClientExhibit from "@/app/i/[slug]/InvitationClientExhibit";
 import InvitationClientEssay from "@/app/i/[slug]/InvitationClientEssay";
 import InvitationClientThankYou from "@/app/i/[slug]/InvitationClientThankYou";
 import InvitationClientTheSimple from "@/app/i/[slug]/InvitationClientTheSimple";
+import InvitationClientPhone from "@/app/i/[slug]/InvitationClientPhone";
 import InvitationClientClassic from "@/app/i/[slug]/InvitationClientClassic";
 import type { Invitation } from "@/types/invitation";
 import { isPublicViewClosed } from "@/lib/weddingLifecycle";
@@ -194,6 +195,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
       case 'narrative-exhibit': return InvitationClientExhibit;
       case 'narrative-essay': return InvitationClientEssay;
       case 'narrative-the-simple': return InvitationClientTheSimple;
+      case 'narrative-phone': return InvitationClientPhone;
       case 'narrative-classic': return InvitationClientClassic;
       default: return InvitationClient;
     }
@@ -263,6 +265,7 @@ export async function generateMetadata({ params }: PageProps) {
       rawThumbnailImage =
         (content?.meta?.ogImageCropped as string) ||
         extractImageUrl(content?.meta?.ogImage) ||
+        extractImageUrl(content?.phone?.wallpaper) ||
         extractImageUrl(content?.media?.coverImage) ||
         extractImageUrl(content?.heroImage) ||
         extractImageUrl(content?.mainImage) ||
@@ -280,7 +283,7 @@ export async function generateMetadata({ params }: PageProps) {
   const thumbnailImage = toAbsoluteImageUrl(rawThumbnailImage, baseUrl);
 
   const isThankYouTemplate = invitation.template_id === 'narrative-thankyou';
-  const isTheSimpleTemplate = invitation.template_id === 'narrative-the-simple';
+  const isTheSimpleTemplate = invitation.template_id === 'narrative-the-simple' || invitation.template_id === 'narrative-phone';
   const title = customTitle || (isThankYouTemplate ? `${groomName} & ${brideName}의 감사 인사` : `${groomName} ♥ ${brideName} 결혼합니다`);
 
   // THE SIMPLE: 날짜/장소 기반 자동 설명

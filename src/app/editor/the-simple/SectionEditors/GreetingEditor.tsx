@@ -66,7 +66,7 @@ export default function GreetingEditor({ value, onChange }: GreetingEditorProps)
           className="mt-1 w-full accent-stone-600 h-1"
         />
         <p className="mt-1 text-[10px] text-stone-400 leading-relaxed">
-          기기마다 줄바꿈이 다를 수 있습니다. 본문이 길 경우 크기를 줄여 보세요.
+          기기마다 줄바꿈이 다를 수 있습니다.
         </p>
       </div>
 
@@ -78,7 +78,7 @@ export default function GreetingEditor({ value, onChange }: GreetingEditorProps)
           className="h-3.5 w-3.5 accent-stone-700"
         />
         <span className="text-[11px] text-stone-600">
-          하단에 부모님 이름 표시 <span className="text-stone-400">(예: 김영호 · 박순영의 아들 · 한지훈)</span>
+          하단에 부모님 이름 표시
         </span>
       </label>
       {value.showParents && (

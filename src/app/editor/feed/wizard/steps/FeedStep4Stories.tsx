@@ -154,10 +154,7 @@ export default function FeedStep4Stories({
     <div className="p-6 space-y-8">
       {/* 안내 */}
       <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>콘텐츠 작성</p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          인사말, 프로필, 러브스토리 등 청첩장 콘텐츠를 작성해주세요.
-        </p>
+        <p className="text-base font-medium" style={{ color: 'var(--ed-text)' }}>콘텐츠 작성</p>
       </div>
 
       {/* 인사말 */}
@@ -190,10 +187,6 @@ export default function FeedStep4Stories({
           />
         </div>
         {data.sectionVisibility?.profile !== false && <>
-        <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>프로필 사진과 소개 글을 입력하면 인트로 섹션에 표시됩니다.</p>
-        </div>
-
         {/* 신랑 프로필 */}
         <div className="p-4 bg-gray-50 rounded-lg space-y-3">
           <p className="text-sm font-medium text-gray-700">신랑</p>
@@ -282,15 +275,10 @@ export default function FeedStep4Stories({
           />
         </div>
         {data.sectionVisibility?.loveStory !== false && <>
-        <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인스타그램 포스트처럼 사진과 캡션으로 두 사람의 이야기를 들려주세요. 최대 10개까지 추가할 수 있어요.</p>
-        </div>
-
         {/* Empty state */}
         {stories.length === 0 && (
           <div className="py-8 text-center">
-            <p className="text-sm text-gray-500 mb-1">아직 러브스토리가 없어요</p>
-            <p className="text-xs text-gray-400">사진과 캡션으로 사랑 이야기를 들려주세요</p>
+            <p className="text-sm text-gray-500">아직 러브스토리가 없습니다</p>
           </div>
         )}
 
@@ -385,7 +373,6 @@ export default function FeedStep4Stories({
             onChange={(checked) => updateNestedData('youtube.enabled', checked)}
           />
         </div>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>유튜브 영상을 추가하세요. 갤러리 하단에 표시됩니다.</p>
 
         {data.youtube?.enabled && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
@@ -397,7 +384,6 @@ export default function FeedStep4Stories({
                 onChange={(e) => updateNestedData('youtube.url', e.target.value)}
                 placeholder="https://www.youtube.com/watch?v=..."
               />
-              <p className="text-xs text-gray-400">YouTube 링크를 붙여넣기 해주세요.</p>
             </div>
             <div className="space-y-1.5">
               <label className={labelClass}>영상 제목</label>
@@ -407,7 +393,6 @@ export default function FeedStep4Stories({
                 onChange={(e) => updateNestedData('youtube.title', e.target.value)}
                 placeholder="우리의 웨딩 영상"
               />
-              <p className="text-xs text-gray-400">비워두면 영상만 표시됩니다.</p>
             </div>
           </div>
         )}
@@ -418,7 +403,6 @@ export default function FeedStep4Stories({
         <h3 className="text-base font-semibold text-gray-900">
           오시는 길
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>교통 안내 정보를 입력해주세요.</p>
 
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
           <div className="space-y-1.5">
@@ -559,7 +543,6 @@ export default function FeedStep4Stories({
             onChange={(e) => updateNestedData('postCaptions.weddingInfo', e.target.value)}
             placeholder="우리의 특별한 날에 초대합니다 💌"
           />
-          <p className="text-xs text-gray-400">게스트뷰에서 오시는길 포스트 하단에 표시됩니다.</p>
         </div>
       </section>
 
@@ -568,7 +551,6 @@ export default function FeedStep4Stories({
         <h3 className="text-base font-semibold text-gray-900">
           안내사항
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>하객분들께 전달할 안내사항을 작성해주세요.</p>
 
         <div className="space-y-3">
           {/* 8개 기본 항목 */}
@@ -691,7 +673,6 @@ export default function FeedStep4Stories({
               onChange={(e) => updateNestedData('postCaptions.guidance', e.target.value)}
               placeholder="결혼식 안내사항을 알려드립니다 ✨"
             />
-            <p className="text-xs text-gray-400">게스트뷰에서 안내사항 포스트 하단에 표시됩니다.</p>
           </div>
         </div>
       </section>
@@ -730,7 +711,6 @@ export default function FeedStep4Stories({
               onChange={(e) => updateNestedData('content.thankYou.caption', e.target.value)}
               placeholder="축하해주셔서 감사합니다"
             />
-            <p className="text-xs text-gray-400">포스트 하단에 표시되는 짧은 문구입니다. 비워두면 &quot;축하해주셔서 감사합니다&quot;로 표시됩니다.</p>
           </div>
           <div className="space-y-1.5">
             <label className={labelClass}>서명</label>
@@ -755,7 +735,6 @@ export default function FeedStep4Stories({
             onChange={(checked) => updateNestedData('sectionVisibility.guestbook', checked)}
           />
         </div>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
 
         {data.sectionVisibility.guestbook && (
           <div className="p-4 rounded-lg space-y-3" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
@@ -763,7 +742,6 @@ export default function FeedStep4Stories({
               <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>질문 설정 (최대 10개)</p>
               <span className="text-xs" style={{ color: 'var(--ed-text-faint)' }}>{questions.length}/10</span>
             </div>
-            <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>하객분들에게 보여질 질문을 설정하세요.</p>
 
             <div className="space-y-2">
               {questions.map((question, index) => (

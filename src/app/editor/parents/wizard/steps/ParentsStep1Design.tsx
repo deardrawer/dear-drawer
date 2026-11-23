@@ -1,16 +1,16 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Play, Pause, Upload, X, Loader2, ImageIcon } from 'lucide-react'
-import { COLOR_THEMES, type ColorThemeId } from '@/components/parents/types'
-import { hexToSealFilter } from '@/components/parents/EnvelopeScreen'
+import { FONT_STYLES, HEADING_FONTS, type FontStyleId, type HeadingFontId } from '@/components/parents/types'
 import { bgmPresets } from '@/lib/bgmPresets'
 import { uploadImage } from '@/lib/imageUpload'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import ColorField from '@/components/editor/ColorField'
 import type { ParentsInvitationData } from '../../page'
+import { PARENTS_COLOR_PRESETS, matchColorPreset, colorPresetsFor } from '@/components/parents/stylePresets'
 
 interface ParentsStep1DesignProps {
   data: ParentsInvitationData
@@ -19,37 +19,61 @@ interface ParentsStep1DesignProps {
   invitationId: string | null
 }
 
-// 폰트 스타일 옵션
-const FONT_STYLE_OPTIONS = [
-  { id: 'soft', name: '부드러운 바탕', desc: '고운바탕', preview: '따뜻하고 부드러운' },
-  { id: 'classic', name: '고전 세리프', desc: '함렛 (Hahmlet)', preview: '고급스럽고 정제된' },
-  { id: 'modern', name: '모던 고딕', desc: 'IBM Plex Sans KR', preview: '깔끔하고 현대적' },
-  { id: 'friendly', name: '친근한 고딕', desc: '나눔고딕', preview: '부드럽고 읽기 쉬운' },
-  { id: 'ridibatang', name: '가독성 좋은 바탕', desc: 'RIDIBatang', preview: '깔끔하고 가독성 좋은' },
-  { id: 'okticon', name: '손글씨체', desc: 'Okticon', preview: '손글씨 느낌의 귀여운' },
-  { id: 'pretendard', name: '프리텐다드', desc: 'Pretendard', preview: '모던하고 깔끔한' },
-  { id: 'contemporary', name: '컨템포러리', desc: '전남교육바른체', preview: '세련되고 현대적인' },
-  { id: 'luxury', name: '포멀', desc: '이랜드초이스체', preview: '격식있고 우아한' },
-  { id: 'gulim', name: '굴림', desc: '조선굴림체', preview: '전통적이고 단정한' },
-  { id: 'neathand', name: '또박또박', desc: '오무다예체', preview: '또박또박 정성스러운' },
-  { id: 'roundhand', name: '둥근손글씨', desc: '온글잎 콘콘체', preview: '둥글둥글 귀여운' },
-  { id: 'roundgothic', name: '둥근고딕', desc: '나눔스퀘어라운드', preview: '둥글고 부드러운' },
-  { id: 'suit', name: 'SUIT', desc: 'SUIT', preview: '깔끔하고 모던한' },
-  { id: 'myungjo', name: '명조', desc: '조선일보명조체', preview: '격조있는 명조' },
-  { id: 'dandi', name: '감성 명조', desc: '부산단디명조', preview: '따뜻한 손맛 명조' },
-] as const
+// C안 포인트 색 — 흰 바탕 위에서 잘 읽히는 짙은 색만 (먹색 = 기본, 저장값 없음)
+const POINT_COLORS: { label: string; value?: string }[] = [
+  { label: '먹색 (기본)' },
+  { label: '네이비', value: '#2B3A55' },
+  { label: '딥그린', value: '#2F4A3A' },
+  { label: '와인', value: '#5A2A35' },
+  { label: '브라운', value: '#5A4535' },
+  { label: '차콜', value: '#3D3D3D' },
+]
 
-// 틴트 적용 섹션 목록 (키는 ParentsInvitationView의 secTinted 키와 일치)
-const TINT_SECTIONS = [
-  { key: 'greeting', label: '인사말' },
-  { key: 'couple', label: '커플 소개' },
-  { key: 'timeline', label: '스토리' },
+// 샘플 청첩장(/sample/parents)에 쓰인 서체 — '추천' 표시
+const RECOMMENDED_HEADING: HeadingFontId = 'chosun'
+const RECOMMENDED_BODY: FontStyleId = 'ridibatang'
+
+function RecommendBadge() {
+  return (
+    <span
+      className="inline-block align-middle text-[10px] font-medium leading-none px-1.5 py-[3px] ml-1.5"
+      style={{ borderRadius: 'var(--ed-radius-pill)', backgroundColor: 'var(--ed-accent-weak)', color: 'var(--ed-accent)' }}
+    >
+      추천
+    </span>
+  )
+}
+
+// 섹션 배경 프리셋
+const BASE_BG_PRESETS = ['#FFFFFF', '#FAFAF9', '#F4F4F5', '#1F1D1A']
+const TINT_BG_PRESETS = ['#F4F4F5', '#EEF0F2', '#F1F3EF', '#F5F0F0', '#2B3A55', '#1F1D1A']
+// 섹션 목록 (본문 순서) — 키는 ParentsInvitationView 의 secTinted 키
+const SECTION_BG_LIST: { key: string; label: string }[] = [
+  { key: 'greeting', label: '모시는 글' },
+  { key: 'timeline', label: '가족 이야기' },
+  { key: 'couple', label: '대표 사진 · 양가' },
+  { key: 'youtube', label: '영상' },
   { key: 'date', label: '예식 일시' },
   { key: 'venue', label: '오시는 길' },
+  { key: 'gallery', label: '갤러리' },
   { key: 'weddingInfo', label: '결혼식 안내' },
   { key: 'account', label: '마음 전하실 곳' },
-  { key: 'share', label: '사진 공유' },
-] as const
+  { key: 'share', label: '공유 · 맺음' },
+]
+
+// 부제 · 제목 색 팔레트 (point = 고른 포인트 색)
+const TEXT_COLORS: { label: string; value: string }[] = [
+  { label: '먹색', value: '#1F1D1A' },
+  { label: '보조 회색', value: '#8A8378' },
+  { label: '포인트 색', value: 'point' },
+  { label: '네이비', value: '#2B3A55' },
+  { label: '딥그린', value: '#2F4A3A' },
+  { label: '버건디', value: '#5A2A35' },
+  { label: '브라운', value: '#5A4535' },
+]
+
+// 본문 폰트 선택지 (기존 fontStyle 값 그대로 저장 — 이전 청첩장 본문 서체 유지)
+const BODY_FONT_OPTIONS: FontStyleId[] = ['elegant', 'pretendard', 'ridibatang', 'soft', 'myungjo', 'classic', 'dandi', 'suit', 'modern', 'friendly', 'roundgothic', 'contemporary', 'luxury', 'gulim', 'neathand', 'roundhand', 'okticon']
 
 export default function ParentsStep1Design({
   data,
@@ -61,6 +85,35 @@ export default function ParentsStep1Design({
   const [isUploadingAudio, setIsUploadingAudio] = useState(false)
   const [isUploadingBg, setIsUploadingBg] = useState(false)
   const bgmAudioRef = useRef<HTMLAudioElement>(null)
+  const currentPoint = (data.customPrimaryColor || '').toUpperCase()
+  const [detailOpen, setDetailOpen] = useState(false)
+  const selectedPreset = matchColorPreset(data, data.sender?.side)
+
+  // 컬러 스타일 적용 — 색 관련 값만 바꿈
+  const applyColorPreset = (id: string) => {
+    const preset = PARENTS_COLOR_PRESETS.find((p) => p.id === id)
+    if (!preset) return
+    const v = preset.values
+    updateData({
+      customPrimaryColor: v.customPrimaryColor,
+      captionColor: v.captionColor,
+      titleColor: v.titleColor,
+      sectionBaseColor: v.sectionBaseColor,
+      sectionTintColor: v.sectionTintColor,
+      tintedSections: v.tintedSections && v.tintedSections.length ? [...v.tintedSections] : undefined,
+    })
+    updateNestedData('envelope.letterBg', v.letterBg)
+  }
+
+  // 새 청첩장: 색을 아직 고르지 않았으면 '샘플 (기본)' 색으로 시작 (한 번만)
+  const presetInitRef = useRef(false)
+  useEffect(() => {
+    if (presetInitRef.current) return
+    presetInitRef.current = true
+    if (!invitationId && selectedPreset === 'white' && !data.envelope?.letterBg) applyColorPreset('sample')
+  })
+  // 틴티드 배경 기본값: 포인트 색을 고른 경우 그 색을 연하게, 아니면 연회색
+  const autoTint = data.customPrimaryColor ? `color-mix(in srgb, ${data.customPrimaryColor} 7%, #FFFFFF)` : '#F4F4F5'
 
   // 커스텀 BGM인지 확인 (프리셋 URL이 아닌 경우)
   const isCustomBgm = data.bgm?.url && !bgmPresets.some(p => p.url === data.bgm?.url)
@@ -118,300 +171,80 @@ export default function ParentsStep1Design({
 
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 */}
-      <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-        청첩장의 분위기를 결정하는 컬러와 폰트, 배경음악을 선택해주세요.
-      </p>
-
-      {/* 컬러 테마 */}
-      <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900">
-          컬러 테마
+      {/* 컬러 스타일 — 색만 한 번에 바꿈 (폰트 · 사진 모양 · 내용은 그대로) */}
+      <section className="space-y-3">
+        <h3 className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>
+          컬러 고르기
         </h3>
-
-        <div className="grid grid-cols-2 gap-3">
-          {(Object.keys(COLOR_THEMES) as ColorThemeId[]).map((themeId) => {
-            const theme = COLOR_THEMES[themeId]
-            const isSelected = (data.colorTheme || 'burgundy') === themeId
+        <div className="grid grid-cols-4 gap-2">
+          {colorPresetsFor(data.sender?.side).map((preset) => {
+            const v = preset.values
+            const isSelected = selectedPreset === preset.id
+            const point = v.customPrimaryColor || '#1F1D1A'
+            const base = v.sectionBaseColor || '#FFFFFF'
+            const tint = v.sectionTintColor || (v.customPrimaryColor ? `color-mix(in srgb, ${v.customPrimaryColor} 7%, #FFFFFF)` : '#F4F4F5')
+            const hasTint = (v.tintedSections || []).length > 0
             return (
               <button
-                key={themeId}
-                onClick={() => updateData({ colorTheme: themeId, customPrimaryColor: undefined, customAccentColor: undefined, customBackgroundColor: undefined, customTextColor: undefined, cardTextColor: undefined })}
-                className={`p-3 rounded-lg border-2 transition-all text-left ${
-                  isSelected
-                    ? 'border-gray-800 bg-gray-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+                key={preset.id}
+                type="button"
+                onClick={() => applyColorPreset(preset.id)}
+                title={preset.mood}
+                className="p-1.5 transition-all"
+                style={{
+                  borderRadius: 'var(--ed-radius-sm)',
+                  border: `1.5px solid ${isSelected ? 'var(--ed-accent)' : 'var(--ed-border)'}`,
+                  backgroundColor: isSelected ? 'var(--ed-accent-weak)' : 'var(--ed-surface)',
+                }}
               >
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-6 h-6 rounded-full border border-white shadow-sm"
-                    style={{ backgroundColor: theme.primary }}
-                  />
-                  <div
-                    className="w-4 h-4 rounded-full border border-white shadow-sm -ml-3"
-                    style={{ backgroundColor: theme.accent }}
-                  />
-                  <span className="text-xs font-medium ml-1">{theme.name}</span>
-                </div>
+                {/* 색 조합 — 기본 배경 위 포인트 점 + 아래 틴티드 띠 */}
+                <span className="block relative overflow-hidden h-9" style={{ borderRadius: 4, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)', backgroundColor: base }}>
+                  <span className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full" style={{ background: point }} />
+                  <span className="absolute left-0 right-0 bottom-0 h-3" style={{ background: hasTint ? tint : base, boxShadow: hasTint ? 'none' : 'inset 0 1px 0 rgba(0,0,0,0.06)' }} />
+                </span>
+                <span className="block text-[11px] font-semibold mt-1 text-center leading-tight truncate" style={{ color: 'var(--ed-text)' }}>{preset.name.replace(' (기본)', '')}</span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* 첫 화면 — 사진 사용 / 사진 없이(글자만) */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>
+          첫 화면
+        </h3>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { label: '사진 사용', value: false },
+            { label: '사진 없이 (글자만)', value: true },
+          ].map((opt) => {
+            const isSelected = !!data.envelope?.textOnly === opt.value
+            return (
+              <button
+                key={opt.label}
+                type="button"
+                onClick={() => updateNestedData('envelope.textOnly', opt.value ? true : undefined)}
+                className="py-2.5 text-sm font-medium transition-all"
+                style={{
+                  borderRadius: 'var(--ed-radius-sm)',
+                  border: `1.5px solid ${isSelected ? 'var(--ed-accent)' : 'var(--ed-border)'}`,
+                  backgroundColor: isSelected ? 'var(--ed-accent-weak)' : 'var(--ed-surface)',
+                  color: 'var(--ed-text)',
+                }}
+              >
+                {opt.label}
               </button>
             )
           })}
         </div>
 
-        {/* 커스텀 색상 조정 */}
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-4">
+        {!data.envelope?.textOnly && (
+          <>
+            {/* 첫 화면 사진 (기존 봉투 배경 이미지) */}
+        <div className="p-4 space-y-3" style={{ backgroundColor: 'var(--ed-surface-2)', borderRadius: 'var(--ed-radius)' }}>
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-700">색상 커스텀</p>
-            {(data.customPrimaryColor || data.customAccentColor || data.customBackgroundColor || data.customTextColor || data.cardTextColor) && (
-              <button
-                type="button"
-                onClick={() => updateData({ customPrimaryColor: undefined, customAccentColor: undefined, customBackgroundColor: undefined, customTextColor: undefined, cardTextColor: undefined })}
-                className="text-xs text-gray-500 hover:text-gray-700 underline"
-              >
-                테마 기본 색상으로 복원
-              </button>
-            )}
-          </div>
-          <p className="text-xs text-gray-500">선택한 테마의 색상을 원하는 색상으로 변경할 수 있어요.</p>
-
-          <div className="grid grid-cols-2 gap-3">
-            {/* 메인 컬러 */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-600">메인 컬러</label>
-              <p className="text-[10px] text-gray-400 leading-tight">봉투, 테두리</p>
-              <div className="flex flex-col items-center gap-1">
-                <ColorField
-                  label="메인 컬러"
-                  value={data.customPrimaryColor || COLOR_THEMES[data.colorTheme || 'burgundy'].primary}
-                  onChange={(hex) => updateData({ customPrimaryColor: hex })}
-                />
-              </div>
-            </div>
-
-            {/* 포인트 컬러 */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-600">포인트 컬러</label>
-              <p className="text-[10px] text-gray-400 leading-tight">날짜, 장식</p>
-              <div className="flex flex-col items-center gap-1">
-                <ColorField
-                  label="포인트 컬러"
-                  value={data.customAccentColor || COLOR_THEMES[data.colorTheme || 'burgundy'].accent}
-                  onChange={(hex) => updateData({ customAccentColor: hex })}
-                />
-              </div>
-            </div>
-
-            {/* 배경 컬러 */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-600">배경 컬러</label>
-              <p className="text-[10px] text-gray-400 leading-tight">본문 배경</p>
-              <div className="flex flex-col items-center gap-1">
-                <ColorField
-                  label="배경 컬러"
-                  value={data.customBackgroundColor || COLOR_THEMES[data.colorTheme || 'burgundy'].background}
-                  onChange={(hex) => updateData({ customBackgroundColor: hex })}
-                />
-              </div>
-            </div>
-
-            {/* 배경 위 텍스트 컬러 */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-600">배경 텍스트</label>
-              <p className="text-[10px] text-gray-400 leading-tight">배경 위 글자</p>
-              <div className="flex flex-col items-center gap-1">
-                <ColorField
-                  label="배경 텍스트"
-                  value={data.customTextColor || COLOR_THEMES[data.colorTheme || 'burgundy'].text}
-                  onChange={(hex) => updateData({ customTextColor: hex })}
-                />
-              </div>
-            </div>
-
-            {/* 카드 위 텍스트 컬러 */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-600">카드 텍스트</label>
-              <p className="text-[10px] text-gray-400 leading-tight">흰 카드 위 글자<br />(초대·달력·안내)</p>
-              <div className="flex flex-col items-center gap-1">
-                <ColorField
-                  label="카드 텍스트"
-                  value={data.cardTextColor || COLOR_THEMES[data.colorTheme || 'burgundy'].text}
-                  onChange={(hex) => updateData({ cardTextColor: hex })}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 미리보기 스와치 */}
-          <div className="flex items-center gap-3 pt-2">
-            <span className="text-xs text-gray-500">미리보기:</span>
-            <div className="flex items-center gap-1">
-              <div
-                className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
-                style={{ backgroundColor: data.customPrimaryColor || COLOR_THEMES[data.colorTheme || 'burgundy'].primary }}
-              />
-              <div
-                className="w-6 h-6 rounded-full border-2 border-white shadow-sm -ml-2"
-                style={{ backgroundColor: data.customAccentColor || COLOR_THEMES[data.colorTheme || 'burgundy'].accent }}
-              />
-              <div
-                className="w-6 h-6 rounded-full border-2 border-white shadow-sm -ml-2"
-                style={{ backgroundColor: data.customBackgroundColor || COLOR_THEMES[data.colorTheme || 'burgundy'].background }}
-              />
-            </div>
-            {(data.customPrimaryColor || data.customAccentColor || data.customBackgroundColor || data.customTextColor || data.cardTextColor) && (
-              <span className="text-[10px]" style={{ color: 'var(--ed-text-muted)' }}>커스텀 적용됨</span>
-            )}
-          </div>
-        </div>
-
-        {/* 틴티드 배경 */}
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-medium text-gray-700">틴티드 배경</p>
-              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">본문 배경을 은은한 색으로. 인사말은 흰 카드로 표시되고 섹션 구분선은 자동으로 숨겨집니다.</p>
-            </div>
-            <Switch
-              checked={!!data.tintedBg}
-              onCheckedChange={(checked) => updateData({
-                tintedBg: checked,
-                ...(checked && !data.tintedColor ? { tintedColor: '#EDE4D6' } : {}),
-                // 처음 켤 때 기본 틴트 섹션 = 인사말·커플소개·공유. 나머지는 흰 배경으로 초기화
-                ...(checked && data.tintOffSections === undefined ? { tintOffSections: ['timeline', 'date', 'venue', 'weddingInfo', 'account'] } : {}),
-              })}
-            />
-          </div>
-          {data.tintedBg && (
-            <div className="flex items-center justify-between pt-1">
-              <label className="text-xs font-medium text-gray-600">틴트 색상</label>
-              <ColorField
-                label="틴트 색상"
-                value={data.tintedColor || '#EDE4D6'}
-                onChange={(hex) => updateData({ tintedColor: hex })}
-              />
-            </div>
-          )}
-          {data.tintedBg && (
-            <div className="flex items-center justify-between pt-1">
-              <div>
-                <label className="text-xs font-medium text-gray-600">틴트 텍스트</label>
-                <p className="text-[10px] text-gray-400">틴트 배경 위 글자 (어두운 틴트용)</p>
-              </div>
-              <ColorField
-                label="틴트 텍스트"
-                value={data.tintedTextColor || '#FFFFFF'}
-                onChange={(hex) => updateData({ tintedTextColor: hex })}
-              />
-            </div>
-          )}
-          {data.tintedBg && (
-            <div className="pt-2 space-y-2 border-t border-gray-200">
-              <p className="text-xs font-medium text-gray-600 pt-2">틴트 적용 섹션</p>
-              <p className="text-[10px] text-gray-400">끄면 해당 섹션만 흰 배경으로 표시됩니다.</p>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                {TINT_SECTIONS.map((s) => {
-                  const off = (data.tintOffSections || []).includes(s.key)
-                  return (
-                    <label key={s.key} className="flex items-center justify-between gap-2 py-0.5">
-                      <span className="text-xs text-gray-600">{s.label}</span>
-                      <Switch
-                        checked={!off}
-                        onCheckedChange={(checked) => {
-                          const cur = data.tintOffSections || []
-                          const next = checked ? cur.filter((k) => k !== s.key) : [...cur, s.key]
-                          updateData({ tintOffSections: next })
-                        }}
-                        className="scale-75 origin-right"
-                      />
-                    </label>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 실링스티커 색상 */}
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-700">실링스티커 색상</p>
-            {data.sealColor && (
-              <button
-                type="button"
-                onClick={() => updateData({ sealColor: undefined })}
-                className="text-xs text-gray-500 hover:text-gray-700 underline"
-              >
-                기본 색상으로 복원
-              </button>
-            )}
-          </div>
-          <p className="text-xs text-gray-500">봉투 인트로의 실링(밀랍) 스티커 색상을 변경할 수 있어요.</p>
-
-          {/* 실링 미리보기 */}
-          <div className="flex justify-center py-2">
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: data.customBackgroundColor || COLOR_THEMES[data.colorTheme || 'burgundy'].background }}
-            >
-              <img
-                src="/images/shilling-gray.png"
-                alt="실링 미리보기"
-                className="w-16 h-16 object-contain"
-                style={{
-                  filter: data.sealColor
-                    ? hexToSealFilter(data.sealColor)
-                    : 'sepia(1) saturate(3) hue-rotate(-10deg) brightness(0.6)',
-                }}
-              />
-            </div>
-          </div>
-
-          {/* 컬러 피커 + hex */}
-          <div className="flex items-center justify-center gap-3">
-            <ColorField
-              label="실링스티커 색상"
-              value={data.sealColor || '#722F37'}
-              onChange={(hex) => updateData({ sealColor: hex })}
-            />
-          </div>
-
-          {/* 프리셋 색상들 - 2줄 그리드 */}
-          <div className="grid grid-cols-4 gap-2">
-            {[
-              { color: '#722F37', label: '버건디' },
-              { color: '#1E3A5F', label: '네이비' },
-              { color: '#C9A962', label: '골드' },
-              { color: '#1A1A1A', label: '블랙' },
-              { color: '#F5ECD7', label: '아이보리' },
-              { color: '#F2C4C4', label: '로즈핑크' },
-              { color: '#C8B8DB', label: '라벤더' },
-              { color: '#E8E8E8', label: '화이트' },
-            ].map(({ color, label }) => (
-              <button
-                key={color}
-                type="button"
-                onClick={() => updateData({ sealColor: color })}
-                className={`flex flex-col items-center gap-1 p-1.5 rounded-lg transition-all ${
-                  data.sealColor === color ? 'bg-gray-200 ring-1 ring-gray-400' : 'hover:bg-gray-100'
-                }`}
-              >
-                <div
-                  className={`w-7 h-7 rounded-full border-2 transition-all ${
-                    data.sealColor === color ? 'border-gray-800 scale-110' : 'border-gray-300'
-                  }`}
-                  style={{ backgroundColor: color }}
-                />
-                <span className="text-[9px] text-gray-500">{label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* 봉투 배경 이미지 */}
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-700">봉투 배경 이미지</p>
+            <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>첫 화면 사진</p>
             {data.envelope?.backgroundImage && (
               <button
                 type="button"
@@ -419,14 +252,13 @@ export default function ParentsStep1Design({
                   updateNestedData('envelope.backgroundImage', undefined)
                   updateNestedData('envelope.backgroundImageSettings', undefined)
                 }}
-                className="text-xs text-gray-500 hover:text-gray-700 underline"
+                className="text-xs underline"
+                style={{ color: 'var(--ed-text-muted)' }}
               >
                 삭제
               </button>
             )}
           </div>
-          <p className="text-xs text-gray-500">봉투 화면 뒤에 배경 이미지를 넣을 수 있어요.</p>
-
           {data.envelope?.backgroundImage ? (
             <div className="space-y-3">
               {/* 크롭 에디터 */}
@@ -479,8 +311,7 @@ export default function ParentsStep1Design({
               ) : (
                 <>
                   <ImageIcon className="w-8 h-8 mb-2 text-gray-400" />
-                  <p className="text-xs text-gray-500">클릭하여 업로드</p>
-                  <p className="text-[10px] text-gray-400 mt-1">꽃, 풍경 등</p>
+                  <p className="text-xs text-gray-500">눌러서 업로드</p>
                 </>
               )}
               <input
@@ -508,92 +339,348 @@ export default function ParentsStep1Design({
               />
             </label>
           )}
+          {!data.envelope?.backgroundImage && (
+            <p className="text-[11px] text-center" style={{ color: 'var(--ed-text-muted)' }}>사진을 올리면 첫 화면에 표시됩니다.</p>
+          )}
         </div>
 
-        {/* 봉투 안내 문구 색상 */}
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-700">안내 문구 색상</p>
-            {data.envelope?.hintTextColor && (
-              <button
-                type="button"
-                onClick={() => updateNestedData('envelope.hintTextColor', undefined)}
-                className="text-xs text-gray-500 hover:text-gray-700 underline"
-              >
-                기본으로 복원
-              </button>
-            )}
-          </div>
-          <p className="text-xs text-gray-500">&ldquo;편지가 도착했어요&rdquo; 안내 문구의 글자색을 변경할 수 있어요.</p>
 
-          <div className="flex items-center gap-3">
-            <ColorField
-              label="안내 문구 색상"
-              value={data.envelope?.hintTextColor || '#FFFFFF'}
-              onChange={(hex) => updateNestedData('envelope.hintTextColor', hex)}
-            />
-          </div>
-
-          {/* 프리셋 */}
-          <div className="grid grid-cols-4 gap-2">
-            {[
-              { color: '#FFFFFF', label: '화이트' },
-              { color: '#1A1A1A', label: '블랙' },
-              { color: '#F5ECD7', label: '아이보리' },
-              { color: '#C4A882', label: '샌드' },
-            ].map(({ color, label }) => (
-              <button
-                key={color}
-                type="button"
-                onClick={() => updateNestedData('envelope.hintTextColor', color)}
-                className={`flex flex-col items-center gap-1 p-1.5 rounded-lg transition-all ${
-                  data.envelope?.hintTextColor === color ? 'bg-gray-200 ring-1 ring-gray-400' : 'hover:bg-gray-100'
-                }`}
-              >
-                <div
-                  className={`w-7 h-7 rounded-full border-2 transition-all ${
-                    data.envelope?.hintTextColor === color ? 'border-gray-800 scale-110' : 'border-gray-300'
-                  }`}
-                  style={{ backgroundColor: color }}
-                />
-                <span className="text-[9px] text-gray-500">{label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 폰트 스타일 */}
-      <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900">
-          폰트 스타일
-        </h3>
-
-        <div className="space-y-2">
-          {FONT_STYLE_OPTIONS.map((font) => {
-            const isSelected = (data.fontStyle || 'soft') === font.id
-            return (
-              <button
-                key={font.id}
-                onClick={() => updateData({ fontStyle: font.id as typeof data.fontStyle })}
-                className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
-                  isSelected
-                    ? 'border-gray-800 bg-gray-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
+            {/* 받는 분 이름 색 — 사진 위 이름에만 적용되므로 사진이 있을 때만 표시 */}
+            {data.envelope?.backgroundImage && (
+              <div className="p-4 space-y-3" style={{ backgroundColor: 'var(--ed-surface-2)', borderRadius: 'var(--ed-radius)' }}>
                 <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium text-sm">{font.name}</div>
-                    <div className="text-xs text-gray-500">{font.desc}</div>
-                  </div>
-                  <div className="text-[10px] text-gray-400">{font.preview}</div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>받는 분 이름 색</p>
+                  <ColorField
+                    label="받는 분 이름 색"
+                    value={data.envelope?.hintTextColor || '#FFFFFF'}
+                    onChange={(hex) => updateNestedData('envelope.hintTextColor', hex)}
+                  />
                 </div>
-              </button>
-            )
-          })}
-        </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { color: undefined, swatch: '#FFFFFF', label: '화이트' },
+                    { color: '#1F1D1A', swatch: '#1F1D1A', label: '먹색' },
+                    { color: '#F4F4F5', swatch: '#F4F4F5', label: '연회색' },
+                    { color: data.customPrimaryColor || '#1F1D1A', swatch: data.customPrimaryColor || '#1F1D1A', label: '포인트 색' },
+                  ].map(({ color, swatch, label }) => {
+                    const cur = data.envelope?.hintTextColor
+                    const isSelected = color ? (cur || '').toUpperCase() === color.toUpperCase() : (!cur || cur.toUpperCase() === '#FFFFFF')
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => updateNestedData('envelope.hintTextColor', color)}
+                        className="flex flex-col items-center gap-1 py-1.5 transition-all"
+                        style={{
+                          borderRadius: 'var(--ed-radius-sm)',
+                          border: `1.5px solid ${isSelected ? 'var(--ed-accent)' : 'transparent'}`,
+                          backgroundColor: isSelected ? 'var(--ed-accent-weak)' : 'transparent',
+                        }}
+                      >
+                        <span className="w-7 h-7 rounded-full" style={{ backgroundColor: swatch, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.15)' }} />
+                        <span className="text-[11px]" style={{ color: 'var(--ed-text)' }}>{label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </section>
+
+      {/* 세부 조정 — 처음엔 접힘 */}
+      <section>
+        <button
+          type="button"
+          onClick={() => setDetailOpen((o) => !o)}
+          className="w-full flex items-center justify-between py-3 px-4"
+          style={{ borderRadius: 'var(--ed-radius-sm)', backgroundColor: 'var(--ed-surface-2)', color: 'var(--ed-text)' }}
+          aria-expanded={detailOpen}
+        >
+          <span className="text-sm font-semibold">세부 조정</span>
+          <span className="text-[11px]" style={{ color: 'var(--ed-text-muted)' }}>
+            포인트 색 · 글자 색 · 섹션 배경 · 폰트 {detailOpen ? '▲' : '▼'}
+          </span>
+        </button>
+        {detailOpen && (
+          <div className="pt-5 space-y-8">
+          {/* 포인트 색 — C안은 흰 바탕 · 먹색 기본, 포인트 색만 고객이 고름 */}
+          <section className="space-y-4">
+            <h4 className="text-sm font-semibold" style={{ color: 'var(--ed-text)' }}>
+              포인트 색
+            </h4>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--ed-text-muted)' }}>
+              부제, 예식일, 버튼 등에 쓰입니다.
+            </p>
+
+            <div className="grid grid-cols-3 gap-2">
+              {POINT_COLORS.map((c) => {
+                const isSelected = c.value ? currentPoint === c.value : !data.customPrimaryColor
+                return (
+                  <button
+                    key={c.label}
+                    type="button"
+                    onClick={() => updateData({ customPrimaryColor: c.value })}
+                    className="flex items-center gap-2 p-2.5 text-left transition-all"
+                    style={{
+                      borderRadius: 'var(--ed-radius-sm)',
+                      border: `1.5px solid ${isSelected ? 'var(--ed-accent)' : 'var(--ed-border)'}`,
+                      backgroundColor: isSelected ? 'var(--ed-accent-weak)' : 'var(--ed-surface)',
+                    }}
+                  >
+                    <span className="w-5 h-5 rounded-full shrink-0" style={{ backgroundColor: c.value || '#1F1D1A' }} />
+                    <span className="text-xs font-medium" style={{ color: 'var(--ed-text)' }}>{c.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="flex items-center justify-between p-3" style={{ backgroundColor: 'var(--ed-surface-2)', borderRadius: 'var(--ed-radius-sm)' }}>
+              <span className="text-xs font-medium" style={{ color: 'var(--ed-text)' }}>직접 고르기</span>
+              <ColorField
+                label="포인트 색"
+                value={data.customPrimaryColor || '#1F1D1A'}
+                onChange={(hex) => updateData({ customPrimaryColor: hex })}
+              />
+            </div>
+          </section>
+
+          {/* 부제 · 제목 색 */}
+          <section className="space-y-4">
+            <h4 className="text-sm font-semibold" style={{ color: 'var(--ed-text)' }}>
+              글자 색
+            </h4>
+            {([
+              { key: 'captionColor', label: '부제 색', sample: '모시는 글', hint: '기본: 포인트 색 (없으면 회색)' },
+              { key: 'titleColor', label: '제목 색', sample: '귀한 걸음 하시어', hint: '기본: 먹색' },
+            ] as const).map((row) => {
+              const current = data[row.key]
+              return (
+                <div key={row.key} className="p-3 space-y-2.5" style={{ backgroundColor: 'var(--ed-surface-2)', borderRadius: 'var(--ed-radius-sm)' }}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium" style={{ color: 'var(--ed-text)' }}>{row.label}</span>
+                    <span className="text-[11px]" style={{ color: 'var(--ed-text-muted)' }}>{row.hint}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => updateData({ [row.key]: undefined } as Partial<ParentsInvitationData>)}
+                      className="h-7 px-2.5 text-[11px] font-medium"
+                      style={{
+                        borderRadius: 'var(--ed-radius-pill)',
+                        border: `1.5px solid ${!current ? 'var(--ed-accent)' : 'var(--ed-border)'}`,
+                        backgroundColor: !current ? 'var(--ed-accent-weak)' : 'var(--ed-surface)',
+                        color: 'var(--ed-text)',
+                      }}
+                    >
+                      기본
+                    </button>
+                    {TEXT_COLORS.map((c) => {
+                      const value = c.value === 'point' ? (data.customPrimaryColor || '#1F1D1A') : c.value
+                      const isSelected = !!current && current.toUpperCase() === value.toUpperCase()
+                      return (
+                        <button
+                          key={c.label}
+                          type="button"
+                          title={c.label}
+                          aria-label={c.label}
+                          onClick={() => updateData({ [row.key]: value } as Partial<ParentsInvitationData>)}
+                          className="w-7 h-7 rounded-full transition-all"
+                          style={{
+                            backgroundColor: value,
+                            boxShadow: isSelected ? '0 0 0 2px var(--ed-surface), 0 0 0 3.5px var(--ed-accent)' : 'inset 0 0 0 1px rgba(0,0,0,0.12)',
+                          }}
+                        />
+                      )
+                    })}
+                    <div className="ml-auto">
+                      <ColorField
+                        label={row.label}
+                        value={current || (row.key === 'titleColor' ? '#1F1D1A' : (data.customPrimaryColor || '#8A8378'))}
+                        onChange={(hex) => updateData({ [row.key]: hex } as Partial<ParentsInvitationData>)}
+                      />
+                    </div>
+                  </div>
+                  <div
+                    className="text-[15px]"
+                    style={{
+                      color: row.key === 'titleColor' ? (current || '#1F1D1A') : (current || (data.customPrimaryColor || '#8A8378')),
+                      fontFamily: row.key === 'titleColor' ? "'ChosunIlboMyungjo', serif" : undefined,
+                      fontSize: row.key === 'titleColor' ? 17 : 12.5,
+                    }}
+                  >
+                    {row.sample}
+                  </div>
+                </div>
+              )
+            })}
+          </section>
+
+
+          {/* 섹션 배경 — 기본 배경 / 틴티드 배경 + 섹션별 선택 */}
+          <section className="space-y-4">
+            <h4 className="text-sm font-semibold" style={{ color: 'var(--ed-text)' }}>
+              섹션 배경
+            </h4>
+            {([
+              { key: 'sectionBaseColor', label: '기본 배경', presets: BASE_BG_PRESETS, auto: '#FFFFFF' },
+              { key: 'sectionTintColor', label: '틴티드 배경', presets: TINT_BG_PRESETS, auto: autoTint },
+            ] as const).map((row) => {
+              const current = data[row.key]
+              return (
+                <div key={row.key} className="p-3 space-y-2.5" style={{ backgroundColor: 'var(--ed-surface-2)', borderRadius: 'var(--ed-radius-sm)' }}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium" style={{ color: 'var(--ed-text)' }}>{row.label}</span>
+                    <ColorField
+                      label={row.label}
+                      value={current || (row.auto.startsWith('#') ? row.auto : '#F4F4F5')}
+                      onChange={(hex) => updateData({ [row.key]: hex } as Partial<ParentsInvitationData>)}
+                    />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => updateData({ [row.key]: undefined } as Partial<ParentsInvitationData>)}
+                      className="h-7 px-2.5 text-[11px] font-medium inline-flex items-center gap-1.5"
+                      style={{
+                        borderRadius: 'var(--ed-radius-pill)',
+                        border: `1.5px solid ${!current ? 'var(--ed-accent)' : 'var(--ed-border)'}`,
+                        backgroundColor: !current ? 'var(--ed-accent-weak)' : 'var(--ed-surface)',
+                        color: 'var(--ed-text)',
+                      }}
+                    >
+                      <span className="w-3.5 h-3.5 rounded-full" style={{ background: row.auto, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.15)' }} />
+                      기본
+                    </button>
+                    {row.presets.map((c) => {
+                      const isSelected = !!current && current.toUpperCase() === c.toUpperCase()
+                      return (
+                        <button
+                          key={c}
+                          type="button"
+                          aria-label={c}
+                          onClick={() => updateData({ [row.key]: c } as Partial<ParentsInvitationData>)}
+                          className="w-7 h-7 rounded-full transition-all"
+                          style={{
+                            backgroundColor: c,
+                            boxShadow: isSelected ? '0 0 0 2px var(--ed-surface), 0 0 0 3.5px var(--ed-accent)' : 'inset 0 0 0 1px rgba(0,0,0,0.15)',
+                          }}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+
+            {/* 섹션별 배경 선택 (본문 순서) */}
+            <div className="overflow-hidden" style={{ borderRadius: 'var(--ed-radius-sm)', border: '1px solid var(--ed-border)' }}>
+              {SECTION_BG_LIST.map((sec, i) => {
+                const tinted = (data.tintedSections || []).includes(sec.key)
+                return (
+                  <div
+                    key={sec.key}
+                    className="flex items-center justify-between px-3 py-2.5"
+                    style={{ borderTop: i ? '1px solid var(--ed-border)' : undefined, backgroundColor: 'var(--ed-surface)' }}
+                  >
+                    <span className="text-xs" style={{ color: 'var(--ed-text)' }}>{sec.label}</span>
+                    <div className="flex p-0.5" style={{ borderRadius: 'var(--ed-radius-pill)', backgroundColor: 'var(--ed-surface-2)' }}>
+                      {[false, true].map((v) => (
+                        <button
+                          key={String(v)}
+                          type="button"
+                          onClick={() => {
+                            const cur = data.tintedSections || []
+                            const next = v ? Array.from(new Set([...cur, sec.key])) : cur.filter(k => k !== sec.key)
+                            updateData({ tintedSections: next.length ? next : undefined })
+                          }}
+                          className="h-6 px-2.5 text-[11px] inline-flex items-center gap-1 transition-all"
+                          style={{
+                            borderRadius: 'var(--ed-radius-pill)',
+                            backgroundColor: tinted === v ? 'var(--ed-surface)' : 'transparent',
+                            boxShadow: tinted === v ? '0 0 0 1px var(--ed-accent)' : undefined,
+                            color: 'var(--ed-text)',
+                            fontWeight: tinted === v ? 600 : 400,
+                          }}
+                        >
+                          <span
+                            className="w-2.5 h-2.5 rounded-full"
+                            style={{ background: v ? (data.sectionTintColor || autoTint) : (data.sectionBaseColor || '#FFFFFF'), boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.18)' }}
+                          />
+                          {v ? '틴티드' : '기본'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+
+          {/* 메인 폰트 — 제목 · 한글 이름 · 인사말 제목 */}
+          <section className="space-y-4">
+            <h4 className="text-sm font-semibold" style={{ color: 'var(--ed-text)' }}>
+              메인 폰트
+            </h4>
+            <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>섹션 제목, 이름, 인사말 제목에 쓰입니다.</p>
+            <div className="grid grid-cols-2 gap-2">
+              {(Object.keys(HEADING_FONTS) as HeadingFontId[]).map((id) => {
+                const f = HEADING_FONTS[id]
+                const isSelected = (data.headingFont || 'chosun') === id
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => updateData({ headingFont: id === 'chosun' ? undefined : id })}
+                    className="p-3 text-left transition-all"
+                    style={{
+                      borderRadius: 'var(--ed-radius-sm)',
+                      border: `1.5px solid ${isSelected ? 'var(--ed-accent)' : 'var(--ed-border)'}`,
+                      backgroundColor: isSelected ? 'var(--ed-accent-weak)' : 'var(--ed-surface)',
+                    }}
+                  >
+                    <div className="text-[17px] leading-snug" style={{ fontFamily: f.cssVariable, color: 'var(--ed-text)' }}>저희 딸 서연이가</div>
+                    <div className="text-[11px] mt-1" style={{ color: 'var(--ed-text-muted)' }}>{f.name}{id === RECOMMENDED_HEADING && <RecommendBadge />}</div>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+
+          {/* 본문 폰트 — 인사말 · 편지 · 타임라인 설명 */}
+          <section className="space-y-4">
+            <h4 className="text-sm font-semibold" style={{ color: 'var(--ed-text)' }}>
+              본문 폰트
+            </h4>
+            <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>인사말, 편지, 타임라인 설명에 쓰입니다.</p>
+            <div className="space-y-2">
+              {BODY_FONT_OPTIONS.map((id) => {
+                const f = FONT_STYLES[id]
+                const isSelected = (data.fontStyle || 'elegant') === id
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => updateData({ fontStyle: id as typeof data.fontStyle })}
+                    className="w-full p-3 text-left transition-all flex items-center justify-between gap-3"
+                    style={{
+                      borderRadius: 'var(--ed-radius-sm)',
+                      border: `1.5px solid ${isSelected ? 'var(--ed-accent)' : 'var(--ed-border)'}`,
+                      backgroundColor: isSelected ? 'var(--ed-accent-weak)' : 'var(--ed-surface)',
+                    }}
+                  >
+                    <span className="text-[15px]" style={{ fontFamily: f.cssVariable, color: 'var(--ed-text)' }}>늘 저희 가족을 아껴 주셔서 감사합니다</span>
+                    <span className="text-[11px] shrink-0" style={{ color: 'var(--ed-text-muted)' }}>{f.fontName}{id === RECOMMENDED_BODY && <RecommendBadge />}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+          </div>
+        )}
+      </section>
+
 
       {/* 배경음악 */}
       <section className="space-y-4">
@@ -613,8 +700,7 @@ export default function ParentsStep1Design({
           />
         </div>
         <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          스토리에 어울리는 배경음악을 선택해주세요.<br />
-          브라우저 정책에 따라 자동재생 기능이 동작하지 않을 수 있습니다.
+          브라우저 정책에 따라 자동재생이 동작하지 않을 수 있습니다.
         </p>
 
         {/* 숨겨진 오디오 */}
@@ -728,7 +814,6 @@ export default function ParentsStep1Design({
               <p className="text-xs text-red-700">
                 <strong>저작권 안내</strong><br />
                 저작권이 있는 음악을 업로드할 경우 발생하는 모든 법적 책임은 사용자에게 있습니다.
-                저작권에 위배되지 않는 MP3 파일만 업로드해주세요.
               </p>
             </div>
           </div>
@@ -737,7 +822,6 @@ export default function ParentsStep1Design({
           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <div>
               <p className="text-sm font-medium">자동 재생</p>
-              <p className="text-xs text-gray-500">페이지 열릴 때 자동으로 재생 (브라우저 제한 있음)</p>
             </div>
             <Switch
               checked={data.bgm?.autoplay ?? false}

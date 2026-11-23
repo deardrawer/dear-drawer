@@ -49,12 +49,10 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         <h3 className="text-base font-semibold text-gray-900">
           인사말
         </h3>
-        <p className="text-sm text-gray-500">청첩장 상단(Letter 섹션)에 표시되는 초대 문구입니다.</p>
         {/* 인사말 카드 프레임 (본문 위) */}
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <div>
             <p className="text-sm font-medium text-gray-700">인사말 카드 프레임</p>
-            <p className="text-[10px] text-gray-400 leading-tight">인사말 텍스트를 감싸는 카드 프레임을 선택하세요.</p>
           </div>
           <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
             {([
@@ -76,7 +74,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           {data.content.classicLetterFrame === 'none' && (
             <div className="pt-1">
               <ColorField label="인사말 텍스트 색상" value={data.content.classicLetterTextColor || '#F7F3EC'} onChange={(hex) => updateNestedData('content.classicLetterTextColor', hex)} />
-              <p className="text-[10px] text-gray-400 leading-tight mt-1">프레임이 없으면 배경 위에 바로 놓이므로 배경과 대비되는 색을 골라주세요.</p>
             </div>
           )}
           <div className="pt-1">
@@ -90,7 +87,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               onChange={(e) => updateNestedData('content.classicLetterScale', parseFloat(e.target.value))}
               className="w-full accent-[color:var(--ed-accent)]"
             />
-            <p className="text-[10px] text-gray-400 leading-tight mt-1">인사말 카드의 좌우 너비(크기)를 조절합니다.</p>
           </div>
         </div>
         <div className="space-y-1.5">
@@ -155,7 +151,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           </div>
           {(data.content.classicLetterSign || 'parents') === 'hosts' && (
             <div>
-              <span className="text-sm font-medium text-gray-700">혼주 (표시할 측)</span>
+              <span className="block text-sm font-medium text-gray-700">혼주 (표시할 측)</span>
               <div className="mt-1 inline-flex rounded-lg border border-gray-200 overflow-hidden">
                 {([
                   { id: 'groom', label: '신랑측' },
@@ -185,7 +181,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           )}
           {['parents', 'hosts'].includes(data.content.classicLetterSign || 'parents') && (
           <div>
-            <span className="text-sm font-medium text-gray-700">고인 표시 스타일</span>
+            <span className="block text-sm font-medium text-gray-700">고인 표시 스타일</span>
             <div className="mt-1 inline-flex rounded-lg border border-gray-200 overflow-hidden">
               {([
                 { id: 'flower', label: '국화꽃' },
@@ -207,7 +203,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <div>
             <p className="text-sm font-medium text-gray-700">배경 사진 · 오버레이</p>
-            <p className="text-[10px] text-gray-400 leading-tight">비우면 갤러리 첫 사진이 사용됩니다. 오버레이로 글자 가독성을 조절하세요.</p>
           </div>
           <ClassicPhotoField
             value={data.content.classicGreetingBgImage}
@@ -242,11 +237,9 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         <h3 className="text-base font-semibold text-gray-900">
           신랑 · 신부 소개
         </h3>
-        <p className="text-sm text-gray-500">소개 방식을 선택하세요. 사진은 드래그·확대로 크롭할 수 있습니다.</p>
 
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">섹션 제목</Label>
-          <p className="text-[10px] text-gray-400 leading-tight">소개 섹션 맨 위에 표시됩니다. 비우면 표시되지 않습니다.</p>
           <Input
             value={data.content.classicIntroTitle ?? ''}
             onChange={(e) => updateNestedData('content.classicIntroTitle', e.target.value)}
@@ -307,7 +300,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 </div>
               </div>
               <div>
-                <span className="text-sm font-medium text-gray-700">고인 표시 스타일</span>
+                <span className="block text-sm font-medium text-gray-700">고인 표시 스타일</span>
                 <div className="mt-1 inline-flex rounded-lg border border-gray-200 overflow-hidden">
                   {([
                     { id: 'flower', label: '국화꽃' },
@@ -360,7 +353,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                       )
                     })}
                   </div>
-                  <p className="text-[10px] text-gray-400 leading-tight">가로형은 사진을 가로로 크게 넣고 이름·소개글을 아래에 배치합니다. 소개글이 길 때 적합합니다.</p>
                 </div>
               )}
             </div>
@@ -411,7 +403,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50 space-y-3">
             <p className="text-sm font-medium text-gray-700">함께 사진 · 소개 문구</p>
             <div>
-              <span className="text-sm font-medium text-gray-700">함께 소개 프레임</span>
+              <span className="block text-sm font-medium text-gray-700">함께 소개 프레임</span>
               <div className="mt-1 inline-flex rounded-lg border border-gray-200 overflow-hidden">
                 {([
                   { id: 'pearl', label: '진주' },
@@ -429,7 +421,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               {data.content.classicIntroTogetherFrame === 'oval' && (
                 <div className="pt-2">
                   <ColorField label="프레임 색상" value={data.content.classicIntroTogetherFrameColor || '#DDD1BB'} onChange={(hex) => updateNestedData('content.classicIntroTogetherFrameColor', hex)} />
-                  <p className="text-[10px] text-gray-400 leading-tight mt-1">비우면 기본(아이보리) 색으로 표시됩니다.</p>
                 </div>
               )}
             </div>
@@ -455,7 +446,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <div>
             <p className="text-sm font-medium text-gray-700">섹션 배경 (선택)</p>
-            <p className="text-[10px] text-gray-400 leading-tight">커플소개 섹션 전체 배경 사진 + 오버레이. 배경을 넣으면 아래에서 글자색을 지정하세요.</p>
           </div>
           <ClassicPhotoField
             value={data.content.classicIntroSectionBg}
@@ -475,7 +465,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             <ColorField label="이미지 배경 텍스트" value={data.content.classicIntroImgTextColor || '#FFFFFF'} onChange={(hex) => updateNestedData('content.classicIntroImgTextColor', hex)} />
             <div className="flex flex-col">
               <span className="text-sm text-gray-700">이미지 배경 텍스트</span>
-              <span className="text-[10px] text-gray-400 leading-tight">배경 사진 위 글자색</span>
             </div>
           </div>
         </div>
@@ -486,12 +475,10 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         <h3 className="text-base font-semibold text-gray-900">
           갤러리 <span className="text-xs font-normal text-gray-500">(최대 30장)</span>
         </h3>
-        <p className="text-sm text-gray-500">청첩장 갤러리 섹션에 사용되는 사진들입니다. 각 사진을 드래그·확대하여 원하는 부분을 보여줄 수 있습니다.</p>
 
         {/* 갤러리 타입 */}
         <div className="space-y-2">
           <p className="text-sm font-medium text-gray-700">갤러리 타입</p>
-          <p className="text-[10px] text-gray-400 leading-tight">갤러리 섹션의 레이아웃을 선택하세요.</p>
           <div className="grid grid-cols-5 gap-1.5">
             {([
               { id: 'default', label: '기본' },
@@ -518,7 +505,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         {/* 사진 더보기 레이아웃 */}
         <div className="space-y-2">
           <p className="text-sm font-medium text-gray-700">사진 더보기 펼침 레이아웃</p>
-          <p className="text-[10px] text-gray-400 leading-tight">‘사진 더보기’를 펼쳤을 때 나머지 사진 배치 방식이에요. 마지막 줄은 항상 깔끔하게 채워집니다.</p>
           <div className="grid grid-cols-2 gap-1.5">
             {([
               { id: 'fill', label: '꽉 채우기', desc: '3열 · 남는 줄 가로컷' },
@@ -564,18 +550,13 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         <div className="flex items-center justify-between pt-1">
           <div>
             <Label className="text-sm font-medium">사진 확대(줌) 허용</Label>
-            <p className="text-[10px] text-gray-400 leading-tight">하객이 갤러리 사진을 크게 열면 핀치·더블탭으로 확대할 수 있어요</p>
           </div>
           <Switch checked={data.gallery.zoomEnabled === true} onCheckedChange={(c) => updateNestedData('gallery.zoomEnabled', c)} />
         </div>
-        {data.gallery.zoomEnabled === true && (
-          <p className="-mt-1 text-[10px] text-gray-400 leading-tight">사진은 2.5배까지 확대돼요. 더 크게 선명하게 확대하고 싶은 사진은 &apos;조정&apos; → &apos;고화질로 다시 올리기&apos;로 올려 주세요.</p>
-        )}
 
         {/* 라이트박스 스타일 */}
         <div className="space-y-2 pt-3 border-t border-gray-100">
           <Label className="text-sm font-medium">라이트박스 스타일</Label>
-          <p className="text-[10px] text-gray-400 leading-tight">갤러리 사진을 누르면 열리는 전체화면 보기 스타일입니다.</p>
           <div className="grid grid-cols-4 gap-1.5">
             {([
               { id: 1, label: '에디토리얼' },
@@ -607,7 +588,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         <h3 className="text-base font-semibold text-gray-900">
           간지 (사이 페이지)
         </h3>
-        <p className="text-sm text-gray-500">섹션 사이에 들어가는 사진/인용 페이지입니다. 최대 3개까지 만들 수 있고, 각각의 위치는 &apos;추가정보&apos; 단계의 섹션 순서에서 바꿀 수 있어요.</p>
         <ClassicInterstitialEditor
           value={data.content.classicInterstitials}
           onChange={(list) => updateNestedData('content.classicInterstitials', list)}
@@ -624,7 +604,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         <h3 className="text-base font-semibold text-gray-900">
           글 간지 (선택)
         </h3>
-        <p className="text-sm text-gray-500">사진 없이 글로 쉬어 가는 페이지입니다. 추가한 것만 표시되고, 최대 3개까지 만들 수 있어요. 각각의 위치는 &apos;추가정보&apos; 단계의 섹션 순서에서 바꿀 수 있어요.</p>
         <ClassicTextInterstitialEditor
           value={data.content.classicTextInterstitials}
           onChange={(list) => updateNestedData('content.classicTextInterstitials', list)}
@@ -660,7 +639,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               )
             })}
           </div>
-          <p className="text-[10px] text-gray-400 leading-tight">기본 외 디자인(풀그리드·다크·티켓·에디토리얼)은 각자 고유 색상·레이아웃을 사용하며, 사진 없이 타이포 중심입니다.</p>
           {['2c', '2d', '2e'].includes(data.content.classicDateStyle || 'classic') && (
             <div className="pt-2 space-y-1.5">
               <Label className="text-sm font-medium">커스텀 문구</Label>
@@ -671,7 +649,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 placeholder={(data.content.classicDateStyle || 'classic') === '2e' ? '함께 걸어온 시간을\n같은 이름으로 이어가고자 합니다.' : '서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다'}
                 className="text-sm"
               />
-              <p className="text-[10px] text-gray-400 leading-tight">다크·티켓·에디토리얼 스타일의 달력 문구입니다. 줄바꿈(Enter) 가능. 비우면 표시되지 않습니다.</p>
             </div>
           )}
           <div className="pt-1">
@@ -684,7 +661,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 <button type="button" onClick={() => updateNestedData('content.classicDateBgColor', undefined)} className="text-[11px] text-gray-400 underline">기본값</button>
               )}
             </div>
-            <p className="text-[10px] text-gray-400 leading-tight mt-1">미지정 시 선택한 달력 스타일의 기본 배경색을 사용합니다.</p>
           </div>
           <div className="pt-1">
             <p className="text-sm font-medium text-gray-700 mb-1.5">달력 숫자 폰트</p>
@@ -701,7 +677,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 )
               })}
             </div>
-            <p className="text-[10px] text-gray-400 leading-tight mt-1">달력 날짜 숫자에 적용할 폰트 (기본: 영문 디스플레이 폰트)</p>
           </div>
         </div>
         <div className="space-y-1.5">
@@ -792,11 +767,9 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 )
               })}
             </div>
-            <p className="text-[10px] text-gray-400 leading-tight">구글맵 선택 시 네이버·카카오·티맵 버튼이 숨겨지고 지도만 표시됩니다.</p>
           </div>
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">배경 사진 (선택)</Label>
-            <p className="text-[10px] text-gray-400 leading-tight">상단 배경으로 쓸 사진. 비우면 갤러리 첫 사진이 흑백으로 사용됩니다.</p>
             <ClassicPhotoField
               value={data.content.classicDirectionsBg}
               onChange={(p) => updateNestedData('content.classicDirectionsBg', p)}
@@ -865,7 +838,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           </div>
           <div className="space-y-2 pt-3 border-t border-gray-200">
             <Label className="text-sm font-medium">추가 안내 (선택 · 최대 5개)</Label>
-            <p className="text-[10px] text-gray-400 leading-tight">주차·셔틀버스 등 필요한 안내를 항목별로 추가하면 오시는 길 하단에 표시됩니다.</p>
             {(() => {
               const legacy = (data.content.classicDirectionsExtraTitle || data.content.classicDirectionsExtraBody)
                 ? [{ title: data.content.classicDirectionsExtraTitle || '', body: data.content.classicDirectionsExtraBody || '' }]
@@ -917,7 +889,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         <h3 className="text-base font-semibold text-gray-900">
           마무리 감사 인사
         </h3>
-        <p className="text-sm text-gray-500">청첩장 마지막(공유) 섹션에 표시되는 감사 인사입니다.</p>
         <Textarea
           value={data.content.classicThankYou || ''}
           onChange={(e) => updateNestedData('content.classicThankYou', e.target.value)}
@@ -930,7 +901,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           return (
             <div className="space-y-2 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
               <span className="block text-sm font-medium text-gray-700">공유 버튼</span>
-              <p className="text-[10px] text-gray-400 leading-tight">카카오톡 공유는 카카오톡 공유창을, 일반 공유는 휴대폰 기본 공유창(문자·메신저·인스타그램 등)을 열어요. 해외 하객이 많다면 일반 공유를 추천해요.</p>
               <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
                 {([
                   { id: 'kakao', label: '카카오톡 공유' },
@@ -965,8 +935,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         </div>
 
         <div className="space-y-2 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
-          <span className="text-sm font-medium text-gray-700">나타나는 효과</span>
-          <p className="text-[10px] text-gray-400 leading-tight">감사 인사가 화면에 나타나는 방식입니다.</p>
+          <span className="block text-sm font-medium text-gray-700">나타나는 효과</span>
           <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
             {([
               { id: 'fade', label: '부드럽게 나타나기' },
@@ -984,8 +953,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         </div>
 
         <div className="space-y-2 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
-          <span className="text-sm font-medium text-gray-700">배치</span>
-          <p className="text-[10px] text-gray-400 leading-tight">배경 사진 구도에 맞춰 문구·버튼 위치를 선택하세요.</p>
+          <span className="block text-sm font-medium text-gray-700">배치</span>
           <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
             {([
               { id: 'center', label: '중간' },
@@ -1005,7 +973,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <div>
             <p className="text-sm font-medium text-gray-700">섹션 배경 (선택)</p>
-            <p className="text-[10px] text-gray-400 leading-tight">감사 인사(공유) 섹션 전체 배경 사진 + 오버레이. 배경을 넣으면 아래에서 글자색을 지정하세요.</p>
           </div>
           <ClassicPhotoField
             value={data.content.classicThanksSectionBg}
@@ -1025,7 +992,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             <ColorField label="이미지 배경 텍스트" value={data.content.classicThanksImgTextColor || '#FFFFFF'} onChange={(hex) => updateNestedData('content.classicThanksImgTextColor', hex)} />
             <div className="flex flex-col">
               <span className="text-sm text-gray-700">이미지 배경 텍스트</span>
-              <span className="text-[10px] text-gray-400 leading-tight">배경 사진 위 글자색</span>
             </div>
           </div>
         </div>

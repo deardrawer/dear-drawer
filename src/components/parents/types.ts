@@ -159,6 +159,22 @@ export const FONT_STYLES: Record<FontStyleId, FontStyle> = {
   },
 }
 
+// C안 메인(제목) 서체 — 섹션 제목 · 한글 이름 · 인사말 제목 등에 사용 (본문은 fontStyle)
+export type HeadingFontId = 'chosun' | 'nanumMyeongjo' | 'gowunBatang' | 'notoSerif' | 'dandi' | 'ridibatang' | 'pretendard'
+export const HEADING_FONTS: Record<HeadingFontId, { id: HeadingFontId; name: string; fontName: string; cssVariable: string }> = {
+  chosun: { id: 'chosun', name: '조선일보명조', fontName: 'ChosunIlboMyungjo', cssVariable: "'ChosunIlboMyungjo', 'Noto Serif KR', serif" },
+  nanumMyeongjo: { id: 'nanumMyeongjo', name: '나눔명조', fontName: 'Nanum Myeongjo', cssVariable: 'var(--font-nanum-myeongjo), serif' },
+  gowunBatang: { id: 'gowunBatang', name: '고운바탕', fontName: 'Gowun Batang', cssVariable: 'var(--font-gowun-batang), serif' },
+  notoSerif: { id: 'notoSerif', name: '본명조', fontName: 'Noto Serif KR', cssVariable: 'var(--font-noto-serif-kr), serif' },
+  dandi: { id: 'dandi', name: '부산단디명조', fontName: 'BusanDandiMyeongjo', cssVariable: "'BusanDandiMyeongjo', serif" },
+  ridibatang: { id: 'ridibatang', name: '리디바탕', fontName: 'RIDIBatang', cssVariable: "'Ridibatang', serif" },
+  pretendard: { id: 'pretendard', name: '프리텐다드', fontName: 'Pretendard', cssVariable: "'Pretendard Variable', 'Pretendard', sans-serif" },
+}
+/** 저장된 메인 서체 id → CSS font-family (없거나 모르는 값이면 조선일보명조) */
+export function resolveHeadingFont(id?: string): string {
+  return (id && (HEADING_FONTS as Record<string, { cssVariable: string }>)[id]?.cssVariable) || HEADING_FONTS.chosun.cssVariable
+}
+
 // 컬러 테마 타입
 export type ColorThemeId = 'burgundy' | 'navy' | 'sage' | 'dustyRose' | 'emerald' | 'slateBlue'
 
@@ -174,6 +190,7 @@ export interface ColorTheme {
   tintedBg?: boolean   // 틴티드 배경 모드 여부 (인사말 흰카드·디바이더 숨김 트리거)
   cardText?: string      // 흰 카드 위 텍스트 (초대글/달력/안내 카드)
   cardTextLight?: string // 흰 카드 위 밝은 텍스트
+  point?: string         // C안 포인트 색 — 고객이 메인 컬러를 직접 고른 경우에만 그 색, 아니면 먹색
 }
 
 // 6가지 컬러 테마
@@ -285,6 +302,7 @@ export interface ShuttleInfo {
   returnTime?: string
   vehicleNumber?: string
   notes?: string[]
+  image?: ImageCropData  // 안내 사진 (선택)
 }
 
 export interface ParentsInvitationContent {
@@ -302,6 +320,7 @@ export interface ParentsInvitationContent {
   groom: {
     lastName: string
     firstName: string
+    nameEn?: string  // 영문 이름 (C안 첫 화면 · 양가 표시, 비우면 자동 로마자)
     fatherName: string
     motherName: string
     fatherDeceased?: boolean
@@ -311,6 +330,7 @@ export interface ParentsInvitationContent {
   bride: {
     lastName: string
     firstName: string
+    nameEn?: string  // 영문 이름 (C안 첫 화면 · 양가 표시, 비우면 자동 로마자)
     fatherName: string
     motherName: string
     fatherDeceased?: boolean
@@ -359,18 +379,24 @@ export interface ParentsInvitationContent {
       cropHeight?: number
     }
     hintTextColor?: string        // 안내 문구 글자색
+    textOnly?: boolean            // 첫 화면 사진 없이 글자만 (기본: 사진이 있으면 사진 사용)
+    letterBg?: string             // 편지 화면 배경: 'white' | 'gray' | 'ink' | 'point' | '#RRGGBB' (기본 흰색)
+    headline?: string             // 첫 화면 자녀 문장 (비우면 '저희 딸 ○○이가 결혼합니다' 자동)
   }
 
   // 본문 인사말
   greeting: string
+  greetingTitle?: string  // 인사말 제목 (비우면 기본 문구)
 
   // 타임라인
   timelineEnabled?: boolean
+  timelineTitle?: string  // 타임라인 제목 (비우면 기본 문구)
   timeline?: TimelineItem[]
 
   // 메인 이미지
   mainImage?: ImageCropData
-  mainImageFrame?: string  // 메인사진 프레임 옵션 (프레임 id, 없으면 프레임 없음)
+  mainImageFrame?: string  // 메인사진 프레임 옵션 (C안에서는 사용 안 함, 저장값만 유지)
+  mainPhotoShape?: 'basic' | 'bleed' | 'arch' | 'mat'  // C안 사진 모양 (기본 basic)
   coupleHeadline?: string  // 커플 이름 위 커스텀 문구
   coupleShowLastName?: boolean  // 커플 이름에 성(姓) 포함
   coupleConnector?: 'and' | 'heart'  // 이름 사이 연결 (and / 하트)
@@ -384,14 +410,15 @@ export interface ParentsInvitationContent {
   // 결혼식 안내
   weddingInfo?: {
     enabled?: boolean
-    flowerGift?: { enabled?: boolean; content?: string }
-    wreath?: { enabled?: boolean; content?: string }
-    flowerChild?: { enabled?: boolean; content?: string }
-    reception?: { enabled?: boolean; content?: string; venue?: string; datetime?: string }
-    photoBooth?: { enabled?: boolean; content?: string }
+    // image: 항목별 사진 (선택, 16:10 크롭)
+    flowerGift?: { enabled?: boolean; content?: string; image?: ImageCropData }
+    wreath?: { enabled?: boolean; content?: string; image?: ImageCropData }
+    flowerChild?: { enabled?: boolean; content?: string; image?: ImageCropData }
+    reception?: { enabled?: boolean; content?: string; venue?: string; datetime?: string; image?: ImageCropData }
+    photoBooth?: { enabled?: boolean; content?: string; image?: ImageCropData }
     shuttle?: ShuttleInfo
     itemOrder?: string[]  // 안내 항목 순서
-    customItems?: { id?: string; enabled?: boolean; title?: string; content?: string; emoji?: string }[]
+    customItems?: { id?: string; enabled?: boolean; title?: string; content?: string; emoji?: string; image?: ImageCropData }[]
   }
 
   // 계좌 안내
@@ -433,7 +460,13 @@ export interface ParentsInvitationContent {
 
   // 디자인
   colorTheme: ColorThemeId
-  fontStyle?: FontStyleId
+  fontStyle?: FontStyleId   // 본문 서체
+  headingFont?: string      // 메인(제목) 서체 — HeadingFontId, 비우면 조선일보명조
+  captionColor?: string     // 부제(작은 캡션) 색 — 비우면 포인트 색(고른 경우) 또는 보조 회색
+  titleColor?: string       // 제목 색 — 비우면 먹색
+  sectionBaseColor?: string  // C안 기본 배경 (비우면 흰색)
+  sectionTintColor?: string  // C안 틴티드 배경 (비우면 포인트 색 연하게 또는 연회색)
+  tintedSections?: string[]  // 틴티드 배경을 쓸 섹션 키 (기본 없음 = 모두 기본 배경)
   customPrimaryColor?: string
   customAccentColor?: string
   customBackgroundColor?: string

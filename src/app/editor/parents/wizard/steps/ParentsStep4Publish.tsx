@@ -281,10 +281,7 @@ export default function ParentsStep4Publish({
     <div className="p-6 space-y-8">
       {/* 안내 */}
       <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>거의 다 왔어요</p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          청첩장을 발행하면 바로 공유할 수 있어요.
-        </p>
+        <p className="text-base font-medium" style={{ color: 'var(--ed-text)' }}>거의 다 왔어요</p>
       </div>
 
       {/* 청첩장 주소 표시 */}
@@ -444,7 +441,6 @@ export default function ParentsStep4Publish({
         <p className="font-medium text-gray-900">알려드립니다</p>
         <ul className="space-y-1 list-disc list-inside">
           <li>발행 후에도 청첩장 내용은 수정할 수 있습니다.</li>
-          <li>게스트 관리 페이지에서 개인별 링크를 생성할 수 있습니다.</li>
         </ul>
       </div>
 
@@ -512,13 +508,6 @@ export default function ParentsStep4Publish({
             </button>
           </div>
 
-          {/* 게스트 관리 안내 */}
-          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-            <p className="text-xs text-amber-700">
-              <span className="font-medium">게스트 관리</span>에서 하객별 맞춤 링크를 생성하고 열람 여부를 확인할 수 있어요
-            </p>
-          </div>
-
           {/* 워터마크 안내 (미결제 시) */}
           {!isPaid && (
             <div className="mt-3 p-4 bg-rose-50 border border-rose-200 rounded-xl">
@@ -527,7 +516,7 @@ export default function ParentsStep4Publish({
                 <div className="flex-1">
                   <p className="text-sm font-medium text-rose-800 mb-1">워터마크 제거</p>
                   <p className="text-xs text-rose-600 mb-3">
-                    결제 후 워터마크가 제거된 깔끔한 청첩장을 공유하세요
+                    결제하면 워터마크가 제거됩니다.
                   </p>
                   <Button
                     onClick={handleRemoveWatermark}

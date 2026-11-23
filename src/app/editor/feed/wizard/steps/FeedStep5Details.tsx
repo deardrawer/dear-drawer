@@ -54,10 +54,7 @@ export default function FeedStep5Details({
     <div className="p-6 space-y-8">
       {/* 안내 */}
       <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>추가 기능 설정</p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          부모님 성함, 마음 전하실 곳, RSVP 등을 설정해주세요.
-        </p>
+        <p className="text-base font-medium" style={{ color: 'var(--ed-text)' }}>추가 기능 설정</p>
       </div>
 
       {/* 부모님 성함 */}
@@ -250,7 +247,6 @@ export default function FeedStep5Details({
               onChange={(e) => updateNestedData('postCaptions.account', e.target.value)}
               placeholder="전해주시는 축하와 응원, 오래도록 기억하겠습니다. 💛"
             />
-            <p className="text-xs text-gray-400">게스트뷰에서 마음전하실곳 포스트 하단에 표시됩니다.</p>
           </div>
         </div>
       </section>

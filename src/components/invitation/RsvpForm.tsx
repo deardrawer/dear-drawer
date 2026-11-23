@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -30,6 +30,10 @@ interface RsvpFormProps {
   messagePlaceholder?: string
   /** 제출 완료 화면에 표시할 '청첩장 보러가기' 링크 (별도 RSVP 링크 페이지용) */
   inviteUrl?: string
+  /** 앞 화면에서 이미 고른 참석 여부 (THE PHONE 캘린더 · 투표) */
+  initialAttendance?: Attendance
+  /** 샘플 청첩장 — 눌러 볼 수 있지만 실제로 보내지 않음 (완료 화면만) */
+  demo?: boolean
 }
 
 export default function RsvpForm({
@@ -46,12 +50,16 @@ export default function RsvpForm({
   sideDetailOptions,
   notice,
   messagePlaceholder,
+  initialAttendance,
+  demo = false,
 }: RsvpFormProps) {
   const [guestName, setGuestName] = useState('')
   const [guestPhone, setGuestPhone] = useState('')
   const [side, setSide] = useState<'groom' | 'bride' | null>(null)
   const [sideDetail, setSideDetail] = useState<'self' | 'father' | 'mother' | ''>('')
-  const [attendance, setAttendance] = useState<Attendance | null>(null)
+  const [attendance, setAttendance] = useState<Attendance | null>(initialAttendance ?? null)
+  // 앞 화면에서 고른 값이 바뀌면 따라간다
+  useEffect(() => { if (initialAttendance) setAttendance(initialAttendance) }, [initialAttendance])
   const [mealAttendance, setMealAttendance] = useState<'yes' | 'no' | null>(null)
   const [shuttleBus, setShuttleBus] = useState<'yes' | 'no' | null>(null)
   const [afterParty, setAfterParty] = useState<'yes' | 'no' | null>(null)
@@ -84,6 +92,8 @@ export default function RsvpForm({
       setError('초대 경로를 선택해 주세요.')
       return
     }
+
+    if (demo) { setIsSubmitted(true); onSuccess?.(); return }
 
     setIsSubmitting(true)
 

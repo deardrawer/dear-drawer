@@ -1,26 +1,18 @@
 'use client'
 
 import { useSectionHighlight } from './SectionHighlightContext'
-import { useTheme } from './ThemeContext'
+import { C_TXT, C_KSERIF, DEFAULT_GREETING_TITLE, cBody, cCaption, cDim, cStagger, cTitle } from './cStyle'
 
 interface GreetingSectionProps {
+  title?: string  // 인사말 제목 (비우면 기본 문구, 줄바꿈 가능)
   childName?: string
   greeting?: string
   parentSignature?: React.ReactNode
   senderSide?: 'groom' | 'bride'
 }
 
-// Staggered entrance animation helper
-const stagger = (hasAppeared: boolean, delay: number) => ({
-  opacity: hasAppeared ? 1 : 0,
-  transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
-  filter: hasAppeared ? 'blur(0px)' : 'blur(6px)',
-  transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
-  transitionDelay: hasAppeared ? `${delay}s` : '0s',
-})
-
 export default function GreetingSection({
-  childName = '서연',
+  title,
   greeting = `서연이는 저희 부부에게
 늘 선물 같은 아이였습니다.
 
@@ -39,146 +31,31 @@ export default function GreetingSection({
 따뜻한 축복과 응원을 보내주시길
 부탁드립니다.`,
   parentSignature = '아버지 이○○ · 어머니 김○○ 올림',
-  senderSide = 'bride',
 }: GreetingSectionProps) {
-  const childTitle = senderSide === 'groom' ? '아들' : '딸'
+  // childName · senderSide 는 호환용 — 자녀 호칭 문장(저희 딸 ○○이가 결혼합니다)은 첫 화면(EnvelopeScreen)에 표시
   const { ref, isActive, hasAppeared } = useSectionHighlight('greeting')
-  const theme = useTheme()
 
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
-      className={`flex flex-col items-center justify-center px-8 ${theme.tintedBg ? 'py-12' : 'min-h-screen py-20'}`}
-      style={{
-        backgroundColor: theme.background,
-        filter: isActive ? 'none' : 'grayscale(30%)',
-        opacity: isActive ? 1 : 0.3,
-        transition: 'filter 0.5s, opacity 0.5s',
-      }}
+      style={{ backgroundColor: 'transparent', padding: '88px 32px 72px', ...cDim(isActive) }}
     >
-      {/* 틴티드 배경일 때: 본문이 배경에 묻히지 않도록 흰 종이 카드 위에 표시 */}
-      <div
-        style={theme.tintedBg
-          ? { backgroundColor: '#ffffff', borderRadius: '5px', padding: '52px 28px 32px', width: '100%', maxWidth: 400, boxShadow: '0 2px 24px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }
-          : { display: 'contents' }}
-      >
-      {/* Ornament: horizontal line with center circle — 틴트일 땐 상단에서 숨기고 하단으로 이동 */}
-      {!theme.tintedBg && (
-        <div
-          className="relative mb-10"
-          style={{
-            width: '48px',
-            height: '1px',
-            backgroundColor: theme.accent,
-            ...stagger(hasAppeared, 0),
-            transform: hasAppeared ? 'scaleX(1)' : 'scaleX(0)',
-          }}
-        >
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-            style={{
-              width: '7px',
-              height: '7px',
-              borderRadius: '50%',
-              border: `1px solid ${theme.accent}`,
-              backgroundColor: theme.background,
-            }}
-          />
-        </div>
-      )}
-
-      {/* INVITATION label — 틴티드(흰 카드)일 땐 어색해서 숨김 */}
-      {!theme.tintedBg && (
-        <span
-          className="text-[11px] tracking-[6px] uppercase mb-7"
-          style={{
-            color: `${theme.accent}80`,
-            fontWeight: 300,
-            ...stagger(hasAppeared, 0.15),
-          }}
-        >
-          invitation
-        </span>
-      )}
-
-      <h2
-        className="font-serif text-[19px] leading-[2] tracking-wider mb-9 text-center"
-        style={{
-          color: isActive ? (theme.tintedBg ? theme.cardText : theme.text) : '#999',
-          fontWeight: 500,
-          ...stagger(hasAppeared, 0.3),
-        }}
-      >
-        저희 {childTitle}{' '}
-        <em
-          className="not-italic"
-          style={{ color: theme.primary, fontWeight: 500 }}
-        >
-          {childName}
-        </em>
-        {' '}결혼합니다
+      <p style={{ ...cCaption, ...cStagger(hasAppeared, 0.15) }}>모시는 글</p>
+      <h2 style={{ ...cTitle(23, 12), whiteSpace: 'pre-line', ...cStagger(hasAppeared, 0.3) }}>
+        {(title || '').trim() || DEFAULT_GREETING_TITLE}
       </h2>
 
-      {/* 틴트일 때: 오너먼트를 제목 바로 아래에 배치 */}
-      {theme.tintedBg && (
-        <div
-          className="relative -mt-4 mb-9"
-          style={{
-            width: '48px',
-            height: '1px',
-            backgroundColor: theme.accent,
-            ...stagger(hasAppeared, 0.4),
-            transform: hasAppeared ? 'scaleX(1)' : 'scaleX(0)',
-          }}
-        >
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-            style={{
-              width: '7px',
-              height: '7px',
-              borderRadius: '50%',
-              border: `1px solid ${theme.accent}`,
-              backgroundColor: '#ffffff',
-            }}
-          />
-        </div>
-      )}
-
-      <div
-        className="text-center mb-12 max-w-[280px]"
-        style={stagger(hasAppeared, 0.5)}
-      >
-        <p
-          className="font-serif text-[13px] leading-[2.2] whitespace-pre-line break-keep"
-          style={{ color: isActive ? (theme.tintedBg ? theme.cardTextLight : theme.textLight) : '#999', letterSpacing: '0.3px' }}
-        >
+      {greeting && (
+        <p style={{ ...cBody(26), whiteSpace: 'pre-line', ...cStagger(hasAppeared, 0.5) }}>
           {greeting}
         </p>
-      </div>
-
-      {/* Signature area with short divider line */}
-      {parentSignature && (
-        <div
-          className="flex flex-col items-center gap-2 mt-12"
-          style={stagger(hasAppeared, 0.7)}
-        >
-          <div
-            style={{
-              width: '24px',
-              height: '1px',
-              backgroundColor: `${theme.accent}30`,
-            }}
-          />
-          <p
-            className="text-xs tracking-[3px]"
-            style={{ color: isActive ? `${theme.accent}90` : `${theme.accent}50`, fontWeight: 300 }}
-          >
-            {parentSignature}
-          </p>
-        </div>
       )}
 
-      </div>
+      {parentSignature && (
+        <p style={{ marginTop: 32, marginBottom: 0, fontFamily: C_KSERIF, fontSize: 15.5, color: C_TXT, ...cStagger(hasAppeared, 0.7) }}>
+          {parentSignature}
+        </p>
+      )}
     </section>
   )
 }

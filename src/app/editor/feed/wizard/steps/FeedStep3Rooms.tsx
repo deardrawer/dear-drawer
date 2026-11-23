@@ -80,14 +80,13 @@ export default function FeedStep3Rooms({
       <div className="px-6 pt-6 pb-4 border-b border-gray-100">
         <h2 className="text-base font-semibold text-gray-900">포토룸</h2>
         <p className="text-xs text-gray-500 mt-1">
-          컨셉별 사진 컬렉션을 룸으로 구성해요. 룸당 최대 30장까지 추가할 수 있어요.
+          룸당 최대 30장까지 추가할 수 있습니다.
         </p>
 
         {/* 사진 확대(줌) 허용 토글 */}
         <div className="flex items-center justify-between mt-4">
           <div>
             <p className="text-sm font-medium text-gray-900">사진 확대(줌) 허용</p>
-            <p className="text-xs text-gray-500">하객이 갤러리 사진을 크게 열면 핀치·더블탭으로 확대할 수 있어요</p>
           </div>
           <ToggleSwitch
             checked={data.gallery?.zoomEnabled === true}
@@ -95,7 +94,7 @@ export default function FeedStep3Rooms({
           />
         </div>
         {data.gallery?.zoomEnabled === true && (
-          <p className="text-xs text-gray-500 leading-snug">사진은 2.5배까지 확대돼요. 더 크게 선명하게 확대하고 싶은 사진은 사진에 마우스를 올려 &apos;고화질&apos;로 다시 올려 주세요.</p>
+          <p className="text-xs text-gray-500 leading-snug">사진은 2.5배까지 확대됩니다. 더 선명하게 확대하려면 사진에 마우스를 올려 &apos;고화질&apos;로 다시 올릴 수 있습니다.</p>
         )}
       </div>
 

@@ -83,7 +83,7 @@ export default function StampMessageEditor({ invitationId }: { invitationId: str
   return (
     <div className="p-4 bg-gray-50 rounded-lg">
       <p className="text-sm text-gray-600 mb-4">
-        예식이 끝나도 남는 한 문장을 적어보세요. 이 문장은 두 사람의 우표에 실려 <span className="font-medium text-gray-800">POST DRAWER</span>에 쌓입니다. 비워두어도 우표는 만들어집니다.
+        이 문장은 두 사람의 우표에 실려 <span className="font-medium text-gray-800">POST DRAWER</span>에 쌓입니다.
       </p>
 
       <div className="flex flex-col sm:flex-row gap-5">
@@ -96,8 +96,7 @@ export default function StampMessageEditor({ invitationId }: { invitationId: str
             placeholder={STAMP_MESSAGE_PLACEHOLDER}
             className="w-full resize-none rounded-lg border border-gray-300 px-3.5 py-3 text-sm leading-relaxed focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
           />
-          <div className="flex items-center justify-between mt-2">
-            <span className="text-xs text-gray-400">언제든 다시 고칠 수 있어요.</span>
+          <div className="flex items-center justify-end mt-2">
             <span className={`text-xs tabular-nums ${over ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
               {value.length} / {STAMP_MESSAGE_MAX}
             </span>
@@ -108,7 +107,7 @@ export default function StampMessageEditor({ invitationId }: { invitationId: str
               {saving ? '저장 중…' : '한 조각 저장'}
             </Button>
             {justSaved && <span className="text-xs text-green-600">저장되었습니다</span>}
-            {over && <span className="text-xs text-red-500">{STAMP_MESSAGE_MAX}자 이하로 줄여주세요</span>}
+            {over && <span className="text-xs text-red-500">{STAMP_MESSAGE_MAX}자 이하로 줄여야 합니다</span>}
             {error && <span className="text-xs text-red-500">{error}</span>}
           </div>
         </div>

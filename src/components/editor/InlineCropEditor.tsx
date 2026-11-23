@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { RotateCcw, Move } from 'lucide-react'
+import { RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ImageSettings } from '@/store/editorStore'
 
@@ -420,13 +420,6 @@ export default function InlineCropEditor({
           )}
         </div>
 
-        {/* 드래그 힌트 */}
-        {dragType && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/60 rounded text-[10px] text-white flex items-center gap-1 z-20">
-            <Move className="w-3 h-3" />
-            {dragType === 'move' ? '드래그로 위치 조정' : disableResize ? '드래그로 위치 조정' : '크기 조정 중'}
-          </div>
-        )}
       </div>
 
       {/* 리셋 버튼 */}

@@ -1,8 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { ParentsInvitationView, EnvelopeScreen } from '@/components/parents'
-import { COLOR_THEMES, FONT_STYLES } from '@/components/parents/types'
+import { COLOR_THEMES, FONT_STYLES, resolveHeadingFont } from '@/components/parents/types'
+import { buildParentsCover } from '@/components/parents/coverInfo'
+import { fillParentsPreview } from '@/components/parents/sampleContent'
 import type { ParentsInvitationData } from './page'
 
 interface ParentsPreviewProps {
@@ -15,7 +17,7 @@ interface ParentsPreviewProps {
 }
 
 export default function ParentsPreview({
-  data,
+  data: rawData,
   fullscreen,
   activeTab = 'intro',
   onTabChange,
@@ -23,6 +25,8 @@ export default function ParentsPreview({
   activeSection,
 }: ParentsPreviewProps) {
   const previewContentRef = useRef<HTMLDivElement>(null)
+  // 미리보기 전용 샘플 채우기 — 비어 있는 칸만 샘플 내용으로 보여줌 (저장 · 입력칸에는 영향 없음)
+  const data = useMemo(() => fillParentsPreview(rawData), [rawData])
   const prevActiveSectionRef = useRef<string | null>(null)
 
   // 테마 가져오기 (커스텀 색상 오버라이드)
@@ -115,6 +119,9 @@ export default function ParentsPreview({
     ? selectedGuest.custom_message.split('\n')
     : data.envelope.message
 
+  // C안 첫 화면 문구 (본문 ParentsInvitationView와 같은 규칙)
+  const cover = buildParentsCover(data)
+
   const handleEnvelopeOpen = useCallback(() => {
     if (onTabChange) {
       onTabChange('main')
@@ -156,6 +163,19 @@ export default function ParentsPreview({
             backgroundImage={data.envelope?.backgroundImage}
             backgroundImageSettings={data.envelope?.backgroundImageSettings}
             hintTextColor={data.envelope?.hintTextColor}
+            textOnly={!!data.envelope?.textOnly}
+            letterBg={data.envelope?.letterBg}
+            captionColor={data.captionColor || data.customPrimaryColor || undefined}
+            titleColor={data.titleColor}
+            textDateLine={cover.textDateLine}
+            textVenueLine={cover.textVenueLine}
+            fromNames={cover.fromNames}
+            deceasedStyle={data.deceasedDisplayStyle || 'flower'}
+            coverNames={cover.coverNames}
+            childLine={cover.childLine}
+            dateVenueLine={cover.dateVenueLine}
+            headingFontFamily={resolveHeadingFont(data.headingFont)}
+            pointColor={data.customPrimaryColor || undefined}
           />
         </div>
       ) : (

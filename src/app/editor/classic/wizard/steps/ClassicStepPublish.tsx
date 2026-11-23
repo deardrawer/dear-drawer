@@ -187,7 +187,6 @@ export default function ClassicStepPublish({ data, invitationId, slug, onSave, o
     <div className="p-6 space-y-8">
       {/* 안내 */}
       <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>거의 다 왔어요!</p>
         <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           청첩장을 발행하면 바로 공유할 수 있어요.
         </p>
@@ -230,7 +229,7 @@ export default function ClassicStepPublish({ data, invitationId, slug, onSave, o
                     <p className="text-xs text-red-500 mt-1">이미 사용 중인 주소입니다</p>
                   )}
                   {slugError && <p className="text-xs text-red-500 mt-1">{slugError}</p>}
-                  <p className="text-xs text-gray-400 mt-2">영문 소문자, 숫자, 하이픈(-)만 사용 가능 (3~30자)</p>
+                  <p className="text-xs text-gray-400 mt-2">영문 소문자 · 숫자 · 하이픈(-), 3~30자</p>
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={handleSlugCancel} className="flex-1">취소</Button>
@@ -311,8 +310,8 @@ export default function ClassicStepPublish({ data, invitationId, slug, onSave, o
       <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50 text-sm text-gray-600 space-y-2">
         <p className="font-medium text-gray-900">알려드립니다</p>
         <ul className="space-y-1 list-disc list-inside">
-          <li>발행 후에도 청첩장 내용은 수정할 수 있습니다.</li>
-          <li>카카오톡, 문자 메시지로 쉽게 공유할 수 있습니다.</li>
+          <li>발행 후에도 수정할 수 있습니다.</li>
+          <li>카카오톡 · 문자로 공유할 수 있습니다.</li>
         </ul>
       </div>
 

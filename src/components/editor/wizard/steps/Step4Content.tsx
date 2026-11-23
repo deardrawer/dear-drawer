@@ -246,7 +246,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         <p className="text-sm font-semibold text-white flex items-center gap-2">
 <ImageIcon className="w-4 h-4 text-gray-300 flex-shrink-0" strokeWidth={1.75} /> {label}
         </p>
-        <p className="text-xs text-gray-300">흑백 웨딩사진 배경으로 섹션을 구분해요</p>
 
         {/* 이미지 업로드 및 크롭 */}
         <div className="space-y-3">
@@ -409,24 +408,12 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 */}
-      <div className="space-y-1">
-        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>{isMagazine ? '매거진 콘텐츠 작성' : '본문 콘텐츠 작성'}</p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          {isMagazine
-            ? "Editor's Note와 인터뷰 등 매거진 본문을 작성해주세요."
-            : '청첩장 본문에 들어갈 내용을 작성해주세요. 질문에 답하면 초안을 작성해드려요.'}
-        </p>
-      </div>
-
       {/* 매거진: Editor's Note (인사말 + 명언) */}
       {isMagazine && (
         <section className="space-y-4">
           <h3 className="text-base font-semibold text-gray-900">
             Editor&apos;s Note
           </h3>
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>매거진 본문 상단에 표시되는 인사말과 명언을 작성해주세요.</p>
-
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">인사말</Label>
             <Textarea
@@ -463,7 +450,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             <Sparkles className="w-4 h-4 shrink-0" strokeWidth={1.75} />
             <div className="text-left">
               <p className="font-semibold text-sm">초안 작성해드려요</p>
-              <p className="text-xs text-white/80">질문에 답하면 맞춤 콘텐츠를 작성해드려요</p>
             </div>
           </div>
         </button>
@@ -484,15 +470,14 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           </div>
           {/* TIP 섹션 */}
           <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-            <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>내가 사랑하는 사람을 소개해 주세요. 함께 지내며 느낀 그 사람의 모습이면 충분합니다.</p>
             <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
               <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
               <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
-                <p className="font-medium">이렇게 작성해 보세요</p>
+                <p className="font-medium">작성 팁</p>
                 <ul className="space-y-1 list-disc list-inside">
-                  <li>'나'가 아닌 그 사람의 이름으로 시작해요</li>
-                  <li>성격 나열보다 장면 하나를 떠올려 보세요</li>
-                  <li>짧아도, 문단이 길어도 괜찮아요</li>
+                  <li>'나'가 아닌 그 사람의 이름으로 시작하기</li>
+                  <li>성격 나열보다 장면 하나 떠올리기</li>
+                  <li>짧아도, 문단이 길어도 괜찮습니다</li>
                 </ul>
                 <div className="p-2 bg-white/50 rounded italic">
                   예시) "다해는 세상을 조금 다르게 바라보는 사람입니다.<br/>익숙한 것에도 늘 질문을 던지고,<br/>그 덕분에 제 하루는 자주 새로워집니다."
@@ -586,7 +571,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   placeholder="ABOUT JIHOON"
                   className="bg-white"
                 />
-                <p className="text-[10px] text-gray-400">예: ABOUT JIHOON, ABOUT 지훈</p>
               </div>
 
               {/* 서브타이틀 */}
@@ -599,7 +583,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   placeholder="서연이가 소개하는 지훈"
                   className="bg-white"
                 />
-                <p className="text-[10px] text-gray-400">예: 서연이가 소개하는 지훈</p>
               </div>
 
               {/* 소개글 */}
@@ -690,7 +673,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   placeholder="ABOUT SEOYEON"
                   className="bg-white"
                 />
-                <p className="text-[10px] text-gray-400">예: ABOUT SEOYEON, ABOUT 서연</p>
               </div>
 
               {/* 서브타이틀 */}
@@ -703,7 +685,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   placeholder="지훈이가 소개하는 서연"
                   className="bg-white"
                 />
-                <p className="text-[10px] text-gray-400">예: 지훈이가 소개하는 서연</p>
               </div>
 
               {/* 소개글 */}
@@ -762,16 +743,15 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             <div className="space-y-4">
               {/* TIP 섹션 */}
               <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-                <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>부모님의 시선으로 자녀를 소개하고, 함께 축하 인사를 전해보세요.</p>
                 <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
                   <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
                   <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
                     <div>
                       <p className="font-medium mb-1" style={{ color: 'var(--ed-text)' }}>작성 팁:</p>
                       <ul className="list-disc list-inside space-y-0.5">
-                        <li>부모님의 목소리로, "이런 아이였어요" "이렇게 자랐어요"를 떠올려 보세요.</li>
-                        <li>자녀를 사랑으로 키우신 이야기와 함께, 새로운 시작에 대한 축복의 마음을 담아주세요.</li>
-                        <li>자녀에 대한 따뜻한 소개, 그리고 앞으로의 결혼 생활을 응원하는 메시지면 좋아요.</li>
+                        <li>부모님의 목소리로 "이런 아이였어요" "이렇게 자랐어요"를 떠올리기</li>
+                        <li>자녀를 사랑으로 키우신 이야기와 새로운 시작에 대한 축복의 마음 담기</li>
+                        <li>자녀에 대한 따뜻한 소개와 결혼 생활을 응원하는 메시지면 충분합니다.</li>
                       </ul>
                     </div>
                   </div>
@@ -811,7 +791,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         placeholder="예: 홍길동, 김영희의"
                         className="bg-white"
                       />
-                      <p className="text-[10px] text-gray-400">아버지, 어머니 이름 뒤에 &apos;의&apos;를 붙여주세요</p>
+                      <p className="text-[10px] text-gray-400">아버지, 어머니 이름 뒤에 &apos;의&apos;를 붙여 입력합니다.</p>
                     </div>
 
                     {/* 자녀 순서 */}
@@ -838,7 +818,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         placeholder="사진 추가"
                         aspectRatio="aspect-[4/3]"
                       />
-                      <p className="text-[10px] text-gray-400">2장 등록 시 자동 슬라이드됩니다</p>
                       {/* 이미지 크롭 조정 */}
                       {(parentIntro.groom?.images?.filter((img: string) => img)?.length || 0) > 0 && (
                         <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
@@ -911,7 +890,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         placeholder="예: 이철수, 박순이의"
                         className="bg-white"
                       />
-                      <p className="text-[10px] text-gray-400">아버지, 어머니 이름 뒤에 &apos;의&apos;를 붙여주세요</p>
+                      <p className="text-[10px] text-gray-400">아버지, 어머니 이름 뒤에 &apos;의&apos;를 붙여 입력합니다.</p>
                     </div>
 
                     {/* 자녀 순서 */}
@@ -938,7 +917,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         placeholder="사진 추가"
                         aspectRatio="aspect-[4/3]"
                       />
-                      <p className="text-[10px] text-gray-400">2장 등록 시 자동 슬라이드됩니다</p>
                       {/* 이미지 크롭 조정 */}
                       {(parentIntro.bride?.images?.filter((img: string) => img)?.length || 0) > 0 && (
                         <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
@@ -1007,14 +985,13 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             <div className="space-y-4">
               {/* TIP 섹션 */}
               <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-                <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>상대에게 느낀 특별함을, 두 분의 말로 직접 전해 보세요.</p>
                 <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
                   <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
                   <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
                     <div>
                       <p className="font-medium mb-1" style={{ color: 'var(--ed-text)' }}>작성 팁:</p>
                       <ul className="list-disc list-inside space-y-0.5">
-                        <li>단순한 장점이 아닌, 일상에서 느낀 순간을 떠올려 보세요.</li>
+                        <li>단순한 장점이 아닌, 일상에서 느낀 순간 떠올리기</li>
                         <li>예시: "힘든 날 먼저 다가와 주던 손이 고마웠어요."</li>
                         <li>진심이 담긴 한 문장이 화려한 수식어보다 더 마음에 남습니다.</li>
                       </ul>
@@ -1241,31 +1218,26 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
           {/* TIP 섹션 */}
           <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-            <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>첫 만남부터 결혼을 결심하기까지, 그때의 이야기와 사진을 함께 담아주세요.</p>
             <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
               <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
               <div className="mt-3 space-y-4 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
-                <p>이 페이지는 첫 만남부터 결혼을 결심하기까지의 시간을 사진과 함께 기록하는 공간입니다.</p>
-
                 <div className="space-y-2">
                   <p className="font-medium">① 첫 만남</p>
-                  <p>처음 마주했던 날을 떠올려 보세요. 그날의 분위기와 마음을 한두 문장으로 남기고, 첫 시절의 사진을 함께 담아 주세요.</p>
+                  <p>처음 마주했던 날의 분위기와 마음을 한두 문장으로, 첫 시절의 사진과 함께 담습니다.</p>
                   <div className="p-2 bg-white/50 rounded italic">예시) "스무 살, 같은 캠퍼스에서 친구로 처음 만났습니다."</div>
                 </div>
 
                 <div className="space-y-2">
                   <p className="font-medium">② 연애의 시간</p>
-                  <p>연애하며 함께 쌓아온 시간을 요약해 보세요. 장거리, 취미, 반복된 일상처럼 우리다웠던 시간을 보여주는 사진이 잘 어울립니다.</p>
+                  <p>연애하며 함께 쌓아온 시간을 요약합니다. 장거리, 취미, 반복된 일상처럼 우리다웠던 시간을 보여주는 사진이 잘 어울립니다.</p>
                   <div className="p-2 bg-white/50 rounded italic">예시) "장거리와 바쁜 일상 속에서도 함께 웃고, 같은 취미를 나누며 시간을 쌓아왔습니다."</div>
                 </div>
 
                 <div className="space-y-2">
                   <p className="font-medium">③ 결혼을 결심한 순간</p>
-                  <p>결혼을 준비하게 된 계기나 프러포즈의 순간을 담아보세요.</p>
+                  <p>결혼을 준비하게 된 계기나 프러포즈의 순간을 담습니다.</p>
                   <div className="p-2 bg-white/50 rounded italic">예시) "10주년을 기념한 여행에서, 서로의 평생이 되기로 약속했습니다."</div>
                 </div>
-
-                <p>사진은 기록을 더 선명하게 만들고, 글은 그 순간에 의미를 더합니다. 잘 나온 사진보다 그때의 감정이 느껴지는 사진이 좋아요.</p>
               </div>
             </details>
           </div>
@@ -1278,7 +1250,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-700">상단 흑백 디바이더</p>
-                      <p className="text-xs text-gray-500 mt-0.5">러브스토리 맨 위에 흑백 웨딩사진 디바이더를 넣어요</p>
                     </div>
                     <Switch
                       checked={(invitation.relationship as any)?.loveStoryDividerEnabled === true}
@@ -1400,7 +1371,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               처음 만난 날
             </h3>
             <div className="p-4 rounded-lg space-y-3" style={{ background: 'var(--ed-surface-2)' }}>
-              <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>두 분이 처음 만난 날짜를 입력해주세요. 청첩장에 함께한 시간이 표시됩니다.</p>
               <Input
                 type="date"
                 value={invitation.relationship.startDate || ''}
@@ -1419,7 +1389,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             </h3>
             <div className="p-4 bg-gray-50 rounded-lg space-y-2">
               <div className="flex items-start justify-between gap-2">
-                <p className="text-xs text-gray-500">스토리 마지막 문구예요. &lsquo;신랑&rsquo;·&lsquo;신부&rsquo; 호칭도 자유롭게 바꿀 수 있어요. (Enter로 줄바꿈)</p>
+                <p className="text-xs text-gray-500">&lsquo;신랑&rsquo;·&lsquo;신부&rsquo; 호칭도 바꿀 수 있습니다.</p>
                 <button
                   type="button"
                   onClick={() => updateNestedField('relationship.closingText', "그리고 이제 드디어 부르는 서로의 이름에\n'신랑', '신부'라는 호칭을 담습니다")}
@@ -1449,28 +1419,14 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         </h3>
         {/* 가이드 섹션 */}
         <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-          <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>두 사람의 사진을 업로드해 주세요. 스토리에서 쓰지 않은 사진들이 잘 어울립니다.</p>
           <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
             <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
             <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
-              <p>
-                디어드로어 청첩장은<br/>
-                이야기와 사진이 함께 흐르는 스토리형 청첩장입니다.
-              </p>
-              <p>
-                그래서 갤러리 파트는<br/>
-                앞선 스토리 섹션에서 사용하지 않은 사진이나,<br/>
-                가장 잘 나온 사진들로 구성해 주시면 좋아요.
-              </p>
-              <p>
-                잡지처럼 한 장면 한 장면이 이어지도록,<br/>
-                사진의 컨셉이 겹치지 않게 선택하는걸 추천드려요.
-              </p>
               <div className="p-2 bg-white/50 rounded">
-                <p className="font-medium mb-1">이렇게 구성해 보세요</p>
+                <p className="font-medium mb-1">구성 팁</p>
                 <ul className="list-disc list-inside space-y-0.5">
-                  <li>스토리에서 이미 사용한 사진은 피해주세요</li>
-                  <li>비슷한 구도·표정의 사진은 줄이고, 다른 느낌의 사진을 골라보세요</li>
+                  <li>스토리에서 이미 사용한 사진은 피하기</li>
+                  <li>비슷한 구도·표정의 사진은 줄이고, 다른 느낌의 사진 고르기</li>
                 </ul>
               </div>
               <div className="p-2 bg-white/50 rounded">
@@ -1480,21 +1436,17 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   <li>두 사람의 분위기가 잘 드러나는 장면</li>
                 </ul>
               </div>
-              <p>갤러리는 이야기를 반복하는 공간이 아니라, 이야기를 더 풍성하게 만드는 여백입니다.</p>
             </div>
           </details>
         </div>
 
         {/* 사진 확대(줌) 허용 토글 */}
         <div className="flex items-center justify-between">
-          <div>
-            <Label className="text-sm font-medium">사진 확대(줌) 허용</Label>
-            <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>하객이 갤러리 사진을 크게 열면 핀치·더블탭으로 확대할 수 있어요</p>
-          </div>
+          <Label className="text-sm font-medium">사진 확대(줌) 허용</Label>
           <Switch checked={invitation.gallery.zoomEnabled === true} onCheckedChange={(c) => updateNestedField('gallery.zoomEnabled', c)} />
         </div>
         {invitation.gallery.zoomEnabled === true && (
-          <p className="-mt-1 text-xs" style={{ color: 'var(--ed-text-muted)' }}>사진은 2.5배까지 확대돼요. 더 크게 선명하게 확대하고 싶은 사진은 사진에 마우스를 올려 &apos;고화질&apos;로 다시 올려 주세요.</p>
+          <p className="-mt-1 text-xs" style={{ color: 'var(--ed-text-muted)' }}>사진은 2.5배까지 확대됩니다. 선명한 확대가 필요한 사진은 마우스를 올려 &apos;고화질&apos;로 다시 올릴 수 있습니다.</p>
         )}
 
         <MultiImageUploader
@@ -1617,7 +1569,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               {/* 행 패턴 편집 */}
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-gray-600">행 패턴</Label>
-                <p className="text-[10px] text-gray-400">각 행에 표시할 사진 수를 설정합니다. 사진이 패턴보다 많으면 반복됩니다.</p>
+                <p className="text-[10px] text-gray-400">사진이 패턴보다 많으면 패턴이 반복됩니다.</p>
                 <div className="space-y-1.5">
                   {(invitation.galleryRowPattern || [1, 2, 1]).map((count, rowIdx) => (
                     <div key={rowIdx} className="flex items-center gap-2">
@@ -1689,7 +1641,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           {/* 라이트박스 스타일 */}
           <div className="space-y-2">
             <Label className="text-xs font-medium text-gray-600">라이트박스 스타일</Label>
-            <p className="text-[10px] text-gray-400">갤러리 사진을 탭했을 때 열리는 전체화면 뷰어의 스타일입니다.</p>
+            <p className="text-[10px] text-gray-400">사진을 탭하면 열리는 전체화면 뷰어</p>
             <div className="grid grid-cols-4 gap-1.5">
               {([
                 { value: 0, label: '기본' },
@@ -1730,8 +1682,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             onCheckedChange={(checked) => updateNestedField('youtube.enabled', checked)}
           />
         </div>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>유튜브 영상을 추가하세요. 갤러리 아래에 표시됩니다.</p>
-
         {invitation.youtube?.enabled && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
             <div className="space-y-1.5">
@@ -1789,7 +1739,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
             {/* TIP 섹션 */}
             <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-              <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>결혼을 앞둔 두 분의 생각과 이야기를, 질문에 답하듯 솔직하게 들려주세요.</p>
               <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
                 <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
                 <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
@@ -1807,8 +1756,8 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   <div>
                     <p className="font-medium mb-1" style={{ color: 'var(--ed-text)' }}>작성 팁:</p>
                     <ul className="list-disc list-inside space-y-0.5">
-                      <li>답변은 너무 길지 않게, 따뜻한 한두 문장이 더 기억에 남아요.</li>
-                      <li>두 사람의 말투/느낌을 살려보세요.</li>
+                      <li>답변은 너무 길지 않게, 따뜻한 한두 문장이 더 기억에 남습니다.</li>
+                      <li>두 사람의 말투/느낌 살리기</li>
                       <li>꼭 멋진 말이 아니어도, 솔직한 이야기가 더 진정성 있습니다.</li>
                     </ul>
                   </div>
@@ -1835,7 +1784,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 onFocus={() => setActiveSection('interview')}
                 placeholder="결혼에 관한 우리의 이야기"
               />
-              <p className="text-[10px] text-gray-400">인터뷰 섹션 상단에 표시되는 문구입니다</p>
             </div>
 
             {invitation.content.interviews.map((interview, index) => (
@@ -1937,8 +1885,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           </div>
 
           {invitation.sectionVisibility.guidance && (<div className="space-y-4">
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>하객분들께 전달할 안내사항을 작성해주세요. 필요한 항목만 켜서 사용하세요.</p>
-
               {/* 텍스트 정렬 */}
               <div className="flex items-center gap-2">
                 <span className="text-[10px] text-gray-400">정렬</span>
@@ -1965,7 +1911,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               {/* 웨딩사진 */}
               <div className="p-4 rounded-lg space-y-3" style={{ background: 'var(--ed-surface-2)' }}>
                 <Label className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>웨딩사진</Label>
-                <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>안내사항 상단에 표시될 웨딩사진을 추가해주세요.</p>
 
                 {invitation.guidance?.image ? (
                   <div className="space-y-3">
@@ -2198,16 +2143,14 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
         {/* TIP 섹션 */}
         <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-          <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>두 분의 진심이 담긴 감사 인사로, 청첩장을 마무리해 주세요.</p>
           <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
             <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
             <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
-              <p>바쁘신 중에도 축하해 주시는 분들께 감사 인사를 전할 수 있어요.</p>
               <div>
                 <p className="font-medium mb-1" style={{ color: 'var(--ed-text)' }}>작성 팁:</p>
                 <ul className="list-disc list-inside space-y-0.5">
-                  <li>형식적인 인사보다는, 진심으로 고마움이 느껴지는 말이 좋아요.</li>
-                  <li>지금까지 응원해 주신 분들, 앞으로 함께할 분들에게 전하는 마음을 담아보세요.</li>
+                  <li>형식적인 인사보다는, 진심으로 고마움이 느껴지는 말이 좋습니다.</li>
+                  <li>지금까지 응원해 주신 분들, 앞으로 함께할 분들에게 전하는 마음 담기</li>
                 </ul>
               </div>
             </div>
@@ -2246,8 +2189,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             onCheckedChange={() => toggleSectionVisibility('guestbook')}
           />
         </div>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
-
         <details>
           <summary className="text-xs cursor-pointer hover:underline select-none" style={{ color: 'var(--ed-text-muted)' }}>
             질문 예시 ) 펼쳐보기
@@ -2307,7 +2248,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div>
                 <p className="text-sm font-medium text-gray-800">포스트잇에 질문 표시</p>
-                <p className="text-xs text-gray-500">방명록 카드에 질문을 함께 보여줍니다</p>
               </div>
               <Switch
                 checked={invitation.content.guestbookShowQuestion !== false}
@@ -2321,7 +2261,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--ed-text)' }}><MessageSquare className="w-3.5 h-3.5" strokeWidth={1.75} /> 질문 설정 (최대 10개)</p>
                 <span className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>{invitation.content.guestbookQuestions?.length || 0}/10</span>
               </div>
-              <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>하객분들에게 보여질 질문을 설정하세요. 질문이 랜덤으로 표시됩니다.</p>
+              <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>질문은 랜덤으로 표시됩니다.</p>
 
               <div className="space-y-2">
                 {(invitation.content.guestbookQuestions || []).map((question, index) => (

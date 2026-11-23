@@ -209,7 +209,7 @@ export default function GuestManager({ invitationId }: GuestManagerProps) {
     return (
       <div className="p-6 text-center text-gray-500">
         <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-        <p className="text-sm">게스트 관리를 위해서는 먼저 청첩장을 저장해주세요.</p>
+        <p className="text-sm">게스트를 관리하려면 먼저 청첩장을 저장해야 합니다.</p>
       </div>
     )
   }
@@ -254,7 +254,6 @@ export default function GuestManager({ invitationId }: GuestManagerProps) {
         <div className="py-8 text-center text-gray-400">
           <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
           <p className="text-sm">등록된 게스트가 없습니다</p>
-          <p className="text-xs mt-1">게스트를 추가하면 개인화된 링크가 생성됩니다</p>
         </div>
       ) : (
         <div className="space-y-2 max-h-[400px] overflow-y-auto">
@@ -363,9 +362,6 @@ export default function GuestManager({ invitationId }: GuestManagerProps) {
                     </option>
                   ))}
                 </select>
-                <p className="text-xs text-gray-500">
-                  예) 이모, 고모네 가족분들
-                </p>
               </div>
 
               <div className="space-y-2">
@@ -392,9 +388,6 @@ export default function GuestManager({ invitationId }: GuestManagerProps) {
                 placeholder="이 게스트에게만 보여줄 특별한 메시지를 입력하세요"
                 rows={3}
               />
-              <p className="text-xs text-gray-500">
-                예: &quot;이모, 항상 감사드립니다. 꼭 와주세요!&quot;
-              </p>
             </div>
           </div>
 

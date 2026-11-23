@@ -170,7 +170,7 @@ export default function ImageUploader({
                   variant="secondary"
                   onClick={handleHdClick}
                   disabled={isUploading}
-                  title={value && isHdUpload(value) ? (isHdImage(value) ? '고화질 확대를 끄고 일반 사진처럼(최대 2.5배) 확대돼요' : '다시 고화질로 크게 확대돼요') : '같은 사진을 고화질로 다시 올리면 하객이 더 크게, 선명하게 확대할 수 있어요'}
+                  title={value && isHdUpload(value) ? (isHdImage(value) ? '고화질 확대를 끄고 일반 사진처럼(최대 2.5배) 확대됩니다' : '다시 고화질로 크게 확대됩니다') : '같은 사진을 고화질로 다시 올리면 하객이 더 크게, 선명하게 확대할 수 있습니다'}
                 >
                   {value && isHdUpload(value) ? (isHdImage(value) ? '고화질 해제' : '고화질 켜기') : '고화질'}
                 </Button>

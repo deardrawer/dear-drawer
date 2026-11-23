@@ -20,6 +20,7 @@ const SAMPLE_SLUGS = [
   "sample-essay",
   "sample-essay-paper",
   "sample-essay-book",
+  "sample-essay-modern",
 ];
 
 export async function GET() {

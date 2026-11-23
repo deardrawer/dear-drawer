@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useSectionHighlight } from './SectionHighlightContext'
-import { useTheme } from './ThemeContext'
+import { C_FIELD, C_TXT, C_HAIR, C_SANS, C_TXT_SUB, cBody, cCaption, cDim, cMiniPill, cPill, cStagger, C_WHITE_ISLAND } from './cStyle'
 
 interface Account {
   label?: string
@@ -15,25 +15,6 @@ interface AccountSectionProps {
   accounts?: Account[]
 }
 
-// hex 색을 어둡게 (0~1, 클수록 진함) — 밝은 파스텔 메인컬러를 진하게 쓰기 위함
-const darken = (hex: string, f: number): string => {
-  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex)
-  if (!m) return hex
-  const n = parseInt(m[1], 16)
-  const r = Math.round(((n >> 16) & 255) * (1 - f))
-  const g = Math.round(((n >> 8) & 255) * (1 - f))
-  const b = Math.round((n & 255) * (1 - f))
-  return `rgb(${r}, ${g}, ${b})`
-}
-
-const stagger = (hasAppeared: boolean, delay: number) => ({
-  opacity: hasAppeared ? 1 : 0,
-  transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
-  filter: hasAppeared ? 'blur(0px)' : 'blur(6px)',
-  transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
-  transitionDelay: hasAppeared ? `${delay}s` : '0s',
-})
-
 export default function AccountSection({
   accounts = [
     { label: '아버지', name: '이○○', bank: '국민은행', account: '123-45-6789012' },
@@ -42,7 +23,6 @@ export default function AccountSection({
   ],
 }: AccountSectionProps) {
   const { ref, isActive, hasAppeared } = useSectionHighlight('account')
-  const theme = useTheme()
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const [showAccountModal, setShowAccountModal] = useState<{ name: string; bank: string; account: string } | null>(null)
 
@@ -97,122 +77,70 @@ export default function AccountSection({
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="px-6 py-16 flex flex-col items-center justify-center"
-      style={{
-        backgroundColor: theme.background,
-        filter: isActive ? 'none' : 'grayscale(30%)',
-        opacity: isActive ? 1 : 0.3,
-        transition: 'filter 0.5s, opacity 0.5s',
-      }}
+      style={{ backgroundColor: 'transparent', padding: '72px 28px 80px', ...cDim(isActive) }}
     >
-      {/* GIFT label */}
-      <p
-        className="text-[10px] tracking-[6px] mb-3"
-        style={{
-          color: isActive ? `${theme.accent}80` : '#bbb',
-          fontWeight: 300,
-          ...stagger(hasAppeared, 0),
-        }}
-      >
-        GIFT
-      </p>
+      <p style={{ ...cCaption, ...cStagger(hasAppeared, 0) }}>마음 전하실 곳</p>
+      <p style={{ ...cBody(12), fontFamily: C_SANS, ...cStagger(hasAppeared, 0.15) }}>참석이 어려우신 분들을 위해 계좌번호를 함께 적어 두었습니다.</p>
 
-      <h2
-        className="font-serif text-[16px] text-center mb-8 tracking-[1px]"
-        style={{
-          color: isActive ? theme.text : '#999',
-          fontWeight: 500,
-          ...stagger(hasAppeared, 0.15),
-        }}
-      >
-        마음 전하실 곳
-      </h2>
-
-      <div className="space-y-2 w-full max-w-[340px]">
+      <div style={{ marginTop: 22 }}>
         {accounts.map((item, index) => (
-          <button
+          <div
             key={`${item.name}-${index}`}
             onClick={() => handleCopy(item, index)}
-            className="w-full px-5 py-4 rounded-[5px] text-left transition-all duration-300"
-            style={{
-              backgroundColor: '#FFFFFF',
-              boxShadow: isActive ? '0 1px 8px rgba(0,0,0,0.03)' : 'none',
-              ...stagger(hasAppeared, 0.3 + index * 0.12),
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 2px 16px rgba(0,0,0,0.06)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = isActive ? '0 1px 8px rgba(0,0,0,0.03)' : 'none'; }}
+            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 0', borderTop: `1px solid ${C_HAIR}`, cursor: 'pointer', ...cStagger(hasAppeared, 0.3 + index * 0.12) }}
           >
-            <div className="flex justify-between items-center">
-              <div>
-                {item.label && (
-                  <p
-                    className="text-[10px] mb-1 tracking-[1px]"
-                    style={{ color: isActive ? theme.primary : '#bbb' }}
-                  >
-                    {item.label}
-                  </p>
-                )}
-                <p
-                  className="font-serif text-[12px] mb-1"
-                  style={{ color: isActive ? theme.text : '#999', fontWeight: 500 }}
-                >
-                  {item.name}
-                </p>
-                <p
-                  className="text-[13px]"
-                  style={{ color: isActive ? darken(theme.primary, 0.4) : '#999', fontWeight: 500 }}
-                >
-                  {item.bank} {item.account}
-                </p>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, color: C_TXT_SUB }}>
+                {[item.label, item.name].filter(Boolean).join(' ')}
               </div>
-              <span
-                className="px-3.5 py-1.5 rounded-lg text-[11px] tracking-[0.5px] transition-all duration-300"
-                style={{
-                  backgroundColor: copiedIndex === index ? '#22c55e' : theme.background,
-                  color: copiedIndex === index ? '#FFFFFF' : (isActive ? theme.textLight : '#aaa'),
-                }}
-              >
-                {copiedIndex === index ? '복사됨' : '복사'}
-              </span>
+              <div style={{ fontSize: 15.5, marginTop: 3, color: C_TXT, wordBreak: 'break-all' }}>
+                {item.bank} {item.account}
+              </div>
             </div>
-          </button>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); handleCopy(item, index) }}
+              style={cMiniPill(copiedIndex === index)}
+            >
+              {copiedIndex === index ? '복사됨' : '복사'}
+            </button>
+          </div>
         ))}
+        <div style={{ borderTop: `1px solid ${C_HAIR}` }} />
       </div>
 
-      {/* Copy failure modal */}
+      {/* 복사가 안 될 때 — 직접 길게 눌러 복사 */}
       {showAccountModal && (
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"
+          className="fixed inset-0 z-[9999] flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(31,29,26,0.45)' }}
           onClick={() => setShowAccountModal(null)}
         >
           <div
-            className="bg-white rounded-[5px] p-6 max-w-[320px] w-full mx-4 shadow-xl"
+            style={{ ...C_WHITE_ISLAND, backgroundColor: '#FFFFFF', borderRadius: 8, padding: '28px 24px 22px', maxWidth: 320, width: '100%', margin: '0 16px', fontFamily: C_SANS }}
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="text-sm font-medium text-center mb-1" style={{ color: theme.text }}>
+            <p style={{ margin: 0, textAlign: 'center', fontSize: 15, fontWeight: 600, color: C_TXT }}>
               {showAccountModal.name}
             </p>
-            <p className="text-xs text-center mb-4" style={{ color: '#999' }}>
+            <p style={{ margin: '4px 0 0', textAlign: 'center', fontSize: 13, color: C_TXT_SUB }}>
               {showAccountModal.bank}
             </p>
-            <div className="bg-gray-50 rounded-lg p-3 mb-4">
+            <div style={{ backgroundColor: C_FIELD, borderRadius: 6, padding: '12px 10px', marginTop: 16 }}>
               <p
-                className="text-center text-base font-mono tracking-wider select-all"
-                style={{ color: theme.text, userSelect: 'all', WebkitUserSelect: 'all' }}
+                style={{ margin: 0, textAlign: 'center', fontSize: 17, letterSpacing: '0.04em', color: C_TXT, userSelect: 'all', WebkitUserSelect: 'all' }}
               >
                 {showAccountModal.account}
               </p>
             </div>
-            <p className="text-xs text-center mb-4" style={{ color: '#999' }}>
-              계좌번호를 길게 눌러 복사해주세요
+            <p style={{ margin: '14px 0 0', textAlign: 'center', fontSize: 13, color: C_TXT_SUB }}>
+              계좌번호를 길게 눌러 복사해 주세요
             </p>
-            <button
-              onClick={() => setShowAccountModal(null)}
-              className="w-full py-2.5 rounded-lg text-sm font-medium"
-              style={{ backgroundColor: theme.primary, color: 'white' }}
-            >
-              닫기
-            </button>
+            <div style={{ display: 'flex', marginTop: 18 }}>
+              <button type="button" onClick={() => setShowAccountModal(null)} style={cPill(true, 46)}>
+                닫기
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
+import { C_BG, C_BODY, C_INK, C_KSERIF, C_SANS, C_SERIF, C_SUB, cCaption, cPill, cPointTint, cTitle, onPointColor, C_WHITE_ISLAND } from './cStyle'
+
+const C_FAINT = '#B4B4B4'
 
 // hex 색상을 CSS filter로 변환하는 함수
 export function hexToSealFilter(hex: string): string {
@@ -55,12 +58,12 @@ interface EnvelopeScreenProps {
   signature?: React.ReactNode
   onOpen: () => void
   isPreview?: boolean
-  themeColor?: string  // 메인 테마 컬러
-  accentColor?: string // 포인트 컬러
-  sealColor?: string   // 실링스티커 색상 (hex)
-  fontClassName?: string // 폰트 클래스
-  fontFamily?: string // 폰트 패밀리 CSS 값
-  backgroundImage?: string  // 봉투 배경 이미지
+  themeColor?: string  // (호환용) 메인 테마 컬러 — C안에서는 사용하지 않음
+  accentColor?: string // (호환용) 포인트 컬러 — C안에서는 사용하지 않음
+  sealColor?: string   // (호환용) 실링스티커 색상 — C안에서는 사용하지 않음
+  fontClassName?: string // (호환용) 폰트 클래스 — 하위 전체 서체를 덮어쓰므로 적용하지 않음
+  fontFamily?: string // 편지 본문 서체 CSS 값
+  backgroundImage?: string  // 봉투 배경 이미지 (첫 화면 사진)
   backgroundImageSettings?: {
     scale: number
     positionX: number
@@ -70,7 +73,22 @@ interface EnvelopeScreenProps {
     cropWidth?: number
     cropHeight?: number
   }
-  hintTextColor?: string    // 안내 문구 글자색
+  hintTextColor?: string    // 사진 위 받는 분 이름 글자색
+  // ── C안 첫 화면용 (선택) ──
+  coverImage?: string                 // 봉투 배경 사진이 없을 때 쓸 사진 (대표 사진 등)
+  coverNames?: { groom: string; bride: string; heart?: boolean }  // 영문 이름
+  childLine?: string                  // 예: 저희 딸 서연이가 결혼합니다
+  dateVenueLine?: string              // 예: 2027. 01. 09 (토) · 더채플앳청담
+  textOnly?: boolean                  // 사진 없이 글자만 (사진이 있어도 글자만 보여줌)
+  textDateLine?: string               // 글자만 첫 화면: 예) 2027년 1월 9일 토요일 오후 4시
+  textVenueLine?: string              // 글자만 첫 화면: 예) 더채플앳청담 5층 루체홀
+  fromNames?: { name: string; deceased?: boolean }[]  // 글자만 첫 화면: From. 보내는 분
+  deceasedStyle?: 'hanja' | 'flower'
+  letterBg?: string                   // 편지 화면 배경: white | gray | ink | point | #RRGGBB (기본 흰색)
+  captionColor?: string               // 부제 색 — 에디터 미리보기처럼 본문 밖에서 그릴 때 지정
+  titleColor?: string                 // 제목 색 — 위와 같은 경우 지정
+  headingFontFamily?: string          // 메인(제목) 서체 — 에디터 미리보기처럼 본문 밖에서 그릴 때 지정
+  pointColor?: string                 // 포인트 색 — 위와 같은 경우 지정
 }
 
 export default function EnvelopeScreen({
@@ -82,471 +100,311 @@ export default function EnvelopeScreen({
   signature = '아버지 이○○ · 어머니 김○○ 올림',
   onOpen,
   isPreview = false,
-  themeColor = '#722F37',
-  accentColor = '#C9A962',
-  sealColor,
-  fontClassName = '',
   fontFamily = '',
   backgroundImage,
   backgroundImageSettings,
   hintTextColor,
+  coverImage,
+  coverNames,
+  childLine,
+  dateVenueLine,
+  headingFontFamily,
+  pointColor,
+  textOnly = false,
+  textDateLine,
+  textVenueLine,
+  fromNames,
+  deceasedStyle = 'flower',
+  letterBg = 'white',
+  captionColor,
+  titleColor,
 }: EnvelopeScreenProps) {
+  // stage 0: 첫 화면(사진 + 이름) → stage 1: 편지 → 본문
   const [stage, setStage] = useState(0)
-  const [isExtracted, setIsExtracted] = useState(false)
-  const [isHidden, setIsHidden] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const [isLeaving, setIsLeaving] = useState(false)
 
   // 마운트 후 컴포넌트 표시 (CSS 로딩 전 깜빡임 방지)
   useEffect(() => {
-    // 두 프레임 대기 후 표시 (CSS 완전 적용 보장)
-    const timer = setTimeout(() => {
-      setIsMounted(true)
-    }, 50)
+    const timer = setTimeout(() => setIsMounted(true), 50)
     return () => clearTimeout(timer)
   }, [])
 
-  // 에디터에서 게스트가 변경되면 애니메이션 리셋
+  // 에디터에서 게스트가 변경되면 첫 화면으로 리셋
   useEffect(() => {
     if (isPreview) {
       setStage(0)
-      setIsExtracted(false)
-      setIsHidden(false)
       setIsLeaving(false)
     }
   }, [recipientName, recipientRelation, isPreview])
 
   // 관계가 있으면 "이름 관계 호칭" 형식, 없으면 "이름 호칭" 형식
-  const titleSuffix = recipientTitle ? ` ${recipientTitle}` : ''
-  const displayGreetingTo = greetingTo || (recipientRelation
+  // '께' · '에게'는 붙여 쓰고(소중한 분께), '님께' 등은 띄어 씀(김도현 님께)
+  const titleSuffix = recipientTitle ? (/^(께|에게)$/.test(recipientTitle) ? recipientTitle : ` ${recipientTitle}`) : ''
+  const nameLine = recipientRelation
     ? `${recipientName} ${recipientRelation}${titleSuffix}`
-    : `${recipientName}${titleSuffix}`)
+    : `${recipientName}${titleSuffix}`
+  const displayGreetingTo = greetingTo || nameLine
 
-  const handleClick = useCallback(() => {
-    if (stage === 0) {
-      // 1단계: 뒤집기
-      setStage(1)
+  const hasLetter = (message || []).some(line => (line || '').trim() !== '')
 
-      // 뒤집은 후 자동으로 열기 시작
-      setTimeout(() => {
-        setStage(2)
+  const goMain = useCallback(() => {
+    if (isLeaving) return
+    setIsLeaving(true)
+    setTimeout(() => onOpen(), 380)
+  }, [isLeaving, onOpen])
 
-        // 편지지 꺼내기
-        setTimeout(() => {
-          setIsExtracted(true)
-          setStage(3)
-          // 자동 전환 제거 - 클릭해야만 본문으로 이동
-        }, 1000)
-      }, 800)
-    } else if (stage === 3 && isExtracted) {
-      // 편지가 나온 상태에서 클릭 → 편지가 다가오며 페이드된 뒤 본문 전환
-      if (isLeaving) return
-      setIsLeaving(true)
-      setTimeout(() => onOpen(), 380)
+  const handleCoverTap = useCallback(() => {
+    if (stage !== 0) return
+    if (hasLetter) setStage(1)
+    else goMain()
+  }, [stage, hasLetter, goMain])
+
+  // 첫 화면 사진: 봉투 배경 사진(크롭 설정 포함) → 없으면 대표 사진
+  const photo = (() => {
+    if (textOnly) return null
+    if (backgroundImage) {
+      const s = backgroundImageSettings
+      const cw = s?.cropWidth ?? 1
+      const ch = s?.cropHeight ?? 1
+      const cx = s?.cropX ?? 0
+      const cy = s?.cropY ?? 0
+      const hasCrop = cw < 0.99 || ch < 0.99
+      const posX = hasCrop ? (cx + cw / 2) * 100 : 50
+      const posY = hasCrop ? (cy + ch / 2) * 100 : 50
+      const scale = hasCrop ? Math.max(1 / cw, 1 / ch) : 1
+      return { src: backgroundImage, pos: `${posX}% ${posY}%`, scale }
     }
-  }, [stage, isExtracted, onOpen, isPreview, isLeaving])
+    if (coverImage) return { src: coverImage, pos: '50% 22%', scale: 1 }
+    return null
+  })()
+
+  // 편지 화면 배경: 흰색 / 연회색 / 먹색(글씨 밝게, 버튼 흰색) / 포인트 색 연하게
+  // 직접 고른 색: 어두우면 밝은 글씨 + 흰 버튼, 밝으면 먹색 글씨
+  const customHex = /^#[0-9a-fA-F]{6}$/.test(letterBg) ? letterBg : null
+  const customDark = customHex ? (() => {
+    const n = parseInt(customHex.slice(1), 16)
+    return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255 < 0.55
+  })() : false
+  const darkLetter = {
+    body: 'rgba(255,255,255,0.82)', sign: '#FFFFFF',
+    vars: { ['--parents-caption' as string]: 'rgba(255,255,255,0.6)', ['--parents-title' as string]: '#FFFFFF' },
+    button: { background: '#FFFFFF', color: C_INK },
+  }
+  const letterTheme: { bg: string; body: string; sign: string; vars: React.CSSProperties; button: React.CSSProperties } =
+    customHex
+      ? (customDark ? { bg: customHex, ...darkLetter } : { bg: customHex, body: C_BODY, sign: C_INK, vars: {}, button: {} })
+      : letterBg === 'ink'
+      ? {
+          bg: C_INK, body: 'rgba(255,255,255,0.82)', sign: '#FFFFFF',
+          vars: { ['--parents-caption' as string]: 'rgba(255,255,255,0.55)', ['--parents-title' as string]: '#FFFFFF' },
+          button: { background: '#FFFFFF', color: C_INK },
+        }
+      : letterBg === 'gray'
+        ? { bg: '#F4F4F5', body: C_BODY, sign: C_INK, vars: {}, button: {} }
+        : letterBg === 'point'
+          ? { bg: cPointTint(8), body: C_BODY, sign: C_INK, vars: {}, button: {} }
+          : { bg: C_BG, body: C_BODY, sign: C_INK, vars: {}, button: {} }
+
+  const showNames = !!(coverNames && coverNames.groom && coverNames.bride)
+  const namesLen = showNames ? `${coverNames!.groom} & ${coverNames!.bride}`.length : 0
+  const namesSize = Math.max(30, Math.min(44, Math.floor(330 / Math.max(1, namesLen * 0.45))))
 
   return (
     <div
-      className={`${isPreview ? 'absolute' : 'fixed'} inset-0 z-50 flex flex-col items-center justify-center ${fontClassName}`}
+      className={`${isPreview ? 'absolute' : 'fixed'} inset-0 z-50`}
       style={{
-        backgroundColor: themeColor,
-        '--accent-color': accentColor,
-        '--envelope-font': fontFamily,
-        fontFamily: fontFamily || 'inherit',
+        ...C_WHITE_ISLAND,
+        backgroundColor: C_BG,
+        color: C_INK,
+        fontFamily: C_SANS,
         opacity: isMounted && !isLeaving ? 1 : 0,
-        transition: isLeaving ? 'opacity 0.38s ease' : 'opacity 0.15s ease-in',
-        cursor: 'pointer',
-      } as React.CSSProperties}
-      onClick={handleClick}
+        transition: isLeaving ? 'opacity 0.38s ease' : 'opacity 0.2s ease-in',
+        WebkitFontSmoothing: 'antialiased',
+        wordBreak: 'keep-all',
+        ...(headingFontFamily ? { ['--parents-heading-font' as string]: headingFontFamily } : {}),
+        ...(pointColor ? { ['--parents-point' as string]: pointColor, ['--parents-on-point' as string]: onPointColor(pointColor) } : {}),
+        ...(captionColor ? { ['--parents-caption' as string]: captionColor } : {}),
+        ...(titleColor ? { ['--parents-title' as string]: titleColor } : {}),
+      }}
     >
-      {/* 배경 이미지 */}
-      {backgroundImage && (() => {
-        const s = backgroundImageSettings
-        const cw = s?.cropWidth ?? 1
-        const ch = s?.cropHeight ?? 1
-        const cx = s?.cropX ?? 0
-        const cy = s?.cropY ?? 0
-        const hasCrop = cw < 0.99 || ch < 0.99
-        // 크롭 중심점 (0~1)
-        const centerX = cx + cw / 2
-        const centerY = cy + ch / 2
-        // 이미지를 크롭 영역 기준으로 확대 (가로/세로 독립)
-        const scaleValX = hasCrop ? 1 / cw : 1
-        const scaleValY = hasCrop ? 1 / ch : 1
-        // object-position: 크롭 중심을 컨테이너 중심에 맞춤
-        const posX = hasCrop ? centerX * 100 : 50
-        const posY = hasCrop ? centerY * 100 : 50
-        return (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              zIndex: 0,
-              overflow: 'hidden',
-            }}
-          >
-            <img
-              src={backgroundImage}
-              alt=""
-              style={{
-                position: 'absolute',
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                objectPosition: `${posX}% ${posY}%`,
-                transform: hasCrop ? `scale(${Math.max(scaleValX, scaleValY)})` : undefined,
-                transformOrigin: `${posX}% ${posY}%`,
-              }}
-            />
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundColor: 'rgba(0,0,0,0.1)',
-              }}
-            />
-          </div>
-        )
-      })()}
-      <style jsx>{`
-        .envelope-wrapper {
-          perspective: 1500px;
-          height: auto;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding-top: 40px;
-          padding-bottom: 20px;
-        }
-
-        .envelope-container {
-          position: relative;
-          width: 300px;
-          height: 420px;
-          transform-style: preserve-3d;
-          transition: transform 0.8s ease;
-          cursor: pointer;
-        }
-
-        .envelope-container.flipped {
-          transform: rotateY(180deg);
-        }
-
-        .envelope-front {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          backface-visibility: hidden;
-          background: linear-gradient(to bottom, #F7F4EF 0%, #EDE9E3 100%);
-          border-radius: 0;
-          box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          font-family: var(--envelope-font), serif;
-        }
-
-        .envelope-back {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          backface-visibility: hidden;
-          transform: rotateY(180deg);
-          border-radius: 0;
-          background-color: #F7F4EF;
-          transition: transform 0.8s ease, opacity 0.6s ease;
-        }
-
-
-        .envelope-back.hide {
-          transform: rotateY(180deg) translateY(400px);
-          opacity: 0;
-          pointer-events: none;
-        }
-
-        .front {
-          position: absolute;
-          width: 0;
-          height: 0;
-          z-index: 3;
-        }
-
-        .flap {
-          border-left: 150px solid transparent;
-          border-right: 150px solid transparent;
-          border-bottom: 180px solid transparent;
-          border-top: 240px solid #EDE9E3;
-          transform-origin: top;
-          pointer-events: none;
-          transition: transform 0.4s 0.4s ease, z-index 0.5s;
-          z-index: 5;
-          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
-        }
-
-        .pocket {
-          border-left: 150px solid #F7F4EF;
-          border-right: 150px solid #F7F4EF;
-          border-bottom: 210px solid #EDE9E3;
-          border-top: 210px solid transparent;
-          border-radius: 0;
-          filter: drop-shadow(0 -8px 12px rgba(0,0,0,0.25));
-        }
-
-        .letter {
-          position: relative;
-          background-color: #FFFFFF;
-          width: 90%;
-          margin-left: auto;
-          margin-right: auto;
-          height: 90%;
-          top: 5%;
-          border-radius: 12px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 24px 16px;
-          text-align: center;
-          transition: transform 0.4s ease, z-index 0.5s;
-          z-index: 1;
-          overflow: hidden;
-          font-family: var(--envelope-font), serif;
-        }
-
-        .letter::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          border-radius: 6px;
-          background-image: linear-gradient(180deg,
-            rgba(255,255,255,0) 40%,
-            rgba(232,228,220,0.3) 70%,
-            rgba(232,228,220,0.5) 100%);
-          pointer-events: none;
-        }
-
-        .flap-decoration {
-          position: absolute;
-          top: 220px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 36px;
-          height: 36px;
-          border: 1.5px solid var(--accent-color);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 6;
-          background: #DED6CA;
-          pointer-events: none;
-          transition: opacity 0.3s ease;
-        }
-
-        .envelope-back.open .flap {
-          transform: rotateX(-180deg);
-          transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-          z-index: 1;
-        }
-
-        .envelope-back.open .letter {
-          transform: translateY(-320px);
-          transition: transform 0.8s 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-          z-index: 2;
-        }
-
-        .envelope-back.open .flap-decoration {
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-
-        .envelope-back.extracted .flap {
-          transform: rotateX(0deg);
-          transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-          z-index: 5;
-        }
-
-        .envelope-back.extracted .letter {
-          transform: translateY(0);
-          transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-          z-index: 10;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-        }
-
-        .envelope-back.extracted .flap-decoration {
-          opacity: 0;
-        }
-
-        .sealing-wax {
-          position: absolute;
-          top: 180px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 70px;
-          height: 70px;
-          z-index: 20;
-          pointer-events: none;
-          filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-        }
-
-        .sealing-wax img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-        }
-
-        .envelope-back.open .sealing-wax {
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-
-        .envelope-back.extracted .sealing-wax {
-          opacity: 0;
-          z-index: -1;
-          transition: opacity 0.3s ease;
-        }
-
-        @keyframes pulse {
-          0%, 100% { opacity: 0.5; transform: translateY(0); }
-          50% { opacity: 1; transform: translateY(-3px); }
-        }
-
-        .hint {
-          animation: pulse 2s ease-in-out infinite;
-        }
-      `}</style>
-
-      <div className="envelope-wrapper" onClick={handleClick} style={{
-        perspective: '1500px', position: 'relative', zIndex: 1,
-        // 도착(살짝 내려앉음) → 대기 → 퇴장(다가옴) 모션
-        transform: !isMounted ? 'translateY(16px) scale(0.98)' : isLeaving ? 'scale(1.05)' : 'translateY(0) scale(1)',
-        transition: 'transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
-      }}>
+      <div style={{ position: 'relative', height: '100%', maxWidth: 430, margin: '0 auto', overflow: 'hidden' }}>
+        {photo ? (
+          <>
+        {/* ── 첫 화면: 사진 + 이름 ── */}
         <div
-          className={`envelope-container ${stage >= 1 ? 'flipped' : ''}`}
-          style={{ transformStyle: 'preserve-3d' }}
+          onClick={handleCoverTap}
+          style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
         >
-          {/* 봉투 앞면 - 인라인 스타일로 backface-visibility 즉시 적용 */}
-          <div
-            className="envelope-front"
-            style={{
-              opacity: isHidden ? 0 : 1,
-              transition: 'opacity 0.6s ease',
-              backfaceVisibility: 'hidden',
-            }}
-          >
-            <div className="h-px w-[60px] my-4" style={{ backgroundColor: accentColor }} />
-            {recipientRelation && (
-              <p className="text-[14px] mb-1" style={{ color: '#666' }}>
-                {recipientRelation}
-              </p>
+          <div style={{ position: 'relative', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+            {photo && (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photo.src}
+                  alt=""
+                  style={{
+                    position: 'absolute', inset: 0, width: '100%', height: '100%',
+                    objectFit: 'cover', objectPosition: photo.pos,
+                    transform: photo.scale !== 1 ? `scale(${photo.scale})` : undefined,
+                    transformOrigin: photo.pos,
+                  }}
+                />
+                <div
+                  style={{
+                    position: 'absolute', inset: 0,
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0) 20%, rgba(255,255,255,0) 55%, #FFFFFF 100%)',
+                  }}
+                />
+              </>
             )}
-            <p className="text-[22px]" style={{ color: '#2C2C2C' }}>
-              {recipientName}{recipientTitle ? ` ${recipientTitle}` : ''}
+            <p
+              style={{
+                position: 'absolute', top: 58, left: 0, right: 0, margin: 0, padding: '0 24px',
+                textAlign: 'center', fontSize: 13, letterSpacing: '0.04em',
+                color: hintTextColor || (photo ? '#FFFFFF' : C_SUB),
+                textShadow: photo ? '0 1px 8px rgba(0,0,0,0.3)' : undefined,
+              }}
+            >
+              {nameLine}
             </p>
-            <div className="h-px w-[60px] my-4" style={{ backgroundColor: accentColor }} />
           </div>
 
-          {/* 봉투 뒷면 - 인라인 스타일로 backface-visibility 즉시 적용 */}
           <div
-            className={`envelope-back ${stage >= 2 && !isExtracted ? 'open' : ''} ${isExtracted ? 'extracted' : ''}`}
             style={{
-              backfaceVisibility: 'hidden',
-              transform: 'rotateY(180deg)',
+              marginTop: photo ? -110 : 0, position: 'relative', textAlign: 'center', padding: '0 28px 46px',
+              // 기존 봉투와 같은 도착 → 퇴장 모션
+              transform: !isMounted ? 'translateY(16px) scale(0.98)' : isLeaving ? 'scale(1.05)' : 'translateY(0) scale(1)',
+              transition: 'transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
             }}
           >
-            <div className="sealing-wax" style={{ opacity: isHidden ? 0 : 1, transition: 'opacity 0.6s ease' }}>
-              <img
-                src="/images/shilling-gray.png"
-                alt="seal"
-                style={{
-                  filter: sealColor
-                    ? hexToSealFilter(sealColor)
-                    : 'sepia(1) saturate(3) hue-rotate(-10deg) brightness(0.6)',
-                }}
-              />
-            </div>
-
-            <div className="front flap" style={{ opacity: isHidden ? 0 : 1, transition: 'opacity 0.6s ease' }}></div>
-            <div className="front pocket" style={{ opacity: isHidden ? 0 : 1, transition: 'opacity 0.6s ease' }}></div>
-
-            <div
-              className="letter"
-              onClick={(e) => {
-                if (stage === 3 && isExtracted) {
-                  e.stopPropagation()
-                  handleClick()
-                }
-              }}
-              style={{ cursor: stage === 3 ? 'pointer' : 'default' }}
-            >
-              <div className="relative z-10">
-                <p className="text-[10px] tracking-[2px] mb-4" style={{ color: accentColor }}>
-                  WEDDING INVITATION
-                </p>
-                <div className="h-px w-[40px] mx-auto mb-4" style={{ backgroundColor: accentColor }} />
-                <p
-                  className="text-[16px] mb-4"
-                  style={{ color: '#2C2C2C' }}
-                >
-                  {displayGreetingTo}
-                </p>
-                <div className="text-[12px] leading-[1.5] mb-4" style={{ color: '#555' }}>
-                  {message.map((line, i) => (
-                    <p key={i} style={{ marginTop: line === '' ? '6px' : '0' }}>
-                      {line || '\u00A0'}
-                    </p>
-                  ))}
-                </div>
-                {signature && (
-                  <>
-                    <div className="h-px w-[40px] mx-auto mb-3" style={{ backgroundColor: accentColor }} />
-                    <p className="text-[11px]" style={{ color: '#888' }}>
-                      {signature}
-                    </p>
-                  </>
-                )}
+            {showNames && (
+              <div style={{ fontFamily: C_SERIF, fontSize: namesSize, lineHeight: 1.05, letterSpacing: '-0.01em', color: C_INK }}>
+                {coverNames!.groom}{' '}
+                <span style={{ color: C_SUB, fontSize: Math.round(namesSize * 0.68) }}>{coverNames!.heart ? '♥' : '&'}</span>
+                {' '}{coverNames!.bride}
               </div>
+            )}
+            {childLine ? (
+              <h1 style={{ ...cTitle(21, showNames ? 18 : 0), whiteSpace: 'pre-line' }}>{childLine}</h1>
+            ) : (
+              !showNames && <h1 style={cTitle(21, 0)}>편지가 도착했어요</h1>
+            )}
+            {dateVenueLine && (
+              <p style={{ fontSize: 13, color: C_SUB, margin: '12px 0 0' }}>{dateVenueLine}</p>
+            )}
+            <style>{`@keyframes parentsHintPulse { 0%, 100% { opacity: 0.9; } 50% { opacity: 1; } }`}</style>
+            <div style={{ display: 'flex', marginTop: 28, animation: 'parentsHintPulse 2s ease-in-out infinite' }}>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); handleCoverTap() }}
+                style={cPill(true)}
+              >
+                {hasLetter ? '편지 열어 보기' : '청첩장 보기'}
+              </button>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* 안내 문구 - 봉투 바로 아래, 시각적으로 연결 */}
-      <div
-        className="hint text-center"
-        style={{
-          cursor: 'pointer',
-          marginTop: '24px',
-          marginBottom: '60px',
-          position: 'relative',
-          zIndex: 1,
-        }}
-      >
-        <p
-          className="text-[14px] leading-relaxed px-4"
+          </>
+        ) : (
+          // 첫 화면 (글자만) — 시안 C 봉투: 흰 바탕 · 왼쪽 정렬 · 먹선 한 줄 · 장식 없음
+        <div
+          onClick={handleCoverTap}
           style={{
-            color: hintTextColor || 'rgba(255,255,255,0.95)',
-            textShadow: '0 1px 3px rgba(0,0,0,0.3)',
-            fontWeight: 300,
-            letterSpacing: '0.5px',
+            position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center',
+            padding: '0 36px', cursor: 'pointer',
           }}
         >
-          {stage === 0 ? (
-            <>
-              편지가 도착했어요.<br />
-              클릭하여 편지를 열어주세요.
-            </>
-          ) : stage === 3 ? (
-            '클릭하여 청첩장 보기'
-          ) : ''}
-        </p>
+          <div
+            style={{
+              width: '100%',
+              transform: !isMounted ? 'translateY(16px) scale(0.98)' : isLeaving ? 'scale(1.05)' : 'translateY(0) scale(1)',
+              transition: 'transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
+            }}
+          >
+            <div style={{ fontSize: 13, color: C_FAINT }}>To.</div>
+            <div style={{ fontFamily: C_KSERIF, fontSize: 44, lineHeight: 1.2, marginTop: 10, letterSpacing: '-0.02em', color: C_INK, wordBreak: 'keep-all' }}>
+              {nameLine}
+            </div>
+            <div aria-hidden style={{ width: '100%', height: 1, background: C_INK, margin: '40px 0 18px' }} />
+            {(textDateLine || textVenueLine) && (
+              <div style={{ fontSize: 14, color: C_SUB, lineHeight: 1.8 }}>
+                {textDateLine && <div>{textDateLine}</div>}
+                {textVenueLine && <div>{textVenueLine}</div>}
+              </div>
+            )}
+            {fromNames && fromNames.length > 0 && (
+              <div style={{ fontSize: 14, color: C_SUB, marginTop: 28 }}>
+                From.{' '}
+                {fromNames.map((n, i) => (
+                  <span key={i}>
+                    {i > 0 && ' · '}
+                    {n.deceased && (deceasedStyle === 'hanja'
+                      ? <span style={{ opacity: 0.7, marginRight: 2 }}>故</span>
+                      // eslint-disable-next-line @next/next/no-img-element
+                      : <img src="/icons/chrysanthemum.svg" alt="고인" style={{ display: 'inline', width: 12, height: 12, marginRight: 2, opacity: 0.7, verticalAlign: 'middle', marginTop: -2 }} />)}
+                    {n.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          <style>{`@keyframes parentsHintPulse { 0%, 100% { opacity: 0.5; transform: translateY(0); } 50% { opacity: 0.85; transform: translateY(-3px); } }`}</style>
+          <div
+            style={{
+              position: 'absolute', bottom: 64, left: 0, right: 0, textAlign: 'center', fontSize: 13.5, letterSpacing: '0.04em', color: C_INK,
+              animation: 'parentsHintPulse 2s ease-in-out infinite',
+            }}
+          >
+            눌러서 열어 보세요
+          </div>
+        </div>
+        )}
+
+        {/* ── 편지: 아래에서 올라오는 흰 종이 ── */}
+        {hasLetter && (
+          <div
+            aria-hidden={stage !== 1}
+            style={{
+              position: 'absolute', inset: 0, backgroundColor: letterTheme.bg,
+              ...letterTheme.vars,
+              transform: stage === 1 ? 'translateY(0)' : 'translateY(100%)',
+              transition: 'transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)',
+              display: 'flex', flexDirection: 'column',
+              overflowY: 'auto',
+            }}
+          >
+            <div style={{ margin: 'auto 0', padding: '64px 32px 40px', textAlign: 'center' }}>
+              <p style={{ ...cCaption, fontSize: 13 }}>보내는 마음</p>
+              <p style={cTitle(21, 14)}>{displayGreetingTo}</p>
+              <div
+                style={{
+                  marginTop: 28,
+                  fontFamily: fontFamily || C_SANS,
+                  fontSize: 15.5,
+                  lineHeight: 1.9,
+                  color: letterTheme.body,
+                }}
+              >
+                {message.map((line, i) => (
+                  (line || '').trim() === ''
+                    ? <div key={i} aria-hidden style={{ height: 14 }} />
+                    : <p key={i} style={{ margin: 0 }}>{line}</p>
+                ))}
+              </div>
+              {signature && (
+                <p style={{ marginTop: 30, marginBottom: 0, fontFamily: C_KSERIF, fontSize: 15, color: letterTheme.sign }}>
+                  {signature}
+                </p>
+              )}
+              <div style={{ display: 'flex', marginTop: 40 }}>
+                <button type="button" onClick={goMain} style={{ ...cPill(true), ...letterTheme.button }} tabIndex={stage === 1 ? 0 : -1}>
+                  청첩장 보기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

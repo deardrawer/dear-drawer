@@ -88,19 +88,11 @@ export default function Step3Film({}: Step3FilmProps) {
 
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 */}
-      <div className="space-y-1">
-        <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>본문 콘텐츠 작성</p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인사말, 명대사, 스토리 등 영화 같은 청첩장 콘텐츠를 작성해주세요.</p>
-      </div>
-
       {/* 인사말 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           인사말
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>영화의 오프닝 내레이션처럼, 두 사람의 이야기를 시작해보세요</p>
-
         <div className="space-y-3">
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
@@ -137,7 +129,6 @@ export default function Step3Film({}: Step3FilmProps) {
               rows={2}
               className="resize-none"
             />
-            <p className="text-[10px] text-gray-400">영화 대사처럼 표시됩니다 (이탤릭, 강조 색상)</p>
           </div>
         </div>
       </section>
@@ -147,8 +138,6 @@ export default function Step3Film({}: Step3FilmProps) {
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           영화 명대사
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>좋아하는 영화 대사나 인용구를 추가해보세요</p>
-
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label className="text-sm font-medium">인용구</Label>
@@ -221,9 +210,6 @@ export default function Step3Film({}: Step3FilmProps) {
               샘플 사용
             </button>
           )}
-        </div>
-        <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>프로필 사진과 한줄 소개를 입력하면 CAST 섹션에 표시됩니다.</p>
         </div>
 
         {/* 소개 스타일 */}
@@ -397,8 +383,7 @@ export default function Step3Film({}: Step3FilmProps) {
         {invitation.sectionVisibility.interview && (
           <div className="space-y-4">
             <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-              <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>영화의 장면처럼, 두 사람의 이야기를 담아보세요.</p>
-              <details className="text-xs mt-2" style={{ color: 'var(--ed-text-muted)' }}>
+              <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
                 <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
                 <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
                   <div>
@@ -586,15 +571,13 @@ export default function Step3Film({}: Step3FilmProps) {
           갤러리 <span className="text-xs font-normal text-gray-500">(최대 30장)</span>
         </h3>
         <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>필름 스트립처럼 사진들이 가로로 표시됩니다.</p>
-          <p className="text-xs mt-1.5" style={{ color: 'var(--ed-text-muted)' }}>미리보기에 사진이 안 보일 경우, 미리보기 상단의 INTRO 버튼을 누른 후 MAIN 버튼을 다시 눌러주세요.</p>
+          <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>미리보기에 사진이 보이지 않으면 미리보기 상단의 INTRO → MAIN 버튼을 차례로 누르면 표시됩니다.</p>
         </div>
 
         {/* 사진 확대(줌) 허용 토글 */}
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
           <div>
             <p className="text-sm font-medium text-gray-800">사진 확대(줌) 허용</p>
-            <p className="text-xs text-gray-500">하객이 갤러리 사진을 핀치·더블탭으로 확대할 수 있어요</p>
           </div>
           <Switch
             checked={invitation.gallery.zoomEnabled === true}
@@ -602,7 +585,7 @@ export default function Step3Film({}: Step3FilmProps) {
           />
         </div>
         {invitation.gallery.zoomEnabled === true && (
-          <p className="text-xs text-gray-500 leading-snug">사진은 2.5배까지 확대돼요. 더 크게 선명하게 확대하고 싶은 사진은 사진에 마우스를 올려 &apos;고화질&apos;로 다시 올려 주세요.</p>
+          <p className="text-xs text-gray-500 leading-snug">사진은 2.5배까지 확대됩니다. 선명한 확대가 필요한 사진은 마우스를 올려 &apos;고화질&apos;로 다시 올릴 수 있습니다.</p>
         )}
 
         <MultiImageUploader
@@ -677,8 +660,6 @@ export default function Step3Film({}: Step3FilmProps) {
             onCheckedChange={(checked) => updateNestedField('youtube.enabled', checked)}
           />
         </div>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>유튜브 영상을 추가하세요. 갤러리 아래에 표시됩니다.</p>
-
         {invitation.youtube?.enabled && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
             <div className="space-y-1.5">
@@ -730,7 +711,7 @@ export default function Step3Film({}: Step3FilmProps) {
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
               부모님 성함
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5">선택사항 - THE WEDDING 섹션에 표시됩니다</p>
+            <p className="text-xs text-gray-500 mt-0.5">선택사항</p>
           </div>
           <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showParents ? 'rotate-180' : ''}`} />
         </button>
@@ -894,12 +875,9 @@ export default function Step3Film({}: Step3FilmProps) {
         </div>
 
         {invitation.sectionVisibility.guidance && (<div className="space-y-4">
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>하객분들께 전달할 안내사항을 작성해주세요.</p>
-
           {/* 웨딩사진 */}
           <div className="p-4 rounded-lg space-y-3" style={{ background: 'var(--ed-surface-2)' }}>
             <Label className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>웨딩사진</Label>
-            <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>안내사항 상단에 표시될 웨딩사진을 추가해주세요.</p>
 
             {invitation.guidance?.image ? (
               <div className="space-y-3">
@@ -1119,10 +1097,6 @@ export default function Step3Film({}: Step3FilmProps) {
           감사 인사
         </h3>
 
-        <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>영화 엔딩 크레딧처럼, 감사의 마음을 전해주세요.</p>
-        </div>
-
         <div className="p-4 bg-gray-50 rounded-lg space-y-3">
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">제목</Label>
@@ -1163,14 +1137,11 @@ export default function Step3Film({}: Step3FilmProps) {
             onCheckedChange={() => toggleSectionVisibility('guestbook')}
           />
         </div>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
-
         {invitation.sectionVisibility.guestbook && (
           <div className="space-y-4">
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div>
                 <p className="text-sm font-medium text-gray-800">포스트잇에 질문 표시</p>
-                <p className="text-xs text-gray-500">방명록 카드에 질문을 함께 보여줍니다</p>
               </div>
               <Switch
                 checked={invitation.content.guestbookShowQuestion !== false}
@@ -1182,8 +1153,6 @@ export default function Step3Film({}: Step3FilmProps) {
                 <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>질문 설정 (최대 10개)</p>
                 <span className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>{invitation.content.guestbookQuestions?.length || 0}/10</span>
               </div>
-              <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>하객분들에게 보여질 질문을 설정하세요.</p>
-
               <div className="space-y-2">
                 {(invitation.content.guestbookQuestions || []).map((question, index) => (
                   <div key={index} className="flex items-center gap-2">

@@ -1,58 +1,49 @@
 import type { Viewport } from 'next'
-import type { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import GuestShareClient from '@/app/i/[slug]/share/GuestShareClient'
+import { GsStatusScreen } from '@/app/i/[slug]/share/GuestShareView'
 import { getCoupleGuestShareBySlug, resolveCoupleShareInvitation } from '@/lib/postDrawer'
-import { daysSinceWeddingKST } from '@/lib/weddingLifecycle'
+import { buildShareLook, GUEST_SHARE_OPEN_DAYS } from '@/lib/guestShareLook'
 
 // 모바일 우선 — 핀치 줌 비활성화(기존 공유 페이지와 동일)
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, maximumScale: 1, userScalable: false }
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, maximumScale: 1, userScalable: false, themeColor: '#FFFFFF' }
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: Promise<{ shareSlug: string }>
-}
-
-function Screen({ title, desc }: { title: string; desc: ReactNode }) {
-  return (
-    <main className="min-h-[100dvh] flex items-center justify-center bg-neutral-50 px-6 text-center">
-      <div className="max-w-sm">
-        <p className="text-4xl mb-4">🤍</p>
-        <h1 className="text-lg font-semibold text-neutral-800 mb-2 break-keep">{title}</h1>
-        <p className="text-sm text-neutral-500 leading-relaxed break-keep">{desc}</p>
-      </div>
-    </main>
-  )
+  searchParams: Promise<{ preview?: string }>
 }
 
 /**
  * [공개] 커플(서랍) 단위 하객 사진 공유 — 서랍당 링크 하나. 로그인 없이 업로드.
  * 업로드는 세션 API(coupleSlug)가 커플의 대표 청첩장 폴더로 저장(기존 Queue/Drive 재사용).
+ * ?preview=1 — 신랑·신부가 하객 화면을 단계별로 미리 봄 (업로드 안 함 · 열림/마감과 무관)
  */
-export default async function CouplePhotoSharePage({ params }: PageProps) {
+export default async function CouplePhotoSharePage({ params, searchParams }: PageProps) {
   const { shareSlug } = await params
+  const { preview } = await searchParams
 
   const couple = await getCoupleGuestShareBySlug(shareSlug)
   if (!couple) notFound()
 
   const primary = await resolveCoupleShareInvitation(couple.userId)
   const coupleName = primary ? [primary.groom_name, primary.bride_name].filter(Boolean).join(' · ') || '우리' : '우리'
-  const title = couple.title || '사진 공유'
-  const description = couple.description || '결혼식의 소중한 순간을 함께 나눠주세요 🤍'
+  const title = couple.title || ''
+  const description = couple.description || ''
+  const look = buildShareLook(primary, couple.weddingDate, couple.cover, couple.nameStyle, couple.coverY, couple.coverCrop)
+  const invitationHref = primary ? `/invitation/${primary.id}` : null
 
-  if (!couple.enabled || !primary) {
-    return <Screen title="사진 공유가 아직 열리지 않았어요" desc="신랑·신부가 사진 공유를 준비 중이에요. 잠시 후 다시 방문해주세요." />
+  if (preview === '1') {
+    return <GuestShareClient slug="" coupleSlug={shareSlug} coupleName={coupleName} title={title} description={description} look={look} invitationHref={invitationHref} preview />
   }
+
+  if (!couple.enabled || !primary) return <GsStatusScreen look={look} kind="off" invitationHref={invitationHref} />
 
   // 업로드 창: 예식 당일(Day 0) ~ 예식+10일. wedding_date 없으면 허용.
   // 대표 청첩장의 현재 예식일을 기준으로(서랍 프로필의 시드 스냅샷은 예식일 변경 시 어긋날 수 있음).
-  const since = daysSinceWeddingKST(primary.wedding_date || couple.weddingDate)
-  if (since !== null && since < 0) {
-    return <Screen title="결혼식 당일부터 열려요" desc={<>{coupleName}의 결혼식 당일부터<br />이곳에서 사진을 함께 나눌 수 있어요.<br />그날 소중한 순간을 담아 보내주세요 🤍</>} />
-  }
-  if (since !== null && since > 10) {
-    return <Screen title="사진 공유가 마감되었어요" desc={<>{coupleName}의 사진 공유 기간(예식 후 10일)이<br />끝났어요. 함께해 주셔서 감사합니다 🤍</>} />
-  }
+  const since = look.since
+  if (since !== null && since < 0) return <GsStatusScreen look={look} kind="before" invitationHref={invitationHref} />
+  if (since !== null && since > GUEST_SHARE_OPEN_DAYS) return <GsStatusScreen look={look} kind="closed" invitationHref={invitationHref} />
 
-  return <GuestShareClient slug="" coupleSlug={shareSlug} coupleName={coupleName} title={title} description={description} />
+  return <GuestShareClient slug="" coupleSlug={shareSlug} coupleName={coupleName} title={title} description={description} look={look} invitationHref={invitationHref} />
 }

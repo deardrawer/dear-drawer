@@ -1,133 +1,80 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSectionHighlight } from './SectionHighlightContext'
-import { useTheme } from './ThemeContext'
 import { parseDateOnly } from '@/lib/dateOnly'
+import { C_TXT_BODY, C_TXT, C_ON_POINT, C_POINT, C_SERIF, C_TXT_SUB, cCaption, cDim, cStagger } from './cStyle'
 
 interface DateSectionProps {
   weddingDate?: string
   weddingTime?: string
   weddingTimeDisplay?: string
+  venueName?: string  // C안: 날짜 아래 한 줄로 함께 표시 (선택)
+  venueHall?: string
 }
 
-const stagger = (hasAppeared: boolean, delay: number) => ({
-  opacity: hasAppeared ? 1 : 0,
-  transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
-  filter: hasAppeared ? 'blur(0px)' : 'blur(6px)',
-  transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
-  transitionDelay: hasAppeared ? `${delay}s` : '0s',
-})
+const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const DAY_NAMES = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
+const DAY_HEADERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
-/** D-day 숫자가 0에서 target까지 롤링되는 카운터 */
-function RollingCounter({ target, isActive, hasStarted, theme }: {
-  target: number
-  isActive: boolean
-  hasStarted: boolean
-  theme: { accent: string }
-}) {
+/** D-day 숫자가 0에서 target까지 올라가는 카운터 (기존과 같은 1.8초) */
+function RollingCounter({ target, hasStarted }: { target: number; hasStarted: boolean }) {
   const [count, setCount] = useState(0)
   const animating = useRef(false)
 
   useEffect(() => {
     if (!hasStarted || animating.current) return
     animating.current = true
-
     const absTarget = Math.abs(target)
     const duration = 1800
     const startTime = performance.now()
-
     const animate = (now: number) => {
-      const elapsed = now - startTime
-      const progress = Math.min(elapsed / duration, 1)
-      // easeOutExpo for dramatic slowdown at end
+      const progress = Math.min((now - startTime) / duration, 1)
       const eased = 1 - Math.pow(1 - progress, 4)
       setCount(Math.round(eased * absTarget))
-
-      if (progress < 1) {
-        requestAnimationFrame(animate)
-      }
+      if (progress < 1) requestAnimationFrame(animate)
     }
-
     requestAnimationFrame(animate)
   }, [hasStarted, target])
 
-  return (
-    <span
-      style={{
-        color: 'currentColor',
-        fontWeight: 500,
-        fontFamily: "'Cormorant Garamond', 'Georgia', serif",
-        fontSize: '20px',
-        display: 'inline-block',
-        minWidth: '3ch',
-        textAlign: 'center',
-        fontVariantNumeric: 'tabular-nums',
-        transition: 'color 0.5s',
-      }}
-    >
-      {count}
-    </span>
-  )
+  return <span style={{ fontVariantNumeric: 'tabular-nums' }}>{count}</span>
 }
 
 export default function DateSection({
   weddingDate = '2027-01-09',
   weddingTimeDisplay = '',
+  venueName,
+  venueHall,
 }: DateSectionProps) {
   const { ref, isActive, hasAppeared } = useSectionHighlight('date')
-  const theme = useTheme()
+  const point = C_POINT
 
   const date = parseDateOnly(weddingDate)
   const year = date.getFullYear()
   const month = date.getMonth() + 1
   const day = date.getDate()
-  const weddingDay = day.toString()
-
-  const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
-  const weddingDayOfWeek = dayNames[date.getDay()]
 
   // 시간은 에디터 '시간 표시'(timeDisplay) 값을 그대로 사용.
   // (parents 템플릿엔 HH:MM 시간 필드가 없으므로 재계산하지 않음. 영문 기본값은 무시)
   const timeText = weddingTimeDisplay && !/[A-Za-z]/.test(weddingTimeDisplay)
     ? weddingTimeDisplay.trim()
     : ''
-  const timeKorean = timeText ? `${weddingDayOfWeek} ${timeText}` : weddingDayOfWeek
+  const timeKorean = timeText ? `${DAY_NAMES[date.getDay()]} ${timeText}` : DAY_NAMES[date.getDay()]
+  const venueText = [venueName, venueHall].map(v => (v || '').trim()).filter(Boolean).join(' ')
+  const subLine = venueText ? `${timeKorean} · ${venueText}` : timeKorean
 
   const firstDayOfMonth = new Date(year, month - 1, 1).getDay()
   const daysInMonth = new Date(year, month, 0).getDate()
-
-  const calendarDays: string[][] = []
-  let currentWeek: string[] = []
-
-  for (let i = 0; i < firstDayOfMonth; i++) {
-    currentWeek.push('')
-  }
-
-  for (let d = 1; d <= daysInMonth; d++) {
-    currentWeek.push(d.toString())
-    if (currentWeek.length === 7) {
-      calendarDays.push(currentWeek)
-      currentWeek = []
-    }
-  }
-
-  if (currentWeek.length > 0) {
-    while (currentWeek.length < 7) {
-      currentWeek.push('')
-    }
-    calendarDays.push(currentWeek)
-  }
+  const cells: (number | null)[] = [
+    ...Array<null>(firstDayOfMonth).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ]
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  const diffTime = date.getTime() - today.getTime()
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+  const diffDays = Math.round((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 
-  const monthNamesEn = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
-  const dayHeaders = ['일', '월', '화', '수', '목', '금', '토']
-
-  // D-day counter 시작 시점: badge가 등장한 후
+  // D-day 카운터 시작: 섹션이 나타나고 0.8초 뒤 (기존과 동일)
   const [counterStarted, setCounterStarted] = useState(false)
   useEffect(() => {
     if (hasAppeared && !counterStarted) {
@@ -139,201 +86,83 @@ export default function DateSection({
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="px-8 py-16 flex flex-col items-center justify-center"
-      style={{
-        backgroundColor: theme.background,
-        filter: isActive ? 'none' : 'grayscale(30%)',
-        opacity: isActive ? 1 : 0.3,
-        transition: 'filter 0.5s, opacity 0.5s',
-      }}
+      style={{ backgroundColor: 'transparent', padding: '72px 28px 80px', ...cDim(isActive) }}
     >
-      {/* WEDDING DAY label */}
-      <p
-        className="text-[10px] tracking-[6px] mb-6"
-        style={{
-          color: isActive ? `${theme.accent}80` : '#bbb',
-          fontWeight: 300,
-          ...stagger(hasAppeared, 0),
-        }}
-      >
-        WEDDING DAY
-      </p>
-
-      {/* Large date typography */}
-      <div className="text-center mb-2" style={stagger(hasAppeared, 0.15)}>
-        <p
-          className="text-sm tracking-[4px] mb-1"
-          style={{
-            fontFamily: "'Cormorant Garamond', 'Georgia', serif",
-            fontWeight: 300,
-            color: isActive ? `${theme.accent}80` : '#bbb',
-          }}
-        >
-          {year}
-        </p>
-        <p
-          className="text-[32px] leading-[1.2] tracking-[2px]"
-          style={{
-            fontFamily: "'Cormorant Garamond', 'Georgia', serif",
-            fontWeight: 500,
-            color: isActive ? theme.text : '#999',
-          }}
-        >
-          {month}월 {day}일
-        </p>
-        <p
-          className="text-xs tracking-[2px] mt-2"
-          style={{ color: isActive ? theme.textLight : '#aaa' }}
-        >
-          {timeKorean}
-        </p>
+      <div style={{ textAlign: 'center' }}>
+        <p style={{ ...cCaption, ...cStagger(hasAppeared, 0) }}>예식 일시</p>
+        <div style={cStagger(hasAppeared, 0.15)}>
+          <div style={{ fontFamily: C_SERIF, fontSize: 46, lineHeight: 1.1, marginTop: 14, color: C_TXT }}>
+            {MONTHS_EN[month - 1]} {day}, {year}
+          </div>
+          <p style={{ fontSize: 15, color: C_TXT_BODY, margin: '10px 0 0', wordBreak: 'keep-all' }}>{subLine}</p>
+        </div>
       </div>
 
-      {/* Calendar card */}
       <div
-        className="w-full max-w-[300px] mt-8 rounded-[5px] p-6"
         style={{
-          backgroundColor: '#FFFFFF',
-          boxShadow: isActive ? '0 2px 20px rgba(0,0,0,0.04)' : '0 1px 8px rgba(0,0,0,0.02)',
+          margin: '36px auto 0',
+          maxWidth: 300,
           opacity: hasAppeared ? 1 : 0,
           transform: hasAppeared ? 'translateY(0) scale(1)' : 'translateY(24px) scale(0.97)',
           filter: hasAppeared ? 'blur(0px)' : 'blur(6px)',
-          transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s',
+          transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
           transitionDelay: hasAppeared ? '0.35s' : '0s',
         }}
       >
-        <p
-          className="text-center text-[10px] tracking-[3px] mb-5"
-          style={{ color: isActive ? `${theme.accent}80` : '#bbb', fontWeight: 400 }}
-        >
-          {monthNamesEn[month - 1]} {year}
-        </p>
-
-        <div className="grid grid-cols-7 gap-0.5 mb-2">
-          {dayHeaders.map((dayName, i) => (
-            <div
-              key={`header-${i}`}
-              className="text-center text-[10px] py-2"
-              style={{
-                color: i === 0 ? '#D4897A' : i === 6 ? '#7A9CB8' : (isActive ? `${theme.accent}80` : '#bbb'),
-                fontWeight: 400,
-              }}
-            >
-              {dayName}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-7 gap-0.5">
-          {calendarDays.flat().map((dayNum, index) => {
-            const isWeddingDay = dayNum === weddingDay
-            const dayOfWeek = index % 7
-            const isSunday = dayOfWeek === 0
-            const isSaturday = dayOfWeek === 6
-
-            return (
-              <div
-                key={index}
-                className="text-center text-sm py-2 flex items-center justify-center"
-                style={{ fontWeight: isWeddingDay ? 500 : 300 }}
-              >
-                <span
-                  className="relative inline-flex items-center justify-center"
-                  style={{ width: '28px', height: '28px' }}
-                >
-                  {isWeddingDay && (
-                    <>
-                      {/* Pulse ring - 바깥 원이 확장되며 사라짐 */}
-                      <span
-                        className="absolute rounded-full pointer-events-none"
-                        style={{
-                          top: '50%',
-                          left: '50%',
-                          width: '28px',
-                          height: '28px',
-                          border: `1.5px solid ${theme.accent}`,
-                          opacity: 0,
-                          transformOrigin: 'center',
-                          animation: hasAppeared ? 'weddingDayPulse 2.5s ease-out 1.2s infinite' : 'none',
-                        }}
-                      />
-                      {/* Static bg circle */}
-                      <span
-                        className="absolute rounded-full pointer-events-none"
-                        style={{
-                          top: '50%',
-                          left: '50%',
-                          width: hasAppeared ? '28px' : '0px',
-                          height: hasAppeared ? '28px' : '0px',
-                          backgroundColor: theme.accent,
-                          opacity: 0.14,
-                          transform: 'translate(-50%, -50%)',
-                          transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                          transitionDelay: hasAppeared ? '0.8s' : '0s',
-                        }}
-                      />
-                    </>
-                  )}
-                  <span
-                    className="relative"
-                    style={{
-                      color: isWeddingDay
-                        ? theme.accent
-                        : isSunday
-                        ? '#D4897A'
-                        : isSaturday
-                        ? '#7A9CB8'
-                        : (isActive ? theme.cardText : '#999'),
-                    }}
-                  >
-                    {dayNum}
-                  </span>
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* D-day badge with rolling counter */}
-      <div style={stagger(hasAppeared, 0.6)}>
         <div
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs mt-6"
           style={{
-            backgroundColor: isActive ? theme.accent : '#c9c2b8',
-            color: '#FFFFFF',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(7, 1fr)',
+            rowGap: 12,
+            fontSize: 14,
+            color: C_TXT_BODY,
+            textAlign: 'center',
           }}
         >
-          {diffDays > 0
-            ? (
-              <>
-                결혼식까지{' '}
-                <RollingCounter
-                  target={diffDays}
-                  isActive={isActive}
-                  hasStarted={counterStarted}
-                  theme={theme}
-                />
-                일 남았습니다
-              </>
-            )
-            : diffDays === 0
-            ? '오늘 결혼식입니다'
-            : (
-              <>
-                결혼식으로부터{' '}
-                <RollingCounter
-                  target={diffDays}
-                  isActive={isActive}
-                  hasStarted={counterStarted}
-                  theme={theme}
-                />
-                일 지났습니다
-              </>
-            )
-          }
+          {DAY_HEADERS.map((w, i) => (
+            <span key={`h-${i}`} style={{ fontFamily: C_SERIF, fontSize: 14, color: C_TXT_SUB }}>{w}</span>
+          ))}
+          {cells.map((d, i) => (
+            <span key={i} style={{ position: 'relative', height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {d === day ? (
+                <>
+                  {/* 바깥으로 퍼지며 사라지는 링 (기존 weddingDayPulse) */}
+                  <span
+                    aria-hidden
+                    style={{
+                      position: 'absolute', top: '50%', left: '50%', width: 30, height: 30, borderRadius: '50%',
+                      border: `1.5px solid ${point}`, opacity: 0, pointerEvents: 'none',
+                      animation: hasAppeared ? 'weddingDayPulse 2.5s ease-out 1.2s infinite' : 'none',
+                    }}
+                  />
+                  {/* 채워지는 원 — 등장 후 커지며 나타남 */}
+                  <span
+                    aria-hidden
+                    style={{
+                      position: 'absolute', top: '50%', left: '50%', borderRadius: '50%', background: point, pointerEvents: 'none',
+                      width: hasAppeared ? 30 : 0, height: hasAppeared ? 30 : 0,
+                      transform: 'translate(-50%, -50%)',
+                      transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                      transitionDelay: hasAppeared ? '0.8s' : '0s',
+                    }}
+                  />
+                  <span style={{ position: 'relative', color: C_ON_POINT, fontWeight: 600 }}>{d}</span>
+                </>
+              ) : d}
+            </span>
+          ))}
         </div>
       </div>
+
+      <p style={{ textAlign: 'center', fontSize: 14, color: C_TXT_SUB, margin: '30px 0 0', ...cStagger(hasAppeared, 0.6) }}>
+        {diffDays > 0 ? (
+          <>결혼식까지 <b style={{ color: point, fontWeight: 700 }}><RollingCounter target={diffDays} hasStarted={counterStarted} />일</b></>
+        ) : diffDays === 0 ? (
+          <b style={{ color: point, fontWeight: 700 }}>오늘 결혼식입니다</b>
+        ) : (
+          <>결혼식을 올린 지 <b style={{ color: point, fontWeight: 700 }}><RollingCounter target={diffDays} hasStarted={counterStarted} />일</b></>
+        )}
+      </p>
     </section>
   )
 }

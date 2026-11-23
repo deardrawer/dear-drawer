@@ -12,6 +12,16 @@ import type { ParentsInvitationData } from '../../page'
 import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
 import { DEFAULT_DDAY_POPUP } from '@/lib/ddayPopupTypes'
 import { parseDateOnly } from '@/lib/dateOnly'
+import { childCallName } from '@/components/parents/cStyle'
+import ColorField from '@/components/editor/ColorField'
+
+// 편지 화면 배경 선택지 (기본 흰색 — 저장값 없음)
+const LETTER_BG_OPTIONS: { value: string; label: string; swatch?: string }[] = [
+  { value: 'white', label: '흰색', swatch: '#FFFFFF' },
+  { value: 'gray', label: '연회색', swatch: '#F4F4F5' },
+  { value: 'ink', label: '먹색', swatch: '#1F1D1A' },
+  { value: 'point', label: '포인트 연하게' },
+]
 
 interface ParentsStep2EnvelopeProps {
   data: ParentsInvitationData
@@ -30,6 +40,9 @@ export default function ParentsStep2Envelope({
 }: ParentsStep2EnvelopeProps) {
   const kakaoAspectMap: Record<string, string> = { '3:4': '3/4', '1:1': '1/1', '3:2': '3/2' }
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
+  // 첫 화면 자녀 문장 자동 문구 (입력란 예시로 표시)
+  const childFirst = ((data.sender.side === 'groom' ? data.groom.firstName : data.bride.firstName) || '').trim() || (data.sender.side === 'groom' ? '지훈' : '서연')
+  const autoHeadline = `저희 ${data.sender.side === 'groom' ? '아들' : '딸'} ${childCallName(childFirst)}가\n결혼합니다`
 
   // 이미지 업로드 핸들러
   const handleImageUpload = async (file: File, key: string, onSuccess: (url: string) => void) => {
@@ -57,23 +70,11 @@ export default function ParentsStep2Envelope({
 
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 */}
-      <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-        청첩장 봉투에 표시될 정보를 입력해주세요.
-      </p>
-
       {/* 보내는 사람 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">
           보내는 사람
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          {data.sender.side === 'groom'
-            ? '신랑측 부모님으로 청첩장을 보냅니다'
-            : data.sender.side === 'bride'
-            ? '신부측 부모님으로 청첩장을 보냅니다'
-            : '누구의 청첩장인지 선택하고 부모님 정보를 입력해주세요.'}
-        </p>
 
         {/* 혼주 선택 */}
         <div className="space-y-2">
@@ -138,8 +139,7 @@ export default function ParentsStep2Envelope({
           </div>
         </div>
         <p className="text-[11px] text-gray-500 leading-relaxed">
-          ※ 이름을 입력하지 않으신 분은 봉투·인사말에 표시되지 않습니다.<br />
-          두 분 모두 비워두시면 서명 영역이 숨겨집니다.
+          ※ 이름을 비운 분은 봉투·인사말에 표시되지 않으며, 두 분 모두 비우면 서명 영역이 숨겨집니다.
         </p>
 
         {/* 고인 표시 스타일 (sender 고인이 한 명이라도 있을 때만 노출) */}
@@ -185,9 +185,11 @@ export default function ParentsStep2Envelope({
         <h3 className="text-base font-semibold text-gray-900">
           신랑 · 신부
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>결혼하는 자녀의 이름을 입력해주세요.</p>
         <p className="text-[11px] text-gray-500 leading-relaxed">
           ※ 양가 부모님 정보와 고인 표시는 <b>03 본문 &gt; 메인 사진</b>에서 입력합니다.
+        </p>
+        <p className="text-[11px] leading-relaxed" style={{ color: 'var(--ed-text-muted)' }}>
+          영문 이름은 첫 화면과 양가 소개에 표시됩니다. 비워 두면 한글 이름을 영문으로 바꿔 표시합니다.
         </p>
 
         {/* 신랑 */}
@@ -199,7 +201,7 @@ export default function ParentsStep2Envelope({
               <Input
                 value={data.groom.lastName}
                 onChange={(e) => updateNestedData('groom.lastName', e.target.value)}
-                placeholder="김"
+                placeholder="한"
                 className="text-sm"
               />
             </div>
@@ -208,10 +210,19 @@ export default function ParentsStep2Envelope({
               <Input
                 value={data.groom.firstName}
                 onChange={(e) => updateNestedData('groom.firstName', e.target.value)}
-                placeholder="민수"
+                placeholder="지훈"
                 className="text-sm"
               />
             </div>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] text-gray-500">영문 이름 (선택)</Label>
+            <Input
+              value={data.groom.nameEn || ''}
+              onChange={(e) => updateNestedData('groom.nameEn', e.target.value)}
+              placeholder="Jihoon"
+              className="text-sm"
+            />
           </div>
         </div>
 
@@ -224,7 +235,7 @@ export default function ParentsStep2Envelope({
               <Input
                 value={data.bride.lastName}
                 onChange={(e) => updateNestedData('bride.lastName', e.target.value)}
-                placeholder="이"
+                placeholder="윤"
                 className="text-sm"
               />
             </div>
@@ -238,7 +249,34 @@ export default function ParentsStep2Envelope({
               />
             </div>
           </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] text-gray-500">영문 이름 (선택)</Label>
+            <Input
+              value={data.bride.nameEn || ''}
+              onChange={(e) => updateNestedData('bride.nameEn', e.target.value)}
+              placeholder="Seoyeon"
+              className="text-sm"
+            />
+          </div>
         </div>
+      </section>
+
+      {/* 첫 화면 문구 — 사진 첫 화면의 자녀 문장 */}
+      <section className="space-y-2">
+        <h3 className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>
+          첫 화면 문구
+        </h3>
+        <Textarea
+          value={data.envelope.headline || ''}
+          onChange={(e) => updateNestedData('envelope.headline', e.target.value)}
+          placeholder={autoHeadline}
+          rows={2}
+          maxLength={40}
+          className="leading-relaxed"
+        />
+        <p className="text-[11px] leading-relaxed" style={{ color: 'var(--ed-text-muted)' }}>
+          비워 두면 위 문구가 표시됩니다.
+        </p>
       </section>
 
       {/* 봉투 메시지 */}
@@ -246,7 +284,6 @@ export default function ParentsStep2Envelope({
         <h3 className="text-base font-semibold text-gray-900">
           봉투 메시지
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>청첩장 봉투에 표시될 메시지를 작성해주세요.</p>
 
         <div className="space-y-1.5">
           <Label className="text-xs">편지 메시지 (줄바꿈으로 구분)</Label>
@@ -257,6 +294,53 @@ export default function ParentsStep2Envelope({
             rows={8}
             className="font-light leading-relaxed"
           />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">편지 화면 배경</Label>
+          <div className="grid grid-cols-4 gap-2">
+            {LETTER_BG_OPTIONS.map((opt) => {
+              const isSelected = (data.envelope.letterBg || 'white') === opt.value
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => updateNestedData('envelope.letterBg', opt.value === 'white' ? undefined : opt.value)}
+                  className="flex flex-col items-center gap-1.5 py-2 transition-all"
+                  style={{
+                    borderRadius: 'var(--ed-radius-sm)',
+                    border: `1.5px solid ${isSelected ? 'var(--ed-accent)' : 'var(--ed-border)'}`,
+                    backgroundColor: isSelected ? 'var(--ed-accent-weak)' : 'var(--ed-surface)',
+                  }}
+                >
+                  <span
+                    className="w-6 h-6 rounded-full"
+                    style={{
+                      background: opt.value === 'point'
+                        ? `color-mix(in srgb, ${data.customPrimaryColor || '#1F1D1A'} 8%, #FFFFFF)`
+                        : opt.swatch,
+                      boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.12)',
+                    }}
+                  />
+                  <span className="text-[11px]" style={{ color: 'var(--ed-text)' }}>{opt.label}</span>
+                </button>
+              )
+            })}
+          </div>
+          <div
+            className="flex items-center justify-between p-2.5"
+            style={{
+              borderRadius: 'var(--ed-radius-sm)',
+              border: `1.5px solid ${(data.envelope.letterBg || '').startsWith('#') ? 'var(--ed-accent)' : 'transparent'}`,
+              backgroundColor: 'var(--ed-surface-2)',
+            }}
+          >
+            <span className="text-xs font-medium" style={{ color: 'var(--ed-text)' }}>직접 고르기</span>
+            <ColorField
+              label="편지 화면 배경"
+              value={(data.envelope.letterBg || '').startsWith('#') ? (data.envelope.letterBg as string) : '#FFFFFF'}
+              onChange={(hex) => updateNestedData('envelope.letterBg', hex)}
+            />
+          </div>
         </div>
         <div className="space-y-1.5">
           <Label className="text-xs">기본 인사 (게스트 정보 없을 때)</Label>
@@ -273,7 +357,6 @@ export default function ParentsStep2Envelope({
         <h3 className="text-base font-semibold text-gray-900">
           공유 설정
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>카카오톡, 문자 등으로 청첩장을 공유할 때 표시되는 정보입니다.</p>
 
         {/* 공유 제목 */}
         <div className="space-y-2">
@@ -284,7 +367,6 @@ export default function ParentsStep2Envelope({
             placeholder={`${data.groom.firstName || '신랑'} ♥ ${data.bride.firstName || '신부'} 결혼합니다`}
             className="text-sm"
           />
-          <p className="text-[11px] text-gray-400">비워두면 자동 생성됩니다.</p>
         </div>
 
         {/* 공유 설명 */}
@@ -296,13 +378,11 @@ export default function ParentsStep2Envelope({
             placeholder={data.wedding.date ? parseDateOnly(data.wedding.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }) : '2025년 3월 15일 토요일 오후 2시'}
             className="text-sm"
           />
-          <p className="text-[11px] text-gray-400">비워두면 결혼식 날짜가 표시됩니다.</p>
         </div>
 
         {/* 카카오톡 공유 썸네일 */}
         <div className="space-y-2 pt-3 border-t">
           <Label className="text-xs font-medium">카카오톡 공유 썸네일</Label>
-          <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>카카오톡에서 공유할 때 표시되는 이미지입니다.</p>
         </div>
 
         {/* Kakao 비율 선택 */}
@@ -424,16 +504,9 @@ export default function ParentsStep2Envelope({
           })()}
         </div>
 
-        <p className="text-xs text-gray-400">
-          * 카카오톡 공유 시 표시되는 이미지입니다. 미설정 시 갤러리 첫 번째 이미지가 사용됩니다.
-        </p>
-
         {/* 링크 공유 썸네일 이미지 (OG Image) */}
         <div className="space-y-2 pt-4 border-t">
           <Label className="text-xs font-medium">링크 공유 썸네일 (OG 이미지)</Label>
-          <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
-            카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.
-          </p>
           <p className="text-xs text-gray-500">
             이미지는 1.91:1 비율로 자동 잘립니다
           </p>
@@ -546,17 +619,12 @@ export default function ParentsStep2Envelope({
             )
           })()}
         </div>
-
-        <p className="text-xs text-gray-400">
-          * 문자/SNS 링크 공유 시 표시되는 이미지입니다. 미설정 시 카카오 썸네일 또는 갤러리 첫 번째 이미지가 사용됩니다.
-        </p>
       </section>
 
       {/* D-Day 팝업 설정 */}
       <section className="space-y-4">
         <div>
           <h3 className="text-sm font-semibold text-gray-900">D-Day 팝업</h3>
-          <p className="text-xs text-gray-500 mt-0.5">결혼식 당일 안내 팝업을 설정합니다</p>
         </div>
         <DdayPopupEditor
           value={data.ddayPopup || DEFAULT_DDAY_POPUP}

@@ -71,10 +71,7 @@ export default function FeedStep2CoverProfile({
     <div className="p-6 space-y-8">
       {/* 안내 */}
       <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>기본 정보</p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          커버 이미지와 신랑신부 정보, 결혼식 정보를 입력하세요.
-        </p>
+        <p className="text-base font-medium" style={{ color: 'var(--ed-text)' }}>기본 정보</p>
       </div>
 
       {/* 커버 이미지 */}
@@ -82,7 +79,7 @@ export default function FeedStep2CoverProfile({
         <h3 className="text-base font-semibold text-gray-900">
           커버 이미지
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인스타그램 스토리에 표시되는 이미지입니다. 최대 4장까지 추가 가능합니다.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>최대 4장까지 추가 가능합니다.</p>
 
         <MultiImageUploader
           images={data.media.coverImages || (data.media.coverImage ? [data.media.coverImage] : [])}
@@ -103,7 +100,6 @@ export default function FeedStep2CoverProfile({
         <h3 className="text-base font-semibold text-gray-900">
           프로필 아바타
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인스타그램 프로필 영역에 표시되는 원형 사진입니다.</p>
 
         <div className="flex items-start gap-4">
           {data.media.profileAvatar ? (
@@ -150,7 +146,6 @@ export default function FeedStep2CoverProfile({
           )}
           <div className="flex-1 text-xs text-gray-500 pt-2">
             <p>정사각형(1:1) 이미지를 권장합니다.</p>
-            <p className="mt-1">비워두면 커버 이미지가 사용됩니다.</p>
           </div>
         </div>
 
@@ -215,7 +210,6 @@ export default function FeedStep2CoverProfile({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-900">날짜 · 시간 표시</p>
-              <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>끄면 하객 화면에 날짜·시간을 표시하지 않아요 (노웨딩)</p>
             </div>
             <ToggleSwitch
               checked={data.wedding.showDate !== false}
@@ -255,7 +249,6 @@ export default function FeedStep2CoverProfile({
           <div className="flex items-center justify-between pt-1">
             <div>
               <p className="text-sm font-medium text-gray-900">장소 · 오시는 길 표시</p>
-              <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>끄면 예식장·오시는 길을 표시하지 않아요</p>
             </div>
             <ToggleSwitch
               checked={data.wedding.showVenue !== false}
@@ -300,16 +293,12 @@ export default function FeedStep2CoverProfile({
         <h3 className="text-base font-semibold text-gray-900">
           카카오톡 공유 설정
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          카카오톡으로 공유할 때 표시되는 정보를 설정해주세요.
-        </p>
 
         {/* 경고 문구 */}
         <div className="p-3 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
           <p className="text-xs mb-2 flex items-start gap-1.5" style={{ color: 'var(--ed-text-muted)' }}>
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-            <span><strong>중요:</strong> 카카오톡 공유 정보는 한번 공유된 후 변경하면 캐시로 인해
-            반영되기까지 시간이 오래 걸릴 수 있습니다.</span>
+            <span><strong>중요:</strong> 공유 후 변경하면 캐시로 인해 반영까지 시간이 오래 걸릴 수 있습니다.</span>
           </p>
           <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
             <summary className="cursor-pointer font-medium">이미지 변경하기 (펼쳐보기)</summary>
@@ -470,7 +459,6 @@ export default function FeedStep2CoverProfile({
               onChange={(e) => updateNestedData('meta.title', e.target.value)}
               placeholder={`${data.groom.name || '신랑'} ♥ ${data.bride.name || '신부'} 결혼합니다`}
             />
-            <p className="text-xs text-gray-400">비워두면 자동 생성됩니다.</p>
           </div>
 
           {/* 공유 설명 */}
@@ -483,7 +471,6 @@ export default function FeedStep2CoverProfile({
               onChange={(e) => updateNestedData('meta.description', e.target.value)}
               placeholder="소중한 분들을 초대합니다"
             />
-            <p className="text-xs text-gray-400">비워두면 날짜, 시간, 장소가 자동으로 표시됩니다.</p>
           </div>
         </div>
       </section>
@@ -495,8 +482,7 @@ export default function FeedStep2CoverProfile({
         </h3>
         <div className="p-3 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
           <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
-            <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)<br />
-            카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.
+            <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)
           </p>
         </div>
 
@@ -621,7 +607,6 @@ export default function FeedStep2CoverProfile({
       <section className="space-y-4">
         <div>
           <h3 className="text-sm font-semibold text-gray-900">D-Day 팝업</h3>
-          <p className="text-xs text-gray-500 mt-0.5">결혼식 당일 안내 팝업을 설정합니다</p>
         </div>
         <DdayPopupEditor
           value={data.ddayPopup || DEFAULT_DDAY_POPUP}

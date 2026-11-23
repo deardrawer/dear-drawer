@@ -74,6 +74,7 @@ function parseInvitationContent(content?: string) {
       extractImageUrl(parsed.meta?.ogImage) ||
       extractImageUrl(parsed.media?.coverImage) ||
       extractImageUrl(parsed.mainImage) ||
+      extractImageUrl(parsed.phone?.wallpaper) ||
       extractImageUrl(parsed.gallery?.images?.[0]) ||
       ''
 
@@ -142,6 +143,8 @@ function getTemplateDisplayName(templateId: string, senderSide?: string) {
       return '감사장'
     case 'narrative-the-simple':
       return 'THE SIMPLE'
+    case 'narrative-phone':
+      return 'THE PHONE'
     case 'narrative-classic':
       return 'THE CLASSIC'
     default:
@@ -943,6 +946,7 @@ export default function MyInvitationsPage() {
             </p>
           </div>
           <div className="mi-head-side" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            {invitations.length > 0 && <Link href="/post-drawer/mine?view=share" className="mi-link" style={{ fontSize: 13, fontWeight: 500 }}>하객 사진 공유</Link>}
             {invitations.length > 0 && <Link href="/rsvp" className="mi-link" style={{ fontSize: 13, fontWeight: 500 }}>RSVP 통합관리</Link>}
             <Link href="/templates" className="mi-btn mi-btn-ink" style={{ padding: '0 20px' }}>새 청첩장 만들기</Link>
           </div>
@@ -1009,6 +1013,8 @@ export default function MyInvitationsPage() {
                     ? `/editor/thank-you?id=${invitation.id}`
                     : invitation.template_id === 'narrative-the-simple'
                     ? `/editor/the-simple?id=${invitation.id}`
+                    : invitation.template_id === 'narrative-phone'
+                    ? `/editor/phone?id=${invitation.id}`
                     : invitation.template_id === 'narrative-classic'
                     ? `/editor/classic?id=${invitation.id}`
                     : invitation.template_id === 'narrative-essay'

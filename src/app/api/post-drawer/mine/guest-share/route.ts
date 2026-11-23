@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { buildShareLook } from '@/lib/guestShareLook'
 import { getCurrentUser } from '@/lib/ownerAuth'
 import { ensureCoupleGuestShareSlug, getCoupleGuestShareByUser, setCoupleGuestShare, resolveCoupleShareInvitation, listCouplePaidInvitations, ensureCoupleDriveMapping } from '@/lib/postDrawer'
 import { getCloudConnectionByUser } from '@/lib/cloudStorage'
@@ -24,6 +25,10 @@ export async function GET(request: NextRequest) {
       enabled: share?.enabled ?? false,
       title: share?.title ?? null,
       description: share?.description ?? null,
+      cover: share?.cover ?? null,
+      nameStyle: share?.nameStyle ?? null,
+      // 미리보기용 첫 화면 — 커버 · 이름 · 날짜 (공유 페이지와 같은 값)
+      look: buildShareLook(host, share?.weddingDate ?? null, share?.cover ?? null, share?.nameStyle ?? null, share?.coverY ?? null, share?.coverCrop ?? null),
       connected: !!conn,
       accountEmail: conn?.account_email ?? null,
       primaryInvitationId: host?.id ?? null, // 실제로 업로드/연결이 갈 청첩장(지정 or 자동)
@@ -40,7 +45,9 @@ export async function POST(request: NextRequest) {
   const user = await getCurrentUser(request)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
-    const body = (await request.json()) as { enabled?: boolean; title?: string | null; description?: string | null; invitationId?: string | null }
+    const body = (await request.json()) as { enabled?: boolean; title?: string | null; description?: string | null; invitationId?: string | null; cover?: string | null; nameStyle?: 'en' | 'ko' | null; coverY?: number | null; coverCrop?: { cropX: number; cropY: number; cropWidth: number; cropHeight: number } | null }
+    // 첫 화면 사진 — 우리 저장소(업로드 주소)만 받음
+    if (typeof body.cover === 'string' && body.cover && !/^(\/|https:\/\/)/.test(body.cover)) body.cover = null
     await setCoupleGuestShare(user.id, body)
     // 대표 청첩장을 지정하면, Drive 연결돼 있을 때 그 청첩장에 폴더 매핑을 미리 확보(폴더는 전송 시 생성)
     if (typeof body.invitationId === 'string' && body.invitationId) {

@@ -7,7 +7,6 @@ import { Play, Pause, Upload, X, Loader2, ImageIcon, Trash2 } from 'lucide-react
 import { bgmPresets } from '@/lib/bgmPresets'
 import { useThankYouEditorStore, type ThankYouFontStyle } from '@/store/thankYouEditorStore'
 import { THANKYOU_ACCENT_PRESETS } from '@/components/thank-you/types'
-import { hexToSealFilter } from '@/components/parents/EnvelopeScreen'
 import { uploadImage } from '@/lib/imageUpload'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import ColorField from '@/components/editor/ColorField'
@@ -28,16 +27,6 @@ const FONT_STYLE_OPTIONS: { id: ThankYouFontStyle; name: string; fontFamily: str
   { id: 'dandi', name: '부산단디명조', fontFamily: "'BusanDandiMyeongjo', serif", sample: '감사합니다' },
 ]
 
-const SEAL_PRESETS = [
-  { color: '#722F37', label: '버건디' },
-  { color: '#1E3A5F', label: '네이비' },
-  { color: '#C9A962', label: '골드' },
-  { color: '#1A1A1A', label: '블랙' },
-  { color: '#F5ECD7', label: '아이보리' },
-  { color: '#F2C4C4', label: '로즈핑크' },
-  { color: '#C8B8DB', label: '라벤더' },
-  { color: '#E8E8E8', label: '화이트' },
-]
 
 interface ThankYouStep1DesignProps {
   invitationId: string | null
@@ -47,7 +36,6 @@ export default function ThankYouStep1Design({ invitationId }: ThankYouStep1Desig
   const {
     fontStyle, setFontStyle,
     accentColor, setAccentColor,
-    sealColor, setSealColor,
     bgm, setBgm,
     data, setBackgroundImage, setBackgroundImageSettings,
   } = useThankYouEditorStore()
@@ -117,15 +105,9 @@ export default function ThankYouStep1Design({ invitationId }: ThankYouStep1Desig
 
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 */}
-      <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>메인컬러, 폰트, 배경사진, 실링, 배경음악을 설정해주세요.</p>
-      </div>
-
       {/* 메인 컬러 */}
       <div>
         <h3 className="text-base font-semibold text-[#2C2824] mb-4">메인 컬러</h3>
-        <p className="text-xs text-gray-500 mb-3">장식 라인과 포인트 텍스트에 사용됩니다.</p>
 
         {/* 프리셋 색상 */}
         <div className="flex flex-wrap gap-2 justify-center mb-3">
@@ -160,7 +142,6 @@ export default function ThankYouStep1Design({ invitationId }: ThankYouStep1Desig
       {/* 배경 사진 */}
       <div>
         <h3 className="text-base font-semibold text-[#2C2824] mb-4">배경 사진</h3>
-        <p className="text-xs text-gray-500 mb-3">폴라로이드 사진 뒤에 표시되는 배경 이미지입니다. (선택사항)</p>
 
         {data.backgroundImage ? (
           <div className="space-y-3">
@@ -227,7 +208,6 @@ export default function ThankYouStep1Design({ invitationId }: ThankYouStep1Desig
               <ImageIcon className="w-6 h-6 text-gray-400" />
             )}
             <span className="text-sm text-gray-500">{isUploadingBg ? '업로드 중...' : '배경 사진 선택'}</span>
-            <span className="text-xs text-gray-400">설정하지 않으면 단색 배경이 적용됩니다</span>
             <input
               type="file"
               accept="image/*"
@@ -262,54 +242,6 @@ export default function ThankYouStep1Design({ invitationId }: ThankYouStep1Desig
               </span>
             </button>
           ))}
-        </div>
-      </div>
-
-      {/* 실링 색상 */}
-      <div>
-        <h3 className="text-base font-semibold text-[#2C2824] mb-4">실링 스티커</h3>
-        <p className="text-xs text-gray-500 mb-3">유산지 위에 올라가는 밀랍 실링의 색상을 선택하세요.</p>
-
-        {/* 실링 미리보기 */}
-        <div className="flex justify-center py-3 mb-3">
-          <div className="w-16 h-16 relative" style={{ filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.2))' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/shilling-gray.png"
-              alt="실링 미리보기"
-              className="w-full h-full object-contain"
-              style={{ filter: hexToSealFilter(sealColor) }}
-            />
-          </div>
-        </div>
-
-        {/* 프리셋 색상 */}
-        <div className="flex flex-wrap gap-2 justify-center mb-3">
-          {SEAL_PRESETS.map((preset) => (
-            <button
-              key={preset.color}
-              onClick={() => setSealColor(preset.color)}
-              className={`flex flex-col items-center gap-1 p-1.5 rounded-lg transition-all ${
-                sealColor === preset.color ? 'bg-gray-100 ring-2 ring-[#A37E69]' : 'hover:bg-gray-50'
-              }`}
-            >
-              <div
-                className="w-7 h-7 rounded-full border border-gray-200"
-                style={{ backgroundColor: preset.color }}
-              />
-              <span className="text-[10px] text-gray-500">{preset.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* 커스텀 색상 */}
-        <div className="flex items-center justify-center gap-2">
-          <label className="text-xs text-gray-500">직접 선택:</label>
-          <ColorField
-            label="실링 색상"
-            value={sealColor}
-            onChange={(hex) => setSealColor(hex)}
-          />
         </div>
       </div>
 

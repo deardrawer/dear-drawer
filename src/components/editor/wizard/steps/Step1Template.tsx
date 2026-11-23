@@ -16,7 +16,7 @@ const TEMPLATE_DETAILS = {
     title: 'OUR',
     subtitle: '커플 중심의 러브스토리',
     description: '두 사람의 만남과 사랑 이야기를 중심으로 구성된 청첩장입니다.',
-    target: '본인들이 직접 보내는 청첩장에 적합해요',
+    target: '본인들이 직접 보내는 청첩장에 적합합니다',
     coverImage: '/images/our-cover.png',
     features: [
       { icon: <svg className="w-4 h-4 text-gray-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>, text: '커플 프로필 소개' },
@@ -42,7 +42,7 @@ const TEMPLATE_DETAILS = {
     title: 'FAMILY',
     subtitle: '두 가족의 축복으로 완성되는 청첩장',
     description: '양가 부모님의 인사말과 서로가 선택한 이유를 담은 청첩장입니다.',
-    target: '가족의 축복을 함께 전하고 싶은 커플에게 적합해요',
+    target: '가족의 축복을 함께 전하고 싶은 커플에게 적합합니다',
     coverImage: '/samples/parents/1.png',
     features: [
       { icon: <svg className="w-4 h-4 text-gray-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>, text: '양가 부모님 인사말' },
@@ -101,10 +101,7 @@ export default function Step1Template({ templateId }: Step1TemplateProps) {
     <div className="p-6 space-y-6">
       {/* 헤더 */}
       <div className="text-center">
-        <h3 className="text-xl font-medium text-gray-900 mb-2">템플릿을 선택해주세요</h3>
-        <p className="text-sm text-blue-600">
-          <svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>청첩장의 전체적인 분위기와 구성을 결정합니다.
-        </p>
+        <h3 className="text-xl font-medium text-gray-900">템플릿을 선택해주세요</h3>
       </div>
 
       {/* 템플릿 카드들 */}

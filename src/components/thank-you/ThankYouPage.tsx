@@ -132,39 +132,6 @@ function CroppedImage({
   );
 }
 
-/* ───────── seal filter ───────── */
-
-function hexToSealFilter(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  const l = (max + min) / 2;
-  let h = 0, s = 0;
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r: h = ((g - b) / d + (g < b ? 6 : 0)) * 60; break;
-      case g: h = ((b - r) / d + 2) * 60; break;
-      case b: h = ((r - g) / d + 4) * 60; break;
-    }
-  }
-  if (s < 0.05) {
-    const grayBright = Math.max(0.3, Math.min(2.5, l * 2.5));
-    return `grayscale(1) brightness(${grayBright.toFixed(2)})`;
-  }
-  const hueRotate = h - 30;
-  if (l > 0.6) {
-    const sepiaAmount = Math.max(0.15, 1 - (l - 0.6) * 2);
-    const saturate = Math.max(1, Math.min(4, s * 6));
-    const brightness = Math.max(1.0, Math.min(2.0, 0.6 + l * 1.4));
-    return `sepia(${sepiaAmount.toFixed(2)}) saturate(${saturate.toFixed(1)}) hue-rotate(${Math.round(hueRotate)}deg) brightness(${brightness.toFixed(2)})`;
-  }
-  const saturate = Math.max(0.8, Math.min(5, s * 5));
-  const brightness = Math.max(0.5, Math.min(1.1, 0.4 + l * 0.7));
-  return `sepia(1) saturate(${saturate.toFixed(1)}) hue-rotate(${Math.round(hueRotate)}deg) brightness(${brightness.toFixed(2)})`;
-}
 
 /* ───────── helpers ───────── */
 
@@ -194,7 +161,7 @@ export default function ThankYouPage({
   data = SAMPLE_DATA,
   fontStyle = "classic",
   accentColor = "#B89878",
-  sealColor = "#722F37",
+  // sealColor — 인장을 없애 쓰지 않음 (예전 저장값 호환용으로 prop 은 유지)
   scrollContainerRef,
   introMode = "auto",
 }: ThankYouPageProps) {
@@ -357,10 +324,6 @@ export default function ThankYouPage({
   });
   const tracingOpacity = useTransform(p, lerp(B ? 0.38 : A ? 0.48 : 0.62, B ? 0.42 : A ? 0.53 : 0.68, 0, 1));
 
-  // ── Phase 6.5: Sealing stamp (A=커튼 직후) ──
-  const sealScale  = useTransform(p, lerp(B ? 0.46 : A ? 0.56 : 0.72, B ? 0.49 : A ? 0.59 : 0.75, 0.5, 1));
-  const sealOpacity = useTransform(p, lerp(B ? 0.46 : A ? 0.56 : 0.72, B ? 0.49 : A ? 0.59 : 0.75, 0, 1));
-  const sealRotate = useTransform(p, lerp(B ? 0.46 : A ? 0.56 : 0.72, B ? 0.49 : A ? 0.59 : 0.75, -30, 0));
 
   // ── Phase 7: Card + ending text (A=씰 직후 시작) ──
   const cardScale       = useTransform(p, lerp(B ? 0.50 : A ? 0.58 : 0.76, B ? 0.53 : A ? 0.61 : 0.80, 0.9, 1));
@@ -710,32 +673,6 @@ export default function ThankYouPage({
               maxWidth: 360,
             }}
           >
-            {/* 실링 — 카드 상단 가장자리에 걸침 */}
-            <motion.div
-              className="absolute left-1/2 z-10 pointer-events-none"
-              style={{
-                top: -40,
-                marginLeft: -48,
-                width: 96,
-                height: 96,
-                opacity: sealOpacity,
-                scale: sealScale,
-                rotate: sealRotate,
-                filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.3))",
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/shilling-gray.png"
-                alt="seal"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "contain",
-                  filter: hexToSealFilter(sealColor),
-                }}
-              />
-            </motion.div>
             {/* 카드 본체 */}
             <div
               style={{
@@ -745,13 +682,6 @@ export default function ThankYouPage({
                 padding: "40px 28px 36px",
               }}
             >
-            {/* 장식 라인 */}
-            <div style={{
-              width: 40,
-              height: 1,
-              background: `${accentColor}50`,
-              margin: "0 auto 24px",
-            }} />
 
             {/* 감사합니다. */}
             <motion.p
@@ -802,13 +732,6 @@ export default function ThankYouPage({
               {data.closingLines[3]}
             </motion.p>
 
-            {/* 장식 라인 */}
-            <div style={{
-              width: 40,
-              height: 1,
-              background: `${accentColor}50`,
-              margin: "0 auto 16px",
-            }} />
 
             {/* 올림 */}
             <motion.p

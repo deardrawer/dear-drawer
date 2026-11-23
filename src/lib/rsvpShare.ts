@@ -85,7 +85,7 @@ const TEMPLATE_LABELS: Record<string, string> = {
   'narrative-our': 'OUR', 'narrative-family': 'FAMILY', 'narrative-parents': 'PARENTS',
   'narrative-classic': 'THE CLASSIC', 'narrative-magazine': 'MAGAZINE', 'narrative-film': 'MOVIE',
   'narrative-record': 'RECORD', 'narrative-exhibit': 'FEED', 'narrative-essay': 'ESSAY',
-  'narrative-the-simple': 'THE SIMPLE', 'narrative-thankyou': 'THANKS',
+  'narrative-the-simple': 'THE SIMPLE', 'narrative-phone': 'THE PHONE', 'narrative-thankyou': 'THANKS',
 }
 export function rsvpTemplateLabel(templateId: string | null | undefined): string {
   return (templateId && TEMPLATE_LABELS[templateId]) || '청첩장'

@@ -34,7 +34,7 @@ export default function DirectionEditor({ value, onChange, showVenue, onShowVenu
   return (
     <div className="space-y-2.5">
       <p className="text-[10px] text-stone-400 leading-relaxed">
-        예식장 이름 · 주소는 상단 &quot;기본 정보&quot;에서 편집하세요.
+        예식장 이름 · 주소는 상단 &quot;기본 정보&quot;에서 편집합니다.
       </p>
       {onShowVenueChange && (
         <label className="flex items-center gap-2 cursor-pointer pb-1 border-b border-stone-100">
@@ -82,7 +82,6 @@ export default function DirectionEditor({ value, onChange, showVenue, onShowVenu
 
       <div className="pt-2 border-t border-stone-100">
         <p className="text-[10px] uppercase tracking-wider text-stone-400 mb-2">교통편 안내</p>
-        <p className="text-[10px] text-stone-400 mb-3">입력한 항목만 청첩장에 표시됩니다.</p>
         {TRANSPORT_FIELDS.map((field) => (
           <label key={field.key} className="block mb-2.5">
             <span className="text-[10px] text-stone-500">

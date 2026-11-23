@@ -86,12 +86,6 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
 
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 */}
-      <div className="space-y-1">
-        <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>인트로를 꾸며보세요</p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>신랑신부·결혼식 정보를 입력하고 앨범 커버와 인트로 스타일을 정해주세요.</p>
-      </div>
-
       {/* 신랑신부 이름 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -135,10 +129,7 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
           {/* 날짜·시간 표시 토글 (노웨딩) */}
           <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-sm font-medium">날짜 · 시간 표시</Label>
-              <p className="text-xs text-gray-500">끄면 하객 화면에 날짜·시간을 표시하지 않아요 (노웨딩)</p>
-            </div>
+            <Label className="text-sm font-medium">날짜 · 시간 표시</Label>
             <Switch checked={invitation.wedding.showDate !== false} onCheckedChange={(c) => updateNestedField('wedding.showDate', c)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -180,10 +171,7 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
 
           {/* 장소·오시는길 표시 토글 (노웨딩) */}
           <div className="flex items-center justify-between pt-1">
-            <div>
-              <Label className="text-sm font-medium">장소 · 오시는 길 표시</Label>
-              <p className="text-xs text-gray-500">끄면 예식장·오시는 길을 표시하지 않아요</p>
-            </div>
+            <Label className="text-sm font-medium">장소 · 오시는 길 표시</Label>
             <Switch checked={invitation.wedding.showVenue !== false} onCheckedChange={(c) => updateNestedField('wedding.showVenue', c)} />
           </div>
           <div className="space-y-1.5">
@@ -254,9 +242,7 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
 
         {(invitation.recordIntroStyle === 'days' || invitation.recordIntroStyle === 'lp') && (
           <div className="p-4 bg-gray-50 rounded-lg space-y-4">
-            <p className="text-xs text-gray-500">{daysLp
-              ? '큰 숫자 제목 아래 작은 정사각 앨범 커버 뒤로 LP가 미끄러져 나와 돌아요. 아래 설정은 함께한 날과 같이 써요 (사진만 따로).'
-              : "'N DAYS TOGETHER' 제목 아래 사진 카드와 작은 LP 수록곡 줄이 차례로 나타나요. 화면을 누르면 넘어가요."}</p>
+            {daysLp && <p className="text-xs text-gray-500">함께한 날 인트로와 설정을 공유합니다 (사진 제외).</p>}
             <div className="space-y-2">
               <Label className="text-sm font-medium">사진</Label>
               {invitation[daysImgKey] ? (
@@ -274,7 +260,7 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
                 </div>
               ) : (
                 <label style={{ width: daysLp ? 200 : 240, aspectRatio: daysLp ? '1' : '1.72' }} className="mx-auto flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 bg-white cursor-pointer">
-                  {uploadingImages.has(daysImgKey) ? <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> : <span className="text-xs text-gray-500 text-center px-2">+ 사진 추가<br /><span className="text-[10px] text-gray-400">비워두면 앨범 커버</span></span>}
+                  {uploadingImages.has(daysImgKey) ? <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> : <span className="text-xs text-gray-500 text-center px-2">+ 사진 추가</span>}
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) handleImageUpload(file, daysImgKey, (url) => updateField(daysImgKey, url)) }} />
                 </label>
               )}
@@ -288,7 +274,6 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
             {/* LP 가운데 사진 (선택) — 비우면 앨범 커버 사진 */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">LP 가운데 사진 <span className="text-xs font-normal text-gray-400">(선택)</span></Label>
-              <p className="text-[11px] text-gray-400">돌아가는 LP 가운데 동그란 라벨에 들어가요. 비우면 앨범 커버 사진이 들어가요.</p>
               {invitation.recordDiscImage ? (
                 <div className="space-y-2">
                   <InlineCropEditor key={invitation.recordDiscImage} imageUrl={invitation.recordDiscImage} settings={invitation.recordDiscImageSettings || {}}
@@ -324,7 +309,6 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">처음 만난 날</Label>
               <Input type="date" value={invitation.recordDaysStart ?? ''} onChange={(e) => updateField('recordDaysStart', e.target.value)} />
-              <p className="text-[11px] text-gray-400">오늘까지 함께한 날 수가 자동으로 세어져요 (하객이 보는 날 기준) · 비우면 'FOREVER TOGETHER'</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">맨 위 작은 문구</Label>
@@ -333,7 +317,7 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">제목</Label>
               <Textarea value={invitation.recordDaysTitle ?? ''} rows={2} maxLength={40} placeholder={'{N} DAYS\nTOGETHER'} className="resize-none" onChange={(e) => updateField('recordDaysTitle', e.target.value)} />
-              <p className="text-[11px] text-gray-400">{'{N}'} 은 함께한 날 수로 바뀌어요 · 비우면 'N DAYS TOGETHER'</p>
+              <p className="text-[11px] text-gray-400">{'{N}'}은 함께한 날 수로 바뀝니다.</p>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1.5">
@@ -349,7 +333,6 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
               <Label className="text-sm font-medium">짧은 편지</Label>
               <Textarea value={invitation.recordDaysMessage ?? ''} rows={3} maxLength={140} className="resize-none"
                 placeholder={"{N} days of you and me —\nand we're just getting started."} onChange={(e) => updateField('recordDaysMessage', e.target.value)} />
-              <p className="text-[11px] text-gray-400">비우면 위 문장이 들어가요 · 사진 카드 아래 날짜 태그는 예식일이에요</p>
             </div>
           </div>
         )}
@@ -363,8 +346,6 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
             앨범 커버 이미지
           </h3>
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>바이닐 레코드 커버에 사용될 정사각형 이미지를 업로드하세요.</p>
-
           {invitation.media.coverImage ? (
             <div className="space-y-3">
               <div className="relative w-48 h-48 mx-auto rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
@@ -437,8 +418,6 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
               }}
             />
           </div>
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인사말 상단에 표시될 정사각형 이미지입니다.</p>
-
           {invitation.media?.jacketImage ? (
             <div className="space-y-3">
               <div className="relative w-40 h-40 mx-auto rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
@@ -518,7 +497,6 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
       <section className="space-y-4">
         <div>
           <h3 className="text-sm font-semibold text-gray-900">D-Day 팝업</h3>
-          <p className="text-xs text-gray-500 mt-0.5">결혼식 당일 안내 팝업을 설정합니다</p>
         </div>
         <DdayPopupEditor
           value={invitation.ddayPopup || DEFAULT_DDAY_POPUP}

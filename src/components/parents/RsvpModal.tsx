@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { C_BG, C_INK, C_KSERIF, C_SANS, C_SUB, cCaption, cPill, cTitle, onPointColor, C_WHITE_ISLAND } from './cStyle'
 import { useTheme } from './ThemeContext'
+
+const C_BORDER = 'rgba(31,29,26,0.16)'
 
 interface RsvpModalProps {
   onSubmit?: (data: {
@@ -26,9 +29,9 @@ interface RsvpModalProps {
 
 export default function RsvpModal({ onSubmit, isPreview = false, invitationId, rsvpMealOption = false, rsvpShuttleOption = false, rsvpAfterPartyOption = false, rsvpNotice, rsvpPhoneOption = false, rsvpSideDetail = false, rsvpSideDetailOptions, rsvpMessagePlaceholder, senderSide }: RsvpModalProps) {
   const ref = useRef<HTMLDivElement>(null)
-  const formRef = useRef<HTMLDivElement>(null)
-  const theme = useTheme()
-  const [isVisible, setIsVisible] = useState(false)
+  // 포인트 색 (고객이 고르지 않았으면 먹색)
+  const P = useTheme().point || C_INK
+  const PT = `color-mix(in srgb, ${P} 8%, #FFFFFF)`
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -47,6 +50,10 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
+  const formRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
+
+  // 청첩장 맨 끝에 닿으면 참석 여부 시트가 아래에서 올라옴 (기존 동작 그대로)
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -158,11 +165,11 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
     <div className="text-center py-8">
       <div
         className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-        style={{ backgroundColor: `${theme.primary}20` }}
+        style={{ backgroundColor: `color-mix(in srgb, ${P} 12%, #FFFFFF)` }}
       >
         <svg
           className="w-8 h-8"
-          style={{ color: theme.primary }}
+          style={{ color: P }}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -175,12 +182,12 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           />
         </svg>
       </div>
-      <h3 className="text-lg font-medium mb-2" style={{ color: theme.text }}>감사합니다!</h3>
-      <p className="text-sm" style={{ color: '#999' }}>
-        참석 여부가 성공적으로 전달되었습니다.
+      <h3 className="mb-2" style={{ color: C_INK, fontFamily: C_KSERIF, fontSize: 20, fontWeight: 400 }}>감사합니다</h3>
+      <p className="text-sm" style={{ color: C_SUB }}>
+        참석 여부가 잘 전달되었습니다.
       </p>
       {formData.attendance === 'yes' && (
-        <p className="text-sm mt-1" style={{ color: '#999' }}>
+        <p className="text-sm mt-1" style={{ color: C_SUB }}>
           결혼식에서 뵙겠습니다.
         </p>
       )}
@@ -191,7 +198,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
   const formContent = isSubmitted ? successContent : (
     <form onSubmit={handleSubmit} className="space-y-5">
       {rsvpNotice && (
-        <p className="text-xs text-center whitespace-pre-line leading-relaxed" style={{ color: '#999' }}>
+        <p className="text-xs text-center whitespace-pre-line leading-relaxed" style={{ color: C_SUB }}>
           {rsvpNotice}
         </p>
       )}
@@ -201,7 +208,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
         </div>
       )}
       <div>
-        <label className="block text-xs mb-2" style={{ color: '#999' }}>
+        <label className="block text-[13px] mb-2" style={{ color: C_SUB }}>
           성함 <span className="text-red-500">*</span>
         </label>
         <input
@@ -209,23 +216,23 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           value={formData.name}
           onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
           placeholder="성함을 입력해주세요"
-          className="w-full px-4 py-3 rounded-lg border text-sm outline-none transition-all"
-          style={{ borderColor: '#E8E4DC', color: theme.text }}
+          className="w-full px-4 py-3 rounded-lg border text-[15px] outline-none transition-all"
+          style={{ borderColor: C_BORDER, color: C_INK }}
           onFocus={(e) => {
-            e.currentTarget.style.borderColor = theme.primary
+            e.currentTarget.style.borderColor = P
             if (!isFullscreen) enterFullscreen()
             const el = e.currentTarget
             setTimeout(() => {
               el.scrollIntoView({ behavior: 'smooth', block: 'center' })
             }, 350)
           }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = '#E8E4DC' }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = C_BORDER }}
         />
       </div>
 
       {rsvpPhoneOption && (
       <div>
-        <label className="block text-xs mb-2" style={{ color: '#999' }}>
+        <label className="block text-[13px] mb-2" style={{ color: C_SUB }}>
           연락처 뒷자리
         </label>
         <input
@@ -235,35 +242,35 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           value={formData.phone}
           onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
           placeholder="뒷자리 4자리"
-          className="w-full px-4 py-3 rounded-lg border text-sm outline-none transition-all"
-          style={{ borderColor: '#E8E4DC', color: theme.text }}
+          className="w-full px-4 py-3 rounded-lg border text-[15px] outline-none transition-all"
+          style={{ borderColor: C_BORDER, color: C_INK }}
           onFocus={(e) => {
-            e.currentTarget.style.borderColor = theme.primary
+            e.currentTarget.style.borderColor = P
             if (!isFullscreen) enterFullscreen()
             const el = e.currentTarget
             setTimeout(() => {
               el.scrollIntoView({ behavior: 'smooth', block: 'center' })
             }, 350)
           }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = '#E8E4DC' }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = C_BORDER }}
         />
       </div>
       )}
 
       {!senderSide && (
       <div>
-        <label className="block text-xs mb-2" style={{ color: '#999' }}>
+        <label className="block text-[13px] mb-2" style={{ color: C_SUB }}>
           소속
         </label>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => setFormData(prev => ({ ...prev, side: prev.side === 'groom' ? null : 'groom', sideDetail: '' }))}
-            className="py-3 rounded-lg border text-sm transition-all"
+            className="py-3 rounded-full border text-[15px] transition-all"
             style={{
-              borderColor: formData.side === 'groom' ? '#3B82F6' : '#E8E4DC',
-              backgroundColor: formData.side === 'groom' ? '#3B82F610' : '#FFFFFF',
-              color: formData.side === 'groom' ? '#3B82F6' : '#666',
+              borderColor: formData.side === 'groom' ? P : C_BORDER,
+              backgroundColor: formData.side === 'groom' ? PT : '#FFFFFF',
+              color: formData.side === 'groom' ? P : '#666',
             }}
           >
             신랑측
@@ -271,11 +278,11 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           <button
             type="button"
             onClick={() => setFormData(prev => ({ ...prev, side: prev.side === 'bride' ? null : 'bride', sideDetail: '' }))}
-            className="py-3 rounded-lg border text-sm transition-all"
+            className="py-3 rounded-full border text-[15px] transition-all"
             style={{
-              borderColor: formData.side === 'bride' ? '#EC4899' : '#E8E4DC',
-              backgroundColor: formData.side === 'bride' ? '#EC489910' : '#FFFFFF',
-              color: formData.side === 'bride' ? '#EC4899' : '#666',
+              borderColor: formData.side === 'bride' ? P : C_BORDER,
+              backgroundColor: formData.side === 'bride' ? PT : '#FFFFFF',
+              color: formData.side === 'bride' ? P : '#666',
             }}
           >
             신부측
@@ -286,7 +293,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
 
       {rsvpSideDetail && formData.side && (
       <div>
-        <label className="block text-xs mb-2" style={{ color: '#999' }}>
+        <label className="block text-[13px] mb-2" style={{ color: C_SUB }}>
           초대 경로
         </label>
         <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' as const }}>
@@ -294,11 +301,11 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           <button
             type="button"
             onClick={() => setFormData(prev => ({ ...prev, sideDetail: 'self' }))}
-            className="flex-1 py-3 rounded-lg border text-sm transition-all"
+            className="flex-1 py-3 rounded-full border text-[15px] transition-all"
             style={{
-              borderColor: formData.sideDetail === 'self' ? theme.primary : '#E8E4DC',
-              backgroundColor: formData.sideDetail === 'self' ? `${theme.primary}10` : '#FFFFFF',
-              color: formData.sideDetail === 'self' ? theme.primary : '#666',
+              borderColor: formData.sideDetail === 'self' ? P : C_BORDER,
+              backgroundColor: formData.sideDetail === 'self' ? PT : '#FFFFFF',
+              color: formData.sideDetail === 'self' ? P : '#666',
             }}
           >
             {formData.side === 'groom' ? '신랑' : '신부'}
@@ -308,11 +315,11 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           <button
             type="button"
             onClick={() => setFormData(prev => ({ ...prev, sideDetail: 'father' }))}
-            className="flex-1 py-3 rounded-lg border text-sm transition-all"
+            className="flex-1 py-3 rounded-full border text-[15px] transition-all"
             style={{
-              borderColor: formData.sideDetail === 'father' ? theme.primary : '#E8E4DC',
-              backgroundColor: formData.sideDetail === 'father' ? `${theme.primary}10` : '#FFFFFF',
-              color: formData.sideDetail === 'father' ? theme.primary : '#666',
+              borderColor: formData.sideDetail === 'father' ? P : C_BORDER,
+              backgroundColor: formData.sideDetail === 'father' ? PT : '#FFFFFF',
+              color: formData.sideDetail === 'father' ? P : '#666',
             }}
           >
             {formData.side === 'groom' ? '신랑' : '신부'} 아버지
@@ -322,11 +329,11 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           <button
             type="button"
             onClick={() => setFormData(prev => ({ ...prev, sideDetail: 'mother' }))}
-            className="flex-1 py-3 rounded-lg border text-sm transition-all"
+            className="flex-1 py-3 rounded-full border text-[15px] transition-all"
             style={{
-              borderColor: formData.sideDetail === 'mother' ? theme.primary : '#E8E4DC',
-              backgroundColor: formData.sideDetail === 'mother' ? `${theme.primary}10` : '#FFFFFF',
-              color: formData.sideDetail === 'mother' ? theme.primary : '#666',
+              borderColor: formData.sideDetail === 'mother' ? P : C_BORDER,
+              backgroundColor: formData.sideDetail === 'mother' ? PT : '#FFFFFF',
+              color: formData.sideDetail === 'mother' ? P : '#666',
             }}
           >
             {formData.side === 'groom' ? '신랑' : '신부'} 어머니
@@ -337,7 +344,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
       )}
 
       <div>
-        <label className="block text-xs mb-2" style={{ color: '#999' }}>
+        <label className="block text-[13px] mb-2" style={{ color: C_SUB }}>
           참석 여부
         </label>
         <div className="flex gap-2">
@@ -350,11 +357,11 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
               key={option.value}
               type="button"
               onClick={() => setFormData(prev => ({ ...prev, attendance: option.value as 'yes' | 'no' | 'maybe' }))}
-              className="flex-1 py-3 rounded-lg border text-sm transition-all"
+              className="flex-1 py-3 rounded-full border text-[15px] transition-all"
               style={{
-                borderColor: formData.attendance === option.value ? theme.primary : '#E8E4DC',
-                backgroundColor: formData.attendance === option.value ? `${theme.primary}10` : '#FFFFFF',
-                color: formData.attendance === option.value ? theme.primary : '#666',
+                borderColor: formData.attendance === option.value ? P : C_BORDER,
+                backgroundColor: formData.attendance === option.value ? PT : '#FFFFFF',
+                color: formData.attendance === option.value ? P : '#666',
               }}
             >
               {option.label}
@@ -365,7 +372,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
 
       {formData.attendance === 'yes' && (
         <div>
-          <label className="block text-xs mb-2" style={{ color: '#999' }}>
+          <label className="block text-[13px] mb-2" style={{ color: C_SUB }}>
             참석 인원
           </label>
           <div className="flex items-center gap-4">
@@ -375,11 +382,11 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
               onMouseEnter={() => setHoveredButton('minus')}
               onMouseLeave={() => setHoveredButton(null)}
               className="w-10 h-10 rounded-full border flex items-center justify-center transition-all"
-              style={{ borderColor: hoveredButton === 'minus' ? theme.primary : '#E8E4DC', color: '#666' }}
+              style={{ borderColor: hoveredButton === 'minus' ? P : C_BORDER, color: C_INK }}
             >
               -
             </button>
-            <span className="text-lg font-serif" style={{ color: theme.text }}>
+            <span className="text-lg" style={{ color: C_INK, fontFamily: C_KSERIF }}>
               {formData.guestCount}명
             </span>
             <button
@@ -388,7 +395,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
               onMouseEnter={() => setHoveredButton('plus')}
               onMouseLeave={() => setHoveredButton(null)}
               className="w-10 h-10 rounded-full border flex items-center justify-center transition-all"
-              style={{ borderColor: hoveredButton === 'plus' ? theme.primary : '#E8E4DC', color: '#666' }}
+              style={{ borderColor: hoveredButton === 'plus' ? P : C_BORDER, color: C_INK }}
             >
               +
             </button>
@@ -398,7 +405,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
 
       {rsvpMealOption && formData.attendance === 'yes' && (
         <div>
-          <label className="block text-xs mb-2" style={{ color: '#999' }}>
+          <label className="block text-[13px] mb-2" style={{ color: C_SUB }}>
             식사 여부
           </label>
           <div className="flex gap-2">
@@ -410,11 +417,11 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
                 key={option.value}
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, mealAttendance: option.value as 'yes' | 'no' }))}
-                className="flex-1 py-3 rounded-lg border text-sm transition-all"
+                className="flex-1 py-3 rounded-full border text-[15px] transition-all"
                 style={{
-                  borderColor: formData.mealAttendance === option.value ? theme.primary : '#E8E4DC',
-                  backgroundColor: formData.mealAttendance === option.value ? `${theme.primary}10` : '#FFFFFF',
-                  color: formData.mealAttendance === option.value ? theme.primary : '#666',
+                  borderColor: formData.mealAttendance === option.value ? P : C_BORDER,
+                  backgroundColor: formData.mealAttendance === option.value ? PT : '#FFFFFF',
+                  color: formData.mealAttendance === option.value ? P : '#666',
                 }}
               >
                 {option.label}
@@ -426,7 +433,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
 
       {rsvpShuttleOption && formData.attendance === 'yes' && (
         <div>
-          <label className="block text-xs mb-2" style={{ color: '#999' }}>
+          <label className="block text-[13px] mb-2" style={{ color: C_SUB }}>
             대절버스 이용 여부
           </label>
           <div className="flex gap-2">
@@ -438,11 +445,11 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
                 key={option.value}
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, shuttleBus: option.value as 'yes' | 'no' }))}
-                className="flex-1 py-3 rounded-lg border text-sm transition-all"
+                className="flex-1 py-3 rounded-full border text-[15px] transition-all"
                 style={{
-                  borderColor: formData.shuttleBus === option.value ? theme.primary : '#E8E4DC',
-                  backgroundColor: formData.shuttleBus === option.value ? `${theme.primary}10` : '#FFFFFF',
-                  color: formData.shuttleBus === option.value ? theme.primary : '#666',
+                  borderColor: formData.shuttleBus === option.value ? P : C_BORDER,
+                  backgroundColor: formData.shuttleBus === option.value ? PT : '#FFFFFF',
+                  color: formData.shuttleBus === option.value ? P : '#666',
                 }}
               >
                 {option.label}
@@ -454,7 +461,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
 
       {rsvpAfterPartyOption && formData.attendance === 'yes' && (
         <div>
-          <label className="block text-xs mb-2" style={{ color: '#999' }}>
+          <label className="block text-[13px] mb-2" style={{ color: C_SUB }}>
             애프터파티 참석 여부
           </label>
           <div className="flex gap-2">
@@ -466,11 +473,11 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
                 key={option.value}
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, afterParty: option.value as 'yes' | 'no' }))}
-                className="flex-1 py-3 rounded-lg border text-sm transition-all"
+                className="flex-1 py-3 rounded-full border text-[15px] transition-all"
                 style={{
-                  borderColor: formData.afterParty === option.value ? theme.primary : '#E8E4DC',
-                  backgroundColor: formData.afterParty === option.value ? `${theme.primary}10` : '#FFFFFF',
-                  color: formData.afterParty === option.value ? theme.primary : '#666',
+                  borderColor: formData.afterParty === option.value ? P : C_BORDER,
+                  backgroundColor: formData.afterParty === option.value ? PT : '#FFFFFF',
+                  color: formData.afterParty === option.value ? P : '#666',
                 }}
               >
                 {option.label}
@@ -481,7 +488,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
       )}
 
       <div>
-        <label className="block text-xs mb-2" style={{ color: '#999' }}>
+        <label className="block text-[13px] mb-2" style={{ color: C_SUB }}>
           축하 메시지 (선택)
         </label>
         <textarea
@@ -489,10 +496,10 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
           placeholder={rsvpMessagePlaceholder || "신랑신부에게 전할 메시지를 남겨주세요"}
           rows={3}
-          className="w-full px-4 py-3 rounded-lg border text-sm outline-none transition-all resize-none"
-          style={{ borderColor: '#E8E4DC', color: theme.text }}
+          className="w-full px-4 py-3 rounded-lg border text-[15px] outline-none transition-all resize-none"
+          style={{ borderColor: C_BORDER, color: C_INK }}
           onFocus={(e) => {
-            e.currentTarget.style.borderColor = theme.primary
+            e.currentTarget.style.borderColor = P
             if (!isFullscreen) enterFullscreen()
             // 키보드가 textarea 를 가리지 않도록 스크롤
             const el = e.currentTarget
@@ -500,18 +507,15 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
               el.scrollIntoView({ behavior: 'smooth', block: 'center' })
             }, 350)
           }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = '#E8E4DC' }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = C_BORDER }}
         />
       </div>
 
       <button
         type="submit"
         disabled={isSubmitting || !formData.name.trim() || !formData.attendance}
-        className="w-full py-4 rounded-lg text-sm tracking-wider transition-all disabled:opacity-50"
-        style={{
-          backgroundColor: theme.primary,
-          color: '#FFFFFF',
-        }}
+        className="w-full transition-all disabled:opacity-50"
+        style={{ ...cPill(true), flex: 'none' }}
       >
         {isSubmitting ? (
           <span className="flex items-center justify-center gap-2">
@@ -532,6 +536,9 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
       className="fixed left-0 right-0 top-0 z-[10000] flex flex-col"
       style={{
         backgroundColor: '#FFFFFF',
+        // 본문 밖(body)에 그려지므로 포인트 색을 직접 지정
+        ['--parents-point' as string]: P,
+        ['--parents-on-point' as string]: onPointColor(P),
         height: '100dvh',
         maxHeight: '100dvh',
       }}
@@ -539,27 +546,24 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
       {/* 헤더 */}
       <div
         className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0"
-        style={{ borderColor: '#E8E4DC' }}
+        style={{ borderColor: C_BORDER }}
       >
         <button
           type="button"
           onClick={exitFullscreen}
           className="text-sm px-3 py-1"
-          style={{ color: '#666' }}
+          style={{ color: C_INK }}
         >
           취소
         </button>
-        <h3
-          className="font-serif text-base tracking-wider"
-          style={{ color: theme.text }}
-        >
-          참석 의사 전달
+        <h3 style={{ fontFamily: C_KSERIF, fontSize: 17, fontWeight: 400, color: C_INK, margin: 0 }}>
+          참석 여부 알려 주기
         </h3>
         <button
           type="button"
           onClick={handleSubmit}
           className="text-sm px-3 py-1 font-medium"
-          style={{ color: theme.primary }}
+          style={{ color: C_INK }}
         >
           완료
         </button>
@@ -585,8 +589,8 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
       {/* 풀스크린 모달 (Portal로 body에 렌더링) */}
       {fullscreenModal}
 
-      {/* 기본 바텀시트 */}
-      <div ref={ref} className="min-h-[50vh]" style={{ backgroundColor: theme.background }}>
+      {/* 기본 바텀시트 — 맨 끝에서 올라옴 */}
+      <div ref={ref} className="min-h-[50vh]" style={{ backgroundColor: 'transparent' }}>
         <div
           ref={formRef}
           className={`${isPreview ? 'absolute' : 'fixed'} left-0 right-0 bottom-0 transition-all duration-500 ease-out`}
@@ -598,24 +602,24 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           }}
         >
           <div
-            className="rounded-t-[32px] px-6 pt-8 pb-12"
             style={{
-              backgroundColor: '#FFFFFF',
-              boxShadow: '0 -8px 30px rgba(0, 0, 0, 0.15)',
+              ...C_WHITE_ISLAND,
+              backgroundColor: C_BG,
+              borderRadius: '24px 24px 0 0',
+              padding: '14px 28px 40px',
+              boxShadow: '0 -1px 0 rgba(31,29,26,0.08), 0 -10px 30px rgba(31,29,26,0.06)',
+              fontFamily: C_SANS,
             }}
           >
-            <div
-              className="w-12 h-1 rounded-full mx-auto mb-6"
-              style={{ backgroundColor: '#E8E4DC' }}
-            />
-
-            <h3
-              className="font-serif text-lg text-center mb-6 tracking-wider"
-              style={{ color: '#1A1A1A' }}
-            >
-              참석 의사 전달
-            </h3>
-
+            <div style={{ width: 40, height: 4, borderRadius: 999, backgroundColor: 'rgba(31,29,26,0.14)', margin: '0 auto 26px' }} />
+            <div style={{ textAlign: 'center', marginBottom: 26 }}>
+              <p style={cCaption}>참석 여부</p>
+              <h3 style={cTitle(21, 10)}>
+                함께해 주실 수 있는지
+                <br />
+                알려 주세요
+              </h3>
+            </div>
             {formContent}
           </div>
         </div>

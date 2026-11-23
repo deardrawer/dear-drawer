@@ -242,16 +242,6 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
 
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 */}
-      <div className="space-y-1">
-        <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>{isMagazine ? '매거진 커버를 꾸며보세요' : '인트로를 꾸며보세요'}</p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          {isMagazine
-            ? '커버 이미지와 기본 정보를 입력하고 매거진 첫 페이지를 완성하세요.'
-            : '기본 정보를 입력하고 첫인상을 결정하는 인트로를 디자인해주세요.'}
-        </p>
-      </div>
-
       {/* 2. 신랑신부 기본정보 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">
@@ -374,15 +364,10 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         <h3 className="text-base font-semibold text-gray-900">
           결혼식 정보
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인트로 페이지, 오시는 길 안내, 카카오톡 공유 설정시 사용됩니다.</p>
-
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
           {/* 날짜·시간 표시 토글 (노웨딩) */}
           <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-sm font-medium">날짜 · 시간 표시</Label>
-              <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>노웨딩 등 날짜를 알리지 않을 땐 꺼주세요</p>
-            </div>
+            <Label className="text-sm font-medium">날짜 · 시간 표시</Label>
             <Switch checked={invitation.wedding.showDate !== false} onCheckedChange={(c) => updateNestedField('wedding.showDate', c)} />
           </div>
           {/* 날짜/시간 */}
@@ -425,10 +410,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
 
           {/* 장소·오시는길 표시 토글 (노웨딩) */}
           <div className="flex items-center justify-between pt-1">
-            <div>
-              <Label className="text-sm font-medium">장소 · 오시는 길 표시</Label>
-              <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>예식장이 정해지지 않았거나 알리지 않을 땐 꺼주세요</p>
-            </div>
+            <Label className="text-sm font-medium">장소 · 오시는 길 표시</Label>
             <Switch checked={invitation.wedding.showVenue !== false} onCheckedChange={(c) => updateNestedField('wedding.showVenue', c)} />
           </div>
           {/* 예식장 정보 */}
@@ -492,8 +474,6 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         <h3 className="text-base font-semibold text-gray-900">
           인트로 스타일
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>커버 이미지, 애니메이션 효과, 텍스트를 한 곳에서 설정하세요</p>
-
         {/* 미리보기 썸네일 */}
         {media.coverImage && (
           <div className="relative w-full max-w-[160px] aspect-[9/16] mx-auto rounded-lg overflow-hidden shadow-md">
@@ -529,7 +509,6 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         <h3 className="text-base font-semibold text-gray-900">
           커버 이미지
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>매거진 표지에 사용할 사진을 선택하세요</p>
         <button
           onClick={handleOpenIntroSelector}
           className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -583,8 +562,6 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             </button>
           )}
         </div>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인트로에 표시될 명언이나 슬로건을 입력해주세요. (선택)</p>
-
         <div className="p-4 bg-gray-50 rounded-lg space-y-3">
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">문구</Label>
@@ -647,28 +624,6 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             </button>
           )}
         </div>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>초안을 작성하거나, 샘플을 참고하여 직접 작성해보세요.</p>
-
-        {/* TIP 섹션 */}
-        <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-          <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>두 분이 왜 이 선택을 했는지, 시작의 마음을 담아 적어보세요.</p>
-          <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
-            <summary className="cursor-pointer font-medium" style={{ color: 'var(--ed-text)' }}>가이드 보기</summary>
-            <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
-              <p className="font-medium" style={{ color: 'var(--ed-text)' }}>이렇게 작성해 보세요</p>
-              <ul className="space-y-1 list-disc list-inside">
-                <li>한 문장의 인용구나 두 분의 말로 시작해요</li>
-                <li>'왜 결혼하는지', 지금의 마음만 담아주세요</li>
-                <li>부탁보다는 초대의 톤이 좋아요</li>
-              </ul>
-              <div className="p-2 rounded italic" style={{ background: 'var(--ed-surface)', color: 'var(--ed-text-muted)' }}>
-                예시) "서로 다른 길을 걸어온 두 사람이<br/>이제 같은 길을 함께 걸어가려 합니다."
-              </div>
-              <p style={{ color: 'var(--ed-text-muted)' }}>완벽한 글보다 두 분의 말투가 느껴지는 글이면 충분합니다.</p>
-            </div>
-          </details>
-        </div>
-
         {/* 초안 작성 버튼 */}
         <button
           onClick={openGreetingModal}
@@ -704,8 +659,6 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         <h3 className="text-base font-semibold text-gray-900">
           부모님 정보
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인트로에 표시될 부모님 성함을 입력해주세요.</p>
-
         {/* 청첩장 본문 표시 토글 */}
         <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'var(--ed-surface-2)' }}>
           <span className="text-xs" style={{ color: 'var(--ed-text)' }}>청첩장에 표시</span>
@@ -843,16 +796,11 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         <h3 className="text-base font-semibold text-gray-900">
           카카오톡 공유 설정
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          카카오톡으로 공유할 때 표시되는 정보를 설정해주세요.
-        </p>
-
         {/* 경고 문구 */}
         <div className="p-3 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
           <p className="text-xs mb-2 flex gap-1.5" style={{ color: 'var(--ed-text-muted)' }}>
             <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" strokeWidth={1.75} />
-            <span><strong>중요:</strong> 카카오톡 공유 정보는 한번 공유된 후 변경하면 캐시로 인해
-            반영되기까지 시간이 오래 걸릴 수 있습니다. 신중하게 설정해주세요.</span>
+            <span><strong>중요:</strong> 한번 공유된 후 변경하면 캐시로 인해 반영이 늦어질 수 있습니다.</span>
           </p>
           <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
             <summary className="cursor-pointer font-medium" style={{ color: 'var(--ed-text)' }}>이미지 변경하기 (펼쳐보기)</summary>
@@ -983,7 +931,6 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
               onChange={(e) => updateNestedField('meta.title', e.target.value)}
               placeholder={`${invitation.groom.name || '신랑'} ♥ ${invitation.bride.name || '신부'} 결혼합니다`}
             />
-            <p className="text-xs text-gray-400">비워두면 자동 생성됩니다.</p>
           </div>
 
           {/* 공유 설명 */}
@@ -996,7 +943,6 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
               rows={2}
               className="resize-none"
             />
-            <p className="text-xs text-gray-400">비워두면 날짜, 시간, 장소가 자동으로 표시됩니다.</p>
           </div>
         </div>
       </section>
@@ -1008,8 +954,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         </h3>
         <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
           <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)<br />
-          카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.<br />
-          카카오톡 썸네일과 다른 이미지를 사용하면 플랫폼별로 다른 미리보기를 보여줄 수 있어요.
+          문자·인스타그램·페이스북 등 카카오톡 외 공유 시 표시됩니다.
         </p>
 
         <div className="space-y-3">
@@ -1123,7 +1068,6 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
       <section className="space-y-4">
         <div>
           <h3 className="text-sm font-semibold text-gray-900">D-Day 팝업</h3>
-          <p className="text-xs text-gray-500 mt-0.5">결혼식 당일 안내 팝업을 설정합니다</p>
         </div>
         <DdayPopupEditor
           value={invitation.ddayPopup || DEFAULT_DDAY_POPUP}

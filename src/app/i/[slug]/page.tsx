@@ -10,11 +10,13 @@ import InvitationClientExhibit from "./InvitationClientExhibit";
 import InvitationClientEssay from "./InvitationClientEssay";
 import InvitationClientThankYou from "./InvitationClientThankYou";
 import InvitationClientTheSimple from "./InvitationClientTheSimple";
+import InvitationClientPhone from "./InvitationClientPhone";
 import InvitationClientClassic from "./InvitationClientClassic";
 import type { Invitation } from "@/types/invitation";
 import type { Viewport } from "next";
 import { isUUID } from "@/lib/slug";
 import { createSampleInvitation, ourSampleContent, familySampleContent, theSimpleSampleContent, classicSampleContent, filmTicketSamplePhoto } from "@/lib/sample-data";
+
 import GuestShareFab from "./GuestShareFab";
 import { getCoupleGuestShareByUser } from "@/lib/postDrawer";
 import { isPublicViewClosed } from "@/lib/weddingLifecycle";
@@ -41,23 +43,25 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const isPreview = preview === 'true';
   const shouldSkipIntro = skipIntro === 'true';
 
-  let invitation = null;
+  let invitation: Awaited<ReturnType<typeof getInvitationById>> | ReturnType<typeof createSampleInvitation> | null = null;
   let isSampleInvitation = false;
 
   // 샘플 청첩장 처리
-  const sampleSlugs = ['sample-our', 'sample-family', 'sample-magazine', 'sample-classic', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book', 'sample-the-simple'];
+  const sampleSlugs = ['sample-our', 'sample-family', 'sample-magazine', 'sample-classic', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book', 'sample-essay-modern', 'sample-the-simple', 'sample-phone'];
   if (sampleSlugs.includes(slug)) {
-    let sampleType: 'our' | 'family' | 'magazine' | 'classic' | 'film' | 'record' | 'exhibit' | 'essay' | 'the-simple' = 'our';
+    let sampleType: 'our' | 'family' | 'magazine' | 'classic' | 'film' | 'record' | 'exhibit' | 'essay' | 'the-simple' | 'phone' = 'our';
     if (slug === 'sample-the-simple') sampleType = 'the-simple';
+    else if (slug === 'sample-phone') sampleType = 'phone';
     else if (slug === 'sample-classic') sampleType = 'classic';
-    else if (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book') sampleType = 'essay';
+    else if (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book' || slug === 'sample-essay-modern') sampleType = 'essay';
     else if (slug === 'sample-exhibit' || slug === 'sample-feed') sampleType = 'exhibit';
     else if (slug === 'sample-record') sampleType = 'record';
     else if (slug === 'sample-film') sampleType = 'film';
     else if (slug === 'sample-magazine') sampleType = 'magazine';
     else if (slug === 'sample-family') sampleType = 'family';
 
-    const essayConcept = slug === 'sample-essay-paper' ? 'paper' : slug === 'sample-essay-book' ? 'book' : undefined;
+    const essayConcept = slug === 'sample-essay-paper' ? 'paper' : slug === 'sample-essay-book' ? 'book' : slug === 'sample-essay-modern' ? 'modern' : undefined;
+    // THE PHONE 샘플 — 에디터에서 꾸민 샘플 청첩장을 그대로 보여 줌 (없으면 내장 샘플)
     invitation = createSampleInvitation(sampleType, essayConcept);
     isSampleInvitation = true;
   }
@@ -161,6 +165,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const isEssay = invitation.template_id === 'narrative-essay';
   const isThankYou = invitation.template_id === 'narrative-thankyou';
   const isTheSimple = invitation.template_id === 'narrative-the-simple';
+  const isPhone = invitation.template_id === 'narrative-phone';
   const isClassic = invitation.template_id === 'narrative-classic';
 
   // 샘플 청첩장만: ?intro= 로 인트로를 바꿔 본다 (/templates 미리보기용 · 실제 고객 청첩장에서는 무시)
@@ -222,8 +227,22 @@ export default async function InvitationPage({ params, searchParams }: PageProps
     );
   }
 
+  // THE PHONE — 사진 공유는 떠 있는 버튼 대신 잠금화면 오른쪽 아래 카메라 버튼으로
+  if (isPhone) {
+    return (
+      <InvitationClientPhone
+        invitation={invitation}
+        content={invitationContent}
+        isPaid={isPaid}
+        isPreview={isPreview}
+        isSample={isSampleInvitation}
+        photoShareHref={guestShareOn ? coupleShareHref : null}
+      />
+    );
+  }
+
   // 템플릿에 따라 적절한 컴포넌트 렌더링
-  const ClientComponent = isClassic ? InvitationClientClassic : isTheSimple ? InvitationClientTheSimple : isEssay ? InvitationClientEssay : isExhibit ? InvitationClientExhibit : isRecord ? InvitationClientRecord : isFilm ? InvitationClientFilm : isMagazine ? InvitationClientMagazine : isFamily ? InvitationClientFamily : InvitationClient;
+  const ClientComponent = isPhone ? InvitationClientPhone : isClassic ? InvitationClientClassic : isTheSimple ? InvitationClientTheSimple : isEssay ? InvitationClientEssay : isExhibit ? InvitationClientExhibit : isRecord ? InvitationClientRecord : isFilm ? InvitationClientFilm : isMagazine ? InvitationClientMagazine : isFamily ? InvitationClientFamily : InvitationClient;
 
   return (
     <>
@@ -290,7 +309,7 @@ export async function generateMetadata({ params }: PageProps) {
   }
 
   // 샘플 청첩장 메타데이터 처리
-  const metaSampleSlugs = ['sample-our', 'sample-family', 'sample-magazine', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book', 'sample-the-simple'];
+  const metaSampleSlugs = ['sample-our', 'sample-family', 'sample-magazine', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book', 'sample-essay-modern', 'sample-the-simple'];
   if (metaSampleSlugs.includes(slug)) {
     // THE SIMPLE은 독자 스키마
     if (slug === 'sample-the-simple') {
@@ -323,7 +342,7 @@ export async function generateMetadata({ params }: PageProps) {
         },
       };
     }
-    const sampleType = (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book') ? 'essay' : (slug === 'sample-exhibit' || slug === 'sample-feed') ? 'exhibit' : slug === 'sample-record' ? 'record' : slug === 'sample-film' ? 'film' : slug === 'sample-magazine' ? 'magazine' : (slug === 'sample-our' || slug === 'sample-classic') ? 'our' : 'family';
+    const sampleType = (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book' || slug === 'sample-essay-modern') ? 'essay' : (slug === 'sample-exhibit' || slug === 'sample-feed') ? 'exhibit' : slug === 'sample-record' ? 'record' : slug === 'sample-film' ? 'film' : slug === 'sample-magazine' ? 'magazine' : (slug === 'sample-our' || slug === 'sample-classic') ? 'our' : 'family';
     const content = sampleType === 'family' ? familySampleContent : ourSampleContent;
     const title = `${content.groom.name} ♥ ${content.bride.name} 결혼합니다`;
     const description = content.content.greeting;
@@ -412,6 +431,7 @@ export async function generateMetadata({ params }: PageProps) {
       rawThumbnailImage =
         (content?.meta?.ogImageCropped as string) ||
         extractImageUrl(content?.meta?.ogImage) ||
+        extractImageUrl(content?.phone?.wallpaper) ||
         extractImageUrl(content?.media?.coverImage) ||
         extractImageUrl(content?.heroImage) ||
         extractImageUrl(content?.mainImage) ||
@@ -431,7 +451,8 @@ export async function generateMetadata({ params }: PageProps) {
 
   // 커스텀 값이 있으면 사용, 없으면 자동 생성
   const isThankYouTemplate = invitation.template_id === 'narrative-thankyou';
-  const isTheSimpleTemplate = invitation.template_id === 'narrative-the-simple';
+  // THE SIMPLE · THE PHONE 은 같은 wedding{date,timeDisplay,venue} 구조라 같은 자동 설명을 쓴다
+  const isTheSimpleTemplate = invitation.template_id === 'narrative-the-simple' || invitation.template_id === 'narrative-phone';
   const title = customTitle || (isThankYouTemplate ? `${groomName} & ${brideName}의 감사 인사` : `${groomName} ♥ ${brideName} 결혼합니다`);
 
   // THE SIMPLE: 날짜/장소 기반 자동 설명

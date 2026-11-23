@@ -93,9 +93,6 @@ export default function ShareSettingsSection({ invitationId }: ShareSettingsSect
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           카카오톡 공유 설정
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          카카오톡으로 공유할 때 표시되는 정보를 설정해주세요.
-        </p>
 
         {/* 경고 문구 */}
         <div className="p-3 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
@@ -155,8 +152,6 @@ export default function ShareSettingsSection({ invitationId }: ShareSettingsSect
                 <span className="text-[9px] text-stone-300">&gt;</span>
               </div>
             </div>
-
-            <p className="text-[10px] text-stone-400 text-center">기기나 앱 버전에 따라 모양이 다를 수 있습니다.</p>
 
             {/* 업로드/교체/삭제 버튼 */}
             {invitation.meta.kakaoThumbnail ? (
@@ -238,7 +233,6 @@ export default function ShareSettingsSection({ invitationId }: ShareSettingsSect
               onChange={(e) => updateNestedField('meta.title', e.target.value)}
               placeholder={`${invitation.groom.name || '신랑'} ♥ ${invitation.bride.name || '신부'} 결혼합니다`}
             />
-            <p className="text-xs text-gray-400">비워두면 자동 생성됩니다.</p>
           </div>
 
           {/* 공유 설명 */}
@@ -251,7 +245,6 @@ export default function ShareSettingsSection({ invitationId }: ShareSettingsSect
               rows={2}
               className="resize-none"
             />
-            <p className="text-xs text-gray-400">비워두면 날짜, 시간, 장소가 자동으로 표시됩니다.</p>
           </div>
         </div>
       </section>
@@ -264,7 +257,7 @@ export default function ShareSettingsSection({ invitationId }: ShareSettingsSect
         <div>
           <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
             <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)<br />
-            카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.
+            카카오톡 외 플랫폼(문자, 인스타그램, 페이스북 등) 공유용 이미지입니다.
           </p>
         </div>
 

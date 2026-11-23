@@ -2,18 +2,17 @@
 
 import { createContext, useContext } from 'react'
 import { COLOR_THEMES, type ColorTheme, type ColorThemeId } from './types'
+import { C_BG, C_INK, C_SUB, sectionTone } from './cStyle'
 
-const ThemeContext = createContext<ColorTheme>(COLOR_THEMES.burgundy)
+// C안: 저장된 테마/색 데이터는 그대로 두고, 화면은 흰 바탕 · 먹색 글씨로 통일.
+// 고객이 메인 컬러를 직접 고른 경우(customPrimary)에만 작은 포인트(point)로 사용한다.
+const DEFAULT_THEME: ColorTheme = { ...COLOR_THEMES.burgundy, background: C_BG, text: C_INK, textLight: C_SUB, point: C_INK }
+
+const ThemeContext = createContext<ColorTheme>(DEFAULT_THEME)
 
 export function ThemeProvider({
   themeId,
   customPrimary,
-  customAccent,
-  customBackground,
-  customText,
-  customCardText,
-  tintedBg,
-  tintedColor,
   children,
 }: {
   themeId: ColorThemeId
@@ -26,18 +25,18 @@ export function ThemeProvider({
   tintedColor?: string
   children: React.ReactNode
 }) {
+  // 호환용으로 props는 모두 받지만, 배경 · 글씨색 · 틴트는 C안 기준으로 고정
   const baseTheme = COLOR_THEMES[themeId] || COLOR_THEMES.burgundy
-  const theme = {
+  const theme: ColorTheme = {
     ...baseTheme,
     ...(customPrimary && { primary: customPrimary }),
-    ...(customAccent && { accent: customAccent }),
-    ...(customBackground && { background: customBackground }),
-    ...(customText && { text: customText, textLight: customText }),
-    // 틴트는 섹션별(SectionTint)로만 적용. 전역 배경은 유지(흰/기본)하고 플래그만 전달
-    tintedBg: !!tintedBg,
-    // 흰 카드 위 텍스트: 배경 텍스트와 독립 (미지정 시 진한 기본색)
-    cardText: customCardText || baseTheme.text,
-    cardTextLight: customCardText || baseTheme.textLight,
+    background: C_BG,
+    text: C_INK,
+    textLight: C_SUB,
+    tintedBg: false,
+    cardText: C_INK,
+    cardTextLight: C_SUB,
+    point: customPrimary || C_INK,  // 고른 색 그대로
   }
   return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>
 }
@@ -46,27 +45,18 @@ export function useTheme() {
   return useContext(ThemeContext)
 }
 
-/** 섹션 단위로 틴트 배경 on/off를 오버라이드 (전역 틴트 + 섹션별 제외용) */
+/** 섹션 배경 — 고른 섹션만 틴티드 배경을 가장자리까지 칠하고, 어두우면 글씨를 밝게 */
 export function SectionTint({
   tinted,
   tintColor,
-  baseBackground,
-  tintedText,
   children,
 }: {
   tinted: boolean
   tintColor?: string
-  baseBackground: string
+  baseBackground?: string
   tintedText?: string
   children: React.ReactNode
 }) {
-  const parent = useContext(ThemeContext)
-  const theme = {
-    ...parent,
-    background: tinted && tintColor ? tintColor : baseBackground,
-    tintedBg: tinted,
-    // 틴트 섹션 위 텍스트 색 (어두운 틴트 가독성용) — 카드 텍스트(cardText)는 영향 없음
-    ...(tinted && tintedText && { text: tintedText, textLight: tintedText }),
-  }
-  return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>
+  if (!tinted || !tintColor) return <>{children}</>
+  return <div style={sectionTone(tintColor)}>{children}</div>
 }

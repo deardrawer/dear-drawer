@@ -7,11 +7,6 @@ export default function ThankYouStep2Info() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* 안내 */}
-      <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>감사장에 표시될 이름, 날짜, 인사말을 입력해주세요.</p>
-      </div>
-
       {/* 이름 */}
       <div>
         <label className="block text-sm font-medium text-[#2C2824] mb-2">
@@ -37,7 +32,6 @@ export default function ThankYouStep2Info() {
           placeholder="예: 2026. 03. 14"
           className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A37E69] focus:ring-1 focus:ring-[#A37E69]/20 transition-colors"
         />
-        <p className="text-xs text-gray-400 mt-1.5">인트로 화면에 표시되는 날짜입니다</p>
       </div>
 
       {/* 히어로 메시지 */}
@@ -50,15 +44,6 @@ export default function ThankYouStep2Info() {
           rows={2}
           className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A37E69] focus:ring-1 focus:ring-[#A37E69]/20 transition-colors resize-none"
         />
-        <p className="text-xs text-gray-400 mt-1.5">첫 화면에 크게 표시되는 감사 메시지입니다</p>
-      </div>
-
-      {/* 미리보기 안내 */}
-      <div className="p-4 bg-gray-50 rounded-xl">
-        <p className="text-xs text-gray-500 leading-relaxed">
-          입력한 정보는 감사장 인트로 화면에 표시됩니다.
-          <br />스크롤하면 "Thank You" &rarr; 이름 &rarr; 히어로 메시지 &rarr; 날짜 순서로 나타납니다.
-        </p>
       </div>
     </div>
   )

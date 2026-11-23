@@ -186,11 +186,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
 
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 — 보조 텍스트 한 줄 */}
-      <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-        청첩장의 폰트, 색상, 배경음악을 설정해주세요.
-      </p>
-
       {/* 폰트 스타일 - Film/Record/Magazine은 영문/한글 분리 */}
       {(isFilm || isRecord || isMagazine) ? (
         <>
@@ -199,7 +194,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
               영문 제목 폰트
             </h3>
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>섹션 제목 등 영문 텍스트에 적용됩니다.</p>
 
             <div className="grid grid-cols-1 gap-2">
               {DISPLAY_FONTS.filter(font => !('filmOnly' in font && font.filmOnly) || isFilm).map((font) => {
@@ -237,7 +231,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
               한글 본문 폰트
             </h3>
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인사말, 본문 등 한글 텍스트에 적용됩니다.</p>
 
             <div className="grid grid-cols-1 gap-2">
               {FONT_STYLES.map((font) => {
@@ -352,11 +345,10 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
               글자크기
             </h3>
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>항목별로 글자 크기를 조절해요.</p>
 
-            {isOur && ScaleSlider({ field: 'titleFontScale', label: '제목 · 헤더 크기', desc: '섹션 제목 · 인터뷰 질문 · 스토리 제목 · 라벨 크기를 조절해요.' })}
-            {ScaleSlider({ field: 'bodyFontScale', label: '본문 크기', desc: '인사말 · 소개 · 스토리 · 인터뷰 · 감사인사 · 안내 본문 크기를 조절해요.' })}
-            {isOur && ScaleSlider({ field: 'infoFontScale', label: '이름 · 날짜 · 정보 크기', desc: '예식 날짜 · 시간 · 장소 · 부모님/프로필 이름 크기를 조절해요.' })}
+            {isOur && ScaleSlider({ field: 'titleFontScale', label: '제목 · 헤더 크기', desc: '섹션 제목 · 인터뷰 질문 · 스토리 제목 · 라벨' })}
+            {ScaleSlider({ field: 'bodyFontScale', label: '본문 크기', desc: '인사말 · 소개 · 스토리 · 인터뷰 · 감사인사 · 안내 본문' })}
+            {isOur && ScaleSlider({ field: 'infoFontScale', label: '이름 · 날짜 · 정보 크기', desc: '예식 날짜 · 시간 · 장소 · 부모님/프로필 이름' })}
           </section>
         )
       })()}
@@ -369,7 +361,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
               테마 선택
             </h3>
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>레코드 앨범에 어울리는 테마를 선택하세요</p>
 
             <div className="grid grid-cols-3 gap-3">
               {([
@@ -417,7 +408,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
               포인트 컬러
             </h3>
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>제목, 구분선, 섹션 라벨에 사용될 포인트 색상을 선택하세요</p>
 
             <div className="flex flex-wrap gap-3 items-center">
               {ACCENT_PRESETS.map((preset) => (
@@ -472,7 +462,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                   <>
                     <div>
                       <h4 className="text-sm font-semibold text-gray-800">글자 색상 설정 (커스텀 시)</h4>
-                      <p className="text-xs text-gray-500 mt-0.5">인트로 → 배경·본문 → 카드 순서로 위계에 맞춰 설정하세요. 오른쪽 미리보기로 확인할 수 있어요.</p>
                     </div>
 
                     {/* 1. 인트로 */}
@@ -483,14 +472,14 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                       </div>
                       <div className="p-3 space-y-3">
                         <div className="flex items-center justify-between gap-3">
-                          <div><p className="text-sm text-gray-700">인트로 배경색</p><p className="text-xs text-gray-500">커버 배경 컬러</p></div>
+                          <div><p className="text-sm text-gray-700">인트로 배경색</p></div>
                           <div className="flex items-center gap-2">
                             {(invitation as any).coverBgColor && (<button onClick={() => updateField('coverBgColor' as any, undefined as unknown as string)} className="text-[10px] text-gray-400 underline">기본값</button>)}
                             <ColorField label="인트로 배경색" value={cCoverBg} onChange={(hex) => updateField('coverBgColor' as any, hex)} />
                           </div>
                         </div>
                         <div className="flex items-center justify-between gap-3">
-                          <div><p className="text-sm text-gray-700">인트로 글자색</p><p className="text-xs text-gray-500">커버 위 텍스트</p></div>
+                          <div><p className="text-sm text-gray-700">인트로 글자색</p></div>
                           <div className="flex items-center gap-2">
                             {(invitation as any).coverTextColor && (<button onClick={() => updateField('coverTextColor' as any, undefined as unknown as string)} className="text-[10px] text-gray-400 underline">기본값</button>)}
                             <ColorField label="인트로 글자색" value={cCoverText} onChange={(hex) => updateField('coverTextColor' as any, hex)} />
@@ -507,11 +496,11 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                       </div>
                       <div className="p-3 space-y-3">
                         <div className="flex items-center justify-between gap-3">
-                          <div><p className="text-sm text-gray-700">배경 색상</p><p className="text-xs text-gray-500">페이지 전체 배경</p></div>
+                          <div><p className="text-sm text-gray-700">배경 색상</p></div>
                           <ColorField label="배경색" value={cBg} onChange={(hex) => updateField('customBgColor' as any, hex)} />
                         </div>
                         <div className="flex items-center justify-between gap-3">
-                          <div><p className="text-sm text-gray-700">본문 색상</p><p className="text-xs text-gray-500">카드 밖 전체 글자색</p></div>
+                          <div><p className="text-sm text-gray-700">본문 색상</p></div>
                           <ColorField label="본문 색상" value={cBody} onChange={(hex) => updateField('bodyTextColor', hex)} />
                         </div>
                       </div>
@@ -530,15 +519,15 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                       </div>
                       <div className="p-3 space-y-3">
                         <div className="flex items-center justify-between gap-3">
-                          <div><p className="text-sm text-gray-700">카드 배경색</p><p className="text-xs text-gray-500">RSVP · 방명록 등 카드 배경</p></div>
+                          <div><p className="text-sm text-gray-700">카드 배경색</p></div>
                           <ColorField label="카드 색상" value={cCard} onChange={(hex) => updateField('cardColor', hex)} />
                         </div>
                         <div className="flex items-center justify-between gap-3">
-                          <div><p className="text-sm text-gray-700">카드 본문색</p><p className="text-xs text-gray-500">카드 안 글자색</p></div>
+                          <div><p className="text-sm text-gray-700">카드 본문색</p></div>
                           <ColorField label="카드 본문 색상" value={cCardBody} onChange={(hex) => updateField('cardBodyColor', hex)} />
                         </div>
                         <div className="flex items-center justify-between gap-3">
-                          <div><p className="text-sm text-gray-700">카드 제목·재생색</p><p className="text-xs text-gray-500">카드/섹션 제목 · 중앙 재생 버튼</p></div>
+                          <div><p className="text-sm text-gray-700">카드 제목·재생색</p></div>
                           <ColorField label="카드 포인트색" value={cCardAccent} onChange={(hex) => updateField('cardAccentColor', hex)} />
                         </div>
                       </div>
@@ -556,7 +545,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
               테마 선택
             </h3>
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>영화 분위기에 맞는 테마를 선택하세요</p>
 
             <div className="grid grid-cols-2 gap-3">
               {/* 다크 */}
@@ -615,7 +603,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
               포인트 컬러
             </h3>
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인트로 바, 챕터 라벨 등에 사용될 포인트 색상을 선택하세요</p>
 
             <div className="flex flex-wrap gap-3 items-center">
               {ACCENT_PRESETS.map((preset) => (
@@ -665,7 +652,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-700">기본 배경</p>
-                    <p className="text-xs text-gray-500">흰색 섹션·인사말 배경 컬러</p>
                   </div>
                   <ColorField label="기본 배경" value={(invitation as any).customBaseColor || '#FFFFFF'} onChange={(hex) => updateField('customBaseColor' as any, hex)} />
                 </div>
@@ -673,7 +659,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-700">틴티드 배경</p>
-                    <p className="text-xs text-gray-500">틴티드 섹션 배경 컬러</p>
                   </div>
                   <ColorField label="틴티드 배경" value={(invitation as any).customBgColor || '#F8F6F3'} onChange={(hex) => updateField('customBgColor' as any, hex)} />
                 </div>
@@ -732,13 +717,11 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <h4 className="text-sm font-medium text-gray-800 flex items-center gap-2">
               커스텀 테마 색상
             </h4>
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>각 색상을 자유롭게 설정하여 나만의 테마를 만들어보세요</p>
 
             {/* 메인 컬러 */}
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-700">메인 컬러</p>
-                <p className="text-xs text-gray-500">포인트, 버튼, 강조 요소</p>
               </div>
               <ColorField label="메인 컬러" value={(invitation as any).customAccentColor || '#C41050'} onChange={(hex) => updateField('customAccentColor' as any, hex)} />
             </div>
@@ -747,7 +730,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-700">전체 배경</p>
-                <p className="text-xs text-gray-500">페이지 배경 컬러</p>
               </div>
               <ColorField label="전체 배경" value={(invitation as any).customBgColor || '#FFFFFF'} onChange={(hex) => updateField('customBgColor' as any, hex)} />
             </div>
@@ -756,7 +738,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-700">섹션 배경</p>
-                <p className="text-xs text-gray-500">구분 섹션 배경 컬러</p>
               </div>
               <ColorField label="섹션 배경" value={(invitation as any).customSectionBgColor || '#F5F5F5'} onChange={(hex) => updateField('customSectionBgColor' as any, hex)} />
             </div>
@@ -765,7 +746,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-700">구분선</p>
-                <p className="text-xs text-gray-500">섹션 사이 구분선 컬러</p>
               </div>
               <ColorField label="구분선" value={(invitation as any).customDividerColor || '#E0E0E0'} onChange={(hex) => updateField('customDividerColor' as any, hex)} />
             </div>
@@ -810,7 +790,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <div className="mt-5 space-y-3">
               <div>
                 <h4 className="text-sm font-medium text-gray-800">배경 재질</h4>
-                <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>배경색 위에 종이 결을 은은하게 깔아요. 사진에는 들어가지 않아요</p>
               </div>
               <div className="grid grid-cols-4 gap-2">
                 {BG_TEXTURES.map((t) => {
@@ -853,7 +832,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <h4 className="text-sm font-medium text-gray-800 flex items-center gap-2">
               커스텀 색상 설정
             </h4>
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>포인트 컬러, 배경, 텍스트 색상을 자유롭게 커스텀할 수 있습니다</p>
 
             <div className="flex flex-wrap gap-3 items-center">
               {ACCENT_PRESETS.map((preset) => (
@@ -906,7 +884,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-700">섹션 배경 포인트색</p>
-                <p className="text-xs text-gray-500">섹션(틴티드) 배경 위 제목·구분선 색</p>
               </div>
               <ColorField label="섹션 배경 포인트색" value={(invitation as any).sectionAccentColor || currentMagazineAccent} onChange={(hex) => updateField('sectionAccentColor' as any, hex)} />
             </div>
@@ -920,14 +897,12 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-700">전체 배경</p>
-                <p className="text-xs text-gray-500">전체 배경 컬러</p>
               </div>
               <ColorField label="전체 배경" value={(invitation as any).customBgColor || '#FFFFFF'} onChange={(hex) => updateField('customBgColor' as any, hex)} />
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-700">섹션 배경</p>
-                <p className="text-xs text-gray-500">구분 섹션 배경 컬러</p>
               </div>
               <ColorField label="섹션 배경" value={(invitation as any).customSectionBgColor || '#F5F5F5'} onChange={(hex) => updateField('customSectionBgColor' as any, hex)} />
             </div>
@@ -954,15 +929,13 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
         <div className="mt-4 p-4 bg-gray-50 rounded-xl space-y-4">
           <h4 className="text-sm font-medium text-gray-800">텍스트 색상 설정</h4>
           <p className="text-[11px] text-gray-400 leading-relaxed">
-            본문 입력 후 텍스트 색상을 조절하시는 것을 권장드립니다.<br />
-            샘플 글씨는 실제 적용 색상이 아닌 미리보기용으로 연하게 표시됩니다.
+            샘플 글씨는 실제 색상이 아닌 미리보기용으로 연하게 표시됩니다.
           </p>
 
           {/* 본문 텍스트 색상 */}
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-700">{isMagazine ? '전체 배경 텍스트' : '본문 색상'}</p>
-              <p className="text-xs text-gray-500">{isMagazine ? '메인 배경 위 글자색' : '청첩장 전체 글자색'}</p>
             </div>
             <ColorField label="본문 색상" value={currentBodyColor} onChange={(hex) => updateField('bodyTextColor', hex)} />
           </div>
@@ -972,7 +945,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-700">섹션 배경 텍스트</p>
-                <p className="text-xs text-gray-500">섹션 배경 위 글자색</p>
               </div>
               <ColorField label="섹션 배경 텍스트" value={(invitation as any).sectionTextColor || currentBodyColor} onChange={(hex) => updateField('sectionTextColor' as any, hex)} />
             </div>
@@ -983,7 +955,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-700">버튼 색상</p>
-                <p className="text-xs text-gray-500">버튼 색상 (미지정 시 포인트색)</p>
               </div>
               <ColorField label="버튼 색상" value={(invitation as any).buttonBgColor || (invitation as any).customAccentColor || '#333333'} onChange={(hex) => updateField('buttonBgColor' as any, hex)} />
             </div>
@@ -992,7 +963,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-700">버튼 글자색</p>
-                <p className="text-xs text-gray-500">버튼 위 글자색</p>
               </div>
               <ColorField label="버튼 글자색" value={(invitation as any).buttonTextColor || '#FFFFFF'} onChange={(hex) => updateField('buttonTextColor' as any, hex)} />
             </div>
@@ -1004,7 +974,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-700">강조 색상</p>
-                  <p className="text-xs text-gray-500">강조 표시한 텍스트에 적용되는 색상</p>
                 </div>
                 <ColorField label="강조 색상" value={currentAccentColor} onChange={(hex) => updateField('accentTextColor', hex)} />
               </div>
@@ -1064,12 +1033,9 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             onCheckedChange={(checked) => updateNestedField('bgm.enabled', checked)}
           />
         </div>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          스토리에 어울리는 배경음악을 선택해주세요.<br />
-          <span className="inline-flex items-center gap-1" style={{ color: 'var(--ed-text-muted)' }}>
-            <AlertTriangle className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} />
-            브라우저 정책에 따라 자동재생 기능이 동작하지 않을 수 있습니다.
-          </span>
+        <p className="text-sm flex items-center gap-1" style={{ color: 'var(--ed-text-muted)' }}>
+          <AlertTriangle className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} />
+          브라우저 정책에 따라 자동재생이 동작하지 않을 수 있습니다.
         </p>
 
         {(bgm?.enabled || bgm?.url) && (
@@ -1182,8 +1148,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-xs text-red-700">
                 <strong>저작권 안내</strong><br />
-                저작권이 있는 음악을 업로드할 경우 발생하는 모든 법적 책임은 사용자에게 있습니다.
-                저작권에 위배되지 않는 MP3 파일만 업로드해주세요.
+                저작권이 있는 음악 업로드로 발생하는 모든 법적 책임은 사용자에게 있습니다.
               </p>
             </div>
 
@@ -1194,7 +1159,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                 onCheckedChange={(checked) => updateNestedField('bgm.autoplay', checked)}
               />
               <span className="text-sm text-gray-700">자동 재생</span>
-              <span className="text-xs text-gray-400 ml-auto">모바일에서 자동재생</span>
             </div>
 
             {/* 음악 안내 표시 */}
@@ -1205,7 +1169,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
               />
               <div className="flex-1">
                 <span className="text-sm text-gray-700">음악 안내 표시</span>
-                <p className="text-xs text-gray-400">자동재생이 안 될 때 음악 버튼에 펄스 효과와 안내 문구를 표시합니다</p>
+                <p className="text-xs text-gray-400">자동재생이 안 될 때 음악 버튼에 표시됩니다.</p>
               </div>
             </div>
 
@@ -1221,7 +1185,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                   maxLength={30}
                   className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[color:var(--ed-accent)]"
                 />
-                <p className="text-xs text-gray-400">비워두면 기본 문구가 표시됩니다</p>
               </div>
             )}
 
@@ -1264,7 +1227,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                     메인
                   </button>
                 </div>
-                <p className="text-xs text-gray-400">커버/초대장/메인 페이지 중 음악 시작 시점을 선택하세요</p>
               </div>
             )}
           </div>

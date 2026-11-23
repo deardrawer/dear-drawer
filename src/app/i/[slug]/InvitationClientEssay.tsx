@@ -12,10 +12,11 @@ import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 import { parseDateOnly } from '@/lib/dateOnly'
+import EssayModernBook, { modernContacts, modernAccounts } from './EssayModernBook'
 
 // ===== Types =====
 type EssayColorTheme = 'essay-ivory' | 'essay-blush' | 'essay-sage' | 'essay-mono' | 'essay-sky' | 'essay-coral'
-type DesignConcept = 'default' | 'paper' | 'book'
+type DesignConcept = 'default' | 'paper' | 'book' | 'modern'
 type EssayFontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo' | 'dandi'
 interface EssayFontConfig { display: string; displayKr: string; body: string }
 
@@ -2192,6 +2193,12 @@ const bookColorsByTheme: Record<string, BookColorConfig> = {
   },
 }
 const bookColorsIvory = bookColorsByTheme['essay-ivory']
+// 모던 북 컨셉의 공유·연락 모달 색 (흰 종이 + 남색)
+const modernModalColors: BookColorConfig = {
+  bg: '#FFFFFF', pageBg: '#FFFFFF', text: '#262626', heading: '#141414',
+  muted: '#9B9B9B', accent: '#22409A', divider: '#E7E7E7', highlight: '#EEF1F8',
+  toolbar: '#FFFFFF', toolbarText: '#5E5E5E', progressBg: '#E7E7E7', progressFill: '#22409A',
+}
 
 // INFO 영역 컬러 (쿨톤 전환)
 interface BookInfoColorConfig {
@@ -5040,7 +5047,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
   const contentMode = data.contentMode || 'story'
   const concept = (data.designConcept || 'default') as DesignConcept
   // 표지 사진 먼저 받기(우선순위 high) — 기본·책 컨셉의 사진 표지만 (종이 컨셉·엠보스 표지는 사진 없음)
-  if (concept !== 'paper' && (data.design?.coverDesign || 'full') !== 'emboss') preloadOpeningImage(data.media?.coverImage)
+  if (concept === 'modern' || (concept !== 'paper' && (data.design?.coverDesign || 'full') !== 'emboss')) preloadOpeningImage(data.media?.coverImage)
 
   // Font style
   const fontStyleKey = (data.fontStyle && data.fontStyle in essayFontStyles) ? data.fontStyle as EssayFontStyle : 'modern'
@@ -5123,6 +5130,62 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
   const customHighlightStyle = data.highlightColor ? { '--custom-highlight-color': data.highlightColor } as React.CSSProperties : {}
 
   const allCSS = [fontOverrideCSS, fontSizeCSS, lineHeightCSS].filter(Boolean).join('\n')
+
+  // Modern book concept - 흰 종이·남색 포인트의 모던 북 (한 화면 = 한 페이지)
+  if (concept === 'modern') {
+    return (
+      <>
+        {allCSS && <style>{allCSS}</style>}
+        <style>{`
+          @media (min-width: 640px) {
+            .essay-modern-wrapper .fixed.top-4.right-4 { right: calc(50% - 215px + 16px) !important; }
+          }
+        `}</style>
+        <div className="essay-modern-wrapper">
+          {!isPaid && !isPreview && (
+            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 16px', backgroundColor: 'rgba(0,0,0,0.9)' }}>
+              <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: '13px', fontWeight: 500 }}>결제 후 워터마크가 제거됩니다</span>
+            </div>
+          )}
+          <div className="essay-font-container" style={{ wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>
+            <EssayModernBook
+              data={data}
+              invitationId={invitationId}
+              isSample={isSample}
+              hasBgm={!!hasBgm}
+              bodyFont={fontStyleKey !== 'modern' ? fonts.body : undefined}
+              renderModal={(type, setType, close) => (
+                <BookFullscreenModal
+                  type={type}
+                  onChangeType={setType}
+                  onClose={close}
+                  data={data}
+                  invitationId={invitationId}
+                  contacts={modernContacts(data)}
+                  accounts={modernAccounts(data)}
+                  bookColors={modernModalColors}
+                />
+              )}
+              renderGallery={(images, start, close) => (
+                <EssayGalleryViewer images={images} startIndex={start} onClose={close} zoomEnabled={data.gallery?.zoomEnabled === true} portal />
+              )}
+            />
+          </div>
+          {hasBgm && <audio ref={audioRef} loop preload="none"><source src={bgm.url} type="audio/mpeg" /></audio>}
+          {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} showNotification={bgm.showNotification} notificationText={bgm.notificationText} />}
+        </div>
+        {showDdayPopup && ddayPopup?.enabled && data.wedding?.showDate !== false && (
+          <DdayPopupOverlay
+            data={ddayPopup}
+            weddingDate={data.wedding?.date}
+            onDismiss={() => setShowDdayPopup(false)}
+            pointColor="#22409A"
+            fontFamily={resolveKoreanFontFamily(data.fontStyle)}
+          />
+        )}
+      </>
+    )
+  }
 
   // Book concept - e-book reader style
   if (concept === 'book') {

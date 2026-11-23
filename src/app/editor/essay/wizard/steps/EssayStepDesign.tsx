@@ -134,18 +134,63 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
     <div className="p-6 space-y-8">
       {/* 안내 */}
       <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>디자인 설정</p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          표지 디자인, 폰트, 색상, 배경음악을 설정해주세요.
-        </p>
+        <p className="text-base font-medium" style={{ color: 'var(--ed-text)' }}>디자인 설정</p>
       </div>
+
+      {/* 디자인 컨셉 */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900">
+          디자인 컨셉
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          {([
+            { id: 'book' as const, name: '책 넘기기', desc: '테마 컬러·표지 디자인을 고르는 기본 북' },
+            { id: 'modern' as const, name: '모던 북', desc: '흰 종이 · 남색 포인트의 에세이집' },
+          ]).map((c) => {
+            const selected = (data.designConcept || 'book') === c.id || (c.id === 'book' && data.designConcept === 'default')
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => updateData({ designConcept: c.id })}
+                className={`relative text-left border rounded-xl overflow-hidden transition-all ${selected ? 'border-black ring-2 ring-black/20' : 'border-gray-200 hover:border-gray-300'}`}
+              >
+                <div className="h-24 flex flex-col justify-between p-3" style={c.id === 'modern' ? { background: '#FFFFFF' } : { background: '#FAF8F3' }}>
+                  {c.id === 'modern' ? (
+                    <>
+                      <span style={{ fontFamily: "'ChosunIlboMyungjo', serif", fontSize: 17, lineHeight: 1.2, color: '#141414' }}>책장<br />사이에서</span>
+                      <span className="flex items-end justify-between">
+                        <span style={{ fontFamily: 'var(--font-instrument-serif), serif', fontSize: 20, lineHeight: 1, color: '#22409A' }}>01</span>
+                        <span className="block w-10 h-8" style={{ background: '#D9DEE8' }} />
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ fontFamily: "'Cinzel', serif", fontSize: 11, letterSpacing: 3, color: '#8B7355' }}>OUR WEDDING</span>
+                      <span style={{ fontSize: 10, color: '#9E9184' }}>OPEN BOOK</span>
+                    </>
+                  )}
+                </div>
+                <div className="px-3 py-2 border-t border-gray-100 bg-white">
+                  <p className="text-sm font-medium text-gray-900">{c.name}</p>
+                  <p className="text-[11px] text-gray-500 leading-snug mt-0.5">{c.desc}</p>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+        {data.designConcept === 'modern' && (
+          <p className="text-xs text-gray-500 leading-relaxed">
+            모던 북은 흰 종이와 남색 포인트로 고정돼요. 아래의 컬러 테마·표지 디자인은 적용되지 않고, 표지 제목은 책 제목으로 쓰여요.
+          </p>
+        )}
+      </section>
 
       {/* 커버 이미지 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">
           커버 이미지
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>에세이 표지에 사용될 이미지를 업로드하세요.</p>
 
         {data.media.coverImage ? (
           <div className="space-y-3">
@@ -208,7 +253,6 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
         <h3 className="text-base font-semibold text-gray-900">
           표지 디자인
         </h3>
-        <p className="text-sm text-gray-500">표지에 적용할 디자인을 선택하세요.</p>
 
         <div className="grid grid-cols-2 gap-3">
           {/* 전면 이미지 */}
@@ -364,9 +408,6 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
         <h3 className="text-base font-semibold text-gray-900">
           폰트 스타일
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          텍스트의 글꼴을 선택해주세요.
-        </p>
 
         <div className="grid grid-cols-1 gap-2">
           {FONT_STYLES.map((font) => {
@@ -407,9 +448,6 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
         <h3 className="text-base font-semibold text-gray-900">
           글자 크기
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          이야기 본문의 글자 크기를 조절합니다.
-        </p>
         <div className="flex items-center gap-3">
           <span className="text-xs text-gray-400 w-6 text-right" style={{ fontSize: '11px' }}>가</span>
           <div className="flex-1 flex items-center gap-1">
@@ -439,9 +477,6 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
         <h3 className="text-base font-semibold text-gray-900">
           행 간격
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          이야기 본문의 줄 간격을 조절합니다.
-        </p>
         <div className="flex items-center gap-3">
           <svg className="w-4 h-4 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 10H3" />
@@ -478,9 +513,6 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
         <h3 className="text-base font-semibold text-gray-900">
           컬러 테마
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          에세이 청첩장의 분위기를 선택해주세요.
-        </p>
 
         <div className="grid grid-cols-3 gap-2">
           {ESSAY_THEMES.map((theme) => {
@@ -535,7 +567,6 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
         {/* 커스텀 테마 색상 선택 */}
         {colorTheme === 'essay-custom' && (
           <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
-            <p className="text-xs text-gray-500 font-medium">직접 색상을 선택해보세요</p>
             {[
               { key: 'pageBg' as const, label: '배경색', desc: '페이지 배경', defaultVal: '#FFFEF9' },
               { key: 'bg' as const, label: '테두리', desc: '툴바·프레임', defaultVal: '#FAF8F3' },
@@ -568,9 +599,6 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
           <h3 className="text-base font-semibold text-gray-900">
             인트로 페이지
           </h3>
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-            인트로 페이지의 배경색과 텍스트 컬러를 설정합니다.
-          </p>
 
           {/* 인트로 배경색 */}
           <div className="space-y-2">
@@ -644,8 +672,7 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
           />
         </div>
         <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          스토리에 어울리는 배경음악을 선택해주세요.<br />
-          브라우저 정책에 따라 자동재생 기능이 동작하지 않을 수 있습니다.
+          브라우저 정책에 따라 자동재생이 동작하지 않을 수 있습니다.
         </p>
 
         {(bgm?.enabled || bgm?.url) && (
@@ -738,7 +765,6 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
               <p className="text-xs text-red-700">
                 <strong>저작권 안내</strong><br />
                 저작권이 있는 음악을 업로드할 경우 발생하는 모든 법적 책임은 사용자에게 있습니다.
-                저작권에 위배되지 않는 MP3 파일만 업로드해주세요.
               </p>
             </div>
 

@@ -21,18 +21,6 @@ interface Status {
   invitations: InvOption[]
 }
 
-const TEMPLATE_LABEL: Record<string, string> = {
-  'narrative-our': 'OUR', 'narrative-parents': '가족', 'narrative-classic': '클래식',
-  'narrative-the-simple': '심플', 'narrative-film': '필름', 'narrative-magazine': '매거진',
-  'narrative-record': '레코드', 'narrative-exhibit': '전시', 'narrative-essay': '에세이',
-  'narrative-feed': '피드', 'narrative-thank-you': '감사',
-}
-function invLabel(o: InvOption): string {
-  const date = o.weddingDate ? o.weddingDate.replace(/-/g, '.') : '날짜 미정'
-  const tpl = (o.templateId && TEMPLATE_LABEL[o.templateId]) || o.templateId || ''
-  const names = [o.groomName, o.brideName].filter(Boolean).join('·')
-  return [date, tpl, names].filter(Boolean).join(' · ')
-}
 
 /**
  * 커플(서랍) 단위 하객 사진 공유 — 서랍당 링크 하나(/photo/[slug]).
@@ -70,40 +58,10 @@ export default function CoupleGuestShareCard() {
   }
   const onToggle = async () => { const n = !enabled; setEnabled(n); await save({ enabled: n }) }
   const onSaveText = async () => { await save({ title, description: desc }); setSavedToast(true); setTimeout(() => setSavedToast(false), 1600) }
-  const onPickInvitation = async (id: string) => { await save({ invitationId: id }); await load() }
-
-  const multi = s.invitations.length >= 2
 
   return (
     <div>
-      {/* 사진 받을 대표 청첩장 (여러 개일 때만) */}
-      {multi && (
-        <div className="setfield" style={{ paddingTop: 0 }}>
-          <div className="setlb">대표 청첩장</div>
-          <p className="setnote" style={{ marginTop: 4, wordBreak: 'keep-all' }}>
-            하객이 보낸 사진은 <b>청첩장 하나에 연결된 Google Drive 폴더</b>에 모여요.<br />
-            청첩장을 여러 개 만드셨다면 사진을 받을 청첩장 하나만 골라주세요.
-            하객이 어느 링크로 들어와도 사진은 이 한 곳에 정리됩니다.
-          </p>
-          <select
-            className="setinput"
-            style={{ marginTop: 8, width: '100%' }}
-            value={s.selectedInvitationId || ''}
-            disabled={busy}
-            onChange={(e) => onPickInvitation(e.target.value)}
-          >
-            <option value="">자동 (예식일이 가장 가까운 청첩장)</option>
-            {s.invitations.map((o) => (
-              <option key={o.id} value={o.id}>{invLabel(o)}</option>
-            ))}
-          </select>
-          {!s.selectedInvitationId && s.primaryInvitationId && (
-            <p className="setnote" style={{ marginTop: 6, wordBreak: 'keep-all' }}>
-              지금은 자동으로 <b>{invLabel(s.invitations.find((o) => o.id === s.primaryInvitationId) || s.invitations[0])}</b> 청첩장으로 사진을 받고 있어요.
-            </p>
-          )}
-        </div>
-      )}
+      <p className="setnote" style={{ marginTop: 0, wordBreak: 'keep-all' }}>사진 받는 링크는 계정에 하나예요. 어느 청첩장에서 들어와도 같은 링크로 모여요.</p>
 
       {/* Google Drive 연결 (계정 공용) */}
       <div className="setrow">
@@ -123,6 +81,17 @@ export default function CoupleGuestShareCard() {
         <button type="button" className={`btn btn-s ${enabled ? 'btn-assist' : 'btn-solid'}`} disabled={busy} onClick={onToggle}>{enabled ? '끄기' : '켜기'}</button>
       </div>
 
+      {/* 하객 화면 미리보기 — 켜기 전에도 대표 사진 · 이름이 어떻게 보이는지 확인 */}
+      {shareUrl && (
+        <div className="setrow">
+          <div>
+            <div className="setlb">하객 화면 미리보기</div>
+            <div className="setnote" style={{ wordBreak: 'keep-all' }}>대표 청첩장의 사진과 이름으로 하객이 보는 화면을 단계별로 볼 수 있어요.</div>
+          </div>
+          <a href={`${shareUrl}?preview=1`} target="_blank" rel="noopener noreferrer" className="btn btn-s btn-assist">미리보기</a>
+        </div>
+      )}
+
       {enabled && (
         <>
           <div className="setfield">
@@ -134,9 +103,9 @@ export default function CoupleGuestShareCard() {
             </div>
           </div>
           <div className="setfield" style={{ paddingBottom: 0 }}>
-            <div className="setlb" style={{ fontSize: 12 }}>공유 페이지 제목 · 안내 문구</div>
-            <input value={title} maxLength={40} onChange={(e) => setTitle(e.target.value)} placeholder="사진 공유" className="setinput" style={{ marginTop: 8, width: '100%' }} />
-            <textarea value={desc} maxLength={120} rows={2} onChange={(e) => setDesc(e.target.value)} placeholder="결혼식의 소중한 순간을 함께 나눠주세요 🤍" className="stamp-ta" style={{ marginTop: 8 }} />
+            <div className="setlb" style={{ fontSize: 12 }}>공유 페이지 제목 · 안내 문구 <span className="setnote">(비워 두면 기본 문구)</span></div>
+            <input value={title} maxLength={40} onChange={(e) => setTitle(e.target.value)} placeholder="저희 결혼식에서 찍은 사진과 영상을 보내 주세요" className="setinput" style={{ marginTop: 8, width: '100%' }} />
+            <textarea value={desc} maxLength={120} rows={2} onChange={(e) => setDesc(e.target.value)} placeholder="보내 주신 사진과 영상은 저희 둘만 볼 수 있어요." className="stamp-ta" style={{ marginTop: 8 }} />
             <div style={{ marginTop: 8 }}>
               <button type="button" className="btn btn-s btn-solid" disabled={busy} onClick={onSaveText}>{savedToast ? '저장됨 ✓' : '문구 저장'}</button>
             </div>

@@ -155,8 +155,7 @@ export default function EssayStep3Details({ data, updateData, updateNestedData, 
   return (
     <div className="p-6 space-y-8">
       <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>부가 기능 설정</p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>오시는 길, 연락처, RSVP, 마음 전하실 곳 등을 설정해주세요.</p>
+        <p className="text-base font-medium" style={{ color: 'var(--ed-text)' }}>부가 기능 설정</p>
       </div>
 
       {/* 섹션 순서 (북 컨셉 전용) */}
@@ -166,7 +165,7 @@ export default function EssayStep3Details({ data, updateData, updateNestedData, 
         return (
           <section className="space-y-4">
             <h3 className="text-base font-semibold text-gray-900">섹션 순서</h3>
-            <p className="text-xs text-gray-500">페이지 표시 순서를 변경하고 섹션을 켜고 끌 수 있습니다. 표지, 초대의 글, 마지막 페이지는 항상 고정됩니다.</p>
+            <p className="text-xs text-gray-500">표지, 초대의 글, 마지막 페이지는 항상 고정됩니다.</p>
             <div className="space-y-1">
               {/* 고정 섹션 (greeting) */}
               {fixedItems.map((sectionId) => {
@@ -232,19 +231,15 @@ export default function EssayStep3Details({ data, updateData, updateNestedData, 
             onCheckedChange={(checked) => updateNestedData('wedding.showVenue', checked)}
           />
         </div>
-        <p className="text-xs text-gray-500">끄면 청첩장에서 예식 장소와 오시는 길 안내가 숨겨집니다.</p>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-              교통 안내 정보를 입력해주세요.
-            </p>
-            {hasNoDirections && (
+          {hasNoDirections && (
+            <div className="flex items-center justify-end">
               <button onClick={applySampleDirections} className="text-xs text-blue-600 hover:underline">
                 샘플 적용
               </button>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="p-4 bg-gray-50 rounded-lg space-y-3">
             <div className="space-y-1.5">
@@ -329,7 +324,7 @@ export default function EssayStep3Details({ data, updateData, updateNestedData, 
           />
         </div>
         <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          하객분들이 축하 전화를 드릴 수 있는 연락처를 입력해주세요. 입력된 연락처만 표시됩니다.
+          입력된 연락처만 표시됩니다.
         </p>
 
         {data.sectionVisibility.contacts && (
@@ -337,7 +332,7 @@ export default function EssayStep3Details({ data, updateData, updateNestedData, 
             {/* 연락처 에세이 */}
             <div className="p-4 bg-gray-50 rounded-lg space-y-2">
               <Label className="text-sm font-medium">연락처 안내 문구</Label>
-              <p className="text-xs text-gray-500">북 컨셉에서 연락처 섹션 상단에 표시되는 에세이입니다.</p>
+              <p className="text-xs text-gray-500">북 컨셉에서만 표시됩니다.</p>
               <Textarea
                 rows={4}
                 value={data.content.contactsEssay}
@@ -527,7 +522,7 @@ export default function EssayStep3Details({ data, updateData, updateNestedData, 
             {/* 마음전하기 에세이 */}
             <div className="p-4 bg-gray-50 rounded-lg space-y-2">
               <Label className="text-sm font-medium">마음전하기 안내 문구</Label>
-              <p className="text-xs text-gray-500">북 컨셉에서 계좌 섹션 상단에 표시되는 에세이입니다.</p>
+              <p className="text-xs text-gray-500">북 컨셉에서만 표시됩니다.</p>
               <Textarea
                 rows={4}
                 value={data.content.bankEssay}
@@ -649,9 +644,6 @@ export default function EssayStep3Details({ data, updateData, updateNestedData, 
         </div>
         {data.sectionVisibility?.gallery !== false && (
           <div className="space-y-3">
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-              두 사람의 사진을 업로드해 주세요. 에세이 갤러리 섹션에 표시됩니다.
-            </p>
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <span className="text-sm text-gray-700">사진 확대(줌) 허용</span>
               <Switch
@@ -660,7 +652,7 @@ export default function EssayStep3Details({ data, updateData, updateNestedData, 
               />
             </div>
             {data.gallery?.zoomEnabled === true && (
-              <p className="text-xs text-gray-500 leading-snug">사진은 2.5배까지 확대돼요. 더 크게 선명하게 확대하고 싶은 사진은 사진에 마우스를 올려 &apos;고화질&apos;로 다시 올려 주세요.</p>
+              <p className="text-xs text-gray-500 leading-snug">사진은 2.5배까지 확대됩니다. 더 선명하게 확대하려면 사진에 마우스를 올려 &apos;고화질&apos;로 다시 올릴 수 있습니다.</p>
             )}
             <MultiImageUploader
               hdOption={data.gallery?.zoomEnabled === true}
@@ -735,7 +727,7 @@ export default function EssayStep3Details({ data, updateData, updateNestedData, 
         {data.sectionVisibility.guestbook && (
           <div className="p-4 bg-gray-50 rounded-lg space-y-2">
             <Label className="text-sm font-medium">방명록 안내 문구</Label>
-            <p className="text-xs text-gray-500">북 컨셉에서 방명록 섹션 상단에 표시되는 에세이입니다.</p>
+            <p className="text-xs text-gray-500">북 컨셉에서만 표시됩니다.</p>
             <Textarea
               rows={4}
               value={data.content.guestbookEssay}
@@ -750,7 +742,6 @@ export default function EssayStep3Details({ data, updateData, updateNestedData, 
       {/* 안내 항목 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">안내 항목</h3>
-        <p className="text-xs text-gray-500">필요한 안내를 켜고 내용을 작성하세요. 화살표로 순서를 변경할 수 있습니다.</p>
         <div className="space-y-3">
           {infoItemOrder.map((itemId, index) => {
             const config = infoItemConfigs[itemId]

@@ -462,6 +462,8 @@ export default function DashboardPage() {
                 ? `/editor/thank-you?id=${invitationId}`
                 : templateId === 'narrative-the-simple'
                 ? `/editor/the-simple?id=${invitationId}`
+                : templateId === 'narrative-phone'
+                ? `/editor/phone?id=${invitationId}`
                 : templateId === 'narrative-essay'
                 ? `/editor/essay?id=${invitationId}`
                 : templateId === 'narrative-magazine' || templateId === 'narrative-film' || templateId === 'narrative-record'

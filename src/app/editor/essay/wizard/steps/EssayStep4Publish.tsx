@@ -188,11 +188,8 @@ export default function EssayStep4Publish({ data, invitationId, slug, onSave, on
     <div className="p-6 space-y-8">
       {/* 안내 */}
       <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>
+        <p className="text-base font-medium" style={{ color: 'var(--ed-text)' }}>
           거의 다 왔어요!
-        </p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          청첩장을 발행하면 바로 공유할 수 있어요.
         </p>
       </div>
 
@@ -315,7 +312,6 @@ export default function EssayStep4Publish({ data, invitationId, slug, onSave, on
         <p className="font-medium text-gray-900">알려드립니다</p>
         <ul className="space-y-1 list-disc list-inside">
           <li>발행 후에도 청첩장 내용은 수정할 수 있습니다.</li>
-          <li>카카오톡, 문자 메시지로 쉽게 공유할 수 있습니다.</li>
         </ul>
       </div>
 

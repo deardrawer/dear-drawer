@@ -74,9 +74,6 @@ export default function ClassicInterstitialEditor({ value, onChange, onRemove, i
 
   return (
     <div className="space-y-4">
-      {list.length === 0 && (
-        <p className="text-xs text-gray-400">간지 페이지가 없습니다. 비워두면 기본 1종(FULL 사진)이 표시됩니다.</p>
-      )}
 
       {list.map((it, i) => {
         const meta = TYPES.find((t) => t.id === it.type) || TYPES[0]
@@ -172,7 +169,6 @@ export default function ClassicInterstitialEditor({ value, onChange, onRemove, i
             {it.type === 'photoText' && (
               <div className="space-y-1.5">
                 <span className="text-sm font-medium text-gray-700">본문 (선택)</span>
-                <p className="text-[10px] text-gray-400 leading-tight">인용문 아래에 따옴표 없이 이어지는 글이에요. 정렬은 인용문과 따로 고를 수 있고, 서명은 본문이 좌·우 정렬이면 오른쪽, 가운데면 가운데에 놓여요.</p>
                 <Textarea
                   value={it.body || ''}
                   onChange={(e) => update(i, { body: e.target.value })}
@@ -257,7 +253,7 @@ export default function ClassicInterstitialEditor({ value, onChange, onRemove, i
                 <div className="space-y-3 pt-2 border-t border-gray-100">
                   <div>
                     <p className="text-sm font-medium text-gray-700">글꼴 · 글자 조정</p>
-                    {it.type === 'photoText' ? <p className="text-[10px] text-gray-400 leading-tight">인용문과 출처는 기본 글꼴 그대로, 고른 글꼴은 본문·서명에 적용돼요.</p> : null}
+                    {it.type === 'photoText' ? <p className="text-[10px] text-gray-400 leading-tight">고른 글꼴은 본문 · 서명에만 적용됩니다.</p> : null}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <FontTrigger label="한글 글꼴" name={koCur?.name || '기본 (리디바탕)'} family={koCur?.family} open={openK === 'ko'} onClick={() => toggleFont(i, 'ko')} />
@@ -272,7 +268,7 @@ export default function ClassicInterstitialEditor({ value, onChange, onRemove, i
                   <GriunGlyphNote koId={koId} text={vals.join(' ')} fallbackLabel="청첩장 본문 글꼴" />
                   <div className="space-y-2 rounded-md border border-gray-100 bg-gray-50/60 p-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-gray-500">행간 · 자간 <span className="text-gray-400">(글자 크기는 위 문구별 슬라이더)</span></span>
+                      <span className="text-[11px] text-gray-500">행간 · 자간</span>
                       {it.txLh !== undefined || it.txLs !== undefined ? (
                         <button type="button" onClick={() => update(i, { txLh: undefined, txLs: undefined })} className="text-[11px] text-gray-400 underline underline-offset-2 hover:text-gray-700">기본값</button>
                       ) : null}
@@ -288,7 +284,6 @@ export default function ClassicInterstitialEditor({ value, onChange, onRemove, i
               <div className="space-y-3 pt-2 border-t border-gray-100">
                 <div>
                   <p className="text-sm font-medium text-gray-700">풀화면 배경 · 오버레이</p>
-                  <p className="text-[10px] text-gray-400 leading-tight">선택 시 이 간지 페이지의 전체 배경으로 사용됩니다.</p>
                 </div>
                 <ClassicPhotoField
                   value={it.bg}

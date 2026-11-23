@@ -148,7 +148,6 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
       {/* 이야기 형식 */}
       <section className="space-y-3">
         <h3 className="text-base font-semibold text-gray-900">이야기 형식</h3>
-        <p className="text-sm text-gray-500">에세이를 어떤 형식으로 쓸지 선택해주세요.</p>
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => updateData({ contentMode: 'story' })}
@@ -187,7 +186,6 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
             }`} />
           </button>
         </div>
-        <p className="text-xs text-gray-500">책을 열면 처음 보이는 인트로 페이지입니다.</p>
         {data.intro?.enabled !== false && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
             <div className="space-y-1.5">
@@ -225,7 +223,6 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
       {/* 초대 글귀 (인사말) */}
       <section className="space-y-3">
         <h3 className="text-base font-semibold text-gray-900">초대 글귀</h3>
-        <p className="text-xs text-gray-500">책을 펼쳤을 때 처음 보이는 인사말입니다.</p>
         <textarea
           className={textareaClass}
           rows={5}
@@ -423,7 +420,6 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
       {/* 인용문 */}
       <section className="space-y-3">
         <h3 className="text-base font-semibold text-gray-900">인용문</h3>
-        <p className="text-xs text-gray-500">좋아하는 시, 명언, 노래 가사 등을 넣어보세요. (선택)</p>
         <textarea
           className={textareaClass}
           rows={3}
@@ -442,7 +438,6 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
       {/* 감사 인사 */}
       <section className="space-y-3">
         <h3 className="text-base font-semibold text-gray-900">감사 인사</h3>
-        <p className="text-xs text-gray-500">에필로그처럼 마지막에 표시됩니다. (선택)</p>
         <textarea
           className={textareaClass}
           rows={4}
@@ -461,7 +456,6 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
       {/* 예식 에세이 */}
       <section className="space-y-3">
         <h3 className="text-base font-semibold text-gray-900">예식 일시 에세이</h3>
-        <p className="text-xs text-gray-500">이 날을 고른 이유를 에세이처럼 써보세요. (선택)</p>
         <div className="space-y-1.5">
           <label className={labelClass}>제목</label>
           <input
@@ -482,7 +476,6 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
 
       <section className="space-y-3">
         <h3 className="text-base font-semibold text-gray-900">예식 장소 에세이</h3>
-        <p className="text-xs text-gray-500">이 장소를 고른 이유를 에세이처럼 써보세요. (선택)</p>
         <div className="space-y-1.5">
           <label className={labelClass}>제목</label>
           <input
@@ -504,7 +497,6 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
       {/* 엔딩 페이지 */}
       <section className="space-y-3">
         <h3 className="text-base font-semibold text-gray-900">엔딩 페이지</h3>
-        <p className="text-xs text-gray-500">책의 마지막 페이지에 표시됩니다.</p>
         <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
           <div className="space-y-1.5">
             <label className={labelClass}>사진</label>

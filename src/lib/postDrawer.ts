@@ -369,6 +369,7 @@ export interface DrawerProfileRow {
   guest_share_title: string | null
   guest_share_description: string | null
   guest_share_invitation_id: string | null // 사진 받을 '대표 청첩장' 지정(미지정 시 자동 폴백)
+  guest_share_cover?: string | null // 공유 페이지 첫 화면 사진(0030, 비우면 대표 청첩장 사진)
 }
 
 export async function getDrawerProfile(userId: string): Promise<DrawerProfileRow | null> {
@@ -473,6 +474,31 @@ export interface CoupleGuestShare {
   description: string | null
   weddingDate: string | null
   invitationId: string | null // 지정한 대표 청첩장(미지정이면 null → 자동 폴백)
+  cover: string | null // 첫 화면 사진(비우면 대표 청첩장 사진)
+  nameStyle: 'en' | 'ko' | null // 이름 표기 — 영문 · 한글 (비우면 영문 이름 있으면 영문)
+  coverY: number | null // 첫 화면 사진 세로 위치 (0 위 ~ 100 아래)
+  coverCrop: ShareCoverCrop | null // 첫 화면 사진 자르기 (위치 · 크기)
+}
+export interface ShareCoverCrop { cropX: number; cropY: number; cropWidth: number; cropHeight: number }
+
+/** guest_share_cover 칸 — 예전엔 사진 주소만, 지금은 {cover, nameStyle} JSON */
+type ShareLookRaw = { cover: string | null; nameStyle: 'en' | 'ko' | null; coverY: number | null; coverCrop: ShareCoverCrop | null }
+const cropOf = (c: unknown): ShareCoverCrop | null => {
+  const o = c as Partial<ShareCoverCrop> | null
+  if (!o || typeof o !== 'object') return null
+  const n = (v: unknown) => (typeof v === 'number' && isFinite(v) ? Math.max(0, Math.min(1, v)) : null)
+  const x = n(o.cropX), y = n(o.cropY), w = n(o.cropWidth), h = n(o.cropHeight)
+  return x === null || y === null || w === null || h === null || w <= 0 || h <= 0 ? null : { cropX: x, cropY: y, cropWidth: w, cropHeight: h }
+}
+function shareLookOf(raw: string | null | undefined): ShareLookRaw {
+  if (!raw) return { cover: null, nameStyle: null, coverY: null, coverCrop: null }
+  if (raw.startsWith('{')) {
+    try {
+      const o = JSON.parse(raw) as { cover?: string | null; nameStyle?: string | null; coverY?: number | null; coverCrop?: unknown }
+      return { cover: o.cover || null, nameStyle: o.nameStyle === 'en' || o.nameStyle === 'ko' ? o.nameStyle : null, coverY: typeof o.coverY === 'number' ? Math.max(0, Math.min(100, o.coverY)) : null, coverCrop: cropOf(o.coverCrop) }
+    } catch { return { cover: null, nameStyle: null, coverY: null, coverCrop: null } }
+  }
+  return { cover: raw, nameStyle: null, coverY: null, coverCrop: null }
 }
 
 /** 커플 공유 슬러그 확보(없으면 생성). */
@@ -488,19 +514,19 @@ export async function ensureCoupleGuestShareSlug(userId: string): Promise<string
 export async function getCoupleGuestShareByUser(userId: string): Promise<CoupleGuestShare | null> {
   const p = await getDrawerProfile(userId)
   if (!p) return null
-  return { userId: p.user_id, slug: p.guest_share_slug ?? null, enabled: (p.guest_share_enabled ?? 0) === 1, title: p.guest_share_title ?? null, description: p.guest_share_description ?? null, weddingDate: p.wedding_date ?? null, invitationId: p.guest_share_invitation_id ?? null }
+  return { userId: p.user_id, slug: p.guest_share_slug ?? null, enabled: (p.guest_share_enabled ?? 0) === 1, title: p.guest_share_title ?? null, description: p.guest_share_description ?? null, weddingDate: p.wedding_date ?? null, invitationId: p.guest_share_invitation_id ?? null, ...shareLookOf(p.guest_share_cover) }
 }
 
 export async function getCoupleGuestShareBySlug(slug: string): Promise<CoupleGuestShare | null> {
   const db = await getDB()
   const p = await db.prepare('SELECT * FROM drawer_profiles WHERE guest_share_slug = ? LIMIT 1').bind(slug).first<DrawerProfileRow>()
   if (!p) return null
-  return { userId: p.user_id, slug: p.guest_share_slug ?? null, enabled: (p.guest_share_enabled ?? 0) === 1, title: p.guest_share_title ?? null, description: p.guest_share_description ?? null, weddingDate: p.wedding_date ?? null, invitationId: p.guest_share_invitation_id ?? null }
+  return { userId: p.user_id, slug: p.guest_share_slug ?? null, enabled: (p.guest_share_enabled ?? 0) === 1, title: p.guest_share_title ?? null, description: p.guest_share_description ?? null, weddingDate: p.wedding_date ?? null, invitationId: p.guest_share_invitation_id ?? null, ...shareLookOf(p.guest_share_cover) }
 }
 
 /** 커플 하객 공유 설정 저장(켜기/제목/문구/대표 청첩장 지정). */
-export async function setCoupleGuestShare(userId: string, fields: { enabled?: boolean; title?: string | null; description?: string | null; invitationId?: string | null }): Promise<void> {
-  await ensureDrawerProfile(userId)
+export async function setCoupleGuestShare(userId: string, fields: { enabled?: boolean; title?: string | null; description?: string | null; invitationId?: string | null; cover?: string | null; nameStyle?: 'en' | 'ko' | null; coverY?: number | null; coverCrop?: ShareCoverCrop | null }): Promise<void> {
+  const prof = await ensureDrawerProfile(userId)
   const db = await getDB()
   const sets: string[] = []
   const binds: (string | number | null)[] = []
@@ -508,6 +534,18 @@ export async function setCoupleGuestShare(userId: string, fields: { enabled?: bo
   if (fields.title !== undefined) { sets.push('guest_share_title = ?'); binds.push(fields.title ? fields.title.slice(0, 40) : null) }
   if (fields.description !== undefined) { sets.push('guest_share_description = ?'); binds.push(fields.description ? fields.description.slice(0, 120) : null) }
   if (fields.invitationId !== undefined) { sets.push('guest_share_invitation_id = ?'); binds.push(fields.invitationId || null) }
+  if (fields.cover !== undefined || fields.nameStyle !== undefined || fields.coverY !== undefined || fields.coverCrop !== undefined) {
+    // 첫 화면 꾸밈(사진 · 이름 표기)을 한 칸에 — 예전 값(사진 주소만)도 읽힘
+    const cur = shareLookOf(prof.guest_share_cover)
+    const cover = fields.cover !== undefined ? (fields.cover ? String(fields.cover).slice(0, 500) : null) : cur.cover
+    const nameStyle = fields.nameStyle !== undefined ? (fields.nameStyle === 'en' || fields.nameStyle === 'ko' ? fields.nameStyle : null) : cur.nameStyle
+    // 사진을 바꾸면 위치는 처음(위쪽)으로
+    const coverY = fields.coverY !== undefined ? (typeof fields.coverY === 'number' ? Math.max(0, Math.min(100, Math.round(fields.coverY))) : null) : fields.cover !== undefined ? null : cur.coverY
+    // 자르기 — 사진을 바꾸면 처음으로
+    const coverCrop = fields.coverCrop !== undefined ? cropOf(fields.coverCrop) : fields.cover !== undefined ? null : cur.coverCrop
+    sets.push('guest_share_cover = ?')
+    binds.push(cover || nameStyle || coverY !== null || coverCrop ? JSON.stringify({ cover, nameStyle, coverY, coverCrop }) : null)
+  }
   if (!sets.length) return
   await db.prepare(`UPDATE drawer_profiles SET ${sets.join(', ')}, updated_at = ? WHERE user_id = ?`).bind(...binds, nowIso(), userId).run()
 }

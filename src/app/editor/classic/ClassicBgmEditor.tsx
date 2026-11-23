@@ -117,15 +117,14 @@ export default function ClassicBgmEditor({ enabled, url, autoplay, onChange, inv
                 </div>
               </label>
             )}
-            {!invitationId && <p className="text-[10px]" style={{ color: 'var(--ed-text-muted)' }}>저장 후 음악 파일을 업로드할 수 있습니다</p>}
-            <p className="text-[10px] text-gray-400 leading-relaxed">저작권이 있는 음악을 업로드할 경우 발생하는 모든 법적 책임은 사용자에게 있습니다. 저작권에 위배되지 않는 MP3 파일만 업로드해주세요.</p>
+            {!invitationId && <p className="text-[10px]" style={{ color: 'var(--ed-text-muted)' }}>저장 후 음악을 올릴 수 있습니다</p>}
+            <p className="text-[10px] text-gray-400 leading-relaxed">저작권 문제가 없는 MP3만 올릴 수 있습니다. 저작권 책임은 업로드한 분께 있습니다.</p>
           </div>
 
           {/* 자동재생 토글 */}
           <label className="flex items-center justify-between rounded-lg border border-gray-200 p-3 bg-gray-50/50">
             <div>
               <span className="text-sm font-medium text-gray-700">자동 재생</span>
-              <p className="text-[10px] text-gray-400 leading-tight">청첩장 열면 자동으로 음악이 재생됩니다</p>
             </div>
             <button type="button" onClick={() => onChange({ autoplay: !autoplay })} className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${autoplay ? 'bg-[color:var(--ed-accent)]' : 'bg-gray-300'}`}>
               <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${autoplay ? 'translate-x-4' : ''}`} />

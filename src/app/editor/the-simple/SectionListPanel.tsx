@@ -283,7 +283,6 @@ export default function SectionListPanel({
                   <Plus size={13} />
                   {meta.label} 추가
                 </span>
-                <span className="text-[9px] text-stone-400">사진을 더 보여주고 싶을 때</span>
               </button>
             )
           })}

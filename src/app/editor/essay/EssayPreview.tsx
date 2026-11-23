@@ -10,7 +10,8 @@ interface EssayPreviewProps {
 }
 
 export default function EssayPreview({ data, fullscreen }: EssayPreviewProps) {
-  const isBook = data.designConcept === 'book'
+  // 모던 북도 한 화면씩 넘기는 고정 레이아웃이라 책 컨테이너(overflow hidden + fixed→absolute)를 쓴다
+  const isBook = data.designConcept === 'book' || data.designConcept === 'modern'
 
   // 에디터의 EssayInvitationData를 InvitationClientEssay가 요구하는 content 형식으로 변환
   const content = useMemo(() => ({

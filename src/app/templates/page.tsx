@@ -158,6 +158,22 @@ const QUIZ_RESULTS: Record<string, {
     ],
     sampleUrl: '/i/sample-the-simple',
   },
+  'narrative-phone': {
+    templateId: 'narrative-phone',
+    templateName: 'THE PHONE',
+    category: 'mini',
+    categoryLabel: '미니 스토리형',
+    tagline: '휴대폰 화면처럼 열리는 청첩장',
+    color: 'text-stone-700',
+    colorBg: 'bg-stone-800',
+    colorBorder: 'border-stone-200',
+    points: [
+      '잠금화면을 밀어 올리면 열리는 홈 화면',
+      '위젯을 끌어서 원하는 자리에',
+      '지도 · 저널 · 캘린더처럼 익숙한 앱 화면',
+    ],
+    sampleUrl: '/i/sample-phone',
+  },
   'narrative-thankyou': {
     templateId: 'narrative-thankyou',
     templateName: 'THANKS',
@@ -300,6 +316,20 @@ const SHOWCASE_ITEMS: {
     badge: 'Best',
   },
   {
+    id: 'the-phone',
+    templateId: 'narrative-phone',
+    name: 'THE PHONE',
+    tagline: '휴대폰 화면처럼 열리는 청첩장',
+    category: 'mini',
+    categoryLabel: '미니스토리형',
+    thumbnail: '/sample/preview-the-phone.png',
+    sampleUrl: '/i/sample-phone',
+    badgeColor: 'text-stone-700',
+    badgeBg: 'bg-stone-100',
+    btnClass: 'bg-stone-800 hover:bg-stone-900',
+    badge: 'New',
+  },
+  {
     id: 'the-classic',
     templateId: 'narrative-classic',
     name: 'THE CLASSIC',
@@ -377,6 +407,7 @@ const PV_CONFIG: Record<string, { intros?: PvOpt[]; colors?: PvColor[]; fonts?: 
   // THE 시리즈는 샘플이 한 가지 구성이라, 만들 때 고를 수 있는 것을 글로 안내한다
   'the-simple': { note: '만들 때 다양한 폰트와 섹션을 골라 우리만의 구성으로 완성할 수 있어요. 필요한 섹션만 켜고 순서를 바꿔 보세요.', def: {} },
   'the-classic': { note: '만들 때 다양한 폰트와 섹션을 골라 우리만의 구성으로 완성할 수 있어요. 필요한 섹션만 켜고 순서를 바꿔 보세요.', def: {} },
+  'the-phone': { note: '잠금화면 · 홈 화면 · 앱 화면을 직접 꾸며요. 위젯을 끌어서 원하는 자리에 놓을 수 있어요.', def: {} },
   record: {
     intros: [{ id: 'cd', label: 'CD PLAYER' }, { id: 'days', label: '함께한 날' }, { id: 'lp', label: 'LP 커버' }],
     colors: [
@@ -480,7 +511,7 @@ function TemplateSheet({ item, onClose, onStart }: { item: (typeof SHOWCASE_ITEM
         </div>
         <div className="sm:flex sm:flex-col sm:justify-between" style={{ flex: 1, minWidth: 0 }}>
           <div>
-            <p style={{ margin: '22px 0 0', fontSize: 12, color: TV.ink3, letterSpacing: '-.01em' }}>{item.categoryLabel}{item.badge === 'Best' && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, letterSpacing: '.14em', color: TV.ink }}>BEST</span>}</p>
+            <p style={{ margin: '22px 0 0', fontSize: 12, color: TV.ink3, letterSpacing: '-.01em' }}>{item.categoryLabel}{item.badge === 'Best' && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, letterSpacing: '.14em', color: TV.ink }}>BEST</span>}{item.badge === 'New' && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, letterSpacing: '.14em', color: '#B5654A' }}>NEW</span>}</p>
             <h2 style={{ margin: '8px 0 0', fontSize: 22, fontWeight: 600, letterSpacing: '.04em' }}>{item.name}</h2>
             <p style={{ margin: '12px 0 0', fontSize: 14, lineHeight: 1.75, letterSpacing: '-.015em', color: TV.ink2, wordBreak: 'keep-all' }}>{item.tagline}</p>
             {cfg && (
@@ -529,7 +560,7 @@ const FORMAT_ROWS: { id: Exclude<TemplateCategory, null>; name: string; mood: st
   { id: 'story', name: '스토리형', mood: '깊이 있는 이야기', desc: '두 사람의 이야기를 천천히 전하는 청첩장', list: 'OUR · FAMILY' },
   { id: 'mini', name: '미니 스토리형', mood: '감각적 디자인', desc: '짧지만 감각적으로 우리의 순간을 담는 청첩장', list: 'MAGAZINE · MOVIE · RECORD' },
   { id: 'parents', name: '혼주용', mood: '격식 있는', desc: '부모님의 마음으로 정중하게 전하는 초대', list: 'PARENTS' },
-  { id: 'the-series', name: 'THE 시리즈', mood: '프리미엄', desc: '덜어낼수록 선명해지는 우리만의 취향', list: 'THE SIMPLE · THE CLASSIC' },
+  { id: 'the-series', name: 'THE 시리즈', mood: '프리미엄', desc: '덜어낼수록 선명해지는 우리만의 취향', list: 'THE SIMPLE · THE CLASSIC · THE PHONE' },
 ]
 const TV_CSS = `
   .tv-main { -webkit-font-smoothing: antialiased; }
@@ -661,6 +692,8 @@ function TemplatesContent() {
       router.push(`/editor/the-simple?slug=${autoSlug}`)
     } else if (templateId === 'narrative-classic') {
       router.push(`/editor/classic?slug=${autoSlug}`)
+    } else if (templateId === 'narrative-phone') {
+      router.push(`/editor/phone?slug=${autoSlug}`)
     } else {
       router.push(`/editor?template=${templateId}&slug=${autoSlug}`)
     }
@@ -1048,6 +1081,9 @@ function TemplatesContent() {
                     )}
                     {item.badge === 'Best' && (
                       <span style={{ position: 'absolute', top: 10, left: 10, padding: '4px 7px', borderRadius: 2, background: 'rgba(31,28,25,.86)', color: '#FFF9F8', fontSize: 9.5, fontWeight: 600, letterSpacing: '.14em', lineHeight: 1, fontFamily: TV_FONT }}>BEST</span>
+                    )}
+                    {item.badge === 'New' && (
+                      <span style={{ position: 'absolute', top: 10, left: 10, padding: '4px 7px', borderRadius: 2, background: '#B5654A', color: '#FFF9F8', fontSize: 9.5, fontWeight: 600, letterSpacing: '.14em', lineHeight: 1, fontFamily: TV_FONT }}>NEW</span>
                     )}
                     {!item.comingSoon && (
                       <div className="tv-act" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, display: 'grid', gridTemplateColumns: '1fr', background: 'rgba(255,250,249,.94)', backdropFilter: 'blur(6px)', borderTop: `1px solid ${TV.line}` }}>
@@ -1602,7 +1638,7 @@ function TemplatesContent() {
             </div>
           )}
 
-          {/* Step 2: THE 시리즈 → THE SIMPLE, THE CLASSIC */}
+          {/* Step 2: THE 시리즈 → THE SIMPLE, THE CLASSIC, THE PHONE */}
           {selectedCategory === 'the-series' && (
             <div>
               <button onClick={() => selectCategory(null)} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 mb-6 transition-colors">
@@ -1688,6 +1724,45 @@ function TemplatesContent() {
                           시작하기
                         </button>
                         <a href="/i/sample-classic" target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 border border-gray-200 hover:border-gray-300 text-gray-500 text-sm rounded-xl transition-colors">
+                          샘플 보기
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* THE PHONE */}
+                <div className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-300 transition-all duration-300 overflow-hidden">
+                  <div className="flex flex-col sm:flex-row">
+                    <div className="sm:w-40 flex-shrink-0 flex flex-col items-center justify-center p-5 sm:p-6 border-b sm:border-b-0 sm:border-r" style={{ background: '#F4F4F5' }}>
+                      <div className="relative w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-2">
+                        <div className="absolute -inset-1 rounded-full opacity-[0.1] blur-[10px]" style={{ background: '#52525B' }} />
+                        <div className="relative w-full h-full rounded-full flex items-center justify-center" style={{ background: '#ffffff' }}>
+                          <svg className="w-5 h-5 sm:w-7 sm:h-7" style={{ color: '#52525B' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="6" y="2.5" width="12" height="19" rx="3" fill="rgba(82,82,91,0.08)" />
+                            <path d="M10.5 18.5h3" />
+                          </svg>
+                        </div>
+                      </div>
+                      <h2 className="text-lg font-bold text-gray-900 whitespace-nowrap">THE PHONE</h2>
+                      <p className="text-[10px] text-gray-400 mt-0.5">휴대폰 화면</p>
+                    </div>
+                    <div className="flex-1 p-5 sm:p-6">
+                      <span className="inline-block px-2.5 py-1 text-[11px] font-medium text-white rounded-full mb-3" style={{ background: '#52525B' }}>직접 꾸미는 걸 좋아하는 커플에게 추천</span>
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        <span className="text-[11px] text-gray-400">#위젯</span>
+                        <span className="text-[11px] text-gray-400">#잠금화면</span>
+                        <span className="text-[11px] text-gray-400">#커스텀</span>
+                      </div>
+                      <div className="space-y-1.5 mb-4 text-[13px] text-gray-600">
+                        <p className="flex items-start gap-2"><span style={{ color: '#52525B' }} className="mt-0.5 text-xs">&#10003;</span> 잠금화면을 밀어 올리면 열리는 홈 화면</p>
+                        <p className="flex items-start gap-2"><span style={{ color: '#52525B' }} className="mt-0.5 text-xs">&#10003;</span> 위젯을 끌어서 원하는 자리에</p>
+                        <p className="flex items-start gap-2"><span style={{ color: '#52525B' }} className="mt-0.5 text-xs">&#10003;</span> 지도 · 저널 · 캘린더처럼 익숙한 앱 화면</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => handleTemplateSelect('narrative-phone')} className="px-5 py-2.5 text-white text-sm font-medium rounded-xl transition-colors" style={{ background: '#52525B' }}>
+                          시작하기
+                        </button>
+                        <a href="/i/sample-phone" target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 border border-gray-200 hover:border-gray-300 text-gray-500 text-sm rounded-xl transition-colors">
                           샘플 보기
                         </a>
                       </div>

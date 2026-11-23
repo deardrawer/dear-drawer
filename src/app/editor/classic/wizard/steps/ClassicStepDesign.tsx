@@ -78,7 +78,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
         <div className="mt-2 space-y-3 rounded-lg border border-gray-200 p-4 bg-white">
           <div>
             <p className="text-sm font-medium text-gray-700">엠보스 프레임</p>
-            <p className="text-[10px] text-gray-400 leading-tight">선택한 배경색 위에 프레임이 얹혀집니다.</p>
           </div>
           <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
             {([
@@ -102,7 +101,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             />
             <div className="flex flex-col">
               <span className="text-sm text-gray-700">글자색</span>
-              <span className="text-[10px] text-gray-400 leading-tight">이름 · 날짜 · ‘터치 또는 스크롤’ 모두 적용 (기본: 포인트색)</span>
             </div>
           </div>
           <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
@@ -113,7 +111,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             />
             <div className="flex flex-col">
               <span className="text-sm text-gray-700">배경 색상</span>
-              <span className="text-[10px] text-gray-400 leading-tight">컬러 테마와 독립적으로 프레임 배경을 지정</span>
             </div>
           </div>
         </div>
@@ -125,7 +122,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
         <div className="mt-2 space-y-3 rounded-lg border border-gray-200 p-4 bg-white">
           <div>
             <p className="text-sm font-medium text-gray-700">실링(인장)</p>
-            <p className="text-[10px] text-gray-400 leading-tight">봉투를 눌러 여는 오프닝입니다. 인장 색상과 배경을 설정하세요.</p>
           </div>
           <div className="flex items-center gap-3">
             <ColorField
@@ -135,12 +131,10 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             />
             <div className="flex flex-col">
               <span className="text-sm text-gray-700">실링 색상</span>
-              <span className="text-[10px] text-gray-400 leading-tight">인장을 원하는 색으로 물들입니다</span>
             </div>
           </div>
           <div className="pt-3 border-t border-gray-100">
             <p className="text-sm font-medium text-gray-700">배경 · 사진</p>
-            <p className="text-[10px] text-gray-400 leading-tight">처음엔 어둡다가 봉투를 열면 밝아집니다. 배경 오버레이 색상과 첫 사진 배경 투명도를 설정하세요. (컬러 테마와 독립)</p>
           </div>
           <div className="flex items-center gap-3">
             <ColorField
@@ -183,7 +177,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
               <p className="text-sm font-medium text-gray-700">글자 높이</p>
               {ty !== 50 && <button type="button" onClick={() => updateNestedData('content.classicTraceTextY', 50)} className="text-[11px] text-gray-500 underline underline-offset-2">가운데로</button>}
             </div>
-            <p className="text-[10px] text-gray-400 leading-tight">걷어낸 뒤 나오는 이름·날짜 묶음을 위아래로 옮겨요. 사진 속 얼굴과 겹칠 때 써 주세요 (미리보기를 눌러 걷어낸 뒤 조절하면 바로 보여요)</p>
             <div className="mt-2 flex items-center gap-3">
               <span className="text-[11px] text-gray-500">위</span>
               <input
@@ -202,7 +195,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
               <p className="text-sm font-medium text-gray-700">글자 위아래 간격</p>
               <span className="text-[11px] text-gray-500">{Math.round(tg * 100)}%{tg !== 1 && <button type="button" onClick={() => updateNestedData('content.classicTraceGap', 1)} className="ml-2 underline underline-offset-2">기본값</button>}</span>
             </div>
-            <p className="text-[10px] text-gray-400 leading-tight">이름 위(WE INVITE YOU)와 아래(날짜·장소) 간격을 함께 줄이거나 늘려요</p>
             <div className="mt-2 flex items-center gap-3">
               <span className="text-[11px] text-gray-500">좁게</span>
               <input
@@ -219,7 +211,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
           </div>
           <div>
             <p className="text-sm font-medium text-gray-700">사진 오버레이</p>
-            <p className="text-[10px] text-gray-400 leading-tight">걷어낸 뒤 사진 위에 얹을 색과 투명도 (0%면 원본 사진 그대로)</p>
           </div>
           <div className="flex items-center gap-3">
             <ColorField
@@ -258,7 +249,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
           {id === '사진 뒤집기' && (
             <div>
               <p className="text-sm font-medium text-gray-700">뒤집기 사진</p>
-              <p className="text-[10px] text-gray-400 leading-tight mb-1.5">카드 앞면과 배경에 쓰입니다. 비우면 갤러리 첫 사진이 사용됩니다.</p>
               <ClassicPhotoField
                 value={data.content.classicFlipPhoto}
                 onChange={(p) => updateNestedData('content.classicFlipPhoto', p)}
@@ -277,7 +267,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
                 className="w-4 h-4 accent-gray-800"
               />
               <span className="text-sm font-medium text-gray-700">PLACE에 주소 표시</span>
-              <span className="text-[10px] text-gray-400">끄면 예식장 이름·홀만 표시</span>
             </label>
           )}
           <div className="flex items-center gap-3">
@@ -340,7 +329,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
           })}
         </div>
         {data.content.classicLanguage === 'en' && (
-          <p className="text-[11px] text-gray-400 leading-relaxed">본문의 신랑·신부 이름은 기본정보의 영문 이름을 써요. 인사말·안내문 등 직접 쓰는 문구는 영어로 입력해 주세요.</p>
+          <p className="text-[11px] text-gray-400 leading-relaxed">이름은 영문 이름으로 표시되며, 직접 쓰는 문구는 영어로 입력합니다.</p>
         )}
       </section>
 
@@ -356,7 +345,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
         <div className="space-y-2 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <div>
             <p className="text-sm font-medium text-gray-700">컬러 테마</p>
-            <p className="text-[10px] text-gray-400 leading-tight">프리셋을 누르면 전체 색상이 한번에 적용됩니다. 이후 아래에서 개별 조정할 수 있습니다.</p>
           </div>
           <div className="flex flex-wrap gap-2 pt-1">
             {COLOR_THEMES.map((t) => {
@@ -391,7 +379,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             />
             <div className="flex flex-col">
               <span className="text-sm text-gray-700">포인트 컬러</span>
-              <span className="text-[10px] text-gray-400 leading-tight">강조요소</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -402,7 +389,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             />
             <div className="flex flex-col">
               <span className="text-sm text-gray-700">버튼 텍스트</span>
-              <span className="text-[10px] text-gray-400 leading-tight">채움 버튼(참석합니다 등) 글자색</span>
             </div>
           </div>
           <div className="h-px bg-gray-200" />
@@ -414,7 +400,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             />
             <div className="flex flex-col">
               <span className="text-sm text-gray-700">기본 배경</span>
-              <span className="text-[10px] text-gray-400 leading-tight">기본 섹션 배경색</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -425,7 +410,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             />
             <div className="flex flex-col">
               <span className="text-sm text-gray-700">기본 배경 텍스트</span>
-              <span className="text-[10px] text-gray-400 leading-tight">기본 배경 위 글자색</span>
             </div>
           </div>
           <div className="h-px bg-gray-200" />
@@ -437,7 +421,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             />
             <div className="flex flex-col">
               <span className="text-sm text-gray-700">틴티드 배경</span>
-              <span className="text-[10px] text-gray-400 leading-tight">틴티드로 지정한 섹션 배경</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -448,7 +431,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             />
             <div className="flex flex-col">
               <span className="text-sm text-gray-700">틴티드 배경 텍스트</span>
-              <span className="text-[10px] text-gray-400 leading-tight">틴티드 배경 위 글자색</span>
             </div>
           </div>
         </div>
@@ -459,7 +441,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
         <h3 className="text-base font-semibold text-gray-900">
           폰트
         </h3>
-        <p className="text-sm text-gray-500">청첩장에 사용할 영문 · 한글 폰트를 선택하세요.</p>
 
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <div>
@@ -484,7 +465,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             )}
           </div>
           <div>
-            <span className="text-sm font-medium text-gray-700">영문 대소문자</span>
+            <span className="block text-sm font-medium text-gray-700">영문 대소문자</span>
             <div className="mt-1 inline-flex rounded-lg border border-gray-200 overflow-hidden">
               {([
                 { id: 'upper', label: '전부 대문자 (THEO)' },
@@ -538,7 +519,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
               </div>
               <div>
                 <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span className="font-medium text-gray-700">상단문구 크기</span><span>{eyebrowPct}%</span></div>
-                <p className="text-[10px] text-gray-400 leading-tight mb-1">GALLERY 같은 작은 라벨과 INFORMATION · THANK YOU · R.S.V.P 같은 섹션 제목에 함께 적용돼요</p>
                 <input
                   type="range" min={85} max={130} value={eyebrowPct}
                   onChange={(e) => updateNestedData('content.classicEyebrowScale', parseInt(e.target.value, 10) / 100)}
@@ -555,13 +535,11 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
         <h3 className="text-base font-semibold text-gray-900">
           오프닝 연출
         </h3>
-        <p className="text-sm text-gray-500">청첩장을 열었을 때 처음 보여지는 방식을 선택하세요.</p>
 
         {/* 이름 표기 (5종 오프닝 공통) */}
         <div className="flex items-center justify-between rounded-lg border border-gray-200 p-3 bg-gray-50/50">
           <div className="flex flex-col">
             <span className="text-sm font-medium text-gray-700">이름 표기</span>
-            <span className="text-[10px] text-gray-400 leading-tight">모든 오프닝 공통 · 영문 / 한글</span>
           </div>
           <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
             {([
@@ -631,8 +609,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
           <div className="space-y-1.5">
             <span className="text-sm font-medium text-gray-700">배경 이미지 (선택)</span>
             <div className="text-[10px] text-gray-400 leading-snug pb-1">
-              <p>업로드하면 오프닝 배경으로 사용됩니다. 비우면 배경 색상이 적용됩니다.</p>
-              <p>휴대폰마다 화면 비율이 조금씩 달라 사진의 위아래·양옆이 미리보기와 살짝 다르게 잘릴 수 있어요. 얼굴 등 중요한 부분은 가운데 쪽에 오도록 맞춰 주세요.</p>
             </div>
             {/* 크롭·확대 가능한 사진 필드 (예전에 문자열로 저장된 사진도 그대로 불러온다) */}
             <ClassicPhotoField
@@ -652,7 +628,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             />
             <div className="flex flex-col">
               <span className="text-sm text-gray-700">배경 색상</span>
-              <span className="text-[10px] text-gray-400 leading-tight">배경 이미지가 없을 때 사용</span>
             </div>
           </div>
 
@@ -664,7 +639,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             />
             <div className="flex flex-col">
               <span className="text-sm text-gray-700">텍스트 색상</span>
-              <span className="text-[10px] text-gray-400 leading-tight">이름 · 라벨 · 날짜 글자색</span>
             </div>
           </div>
         </div>

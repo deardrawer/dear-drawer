@@ -1655,12 +1655,6 @@ function TheSimpleEditorContent() {
           >
               <div className="bg-white border border-stone-200 rounded-lg p-6 overflow-y-auto flex-1">
                 <div className="max-w-xl mx-auto space-y-8">
-                  {/* 개발중 배너 */}
-                  <div className="p-4 bg-stone-50 border border-stone-200 rounded-md text-xs text-stone-600 leading-relaxed">
-                    <strong className="block mb-1 tracking-wide text-stone-800">THE SIMPLE 에디터</strong>
-                    입력한 내용은 실시간으로 프리뷰에 반영됩니다. 각 섹션의 스타일 변형은 아래에서 선택할 수 있습니다.
-                  </div>
-
                   {/* 폰트 · 영문/한글 폰트 선택 (매거진 에디터와 동일 목록) */}
                   <section className="space-y-4">
                     <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-stone-800 border-b border-stone-300 pb-2">
@@ -2095,7 +2089,7 @@ function TheSimpleEditorContent() {
                     </label>
 
                     <label className="flex items-center justify-between gap-3 py-1.5 border-t border-stone-100 cursor-pointer">
-                      <span className="text-xs text-stone-600">날짜 · 시간 표시 <span className="text-stone-400">· 노웨딩이면 꺼둘 수 있어요</span></span>
+                      <span className="text-xs text-stone-600">날짜 · 시간 표시</span>
                       <input
                         type="checkbox"
                         checked={data.wedding.showDate !== false}
@@ -2105,7 +2099,7 @@ function TheSimpleEditorContent() {
                     </label>
 
                     <label className="flex items-center justify-between gap-3 py-1.5 cursor-pointer">
-                      <span className="text-xs text-stone-600">장소 · 오시는 길 표시 <span className="text-stone-400">· 노웨딩이면 꺼둘 수 있어요</span></span>
+                      <span className="text-xs text-stone-600">장소 · 오시는 길 표시</span>
                       <input
                         type="checkbox"
                         checked={data.wedding.showVenue !== false}
@@ -2173,9 +2167,6 @@ function TheSimpleEditorContent() {
                     <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-stone-800 border-b border-stone-300 pb-2">
                       커버 · Tap to Open
                     </h2>
-                    <p className="text-[11px] text-stone-400 leading-relaxed">
-                      게스트가 청첩장을 열기 전에 표시되는 커버 화면입니다.
-                    </p>
                     <div className="flex flex-wrap gap-1.5">
                       {COVER_VARIANTS.map((cv) => {
                         const isActive = (data.coverVariant ?? 0) === cv.value
@@ -2204,7 +2195,7 @@ function TheSimpleEditorContent() {
                       언어
                     </h2>
                     <p className="rounded-lg border border-stone-200 bg-white p-3 text-[11.5px] text-stone-500 leading-relaxed">
-                      <b className="font-semibold text-stone-800">English</b> 선택 시 <b className="font-semibold text-stone-800">요일·시간·RSVP·메뉴·네비게이션</b>이 영어로, <b className="font-semibold text-stone-800">지도는 구글지도</b>로 표시됩니다. 그 외 인사말·소개 등 <b className="font-semibold text-stone-800">본문 텍스트</b>는 각 섹션 에디터에서 직접 영어로 입력해 주세요.
+                      <b className="font-semibold text-stone-800">English</b> 선택 시 요일·시간·RSVP·메뉴는 영어로, 지도는 구글지도로 표시됩니다. <b className="font-semibold text-stone-800">본문 텍스트</b>는 자동 번역되지 않으므로 각 섹션에서 직접 입력해야 합니다.
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                       {([
@@ -2243,9 +2234,6 @@ function TheSimpleEditorContent() {
                     <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-stone-800 border-b border-stone-300 pb-2">
                       네비게이션 스타일
                     </h2>
-                    <p className="text-[11px] text-stone-400 leading-relaxed">
-                      게스트 뷰에서 표시되는 플로팅 메뉴 버튼의 스타일입니다.
-                    </p>
                     <div className="grid grid-cols-3 gap-2">
                       {([
                         { value: 'hamburger' as const, label: '햄버거 버튼', desc: '우측 하단 원형 메뉴' },
@@ -2305,14 +2293,6 @@ function TheSimpleEditorContent() {
                     <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-stone-800 border-b border-stone-300 pb-2">
                       섹션 순서 · UI 대안
                     </h2>
-                    <p className="text-[11px] text-stone-600 leading-relaxed">
-                      각 섹션을 눌러 펼치면 UI 대안과 상세 설정(갤러리 이미지 등)이 나타납니다.
-                      손잡이를 잡아 드래그하면 순서를 변경할 수 있습니다.
-                      {' '}<span className="inline-flex items-center align-text-bottom"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12" /></svg></span> 버튼으로 섹션 사이 디바이더를 개별적으로 끄거나 켤 수 있습니다.
-                      {data.sectionBgMode === 'tinted' && (
-                        <> 틴티드 배경 모드에서는 각 섹션의 <span className="inline-block w-3 h-3 rounded-full border border-stone-400 align-text-bottom" style={{ background: data.tintedColor || '#FAF8F5' }} /> 버튼으로 배경을 개별 전환할 수 있습니다.</>
-                      )}
-                    </p>
                     <SectionListPanel
                       sectionOrder={data.sectionOrder}
                       sectionVariants={data.sectionVariants}
@@ -2787,7 +2767,6 @@ function TheSimpleEditorContent() {
                             {/* 라이트박스 스타일 선택 */}
                             <div className="mt-3 pt-3 border-t border-stone-200 space-y-1.5">
                               <span className="text-[10px] uppercase tracking-wider text-stone-400">라이트박스 스타일</span>
-                              <p className="text-[10px] text-stone-400 leading-relaxed">사진을 탭하면 열리는 뷰어의 스타일</p>
                               <div className="flex flex-wrap gap-1.5">
                                 {([
                                   [1, '에디토리얼'],
@@ -2827,9 +2806,8 @@ function TheSimpleEditorContent() {
                                 />
                                 <span className="text-[11px] text-stone-600">사진 확대(줌) 허용</span>
                               </label>
-                              <p className="text-[10px] text-stone-400 leading-relaxed">라이트박스에서 핀치 · 더블탭으로 사진을 확대할 수 있습니다</p>
                               {data.galleryZoomEnabled === true && (
-                                <p className="text-[10px] text-stone-400 leading-relaxed">사진은 2.5배까지 확대돼요. 더 크게 선명하게 확대하고 싶은 사진은 &apos;조정&apos; → &apos;고화질로 다시 올리기&apos;로 올려 주세요.</p>
+                                <p className="text-[10px] text-stone-400 leading-relaxed">최대 2.5배까지 확대됩니다. 선명한 확대가 필요한 사진은 &apos;조정&apos; → &apos;고화질로 다시 올리기&apos;를 사용합니다.</p>
                               )}
                             </div>
                           </div>
@@ -3026,16 +3004,13 @@ function TheSimpleEditorContent() {
                               <p className="text-[10px] text-amber-500">저장 후 음악 파일을 업로드할 수 있습니다</p>
                             )}
                             <p className="text-[10px] text-stone-400 leading-relaxed">
-                              저작권이 있는 음악을 업로드할 경우 발생하는 모든 법적 책임은 사용자에게 있습니다. 저작권에 위배되지 않는 MP3 파일만 업로드해주세요.
+                              저작권이 있는 음악 업로드로 발생하는 모든 법적 책임은 사용자에게 있습니다.
                             </p>
                           </div>
 
                           {/* 자동재생 토글 */}
                           <label className="flex items-center justify-between pt-1">
-                            <div>
-                              <span className="text-xs text-stone-600">자동 재생</span>
-                              <p className="text-[10px] text-stone-400">청첩장 열면 자동으로 음악이 재생됩니다</p>
-                            </div>
+                            <span className="text-xs text-stone-600">자동 재생</span>
                             <button
                               type="button"
                               onClick={() => {

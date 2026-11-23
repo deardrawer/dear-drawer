@@ -23,7 +23,7 @@ export default function InfoEditor({ value, onChange, showDate, onShowDateChange
   return (
     <div className="space-y-2.5">
       <p className="text-[10px] text-stone-400 leading-relaxed">
-        날짜 · 시간 · 예식장은 상단 &quot;기본 정보&quot;에서 편집하세요.
+        날짜 · 시간 · 예식장은 상단 &quot;기본 정보&quot;에서 편집합니다.
       </p>
       {onShowDateChange && (
         <label className="flex items-center gap-2 cursor-pointer pb-1 border-b border-stone-100">
@@ -134,7 +134,6 @@ export default function InfoEditor({ value, onChange, showDate, onShowDateChange
       {/* 예식 날짜 포인트 컬러 */}
       <div className="space-y-1.5">
         <div className="text-[10px] uppercase tracking-wider text-stone-500">날짜 포인트 컬러 <span className="normal-case tracking-normal text-stone-400">(캘린더 · 주간)</span></div>
-        <p className="text-[9px] text-stone-400">예식일 텍스트 색상</p>
         <div className="flex items-center gap-2">
           <ColorField
             label="날짜 포인트 컬러"

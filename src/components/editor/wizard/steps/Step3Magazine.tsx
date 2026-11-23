@@ -80,12 +80,6 @@ export default function Step3Magazine({ templateId, invitationId }: Step3Magazin
 
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 */}
-      <div className="space-y-1">
-        <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>매거진 인트로를 꾸며보세요</p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인트로 스타일을 선택하고 기본 정보를 입력하면 매거진 첫 페이지가 완성됩니다.</p>
-      </div>
-
       {/* 1. 신랑신부 이름 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -144,10 +138,7 @@ export default function Step3Magazine({ templateId, invitationId }: Step3Magazin
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
           {/* 날짜·시간 표시 토글 (노웨딩) */}
           <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-sm font-medium">날짜 · 시간 표시</Label>
-              <p className="text-xs text-gray-500">끄면 하객 화면에 날짜·시간을 표시하지 않아요 (노웨딩)</p>
-            </div>
+            <Label className="text-sm font-medium">날짜 · 시간 표시</Label>
             <Switch checked={invitation.wedding.showDate !== false} onCheckedChange={(c) => updateNestedField('wedding.showDate', c)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -189,10 +180,7 @@ export default function Step3Magazine({ templateId, invitationId }: Step3Magazin
 
           {/* 장소·오시는길 표시 토글 (노웨딩) */}
           <div className="flex items-center justify-between pt-1">
-            <div>
-              <Label className="text-sm font-medium">장소 · 오시는 길 표시</Label>
-              <p className="text-xs text-gray-500">끄면 예식장·오시는 길을 표시하지 않아요</p>
-            </div>
+            <Label className="text-sm font-medium">장소 · 오시는 길 표시</Label>
             <Switch checked={invitation.wedding.showVenue !== false} onCheckedChange={(c) => updateNestedField('wedding.showVenue', c)} />
           </div>
           <div className="space-y-1.5">
@@ -284,8 +272,6 @@ export default function Step3Magazine({ templateId, invitationId }: Step3Magazin
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           인트로 스타일
         </h3>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>매거진 첫 페이지의 스타일을 선택하세요</p>
-
         <div className="grid grid-cols-3 gap-3">
           {/* Cover 스타일 */}
           <button
@@ -364,7 +350,6 @@ export default function Step3Magazine({ templateId, invitationId }: Step3Magazin
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
             커버 이미지
           </h3>
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>매거진 표지에 사용할 사진을 선택하세요</p>
           <input
             ref={coverInputRef}
             type="file"
@@ -443,7 +428,6 @@ export default function Step3Magazine({ templateId, invitationId }: Step3Magazin
       <section className="space-y-4">
         <div>
           <h3 className="text-sm font-semibold text-gray-900">D-Day 팝업</h3>
-          <p className="text-xs text-gray-500 mt-0.5">결혼식 당일 안내 팝업을 설정합니다</p>
         </div>
         <DdayPopupEditor
           value={invitation.ddayPopup || DEFAULT_DDAY_POPUP}

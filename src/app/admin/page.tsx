@@ -845,6 +845,8 @@ export default function AdminPage() {
                                   ? '/editor/thank-you'
                                   : inv.template_id === 'narrative-the-simple'
                                   ? '/editor/the-simple'
+                                  : inv.template_id === 'narrative-phone'
+                                  ? '/editor/phone'
                                   : inv.template_id === 'narrative-classic'
                                   ? '/editor/classic'
                                   : inv.template_id === 'narrative-essay'

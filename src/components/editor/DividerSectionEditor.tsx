@@ -41,7 +41,6 @@ export default function DividerSectionEditor({
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
           <div>
             <p className="text-sm font-medium">섹션 디바이더</p>
-            <p className="text-xs text-gray-500">흑백 웨딩사진 배경으로 섹션을 구분해요</p>
           </div>
           <Switch
             checked={fullHeightDividers?.enabled || false}

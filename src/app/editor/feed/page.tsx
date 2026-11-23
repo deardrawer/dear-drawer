@@ -794,7 +794,7 @@ function FeedEditorContent() {
                 저장하지 않은 변경사항이 있어요
               </h3>
               <p className="text-sm text-gray-500 text-center mt-2">
-                지금 나가면 작업한 내용이 사라집니다.<br />저장하고 나가시겠어요?
+                지금 나가면 작업한 내용이 사라집니다.
               </p>
             </div>
             <div className="flex gap-3 mt-6">

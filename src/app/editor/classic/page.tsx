@@ -695,8 +695,8 @@ function ClassicEditorContent() {
               <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-4">
                 <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 text-center">저장하지 않은 변경사항이 있어요</h3>
-              <p className="text-sm text-gray-500 text-center mt-2">지금 나가면 작업한 내용이 사라집니다.<br />저장하고 나가시겠어요?</p>
+              <h3 className="text-lg font-semibold text-gray-900 text-center">저장하지 않은 변경사항이 있습니다</h3>
+              <p className="text-sm text-gray-500 text-center mt-2">지금 나가면 작업한 내용이 사라집니다.<br />저장하고 나가시겠습니까?</p>
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setIsExitModalOpen(false)} className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">계속 편집</button>

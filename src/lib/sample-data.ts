@@ -1,3 +1,5 @@
+import phoneSampleJson from './phoneSampleContent.json'
+
 // OUR 템플릿 샘플 데이터
 export const ourSampleContent = {
   groom: {
@@ -1340,11 +1342,113 @@ export const theSimpleSampleContent = {
   },
 }
 
+// THE PHONE — 폰 화면 청첩장 샘플
+// 에디터(/editor/phone?id=30654012)에서 꾸민 모습 그대로 — 사진은 public/samples/phone
+export const phoneSampleContent = phoneSampleJson
+
 // 샘플 청첩장 객체 생성 함수
 // 무비 티켓 인트로 샘플 사진 (OTT 와 같은 사진 칸을 쓰므로 미리보기에서 티켓을 고를 때만 바꿔 끼운다)
 export const filmTicketSamplePhoto = { image: '/sample/movie/romance-ticket_web.webp', settings: { cropX: 0, cropY: 0.12, cropWidth: 1, cropHeight: 0.43 } }
 
-export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' | 'the-simple' | 'classic', essayConcept?: string) {
+// ESSAY '모던 북' 컨셉 샘플 — 같은 책을 고른 날 (기존 산 이야기 샘플은 그대로 둔다)
+const MB_PHOTO = (id: string) => `/sample/movie/${id}_web.webp`
+export const essayModernSampleContent = {
+  ...essayStorySampleContent,
+  designConcept: 'modern' as const,
+  media: { coverImage: MB_PHOTO('6801de6c-33fe-4dca-b6c5-84b0caa9ea3c') },
+  design: { coverTitle: '책장 사이에서' },
+  greeting: '같은 책을 고르던 두 사람이\n이제 한 집의 책장을 함께 채우려 합니다.\n\n서로의 문장에 밑줄을 그어 주던 날들처럼\n앞으로의 페이지도 나란히 넘기겠습니다.\n\n그 첫 장을 여는 날, 곁에 있어 주세요.',
+  chapters: [
+    {
+      title: '시작',
+      subtitle: 'The Same Book',
+      body: '2021년 봄, 골목 끝의 작은 책방이었습니다.\n\n평대에 딱 한 권 남은 소설을 집으려는데\n맞은편에서 다른 손이 같은 책을 잡았습니다.\n\n잠깐의 정적, 그리고 동시에 터진 웃음.\n책은 그녀가 사고, 다 읽으면 빌려주기로 했습니다.\n\n일주일이면 읽을 책이었는데\n돌려주는 날은 자꾸만 미뤄졌습니다.',
+      photo: MB_PHOTO('0aba4872-30f3-4c1b-a848-06d7504413d0'),
+      location: '골목 끝 작은 책방',
+      date: '2021. 04',
+    },
+    {
+      title: '우리의 시간',
+      subtitle: 'Our Saturdays',
+      body: '그 뒤로 토요일은 늘 같은 순서였습니다.\n책방에서 한 권씩 고르고, 옆 카페 창가에 나란히 앉는 것.\n\n다 읽은 책은 서로 바꿔 읽었습니다.\n마음에 닿은 문장에는 연필로 밑줄을 긋고\n책 귀퉁이에는 짧은 메모를 남겼습니다.\n\n"여기서 네 생각이 났어."\n\n그렇게 우리 책장에는\n두 사람의 글씨가 조금씩 쌓여 갔습니다.',
+      photo: MB_PHOTO('34ef83d3-c823-494d-bafb-2fa1ac2e3a67'),
+      location: '책방 옆 창가 자리',
+      date: '2022. 10',
+    },
+    {
+      title: '약속',
+      subtitle: 'The Last Page',
+      body: '청혼은 처음 만난 그 책방에서 하고 싶었습니다.\n\n사장님께 미리 부탁해, 그날 함께 집었던 그 책을\n같은 자리에 한 권 올려 두었습니다.\n마지막 장 사이에는 편지 한 통을 끼워 두고요.\n\n책을 펼친 그녀는 한참 말없이 읽더니\n고개를 들고 웃으며 말했습니다.\n"이번엔 내가 먼저 집었네."\n\n우리의 다음 장은 함께 쓰기로 했습니다.',
+      photo: MB_PHOTO('7920881d-7c92-4ecb-9590-6990a608e9ae'),
+      location: '처음 만난 그 책방',
+      date: '2025. 04',
+    },
+  ],
+  interviews: [
+    { question: '상대방의 첫인상은 어땠나요?', answer: '같은 책에 손을 뻗은 사람이라니, 취향부터 마음에 들었어요. 먼저 양보하겠다고 끝까지 우기던 모습도요.', answerer: 'bride' as const },
+    { question: '서로에게 가장 고마운 점은?', answer: '제가 그어 둔 밑줄을 늘 먼저 알아봐 주는 사람이에요. 말하지 않아도 마음을 읽어 주는 게 가장 고맙습니다.', answerer: 'groom' as const },
+  ],
+  quote: {
+    text: '나는 늘 천국이\n일종의 도서관일 것이라고 상상해 왔다.',
+    author: '호르헤 루이스 보르헤스',
+  },
+  thankYou: {
+    title: '감사 인사',
+    message: '귀한 시간을 내어\n저희의 첫 장을 함께 읽어 주셔서\n진심으로 감사드립니다.\n\n받은 축복은 책갈피처럼 소중히 끼워 두고\n서로에게 좋은 이야기가 되며 살겠습니다.',
+    sign: '지훈 & 서연 올림',
+  },
+  gallery: {
+    images: [
+      MB_PHOTO('deeaeb10-1c7b-430b-b442-32f15db58057'),
+      MB_PHOTO('b21858b0-4bfd-412f-9f47-7e7c8eb49214'),
+      MB_PHOTO('447e4f00-faeb-4228-96dd-faef58c8718f'),
+      MB_PHOTO('3b4ca0a9-84bd-408d-ac46-079d81992729'),
+      MB_PHOTO('c3ba2f27-653f-42fd-bd38-8d2412e7ee83'),
+      MB_PHOTO('6801de6c-33fe-4dca-b6c5-84b0caa9ea3c'),
+    ],
+    imageSettings: Array(6).fill({ scale: 1, positionX: 0, positionY: 0 }),
+  },
+  content: {
+    ...essayStorySampleContent.content,
+    sampleGuestbook: [
+      { id: 'g1', guest_name: '박지영', message: '책방에서 시작된 이야기라니, 두 사람다워요. 다음 장도 늘 따뜻하길! 📚', created_at: '2026-02-19T10:30:00Z' },
+      { id: 'g2', guest_name: '최현우', message: '지훈아, 책 돌려주는 날 미룬 이유가 이거였구나. 진심으로 축하한다!', created_at: '2026-02-19T09:15:00Z' },
+      { id: 'g3', guest_name: '정소희', message: '마지막 장의 편지라니… 읽다가 울컥했어요. 결혼 축하드립니다 🤍', created_at: '2026-02-18T22:00:00Z' },
+    ],
+  },
+}
+
+export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' | 'the-simple' | 'classic' | 'phone', essayConcept?: string) {
+  // phone 타입 (THE PHONE · 독자 스키마)
+  if (type === 'phone') {
+    const now = new Date().toISOString()
+    const c = phoneSampleContent
+    return {
+      id: 'sample-phone-id',
+      user_id: 'sample-user-id',
+      template_id: 'narrative-phone' as const,
+      groom_name: c.groom.name,
+      bride_name: c.bride.name,
+      wedding_date: c.wedding.date,
+      wedding_time: c.wedding.timeDisplay,
+      venue_name: c.wedding.venue.name,
+      venue_address: c.wedding.venue.address,
+      venue_detail: null,
+      venue_map_url: null,
+      main_image: '',
+      gallery_images: '[]',
+      greeting_message: '',
+      contact_groom: c.groom.phone,
+      contact_bride: c.bride.phone,
+      account_info: JSON.stringify([]),
+      content: JSON.stringify(c),
+      is_paid: 1,
+      is_published: 1,
+      slug: 'sample-phone',
+      created_at: now,
+      updated_at: now,
+    }
+  }
   // the-simple 타입은 별도 처리 (독자 스키마)
   if (type === 'the-simple') {
     const now = new Date().toISOString()
@@ -1379,10 +1483,12 @@ export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'fi
   // essay 타입은 별도 처리
   if (type === 'essay') {
     const now = new Date().toISOString()
-    const essayContent = {
-      ...essayStorySampleContent,
-      ...(essayConcept && { designConcept: essayConcept }),
-    }
+    const essayContent = essayConcept === 'modern'
+      ? essayModernSampleContent
+      : {
+          ...essayStorySampleContent,
+          ...(essayConcept && { designConcept: essayConcept }),
+        }
     return {
       id: essayConcept ? `sample-essay-${essayConcept}-id` : 'sample-essay-id',
       user_id: 'sample-user-id',
@@ -1397,7 +1503,7 @@ export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'fi
       venue_map_url: null,
       main_image: '',
       gallery_images: '[]',
-      greeting_message: essayStorySampleContent.greeting,
+      greeting_message: essayContent.greeting,
       contact_groom: essayStorySampleContent.groom.phone,
       contact_bride: essayStorySampleContent.bride.phone,
       account_info: JSON.stringify([]),

@@ -1,7 +1,7 @@
 'use client'
 
 import { useSectionHighlight } from './SectionHighlightContext'
-import { useTheme } from './ThemeContext'
+import { C_TXT_BODY, C_TXT, C_KSERIF, C_SERIF, C_TXT_SUB, cCaption, cDim, cPill, cStagger } from './cStyle'
 
 interface ShareSectionProps {
   onKakaoShare?: () => void
@@ -11,27 +11,21 @@ interface ShareSectionProps {
   shareDescription?: string
   thumbnailUrl?: string
   kakaoThumbnailRatio?: '3:4' | '1:1' | '3:2'
+  signature?: React.ReactNode   // C안 맺음말 아래 보내는 분 (선택)
+  showCaption?: boolean         // 참석 여부 섹션이 없을 때 작은 안내 문구 표시
 }
-
-const stagger = (hasAppeared: boolean, delay: number) => ({
-  opacity: hasAppeared ? 1 : 0,
-  transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
-  filter: hasAppeared ? 'blur(0px)' : 'blur(6px)',
-  transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
-  transitionDelay: hasAppeared ? `${delay}s` : '0s',
-})
 
 export default function ShareSection({
   onKakaoShare,
-  onSmsShare,
   onCopyLink,
   shareTitle,
   shareDescription,
   thumbnailUrl,
   kakaoThumbnailRatio,
+  signature,
+  showCaption = false,
 }: ShareSectionProps) {
   const { ref, isActive, hasAppeared } = useSectionHighlight('share')
-  const theme = useTheme()
 
   const handleCopyLink = () => {
     if (onCopyLink) {
@@ -42,138 +36,103 @@ export default function ShareSection({
     }
   }
 
+  const handleKakaoShare = () => {
+    if (onKakaoShare) {
+      onKakaoShare()
+    } else {
+      const kakaoWindow = window as typeof window & {
+        Kakao?: {
+          isInitialized?: () => boolean
+          init?: (key: string) => void
+          Share?: { sendDefault: (config: object) => void }
+        }
+      }
+
+      if (typeof window !== 'undefined' && kakaoWindow.Kakao) {
+        try {
+          if (!kakaoWindow.Kakao.isInitialized?.()) {
+            const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc'
+            kakaoWindow.Kakao.init?.(kakaoKey)
+          }
+
+          if (kakaoWindow.Kakao.Share?.sendDefault) {
+            let imageUrl = 'https://invite.deardrawer.com/og-image.png'
+            if (thumbnailUrl) {
+              if (thumbnailUrl.startsWith('https://')) {
+                imageUrl = thumbnailUrl
+              } else if (thumbnailUrl.startsWith('/')) {
+                imageUrl = `https://invite.deardrawer.com${thumbnailUrl}`
+              }
+            }
+
+            const kakaoRatioSizes: Record<string, { w: number; h: number }> = { '3:4': { w: 900, h: 1200 }, '1:1': { w: 800, h: 800 }, '3:2': { w: 1200, h: 800 } }
+            const kakaoImgSize = kakaoRatioSizes[kakaoThumbnailRatio || '1:1']
+
+            kakaoWindow.Kakao.Share.sendDefault({
+              objectType: 'feed',
+              content: {
+                title: shareTitle || '결혼식에 초대합니다',
+                description: shareDescription || '소중한 분들을 결혼식에 초대합니다.',
+                imageUrl,
+                imageWidth: kakaoImgSize.w,
+                imageHeight: kakaoImgSize.h,
+                link: {
+                  mobileWebUrl: window.location.href,
+                  webUrl: window.location.href,
+                },
+              },
+              buttons: [
+                {
+                  title: '청첩장 보기',
+                  link: {
+                    mobileWebUrl: window.location.href,
+                    webUrl: window.location.href,
+                  },
+                },
+              ],
+            })
+          } else {
+            navigator.clipboard.writeText(window.location.href)
+            alert('카카오톡 공유 준비 중입니다. 링크가 복사되었습니다.')
+          }
+        } catch (error) {
+          console.error('Kakao share error:', error)
+          navigator.clipboard.writeText(window.location.href)
+          alert('카카오톡 공유에 실패했습니다. 링크가 복사되었습니다.')
+        }
+      } else {
+        navigator.clipboard.writeText(window.location.href)
+        alert('카카오톡 공유를 사용할 수 없습니다. 링크가 복사되었습니다.')
+      }
+    }
+  }
+
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="px-6 py-20 min-h-screen"
-      style={{
-        backgroundColor: theme.background,
-        filter: isActive ? 'none' : 'grayscale(30%)',
-        opacity: isActive ? 1 : 0.3,
-        transition: 'filter 0.5s, opacity 0.5s',
-      }}
+      // 기존과 같은 높이(min-h-screen) — 맨 끝 참석 여부 시트가 올라오는 시점을 그대로 유지
+      className="min-h-screen"
+      style={{ backgroundColor: 'transparent', padding: showCaption ? '72px 28px 110px' : '0 28px 110px', ...cDim(isActive) }}
     >
-      <p
-        className="text-center text-xs mb-5 tracking-[1px]"
-        style={{
-          color: isActive ? (theme.tintedBg ? theme.text : `${theme.accent}80`) : '#aaa',
-          fontWeight: 300,
-          ...stagger(hasAppeared, 0),
-        }}
-      >
-        소중한 분들께 알려주세요
-      </p>
-
-      <div
-        className="flex items-center justify-center gap-3"
-        style={stagger(hasAppeared, 0.2)}
-      >
-        <button
-          onClick={() => {
-            if (onKakaoShare) {
-              onKakaoShare()
-            } else {
-              const kakaoWindow = window as typeof window & {
-                Kakao?: {
-                  isInitialized?: () => boolean
-                  init?: (key: string) => void
-                  Share?: { sendDefault: (config: object) => void }
-                }
-              }
-
-              if (typeof window !== 'undefined' && kakaoWindow.Kakao) {
-                try {
-                  if (!kakaoWindow.Kakao.isInitialized?.()) {
-                    const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc'
-                    kakaoWindow.Kakao.init?.(kakaoKey)
-                  }
-
-                  if (kakaoWindow.Kakao.Share?.sendDefault) {
-                    let imageUrl = 'https://invite.deardrawer.com/og-image.png'
-                    if (thumbnailUrl) {
-                      if (thumbnailUrl.startsWith('https://')) {
-                        imageUrl = thumbnailUrl
-                      } else if (thumbnailUrl.startsWith('/')) {
-                        imageUrl = `https://invite.deardrawer.com${thumbnailUrl}`
-                      }
-                    }
-
-                    const kakaoRatioSizes: Record<string, { w: number; h: number }> = { '3:4': { w: 900, h: 1200 }, '1:1': { w: 800, h: 800 }, '3:2': { w: 1200, h: 800 } }
-                    const kakaoImgSize = kakaoRatioSizes[kakaoThumbnailRatio || '1:1']
-
-                    kakaoWindow.Kakao.Share.sendDefault({
-                      objectType: 'feed',
-                      content: {
-                        title: shareTitle || '결혼식에 초대합니다',
-                        description: shareDescription || '소중한 분들을 결혼식에 초대합니다.',
-                        imageUrl,
-                        imageWidth: kakaoImgSize.w,
-                        imageHeight: kakaoImgSize.h,
-                        link: {
-                          mobileWebUrl: window.location.href,
-                          webUrl: window.location.href,
-                        },
-                      },
-                      buttons: [
-                        {
-                          title: '청첩장 보기',
-                          link: {
-                            mobileWebUrl: window.location.href,
-                            webUrl: window.location.href,
-                          },
-                        },
-                      ],
-                    })
-                  } else {
-                    navigator.clipboard.writeText(window.location.href)
-                    alert('카카오톡 공유 준비 중입니다. 링크가 복사되었습니다.')
-                  }
-                } catch (error) {
-                  console.error('Kakao share error:', error)
-                  navigator.clipboard.writeText(window.location.href)
-                  alert('카카오톡 공유에 실패했습니다. 링크가 복사되었습니다.')
-                }
-              } else {
-                navigator.clipboard.writeText(window.location.href)
-                alert('카카오톡 공유를 사용할 수 없습니다. 링크가 복사되었습니다.')
-              }
-            }
-          }}
-          className="flex items-center gap-1.5 px-5 py-2.5 text-[11px] tracking-[0.5px] rounded-[5px] transition-all duration-200"
-          style={{
-            backgroundColor: '#FEE500',
-            border: '1px solid #FEE500',
-            color: '#3C1E1E',
-          }}
-        >
-          카카오톡
+      {showCaption && (
+        <p style={{ ...cCaption, textAlign: 'center', marginBottom: 20, ...cStagger(hasAppeared, 0) }}>소중한 분들께 알려 주세요</p>
+      )}
+      <div style={{ display: 'flex', gap: 8, ...cStagger(hasAppeared, 0.2) }}>
+        <button type="button" onClick={handleKakaoShare} style={cPill(false)}>
+          카카오톡 공유
         </button>
-        <button
-          onClick={handleCopyLink}
-          className="flex items-center gap-1.5 px-5 py-2.5 text-[11px] tracking-[0.5px] rounded-[5px] transition-all duration-200"
-          style={{
-            backgroundColor: '#FFFFFF',
-            // 흰 버튼이므로 진한 카드 텍스트 (틴트 텍스트 영향 X)
-            border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,
-            color: isActive ? theme.cardText : '#aaa',
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = theme.accent; e.currentTarget.style.color = theme.accent; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = isActive ? '#E8E2DA' : '#eee'; e.currentTarget.style.color = isActive ? (theme.cardText || theme.text) : '#aaa'; }}
-        >
-          링크복사
+        <button type="button" onClick={handleCopyLink} style={cPill(false)}>
+          링크 복사
         </button>
       </div>
 
-      <p
-        className="text-center text-[10px] mt-12 tracking-[4px]"
-        style={{
-          color: isActive ? (theme.tintedBg ? theme.text : `${theme.accent}60`) : '#ccc',
-          fontWeight: 300,
-          ...stagger(hasAppeared, 0.4),
-        }}
-      >
-        dear drawer
-      </p>
+      <div style={{ textAlign: 'center', marginTop: 64, ...cStagger(hasAppeared, 0.4) }}>
+        <div style={{ fontFamily: C_SERIF, fontStyle: 'italic', fontSize: 22, color: C_TXT }}>with love</div>
+        {signature && (
+          <div style={{ fontFamily: C_KSERIF, fontSize: 15, marginTop: 8, color: C_TXT_BODY }}>{signature}</div>
+        )}
+        <div style={{ fontSize: 11, letterSpacing: '0.12em', color: C_TXT_SUB, marginTop: 40, opacity: 0.7 }}>dear drawer</div>
+      </div>
     </section>
   )
 }

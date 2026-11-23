@@ -72,7 +72,7 @@ export default function ParentIntroEditor({
                 placeholder="예: 홍길동, 김영희의"
                 className="text-sm"
               />
-              <p className="text-[10px] text-gray-400">아버지, 어머니 이름 뒤에 &apos;의&apos;를 붙여주세요</p>
+              <p className="text-[10px] text-gray-400">아버지, 어머니 이름 뒤에 &apos;의&apos;까지 입력합니다</p>
             </div>
 
             {/* 자녀 순서 */}
@@ -143,7 +143,6 @@ export default function ParentIntroEditor({
                   )
                 })}
               </div>
-              <p className="text-[10px] text-gray-400">2장 등록 시 자동 슬라이드됩니다</p>
 
               {/* 이미지 크롭 조정 */}
               {(data.images || []).length > 0 && (
@@ -213,7 +212,6 @@ export default function ParentIntroEditor({
                 rows={8}
                 className="text-sm min-h-[200px] leading-relaxed"
               />
-              <p className="text-[10px] text-gray-400">줄바꿈을 사용하여 문단을 나눌 수 있습니다</p>
             </div>
           </>
         )}

@@ -223,9 +223,6 @@ export default function IntroEditor({ value, variant, onChange }: IntroEditorPro
               )}
             </div>
           </label>
-          <p className="text-[10px] text-stone-400 leading-relaxed">
-            배경 이미지를 넣지 않으면 블랙 버전으로 표시됩니다
-          </p>
           </>
         )}
       </div>
@@ -233,9 +230,6 @@ export default function IntroEditor({ value, variant, onChange }: IntroEditorPro
       {/* 배경 색상 — 항상 표시 */}
       <div className="space-y-2 pt-1">
         <div className="text-[10px] uppercase tracking-wider text-stone-500">배경 색상</div>
-        <p className="text-[10px] text-stone-400 leading-relaxed">
-          인트로 영역의 기본 배경색을 변경합니다
-        </p>
         <div className="flex items-center gap-2">
           <ColorField
             label="배경 색상"
@@ -281,9 +275,6 @@ export default function IntroEditor({ value, variant, onChange }: IntroEditorPro
       {value.photo && (
         <div className="space-y-2 pt-1">
           <div className="text-[10px] uppercase tracking-wider text-stone-500">오버레이</div>
-          <p className="text-[10px] text-stone-400 leading-relaxed">
-            사진 위에 색상을 덧씌워 텍스트 가독성을 조절합니다
-          </p>
           {(() => {
             const parsed = parseRgba(value.overlayColor || 'rgba(0,0,0,0.4)')
             return (

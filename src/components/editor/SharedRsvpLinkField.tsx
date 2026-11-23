@@ -91,7 +91,7 @@ export default function SharedRsvpLinkField({
             value={pagePhoto}
             onChange={(url) => onShareChange({ pagePhoto: url })}
             label="RSVP 링크 상단 사진 (선택)"
-            hint="RSVP 페이지 맨 위에 원형으로 표시됩니다. 비우면 표시되지 않습니다."
+            hint=""
             circle
           />
         </div>
@@ -128,7 +128,7 @@ export default function SharedRsvpLinkField({
             카카오톡으로 공유
           </button>
           <p className="text-[10px] leading-tight text-gray-400">
-            제목·설명을 비우면 기본 문구가 사용됩니다. <b className="text-gray-500">카카오톡으로 공유</b> 버튼은 수정 즉시 반영됩니다. 링크를 복사해 붙여넣는 경우엔 <span className="text-amber-600">저장 후</span> 카카오 캐시 갱신이 필요할 수 있어요.
+            <b className="text-gray-500">카카오톡으로 공유</b> 버튼은 수정 즉시 반영됩니다. 링크를 복사해 붙여넣는 경우엔 <span className="text-amber-600">저장 후</span> 카카오 캐시 갱신이 필요할 수 있습니다.
           </p>
         </div>
       )}

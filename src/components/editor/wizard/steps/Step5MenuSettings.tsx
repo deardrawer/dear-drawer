@@ -311,18 +311,13 @@ export default function Step5MenuSettings() {
 
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 */}
-      <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-        오시는 길, 연락처, RSVP, 마음 전하실 곳 등을 설정해주세요.
-      </p>
-
       {/* 메뉴 버튼 스타일 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">
           메뉴 버튼 스타일
         </h3>
         {isOurOrFamily && (
-          <p className="text-xs text-gray-500">인트로 페이지에서는 항상 하단 네비바가 표시됩니다. 메인 페이지의 스타일을 선택해주세요.</p>
+          <p className="text-xs text-gray-500">인트로 페이지에서는 항상 하단 네비바가 표시됩니다.</p>
         )}
         <div className={`grid gap-3 ${navStyleOptions.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
           {navStyleOptions.map((opt) => (
@@ -358,9 +353,6 @@ export default function Step5MenuSettings() {
               초기화
             </button>
           </div>
-          <p className="text-sm text-gray-500">
-            드래그하여 섹션 순서를 변경할 수 있습니다. 인사말은 항상 최상단에 고정됩니다.
-          </p>
           {sectionConfig?.showBgToggle && (
             <div className="flex items-center gap-3 text-[10px] text-gray-400 px-1">
               <span className="flex items-center gap-1">
@@ -586,16 +578,13 @@ export default function Step5MenuSettings() {
         </h3>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-              교통 안내 정보를 입력해주세요.
-            </p>
-            {!invitation.wedding.directions?.car && !invitation.wedding.directions?.publicTransport && !invitation.wedding.directions?.train && !invitation.wedding.directions?.expressBus && (
+          {!invitation.wedding.directions?.car && !invitation.wedding.directions?.publicTransport && !invitation.wedding.directions?.train && !invitation.wedding.directions?.expressBus && (
+            <div className="flex items-center justify-end">
               <button onClick={applySampleDirections} className="text-xs text-stone-500 hover:text-stone-700">
                 샘플 적용
               </button>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="p-4 bg-gray-50 rounded-lg space-y-3">
             <div className="space-y-1.5">
@@ -679,10 +668,7 @@ export default function Step5MenuSettings() {
             onCheckedChange={() => toggleSectionVisibility('contacts')}
           />
         </div>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-          하객분들이 축하 전화를 드릴 수 있는 연락처를 입력해주세요. 입력된 연락처만 표시됩니다.
-        </p>
-        <p className="text-xs text-gray-500">부모님 성함은 이전 단계(스토리)에서 입력한 이름이 자동 연동됩니다.</p>
+        <p className="text-xs text-gray-500">입력된 연락처만 표시됩니다. 부모님 성함은 스토리 단계에서 입력한 이름이 연동됩니다.</p>
 
         <div className="space-y-4">
           {/* 신랑측 연락처 */}
@@ -826,7 +812,6 @@ export default function Step5MenuSettings() {
           <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
             <div>
               <p className="text-sm font-medium text-gray-800">청첩장 본문에 표시</p>
-              <p className="text-xs text-gray-500">{invitation.sectionVisibility.rsvp !== false ? 'ON: 본문에 노출' : 'OFF: 본문에서 숨김'}</p>
             </div>
             <Switch
               checked={invitation.sectionVisibility.rsvp !== false}
@@ -921,7 +906,6 @@ export default function Step5MenuSettings() {
 
             {invitation.rsvpSideDetail && (
               <div className="ml-4 p-3 bg-white rounded-lg border space-y-2">
-                <p className="text-xs text-gray-500 mb-2">표시할 구분 항목을 선택하세요</p>
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -1004,7 +988,7 @@ export default function Step5MenuSettings() {
                 onChange={(e) => updateField('rsvpMessagePlaceholder', e.target.value)}
                 placeholder="신랑 신부에게 전할 축하 메시지를 남겨주세요"
               />
-              <p className="text-xs text-gray-500">축하 메시지 입력란에 표시되는 안내 문구입니다. 비워두면 기본 문구가 표시됩니다.</p>
+              <p className="text-xs text-gray-500">입력란에 미리 보이는 안내 문구</p>
             </div>
 
             <div className="space-y-1.5">
@@ -1016,7 +1000,6 @@ export default function Step5MenuSettings() {
                 rows={2}
                 className="resize-none"
               />
-              <p className="text-xs text-gray-500">RSVP 폼 상단에 표시됩니다. 비워두면 표시되지 않습니다.</p>
             </div>
           </div>
         )}
@@ -1049,7 +1032,6 @@ export default function Step5MenuSettings() {
 
         {invitation.sectionVisibility.bankAccounts && isRecord && (
           <div className="space-y-3">
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>ON/OFF로 청첩장 본문에서 마음 전하실 곳 섹션을 표시하거나 숨길 수 있습니다.</p>
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">안내 문구</Label>
               <Textarea
@@ -1059,14 +1041,13 @@ export default function Step5MenuSettings() {
                 rows={2}
                 className="resize-none"
               />
-              <p className="text-xs text-gray-500">마음 전하실 곳 하단에 표시됩니다. 비워두면 표시되지 않습니다.</p>
             </div>
           </div>
         )}
 
         {invitation.sectionVisibility.bankAccounts && (
           <div className="space-y-4">
-            <p className="text-xs text-gray-500">부모님 성함은 이전 단계(스토리)에서 입력한 이름이 자동 연동됩니다.</p>
+            <p className="text-xs text-gray-500">부모님 성함은 스토리 단계에서 입력한 이름이 연동됩니다.</p>
             {/* 신랑측 계좌 */}
             <div className="p-4 rounded-lg space-y-4" style={{ background: 'var(--ed-surface-2)' }}>
               <p className="font-semibold" style={{ color: 'var(--ed-text)' }}>신랑측</p>

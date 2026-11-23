@@ -142,12 +142,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
 
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 */}
-      <div className="space-y-1">
-        <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>인트로를 꾸며보세요</p>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>기본 정보를 입력하고 영화의 첫 장면이 될 인트로를 골라주세요.</p>
-      </div>
-
       {/* 신랑신부 이름 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -173,7 +167,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
               onChange={(e) => updateNestedField('groom.nameEn', e.target.value)}
               placeholder="JIHOON"
             />
-            <p className="text-xs text-gray-400">인트로 화면에 표시됩니다. 비워두면 한글 이름이 사용됩니다.</p>
           </div>
         </div>
 
@@ -195,7 +188,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
               onChange={(e) => updateNestedField('bride.nameEn', e.target.value)}
               placeholder="SEOYEON"
             />
-            <p className="text-xs text-gray-400">인트로 화면에 표시됩니다. 비워두면 한글 이름이 사용됩니다.</p>
           </div>
         </div>
       </section>
@@ -209,10 +201,7 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
           {/* 날짜·시간 표시 토글 (노웨딩) */}
           <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-sm font-medium">날짜 · 시간 표시</Label>
-              <p className="text-xs text-gray-500">끄면 하객 화면에 날짜·시간을 표시하지 않아요 (노웨딩)</p>
-            </div>
+            <Label className="text-sm font-medium">날짜 · 시간 표시</Label>
             <Switch checked={invitation.wedding.showDate !== false} onCheckedChange={(c) => updateNestedField('wedding.showDate', c)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -254,10 +243,7 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
 
           {/* 장소·오시는길 표시 토글 (노웨딩) */}
           <div className="flex items-center justify-between pt-1">
-            <div>
-              <Label className="text-sm font-medium">장소 · 오시는 길 표시</Label>
-              <p className="text-xs text-gray-500">끄면 예식장·오시는 길을 표시하지 않아요</p>
-            </div>
+            <Label className="text-sm font-medium">장소 · 오시는 길 표시</Label>
             <Switch checked={invitation.wedding.showVenue !== false} onCheckedChange={(c) => updateNestedField('wedding.showVenue', c)} />
           </div>
           <div className="space-y-1.5">
@@ -329,9 +315,7 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
         </div>
         {(introStyle === 'ott' || introStyle === 'ticket') && (
           <div className="p-4 bg-gray-50 rounded-lg space-y-4">
-            <p className="text-xs text-gray-500">{introStyle === 'ticket'
-              ? "'예매가 완료되었어요' 뒤에 모바일 티켓이 올라오고, 바코드가 스캔되면 화면을 눌러 입장해요. 일시·상영관은 결혼식 정보에서 가져와요."
-              : '영화 작품 상세 화면처럼 큰 사진 위에 제목·정보·줄거리가 차례로 나와요. 화면을 누르면 청첩장이 열려요.'}</p>
+            {introStyle === 'ticket' && <p className="text-xs text-gray-500">일시·상영관은 결혼식 정보가 사용됩니다.</p>}
             <div className="space-y-2">
               <Label className="text-sm font-medium">사진</Label>
               {invitation.filmDaysImage ? (
@@ -349,7 +333,7 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
                 </div>
               ) : (
                 <label className="mx-auto flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 bg-white cursor-pointer" style={{ width: introStyle === 'ticket' ? 240 : 200, aspectRatio: introStyle === 'ticket' ? '1.55' : '375 / 422' }}>
-                  {introUploading ? <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> : <span className="text-xs text-gray-500 text-center px-2">+ 사진 추가<br /><span className="text-[10px] text-gray-400">비워두면 커버 사진</span></span>}
+                  {introUploading ? <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> : <span className="text-xs text-gray-500 text-center px-2">+ 사진 추가</span>}
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) uploadIntroImage(file, (url) => updateField('filmDaysImage', url)) }} />
                 </label>
               )}
@@ -357,13 +341,12 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">처음 만난 날</Label>
               <Input type="date" value={invitation.filmDaysStart ?? ''} onChange={(e) => updateField('filmDaysStart', e.target.value)} />
-              <p className="text-[11px] text-gray-400">오늘까지 함께한 날 수가 자동으로 세어져요 (하객이 보는 날 기준) · 비우면 'OUR WEDDING DAY'</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">제목</Label>
               <textarea value={invitation.filmDaysTitle ?? ''} rows={2} maxLength={40} placeholder={'{N} DAYS\nTOGETHER'} onChange={(e) => updateField('filmDaysTitle', e.target.value)}
                 className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:border-gray-600 bg-white" />
-              <p className="text-[11px] text-gray-400">{'{N}'} 은 함께한 날 수로 바뀌어요 · 비우면 'N DAYS TOGETHER'</p>
+              <p className="text-[11px] text-gray-400">{'{N}'}은 함께한 날 수로 바뀝니다.</p>
             </div>
             {introStyle === 'ott' ? (
               <>
@@ -401,7 +384,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
 
         {introStyle === 'dots' && (
           <div className="p-4 bg-gray-50 rounded-lg space-y-4">
-            <p className="text-xs text-gray-500">사진 위에 두 사람의 영문 이름이 필기체 점으로 자동으로 수놓아져요. 다 놓이면 화면 아래 문구가 나오고, 누르면 넘어가요.</p>
             <div>
               <Label className="text-sm font-medium mb-1.5 block">영문 이름</Label>
               <div className="grid grid-cols-2 gap-2">
@@ -412,7 +394,7 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
                   </div>
                 ))}
               </div>
-              <p className="text-[11px] text-gray-400 mt-1">영문만 써져요 · 비워두면 Groom &amp; Bride</p>
+              <p className="text-[11px] text-gray-400 mt-1">영문만 입력할 수 있습니다.</p>
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium">사진</Label>
@@ -431,7 +413,7 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
                 </div>
               ) : (
                 <label className="w-[170px] mx-auto flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 bg-white cursor-pointer" style={{ aspectRatio: '9 / 16' }}>
-                  {introUploading ? <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> : <span className="text-xs text-gray-500 text-center px-2">+ 사진 추가<br /><span className="text-[10px] text-gray-400">비워두면 커버 사진</span></span>}
+                  {introUploading ? <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> : <span className="text-xs text-gray-500 text-center px-2">+ 사진 추가</span>}
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) uploadIntroImage(file, (url) => updateField('filmDotsImage', url)) }} />
                 </label>
               )}
@@ -457,7 +439,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">넘기기 안내 문구</Label>
               <Input value={invitation.filmDotsCaption ?? ''} maxLength={30} placeholder="화면을 눌러 청첩장을 열어주세요" onChange={(e) => updateField('filmDotsCaption', e.target.value)} />
-              <p className="text-[11px] text-gray-400">이름이 다 수놓아지면 날짜 대신 이 문구가 나와요</p>
             </div>
           </div>
         )}
@@ -495,7 +476,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
             <label className="block">
               <span className="text-xs text-gray-500">메인 문구</span>
               <input type="text" value={(invitation as any).filmFrameTitle ?? ''} onChange={(e) => updateField('filmFrameTitle' as any, e.target.value)} placeholder={`${invitation.groom?.name || '신랑'} & ${invitation.bride?.name || '신부'}`} className="mt-0.5 w-full border border-gray-200 rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:border-gray-600 bg-white" />
-              <span className="text-[10px] text-gray-400">비우면 신랑 &amp; 신부 이름이 자동 표시됩니다</span>
             </label>
           </div>
 
@@ -514,7 +494,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
                   </button>
                 ))}
               </div>
-              <p className="text-[10px] text-gray-400 mt-1">손글씨 글꼴을 고르면 상단 라벨은 읽기 쉬운 세리프 대문자로 나와요</p>
             </div>
             <div>
               <p className="text-xs text-gray-500 mb-1.5">한글 (한글 이름 · 장소)</p>
@@ -554,7 +533,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-sm text-gray-700">배경색</span>
-                <p className="text-xs text-gray-500">프레임 주변/여백 배경 컬러</p>
               </div>
               <div className="flex items-center gap-2">
                 <ColorField label="배경색" value={(invitation as any).filmFrameBgColor || '#e3e0d9'} onChange={(hex) => updateField('filmFrameBgColor' as any, hex)} />
@@ -563,7 +541,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-sm text-gray-700">배경 질감</span>
-                <p className="text-xs text-gray-500">니트는 진한 배경색에서 잘 보여요</p>
               </div>
               <div className="flex items-center gap-2">
                 {([['paper', '종이'], ['knit', '니트']] as const).map(([id, label]) => {
@@ -583,7 +560,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
           {frameId === '8' && (
             <div className="p-4 bg-gray-50 rounded-lg space-y-3">
               <h4 className="text-sm font-medium text-gray-800">두 번째 사진 (하단 컷)</h4>
-              <p className="text-xs text-gray-500">상단 컷은 위의 커버 이미지, 하단 컷은 이 사진을 사용합니다.</p>
               <input ref={frame2InputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFrame2Upload} className="hidden" />
               {(invitation as any).filmFrameImage2 ? (
                 <div className="space-y-3">
@@ -621,7 +597,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
       {introStyle === 'booth' && (
         <section className="space-y-4">
           <h3 className="text-base font-semibold text-gray-900">포토부스 사진 3장</h3>
-          <p className="text-xs text-gray-500">하객이 화면을 누르면 3·2·1 카운트다운과 플래시로 위에서부터 한 컷씩 찍혀요 · 비워둔 칸은 커버 사진을 써요</p>
           <input ref={boothInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleBoothUpload} className="hidden" />
           <div className="space-y-3">
             {[0, 1, 2].map((i) => {
@@ -663,7 +638,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
               ))}
               <ColorField label="배경색" value={invitation.filmBoothBgColor || '#BFD0DD'} onChange={(hex) => updateField('filmBoothBgColor', hex)} />
             </div>
-            <p className="text-[11px] text-gray-400">어두운 색을 고르면 글자가 자동으로 밝아져요</p>
           </div>
 
           <div className="p-4 bg-gray-50 rounded-lg space-y-2">
@@ -678,7 +652,7 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
                 </label>
               ))}
             </div>
-            <p className="text-[11px] text-gray-400">사진 띠 아래에 이름(성 제외)이 인쇄돼요 · &lsquo;이름 성&rsquo; 순서로 띄어 쓰면 이름만 들어가요 · 비워두면 한글 이름</p>
+            <p className="text-[11px] text-gray-400">&lsquo;이름 성&rsquo; 순서로 입력하면 이름만 표시됩니다.</p>
           </div>
 
           <div className="p-4 bg-gray-50 rounded-lg space-y-3">
@@ -700,9 +674,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
             커버 이미지
           </h3>
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-            프레임 안에 들어갈 사진을 선택하세요
-          </p>
           <input
             ref={coverInputRef}
             type="file"
@@ -782,7 +753,6 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
       <section className="space-y-4">
         <div>
           <h3 className="text-sm font-semibold text-gray-900">D-Day 팝업</h3>
-          <p className="text-xs text-gray-500 mt-0.5">결혼식 당일 안내 팝업을 설정합니다</p>
         </div>
         <DdayPopupEditor
           value={invitation.ddayPopup || DEFAULT_DDAY_POPUP}

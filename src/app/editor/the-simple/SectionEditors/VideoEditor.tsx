@@ -82,11 +82,11 @@ export default function VideoEditor({ value, invitationId, onChange }: VideoEdit
     if (!file) return
     setFileMsg('')
     if (file.type !== 'video/mp4') {
-      setFileMsg('MP4 파일만 올릴 수 있어요.')
+      setFileMsg('MP4 파일만 올릴 수 있습니다.')
       return
     }
     if (file.size > MAX_MB * 1024 * 1024) {
-      setFileMsg(`파일이 너무 커요. ${MAX_MB}MB 이하로 올려주세요.`)
+      setFileMsg(`파일이 너무 큽니다. ${MAX_MB}MB 이하로 올려주세요.`)
       return
     }
     setUploading(true)
@@ -97,7 +97,7 @@ export default function VideoEditor({ value, invitationId, onChange }: VideoEdit
       const res = await fetch('/api/upload-video', { method: 'POST', body: fd })
       const d = (await res.json().catch(() => ({}))) as { url?: string; error?: string }
       if (!res.ok || !d.url) {
-        setFileMsg(d.error || '업로드에 실패했어요.')
+        setFileMsg(d.error || '업로드에 실패했습니다.')
         return
       }
 
@@ -123,7 +123,7 @@ export default function VideoEditor({ value, invitationId, onChange }: VideoEdit
       setFileMsg('업로드 완료!')
       setTimeout(() => setFileMsg(''), 1800)
     } catch {
-      setFileMsg('업로드에 실패했어요.')
+      setFileMsg('업로드에 실패했습니다.')
     } finally {
       setUploading(false)
     }
@@ -185,11 +185,11 @@ export default function VideoEditor({ value, invitationId, onChange }: VideoEdit
       ) : (
         <div className="space-y-2">
           <p className="text-[11px] text-stone-500 leading-relaxed">
-            <b className="text-stone-700">유튜브 업로드를 가장 권장해요.</b> 화질·재생 안정성이 좋고 모든 기기에서 잘 보여요. 파일은 용량·기기 호환에 따라 재생이 불안정할 수 있어요.
+            <b className="text-stone-700">유튜브 권장.</b> 파일은 용량·기기에 따라 재생이 불안정할 수 있습니다.
           </p>
           {!invitationId ? (
             <p className="text-[11px] text-stone-500 bg-stone-50 rounded-md px-2.5 py-2 leading-relaxed">
-              청첩장을 저장하면 동영상 파일을 올릴 수 있어요.
+              청첩장을 저장한 후 동영상 파일을 올릴 수 있습니다.
             </p>
           ) : value.fileUrl ? (
             <div className="space-y-1.5">
@@ -213,7 +213,7 @@ export default function VideoEditor({ value, invitationId, onChange }: VideoEdit
           <input ref={fileRef} type="file" accept="video/mp4" hidden onChange={onPickFile} />
           {fileMsg && <p className="text-[10px] text-stone-500">{fileMsg}</p>}
           <p className="text-[10px] text-stone-400 leading-relaxed">
-            mp4(H.264) 권장. 미리보기에서 재생되면 하객도 볼 수 있어요. (아이폰 원본 HEVC는 일부 기기에서 재생이 안 될 수 있어요)
+            mp4(H.264) 권장. 아이폰 원본(HEVC)은 일부 기기에서 재생되지 않을 수 있습니다.
           </p>
         </div>
       )}

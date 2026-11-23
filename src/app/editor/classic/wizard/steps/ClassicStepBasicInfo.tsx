@@ -108,7 +108,6 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
       {/* 혼주 성함 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">혼주 성함</h3>
-        <p className="text-sm text-gray-500">인사말 · 소개 문구에 자동으로 반영됩니다.</p>
 
         <div className="space-y-3 p-4 rounded-lg border" style={{ backgroundColor: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
           <p className="text-sm font-semibold" style={{ color: 'var(--ed-text)' }}>신랑측</p>
@@ -161,7 +160,6 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
           <div className="flex items-center justify-between">
             <div>
               <Label className="text-sm font-medium">날짜 · 시간 표시</Label>
-              <p className="text-xs text-gray-400">끄면 하객 화면에 날짜·시간·D-Day를 표시하지 않아요 (노웨딩)</p>
             </div>
             <Switch checked={data.wedding.showDate !== false} onCheckedChange={(c) => updateNestedData('wedding.showDate', c)} />
           </div>
@@ -189,7 +187,6 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
           <div className="flex items-center justify-between pt-1">
             <div>
               <Label className="text-sm font-medium">장소 · 오시는 길 표시</Label>
-              <p className="text-xs text-gray-400">끄면 예식장·오시는 길을 표시하지 않아요</p>
             </div>
             <Switch checked={data.wedding.showVenue !== false} onCheckedChange={(c) => updateNestedData('wedding.showVenue', c)} />
           </div>
@@ -225,7 +222,6 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
       {/* D-Day 팝업 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">D-Day 팝업</h3>
-        <p className="text-sm text-gray-500">결혼식 당일 안내 팝업을 설정합니다.</p>
 
         <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <DdayPopupEditor
@@ -243,7 +239,6 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
       {/* 공유 설정 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">공유 설정</h3>
-        <p className="text-sm text-gray-500">카카오톡·링크로 공유될 때 표시되는 제목·설명·썸네일입니다.</p>
 
         <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50 space-y-4">
           <div className="space-y-1.5">
@@ -257,7 +252,6 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
 
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">카카오톡 공유 썸네일</Label>
-            <p className="text-[10px] text-gray-400">비워두면 갤러리 첫 사진이 사용됩니다.</p>
             <ImageUploader
               value={data.meta.kakaoThumbnail}
               onChange={(url) => updateNestedData('meta.kakaoThumbnail', url)}
@@ -267,7 +261,7 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
               className="max-w-[200px]"
             />
             <div className="pt-1 space-y-1.5">
-              <span className="text-sm font-medium text-gray-700">썸네일 비율</span>
+              <span className="block text-sm font-medium text-gray-700">썸네일 비율</span>
               <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
                 {RATIO_OPTIONS.map((opt) => {
                   const active = kakaoRatio === opt.value
@@ -283,7 +277,6 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
 
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">링크 공유 썸네일 (OG)</Label>
-            <p className="text-[10px] text-gray-400">문자·SNS 링크 미리보기 이미지 (1.91:1). 비워두면 카카오 썸네일이 사용됩니다.</p>
             <ImageUploader
               value={data.meta.ogImage || ''}
               onChange={(url) => updateNestedData('meta.ogImage', url)}

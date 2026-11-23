@@ -223,6 +223,11 @@ function EditorContent() {
               router.push(`/editor/the-simple?id=${editId}${adminParam}`)
               return
             }
+            // THE PHONE 템플릿이면 phone 에디터로 리다이렉트 (공용 에디터로 저장하면 content 가 덮어써짐)
+            if (inv.template_id === 'narrative-phone') {
+              router.push(`/editor/phone?id=${editId}${adminParam}`)
+              return
+            }
             // RECORD 템플릿은 공유 에디터 사용 (리다이렉트 불필요)
             // content 필드에서 전체 데이터 파싱
             if (inv.content) {

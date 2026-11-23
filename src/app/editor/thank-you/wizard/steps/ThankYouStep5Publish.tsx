@@ -123,11 +123,6 @@ export default function ThankYouStep5Publish({
 
   return (
     <div className="p-6 space-y-6">
-      {/* 안내 */}
-      <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
-        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>감사장을 저장하고 공유할 수 있습니다.</p>
-      </div>
-
       {/* 저장 버튼 */}
       <div>
         <button
@@ -217,14 +212,11 @@ export default function ThankYouStep5Publish({
       {invitationId && (
         <section className="space-y-4">
           <h3 className="text-base font-semibold text-gray-900">카카오톡 공유 설정</h3>
-          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
-            카카오톡으로 공유할 때 표시되는 정보를 설정해주세요.
-          </p>
 
           {/* 캐시 경고 */}
           <div className="p-3 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
             <p className="text-xs mb-2" style={{ color: 'var(--ed-text-muted)' }}>
-              <strong>중요:</strong> 카카오톡 공유 정보는 한번 공유된 후 변경하면 캐시로 인해 반영되기까지 시간이 오래 걸릴 수 있습니다.
+              <strong>중요:</strong> 공유 후 변경하면 캐시로 인해 반영까지 시간이 오래 걸릴 수 있습니다.
             </p>
             <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
               <summary className="cursor-pointer font-medium">이미지 변경하기 (펼쳐보기)</summary>
@@ -340,7 +332,6 @@ export default function ThankYouStep5Publish({
                 placeholder={`${data.coupleNames || '신랑 & 신부'}의 감사 인사`}
                 className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200"
               />
-              <p className="text-xs text-gray-400">비워두면 자동 생성됩니다.</p>
             </div>
 
             {/* 공유 설명 */}
@@ -353,7 +344,6 @@ export default function ThankYouStep5Publish({
                 rows={2}
                 className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200 resize-none"
               />
-              <p className="text-xs text-gray-400">비워두면 기본 문구가 표시됩니다.</p>
             </div>
           </div>
         </section>
@@ -365,8 +355,7 @@ export default function ThankYouStep5Publish({
           <h3 className="text-base font-semibold text-gray-900">공유 미리보기 이미지 (OG 이미지)</h3>
           <div className="p-3 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
             <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
-              <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)<br />
-              카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.
+              <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)
             </p>
           </div>
 
@@ -441,7 +430,7 @@ export default function ThankYouStep5Publish({
       {!invitationId && (
         <div className="p-4 bg-gray-50 rounded-xl">
           <p className="text-xs text-gray-500 leading-relaxed">
-            저장하면 감사장 URL이 생성됩니다. 저장 후 커스텀 URL 변경과 공유가 가능합니다.
+            저장 후 커스텀 URL 변경과 공유가 가능합니다.
           </p>
         </div>
       )}

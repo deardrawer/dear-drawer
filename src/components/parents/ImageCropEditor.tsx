@@ -327,7 +327,8 @@ export default function ImageCropEditor({
         style={{
           width: containerSize.width,
           height: value.url ? containerSize.height : containerWidth,
-          backgroundColor: '#1a1a1a',
+          backgroundColor: value.url ? '#1a1a1a' : 'var(--ed-surface-2, #F6F2EC)',
+          boxShadow: value.url ? undefined : 'inset 0 0 0 1.5px var(--ed-border, #E4DDD3)',
         }}
       >
         {/* 이미지 */}
@@ -428,11 +429,11 @@ export default function ImageCropEditor({
           </>
         ) : (
           <div
-            className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors"
+            className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer transition-opacity hover:opacity-80"
             onClick={() => fileInputRef.current?.click()}
           >
-            <Upload className="w-8 h-8 text-gray-500 mb-2" />
-            <span className="text-xs text-gray-500">클릭하여 업로드</span>
+            <Upload className="w-7 h-7 mb-2" style={{ color: 'var(--ed-text-muted, #8A8378)' }} />
+            <span className="text-xs" style={{ color: 'var(--ed-text-muted, #8A8378)' }}>눌러서 사진 올리기</span>
           </div>
         )}
 

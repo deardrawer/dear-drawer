@@ -17,7 +17,7 @@ import { loadKakaoMapSDK } from '@/lib/geunnalKakaoMap'
 import { getBgmPresetByUrl } from '@/lib/bgmPresets'
 import {
   krPhoneFamily, homePagesOf, FOLDER_DEFAULT_APPS, defaultSearchItems, youtubeId, APP_META, GRID, PHONE_W, SIZE_SPAN, POSTER_PHOTO_H,
-  cellX, cellY, cellHFor, spanH, spanW, ddayCount, PHONE_H, ddayText, weddingParts,
+  cellX, cellY, cellHFor, HOME_BOTTOM, spanH, spanW, ddayCount, PHONE_H, ddayText, weddingParts,
   titleFontOf, numberFontOf, titleNames, coverOf, lettersOf, letterLockedUntil, isWeddingDay, LETTER_KINDS, letterHandOf, isDark, themeOf, parseWeddingDate, screenStyle, isEmptyApp, isAppOff, screenCoverOf, foldersOf, withLockNumber, screenText, dockOf, GIFT_TITLE, GIFT_MESSAGE,
   type PhoneAppId, type PhoneData, type PhoneLetter, type PhoneImageSettings, type PhoneScreenId, type PhoneTheme, type PhoneWidget, type PhoneSearchItem, type WidgetSize, type PhoneTitleFont,
 } from './phoneTypes'
@@ -1876,7 +1876,11 @@ function LockScreenInner({ data: base, onOpen, onOpenVenue, onOpenApp, cameraHre
   const dy = lc.y || 0
   const sz = lc.size || 1
   const al = lc.align || 'center'
-  const block = (top: number): CSSProperties => ({ position: 'absolute', left: al === 'center' ? 0 : 28, right: al === 'center' ? 0 : 28, top: top + dy, zIndex: 2, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: al === 'left' ? 'flex-start' : al === 'right' ? 'flex-end' : 'center', textAlign: al })
+  // 짧은 화면(카카오톡 등 위아래 바가 큰 브라우저) — 사진 자리를 지키도록 시계 묶음을 위로 올리고 살짝 줄임
+  const shortBy = Math.max(0, PHONE_H - rootH)
+  const shortScale = 1 - Math.min(0.22, shortBy / 900)
+  const block = (top: number): CSSProperties => ({ position: 'absolute', left: al === 'center' ? 0 : 28, right: al === 'center' ? 0 : 28, top: shortBy ? Math.max(52, top + dy - shortBy * 0.45) : top + dy, zIndex: 2,
+    ...(shortBy ? { transform: `scale(${shortScale})`, transformOrigin: al === 'left' ? '0 0' : al === 'right' ? '100% 0' : '50% 0' } : {}), pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: al === 'left' ? 'flex-start' : al === 'right' ? 'flex-end' : 'center', textAlign: al })
   const cap = (want: number, maxW: number) => clockCap(data, want * sz, Math.min(al === 'center' ? 350 : 334, maxW * Math.max(1, sz)))
   const ny = data.phone.lockNoticeY || 0
   const vv = data.wedding.venue
@@ -2100,7 +2104,7 @@ function LockScreenInner({ data: base, onOpen, onOpenVenue, onOpenApp, cameraHre
     return (
       <div ref={rootRef} data-ed="lockbg" style={{ position: 'absolute', inset: 0, color: '#2A2A2A', fontFamily: t.body, overflow: 'hidden' }}>
         {data.phone.lockBg && !dark ? <div style={{ position: 'absolute', inset: 0, background: data.phone.lockBg }} /> : <LightBg t={t} />}
-        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: Math.max(220, (data.phone.posterH ?? POSTER_PHOTO_H) - Math.max(0, PHONE_H - rootH)), WebkitMaskImage: (data.phone.posterFade ?? 38) > 0 ? `linear-gradient(180deg, transparent 0%, #000 ${data.phone.posterFade ?? 38}%)` : undefined, maskImage: (data.phone.posterFade ?? 38) > 0 ? `linear-gradient(180deg, transparent 0%, #000 ${data.phone.posterFade ?? 38}%)` : undefined }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: Math.max(220, (data.phone.posterH ?? POSTER_PHOTO_H) - shortBy * 0.6), WebkitMaskImage: (data.phone.posterFade ?? 38) > 0 ? `linear-gradient(180deg, transparent 0%, #000 ${data.phone.posterFade ?? 38}%)` : undefined, maskImage: (data.phone.posterFade ?? 38) > 0 ? `linear-gradient(180deg, transparent 0%, #000 ${data.phone.posterFade ?? 38}%)` : undefined }}>
           <Photo src={coverOf(data)} crop={data.phone.wallpaper ? data.phone.wallpaperCrop : undefined} mono={!!data.phone.photoMono} />
         </div>
         <div data-ed="clock" style={block(tall ? 88 : 100)}>
@@ -2240,6 +2244,9 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
     return () => ro.disconnect()
   }, [])
   const ch = cellHFor(screenH)
+  // 칸을 더 낮출 수 없을 만큼 짧은 화면 — 위젯 장을 통째로 살짝 줄여 아래 바와 겹치지 않게 (하객 화면만)
+  const gridNeed = GRID.top + GRID.rows * ch + (GRID.rows - 1) * GRID.gapY
+  const gridScale = editing ? 1 : Math.max(0.78, Math.min(1, (screenH - HOME_BOTTOM - 28) / gridNeed))
   const onPhoto = t.homeBg === 'photo'
   // 바탕 흐림 — 가장자리가 비지 않게 살짝 키움
   const hb = Math.max(0, Math.min(40, data.phone.homeBlur ?? 0))
@@ -2301,7 +2308,7 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
         onClickCapture={multi ? (e => { if (mDragging) { e.preventDefault(); e.stopPropagation() } }) : undefined}
         style={multi ? { position: 'absolute', inset: 0, display: 'flex', overflowX: 'auto', overflowY: 'hidden', scrollSnapType: mDragging ? 'none' : 'x mandatory', cursor: mDragging ? 'grabbing' : undefined, scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } : { position: 'absolute', inset: 0, pointerEvents: 'none' }}>
       {shownPages.map(pgIdx => (
-      <div key={pgIdx} style={multi ? { position: 'relative', flex: '0 0 100%', height: '100%', scrollSnapAlign: 'start' } : { position: 'absolute', inset: 0 }}>
+      <div key={pgIdx} style={{ ...(multi ? { position: 'relative', flex: '0 0 100%', height: '100%', scrollSnapAlign: 'start' } : { position: 'absolute', inset: 0 }), ...(gridScale < 1 ? { transform: `scale(${gridScale})`, transformOrigin: '50% 0' } : {}) }}>
       {data.phone.widgets.filter(w => (w.page || 0) === pgIdx).map(w => {
         if (!editing && w.type === 'app' && isEmptyApp(data, w.props.app || 'memo')) return null
         const offInEditor = !!editing && w.type === 'app' && isAppOff(data, w.props.app || 'memo')
@@ -5493,18 +5500,21 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invitationId])
   // 방명록 — 다른 템플릿과 같은 /api/guestbook
-  const [gb, setGb] = useState<GbMsg[] | null>(null)
+  // 샘플 청첩장은 예시 축하 글을 보여 주고, 남긴 글은 이 화면에만 (서버로 보내지 않음)
+  const isSampleInv = !!invitationId && invitationId.startsWith('sample')
+  const [gb, setGb] = useState<GbMsg[] | null>(isSampleInv ? GB_SAMPLE : null)
   useEffect(() => {
-    if (!invitationId) return
+    if (!invitationId || isSampleInv) return
     let off = false
     fetch(`/api/guestbook?invitationId=${invitationId}`).then(r => r.json())
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then((d: any) => { if (!off) setGb((d.data || d.messages || []).map((m: any) => ({ id: String(m.id), name: m.guest_name, message: m.message, at: m.created_at }))) })
       .catch(() => { if (!off) setGb([]) })
     return () => { off = true }
-  }, [invitationId])
+  }, [invitationId, isSampleInv])
   const postGb = async (name: string, message: string) => {
     if (!invitationId) return false
+    if (isSampleInv) { setGb(prev => [{ id: `me-${Date.now()}`, name, message, at: new Date().toISOString(), mine: true }, ...(prev || [])]); return true }
     try {
       const res = await fetch('/api/guestbook', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ invitationId, guestName: name, message }) })
       if (!res.ok) return false

@@ -22,10 +22,8 @@ interface InvitationClientPhoneProps {
 
 const MAX_W = 430
 // 첫 그림 전에 화면 폭에 맞는 배율을 넣어 둔다 (깜빡임 방지) — 바로 바깥 상자에 --pf
-// 위아래가 짧은 화면(브라우저 주소창 · 아래 바가 큰 경우)은 폭 대신 높이에 맞춰 줄임 — 설계 높이 MIN_H 아래로는 배치를 누르지 않음
-//   (안 그러면 잠금화면 사진이 짧아져 알림이 얼굴을 가리는 등 에디터와 달라짐). 좌우에 생기는 여백은 바깥 바탕색
-const MIN_H = 760
-const FIT_SCRIPT = `(function(){try{var r=document.currentScript&&document.currentScript.parentElement;if(!r)return;var w=Math.min(document.documentElement.clientWidth||window.innerWidth||${PHONE_W},${MAX_W});var h=window.innerHeight||${MIN_H};var f=Math.min(w/${PHONE_W},h/${MIN_H});r.style.setProperty('--pf',String(f));r.style.width=(${PHONE_W}*f)+'px'}catch(e){}})()`
+// 늘 폭에 꽉 맞춤 — 위아래가 짧은 화면은 잠금 · 홈 화면이 스스로 배치를 맞춤 (PhoneScreens 의 shortBy · gridScale)
+const FIT_SCRIPT = `(function(){try{var r=document.currentScript&&document.currentScript.parentElement;if(!r)return;var w=Math.min(document.documentElement.clientWidth||window.innerWidth||${PHONE_W},${MAX_W});r.style.setProperty('--pf',String(w/${PHONE_W}))}catch(e){}})()`
 
 /**
  * THE PHONE 하객 화면 — 에디터와 같은 렌더러(PhoneFlow)를 폭에 맞춰 확대/축소해 보여준다.
@@ -59,9 +57,7 @@ export default function InvitationClientPhone({ invitation, content, isSample, p
   useEffect(() => {
     const fit = () => {
       const w = Math.min(document.documentElement.clientWidth || window.innerWidth, MAX_W)
-      const f = Math.min(w / PHONE_W, (window.innerHeight || MIN_H) / MIN_H)
-      boxRef.current?.style.setProperty('--pf', String(f))
-      if (boxRef.current) boxRef.current.style.width = `${PHONE_W * f}px`
+      boxRef.current?.style.setProperty('--pf', String(w / PHONE_W))
     }
     fit()
     window.addEventListener('resize', fit)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { Invitation } from '@/types/invitation'
 import RsvpForm from '@/components/invitation/RsvpForm'
 import { normalizeRsvpSettings } from '@/lib/rsvpSettings'
@@ -64,22 +64,6 @@ export default function InvitationClientPhone({ invitation, content, isSample, p
     return () => window.removeEventListener('resize', fit)
   }, [])
 
-  // (시험) 주소에 ?bars=1 — 페이지를 화면보다 살짝 길게 만들고 아래로 내려 두어 카카오톡 · 사파리 위아래 막대가 접히게
-  // 청첩장은 화면에 고정, 아래 빈 칸만 스크롤됨. 손가락을 떼면 다시 아래로 붙음
-  const [bars, setBars] = useState(false)
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('bars') !== '1') return
-    setBars(true)
-    const toEnd = () => window.scrollTo(0, document.documentElement.scrollHeight)
-    let tm: ReturnType<typeof setTimeout> | undefined
-    const later = () => { clearTimeout(tm); tm = setTimeout(toEnd, 250) }
-    const t0 = setTimeout(toEnd, 60)
-    const t1 = setTimeout(toEnd, 600)
-    window.addEventListener('touchend', later, { passive: true })
-    window.addEventListener('scroll', later, { passive: true })
-    return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(tm); window.removeEventListener('touchend', later); window.removeEventListener('scroll', later) }
-  }, [])
-
   // 샘플은 회신 양식을 눌러 볼 수 있게 (보내지는 않음)
   const renderRsvp = rsvp.enabled || isSample
     ? (opts?: { attendance?: 'attending' | 'not_attending' | 'pending' }) => (
@@ -103,13 +87,13 @@ export default function InvitationClientPhone({ invitation, content, isSample, p
 
   return (
     <div className={PHONE_FONT_VARS} style={{ minHeight: '100dvh', background: '#1A1816', display: 'flex', justifyContent: 'center', WebkitTextSizeAdjust: '100%', textSizeAdjust: '100%' }}>
-      <div ref={boxRef} style={{ ...(bars ? { position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)' } : { position: 'relative' }), width: `min(100vw, ${MAX_W}px)`, height: '100dvh', overflow: 'hidden', ['--pf' as string]: 1 }} suppressHydrationWarning>
+      <div ref={boxRef} style={{ position: 'relative', width: `min(100vw, ${MAX_W}px)`, height: '100dvh', overflow: 'hidden', ['--pf' as string]: 1 }} suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: FIT_SCRIPT }} />
         <div style={{ position: 'absolute', left: 0, top: 0, width: PHONE_W, height: 'calc(100dvh / var(--pf))', transform: 'scale(var(--pf))', transformOrigin: '0 0' }}>
           <PhoneFlow data={data} height="100%" renderRsvp={renderRsvp} invitationId={invitation.id} photoShareHref={photoShareHref} />
         </div>
       </div>
-      {bars && <div aria-hidden style={{ height: 'calc(100dvh + 160px)' }} />}
+
     </div>
   )
 }

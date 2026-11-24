@@ -339,8 +339,8 @@ export const PHONE_W = 390
 export const PHONE_H = 844
 /** 포스터 잠금화면 — 아래쪽 사진 칸 높이 (대표 사진 자르기 비율에도 씀) */
 export const POSTER_PHOTO_H = 430
-// 위 상태바를 없애 맨 위 여백은 40 (예전 64)
-export const GRID = { cols: 4, rows: 7, left: 24, top: 40, cellW: 70.5, cellH: 74, gapX: 20, gapY: 18 }
+// 위 상태바를 없애 맨 위 여백은 양옆 여백과 같은 24 (예전 64)
+export const GRID = { cols: 4, rows: 7, left: 24, top: 24, cellW: 70.5, cellH: 74, gapX: 20, gapY: 18 }
 export const SIZE_SPAN: Record<WidgetSize, { w: number; h: number }> = { S: { w: 1, h: 1 }, M: { w: 2, h: 2 }, L: { w: 4, h: 2 }, W: { w: 4, h: 1 }, T: { w: 1, h: 2 }, H: { w: 2, h: 1 }, P: { w: 2, h: 3 }, R: { w: 3, h: 2 }, Q: { w: 3, h: 3 }, X: { w: 4, h: 3 }, U: { w: 3, h: 1 } }
 /** 크기 = 가로 칸 × 세로 칸 */
 export const SIZE_LABEL: Record<WidgetSize, string> = { S: '1×1', M: '2×2', L: '4×2', W: '4×1', T: '1×2', H: '2×1', P: '2×3', R: '3×2', Q: '3×3', X: '4×3', U: '3×1' }

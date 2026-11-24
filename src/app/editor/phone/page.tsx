@@ -5,7 +5,7 @@
  * 왼쪽: 화면 고르기 · 위젯 추가 / 가운데: 폰 화면(눌러서 고르고 끌어서 옮김) / 오른쪽: 고른 위젯·화면 설정
  * 미감은 격자·정해진 크기·테마가 지키고, 커플은 '무엇을, 어디에'만 정한다.
  */
-import { Suspense, createContext, useCallback, useContext, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
+import { Suspense, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { uploadImage } from '@/lib/imageUpload'
@@ -21,6 +21,7 @@ import {
 import { PHONE_FONT_VARS } from '@/components/invitation/phone/phoneFonts'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import ShareModal from '@/components/share/ShareModal'
+import { clearPhoneContent, fillPhoneExample } from '@/components/invitation/phone/phoneExample'
 import { Check, ChevronDown, ChevronRight, ChevronUp, Copy, Eye, History, LayoutGrid, Link2, Pencil, Play, Plus, Share2, SlidersHorizontal, SquareStack, Star, Trash2, X } from 'lucide-react'
 import { bgmPresets, getBgmPresetByUrl } from '@/lib/bgmPresets'
 import SharedRsvpLinkField from '@/components/editor/SharedRsvpLinkField'
@@ -401,6 +402,8 @@ function PhoneEditorContent() {
   }, [undo, redo])
   const setPhone = (patch: Partial<PhoneData['phone']>) => update(d => ({ ...d, phone: { ...d.phone, ...patch } }))
   const setWidgets = (fn: (ws: PhoneWidget[]) => PhoneWidget[]) => update(d => ({ ...d, phone: { ...d.phone, widgets: fn(d.phone.widgets) } }))
+  // 새 청첩장 — 미리보기 빈 칸을 채울 예시(샘플). 처음 저장하기 전까지만
+  const [example, setExample] = useState<PhoneData | null>(null)
   const [mobMenu, setMobMenu] = useState<null | 'add' | 'set'>(null)
   // '고칠 곳을 눌러 보세요' — 처음 한 번만 (이 기기)
   const [coachDone, setCoachDone] = useState(() => { try { return typeof window !== 'undefined' && localStorage.getItem('pf-ed-coach') === '1' } catch { return false } })
@@ -422,12 +425,13 @@ function PhoneEditorContent() {
 
   /* 저장하지 않은 내용 임시 보관 — 이 기기 (휴대폰은 다른 앱을 오가다 새로 열리는 일이 많음) */
   const draftKey = `pf-draft-${editId || 'new'}`
-  const offerResume = () => {
+  // 묻지 않고 바로 이어서 불러옴 — 아래 알림에서 '처음 상태로'를 누르면 불러오기 전(base)으로
+  const offerResume = (base: PhoneData) => {
     try {
       const raw = localStorage.getItem(draftKey)
       if (!raw) return
       const d = JSON.parse(raw) as { at: number; data: PhoneData }
-      if (d?.data && Date.now() - d.at < 14 * 86400000) setResume({ at: d.at, data: normalizePhoneData(d.data) })
+      if (d?.data && Date.now() - d.at < 14 * 86400000) { setData(normalizePhoneData(d.data)); setIsDirty(true); setResume({ at: d.at, data: base }); setTimeout(() => setResume(null), 9000) }
       else localStorage.removeItem(draftKey)
     } catch { /* noop */ }
   }
@@ -447,10 +451,11 @@ function PhoneEditorContent() {
         if (off || !res.content) return
         try {
           const d = normalizePhoneData(JSON.parse(res.content))
-          // 이름 · 연락처는 고객이 직접 — 샘플 값은 입력 칸 안내 글씨로만
-          const blank = (x: PhoneData['groom']) => ({ ...x, name: '', lastName: '', firstName: '', nameEn: '', phone: '' })
-          setData({ ...d, groom: blank(d.groom), bride: blank(d.bride) }); past.current = []; future.current = []; setHist({ undo: 0, redo: 0 })
-          offerResume()
+          // 디자인은 샘플 그대로, 내용(이름 · 사진 · 글 · 날짜 …)은 비워서 — 미리보기는 빈 칸을 샘플로 '예시' 채움
+          setExample(d)
+          const base = clearPhoneContent(d)
+          setData(base); past.current = []; future.current = []; setHist({ undo: 0, redo: 0 })
+          offerResume(base)
         } catch { /* 기본값 그대로 */ }
       })
       .catch(() => { /* 기본값 그대로 */ })
@@ -465,7 +470,7 @@ function PhoneEditorContent() {
       .then(r => r.json() as Promise<{ invitation?: { content?: string; groom_name?: string; bride_name?: string } }>)
       .then(res => {
         if (!res.invitation?.content) return
-        try { setData(normalizePhoneData(JSON.parse(res.invitation.content))); past.current = []; future.current = []; setHist({ undo: 0, redo: 0 }); offerResume() } catch (e) { console.error('Failed to parse content:', e) }
+        try { const base = normalizePhoneData(JSON.parse(res.invitation.content)); setData(base); past.current = []; future.current = []; setHist({ undo: 0, redo: 0 }); offerResume(base) } catch (e) { console.error('Failed to parse content:', e) }
       })
       .catch(e => console.error('Failed to load:', e))
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -2692,6 +2697,8 @@ function PhoneEditorContent() {
     </>
   )
 
+  // 미리보기에 쓰는 데이터 — 새 청첩장은 빈 칸을 예시로 채움 (저장 · 하객 화면은 실제 값)
+  const view = useMemo(() => (example && !invitationId ? fillPhoneExample(data, example) : data), [data, example, invitationId])
   const canvas = (
     <div style={{ width: PHONE_W * scale, height: PHONE_H * scale }}>
       <div ref={phoneRef} onClickCapture={e => {
@@ -2704,17 +2711,17 @@ function PhoneEditorContent() {
         if (/^(tel|sms|mailto):/i.test(href)) { flash(`하객 화면에서 ${/^tel/i.test(href) ? '전화' : /^sms/i.test(href) ? '문자' : '메일'}가 열려요`); return }
         window.open(href, '_blank', 'noopener')
       }} className="ed-preview" style={{ width: PHONE_W, height: PHONE_H, transform: `scale(${scale})`, transformOrigin: '0 0', position: 'relative', overflow: 'hidden', borderRadius: 44, boxShadow: '0 30px 60px -28px rgba(20,18,15,0.55), 0 0 0 10px #1C1A18', background: t.bg, userSelect: 'none' }}>
-        {preview ? <PhoneFlow key={previewKey} data={data} height={PHONE_H} renderRsvp={renderRsvpPreview} startScreen={previewStart} onScreen={followPreview} photoShareHref={photoShareHref} /> : <>
-          {screen === 'lock' && revealing && <HomeScreen data={data} reveal />}
-          {screen === 'lock' && !revealing && (showCode && data.phone.usePasscode
-            ? <PasscodeScreen data={data} onDone={() => { setRevealing(true); setTimeout(() => { setRevealing(false); setShowCode(false) }, 2200) }} onCancel={() => setShowCode(false)} />
-            : <ReturnCtx.Provider value={{ startOpen: edReopen, go: (a, key) => { lockReturn.current = key; setEdReopen(null); setScreen(a) } }}><LockScreen data={data} onOpen={() => (data.phone.usePasscode && data.wedding.date ? setShowCode(true) : setScreen('home'))} onOpenVenue={() => { lockReturn.current = ''; setScreen('memo') }} onOpenApp={a => setScreen(a)} /></ReturnCtx.Provider>)}
+        {preview ? <PhoneFlow key={previewKey} data={view} height={PHONE_H} renderRsvp={renderRsvpPreview} startScreen={previewStart} onScreen={followPreview} photoShareHref={photoShareHref} /> : <>
+          {screen === 'lock' && revealing && <HomeScreen data={view} reveal />}
+          {screen === 'lock' && !revealing && (showCode && view.phone.usePasscode
+            ? <PasscodeScreen data={view} onDone={() => { setRevealing(true); setTimeout(() => { setRevealing(false); setShowCode(false) }, 2200) }} onCancel={() => setShowCode(false)} />
+            : <ReturnCtx.Provider value={{ startOpen: edReopen, go: (a, key) => { lockReturn.current = key; setEdReopen(null); setScreen(a) } }}><LockScreen data={view} onOpen={() => (view.phone.usePasscode && view.wedding.date ? setShowCode(true) : setScreen('home'))} onOpenVenue={() => { lockReturn.current = ''; setScreen('memo') }} onOpenApp={a => setScreen(a)} /></ReturnCtx.Provider>)}
           {screen === 'home' && (revealing
-            ? <HomeScreen key={revealKey} data={data} reveal />
-            : <LetterPreviewCtx.Provider value={true}><HomeScreen data={data} editing={editing} /></LetterPreviewCtx.Provider>)}
-          {screen !== 'lock' && screen !== 'home' && <LetterPreviewCtx.Provider value={true}><PhotoShareCtx.Provider value={photoShareHref}><AppView key={screen} app={screen} data={data} onBack={() => { const prev = navHist.current.pop(); if (prev) { setScreen(prev); return } if (lockReturn.current !== null) { setEdReopen(lockReturn.current || null); lockReturn.current = null; setScreen('lock'); return } setScreen('home') }} onNavigate={a => { navHist.current.push(screen as PhoneAppId); setScreen(a) }} renderRsvp={renderRsvpPreview} /></PhotoShareCtx.Provider></LetterPreviewCtx.Provider>}
+            ? <HomeScreen key={revealKey} data={view} reveal />
+            : <LetterPreviewCtx.Provider value={true}><HomeScreen data={view} editing={editing} /></LetterPreviewCtx.Provider>)}
+          {screen !== 'lock' && screen !== 'home' && <LetterPreviewCtx.Provider value={true}><PhotoShareCtx.Provider value={photoShareHref}><AppView key={screen} app={screen} data={view} onBack={() => { const prev = navHist.current.pop(); if (prev) { setScreen(prev); return } if (lockReturn.current !== null) { setEdReopen(lockReturn.current || null); lockReturn.current = null; setScreen('lock'); return } setScreen('home') }} onNavigate={a => { navHist.current.push(screen as PhoneAppId); setScreen(a) }} renderRsvp={renderRsvpPreview} /></PhotoShareCtx.Provider></LetterPreviewCtx.Provider>}
         </>}
-        {ddayPreview && data.ddayPopup?.enabled && <DdayPhonePopup data={data} preview onClose={() => setDdayPreview(false)} />}
+        {ddayPreview && view.ddayPopup?.enabled && <DdayPhonePopup data={view} preview onClose={() => setDdayPreview(false)} />}
       </div>
     </div>
   )
@@ -2825,6 +2832,7 @@ function PhoneEditorContent() {
         <div onClickCapture={onDecoClick} onPointerDownCapture={e => { const r = phoneRef.current?.getBoundingClientRect(); decoTapY.current = r ? e.clientY - r.top : null; decoTapX.current = r ? e.clientX - r.left : null; decoDownOnWidget.current = !!(e.target as HTMLElement).closest('[data-widget-id]'); if (decoOn && screen === 'lock') e.stopPropagation() }}
           // 서랍이 나와 있으면 폰을 왼쪽 끝으로 붙여 보이는 부분을 넓게
           style={{ transform: `translate(${sheetOpen && sheetFrac >= 0.08 ? -Math.max(0, (window.innerWidth - PHONE_W * scale) / 2 - 10) : 0}px, -6px)`, transition: 'transform 0.25s ease' }}>{canvas}</div>
+        {!decoSheet && <div className="absolute bottom-1 left-0 right-0">{example && !invitationId && <p className="text-[11.5px] text-center pointer-events-none" style={{ color: 'var(--ed-text-faint)' }}>비어 있는 곳은 예시로 보여 줍니다 · 직접 넣으면 바뀝니다</p>}</div>}
         {decoOn && !decoSheet && !coachDone && <p className="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full text-[12.5px] font-semibold text-white pointer-events-none whitespace-nowrap" style={{ background: 'rgba(44,40,36,0.88)' }}>고칠 곳을 눌러 보세요</p>}
         {canvasOverlays}
       </div>
@@ -2892,19 +2900,13 @@ function PhoneEditorContent() {
           </div>
         </div>
       )}
-      {/* 이어서 꾸밀까요? */}
+      {/* 저장 안 한 내용을 이어서 불러옴 — 원하면 처음 상태로 */}
       {resume && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-6" style={{ background: 'rgba(30,26,22,0.4)' }}>
-          <div className="w-full max-w-[360px] rounded-[22px] bg-white p-5 shadow-2xl">
-            <span className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3.5" style={{ background: 'var(--ed-accent-weak)', color: 'var(--ed-accent)' }}><History size={24} aria-hidden /></span>
-            <h3 className="text-lg font-bold" style={{ color: 'var(--ed-text)' }}>이어서 꾸밀까요?</h3>
-            <p className="text-sm mt-1.5 leading-relaxed" style={{ color: 'var(--ed-text-muted)' }}>저장하지 않은 내용이 이 기기에 남아 있습니다.</p>
-            <p className="mt-3.5 mb-4 px-3 py-2.5 rounded-xl text-[13px]" style={{ background: '#F5F5F4', color: '#5E554D' }}>마지막 수정 · {new Date(resume.at).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button type="button" className="h-11 rounded-xl text-[14.5px] font-bold" style={{ background: '#F2F2F2', color: '#52525B' }} onClick={() => { try { localStorage.removeItem(draftKey) } catch { /* noop */ } setResume(null) }}>새로 시작</button>
-              <button type="button" className="h-11 rounded-xl text-[14.5px] font-bold text-white" style={{ background: 'var(--ed-accent)' }} onClick={() => { setData(resume.data); setIsDirty(true); setResume(null) }}>이어서 꾸미기</button>
-            </div>
-          </div>
+        <div className="fixed left-1/2 -translate-x-1/2 bottom-24 z-[70] w-[calc(100%-24px)] max-w-[420px] flex items-center gap-2.5 pl-4 pr-2 py-2 rounded-2xl text-white shadow-2xl" style={{ background: 'rgba(36,32,28,0.94)' }}>
+          <History size={18} aria-hidden className="shrink-0 opacity-80" />
+          <span className="flex-1 min-w-0 text-[13px] leading-snug">저장하지 않은 내용을 이어서 불러왔습니다</span>
+          <button type="button" className="shrink-0 h-8 px-3 rounded-lg text-[12.5px] font-semibold bg-white/15" onClick={() => { setData(resume.data); setIsDirty(false); try { localStorage.removeItem(draftKey) } catch { /* noop */ } setResume(null) }}>처음 상태로</button>
+          <button type="button" aria-label="닫기" className="shrink-0 w-8 h-8 flex items-center justify-center opacity-70" onClick={() => setResume(null)}><X size={16} aria-hidden /></button>
         </div>
       )}
       {/* 저장 뒤 — 바로 보내기 */}
@@ -3167,6 +3169,7 @@ function PhoneEditorContent() {
             ))}
           </div>
           {canvas}
+          {!mob && <div className="mt-3">{example && !invitationId && <p className="text-[11.5px] text-center pointer-events-none" style={{ color: 'var(--ed-text-faint)' }}>비어 있는 곳은 예시로 보여 줍니다 · 직접 넣으면 바뀝니다</p>}</div>}
           {canvasOverlays}
         </main>
 

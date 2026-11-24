@@ -456,7 +456,8 @@ function PhoneEditorContent() {
           const d = normalizePhoneData(JSON.parse(res.content))
           // 디자인은 샘플 그대로, 내용(이름 · 사진 · 글 · 날짜 …)은 비워서 — 미리보기는 빈 칸을 샘플로 '예시' 채움
           setExample(d)
-          const base = clearPhoneContent(d)
+          // 샘플 청첩장은 배경음악을 꺼 두었지만, 새 청첩장은 지금처럼 기본 음악을 켠 채 시작
+          const base = { ...clearPhoneContent(d), bgm: { enabled: true, url: '/api/r2/audio/wedding-bgm.mp3', autoplay: true } }
           setData(base); past.current = []; future.current = []; setHist({ undo: 0, redo: 0 })
           offerResume(base)
         } catch { /* 기본값 그대로 */ }

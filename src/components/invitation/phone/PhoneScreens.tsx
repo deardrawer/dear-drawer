@@ -5580,9 +5580,12 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
   const NAV_H = 48
   const showNav = isAppScreen(screen)
   const [recents, setRecents] = useState(false)
-  const [visited, setVisited] = useState<PhoneAppId[]>([])
-  useEffect(() => { if (isAppScreen(screen)) setVisited(v => [screen, ...v.filter(x => x !== screen)].slice(0, 6)) }, [screen])
-  useEffect(() => { if (!isAppScreen(screen)) setRecents(false) }, [screen])
+  // 최근 앱 — 청첩장의 모든 화면 (지금 화면이 맨 앞). 카드 속 화면은 보이는 근처만 그림
+  const allApps = (Object.keys(APP_META) as PhoneAppId[]).filter(a => !isAppOff(data, a) && !isEmptyApp(data, a) && (a !== 'camera' || !!photoShareHref))
+  const visited = isAppScreen(screen) ? [screen, ...allApps.filter(a => a !== screen)] : allApps
+  const [recIdx, setRecIdx] = useState(0)
+  useEffect(() => { if (recents) setRecIdx(0) }, [recents])
+  useEffect(() => { setRecents(false) }, [screen])
   const openRecent = (a: PhoneAppId) => {
     setRecents(false)
     if (a === screen) return
@@ -5874,7 +5877,7 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
             <button type="button" aria-label="홈으로" style={btn} onClick={() => { setRecents(false); goHome() }}>
               <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="5" fill="none" stroke={ink} strokeWidth="1.9" /></svg>
             </button>
-            <button type="button" aria-label="뒤로" style={btn} onClick={() => { if (recents) { setRecents(false); return } goBack() }}>
+            <button type="button" aria-label="뒤로" style={btn} onClick={() => { if (recents) { setRecents(false); return } if (isAppScreen(screen)) goBack() }}>
               <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke={ink} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
           </div>
@@ -5887,7 +5890,7 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
           <div style={{ padding: '58px 18px 0', display: 'flex' }}>
             <span style={{ padding: '9px 16px', borderRadius: 999, background: 'rgba(255,255,255,0.22)', color: '#FFFFFF', fontSize: 14, fontWeight: 700 }}>실행 중인 앱 {visited.length}개</span>
           </div>
-          <div onClick={e => e.stopPropagation()} style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', gap: 18, overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '0 70px', scrollbarWidth: 'none' }}>
+          <div onClick={e => e.stopPropagation()} onScroll={e => { const el = e.currentTarget; setRecIdx(Math.round(el.scrollLeft / (PHONE_W * 0.6 + 18))) }} style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', gap: 18, overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '0 70px', scrollbarWidth: 'none' }}>
             {visited.map((a, i) => (
               <div key={a} style={{ flex: '0 0 auto', scrollSnapAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, animation: `pfCardIn 0.28s ease-out ${i * 0.04}s both` }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 7, color: '#FFFFFF', fontSize: 13.5, fontWeight: 700 }}>
@@ -5897,21 +5900,23 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
                 <button type="button" onClick={() => openRecent(a)} aria-label={`${APP_META[a].label} 열기`}
                   style={{ width: PHONE_W * 0.6, height: 520 * 0.6 + 140, borderRadius: 26, overflow: 'hidden', border: 0, padding: 0, background: '#FFFFFF', cursor: 'pointer', position: 'relative', boxShadow: '0 18px 40px rgba(0,0,0,0.3)' }}>
                   <span style={{ position: 'absolute', left: 0, top: 0, width: PHONE_W, height: (520 * 0.6 + 140) / 0.6, transform: 'scale(0.6)', transformOrigin: '0 0', pointerEvents: 'none' }}>
-                    <AppScreen app={a} data={data} onBack={() => {}} onNavigate={() => {}} renderRsvp={renderRsvp} />
+                    {Math.abs(i - recIdx) <= 1
+                      ? <AppScreen app={a} data={data} onBack={() => {}} onNavigate={() => {}} renderRsvp={renderRsvp} />
+                      : <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F2F2F7' }}><AppGlyph app={a} color="#C7C7CC" size={90} /></span>}
                   </span>
                 </button>
               </div>
             ))}
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', padding: '6px 0 22px' }}>
-            <button type="button" onClick={e => { e.stopPropagation(); setVisited([]); setRecents(false); goHome() }}
+            <button type="button" onClick={e => { e.stopPropagation(); setRecents(false); goHome() }}
               style={{ padding: '12px 46px', borderRadius: 999, border: 0, background: 'rgba(255,255,255,0.22)', color: '#FFFFFF', fontSize: 15, fontWeight: 700, cursor: 'pointer', font: 'inherit' }}>모두 닫기</button>
           </div>
         </div>
       )}
       {audioUrl && screen !== 'lock' && screen !== 'code' && (
         // 앱 화면에서는 왼쪽 위 '뒤로'(top 52, 40px)와 같은 줄 가운데에 맞춤
-        <div style={{ position: 'absolute', top: screen === 'home' ? 14 : 55, right: 14, zIndex: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ position: 'absolute', top: screen === 'home' ? 46 : 55, right: 14, zIndex: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
           {hint && <span style={{ padding: '7px 11px', borderRadius: 999, background: 'rgba(20,20,20,0.82)', color: '#FFFFFF', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{data.bgm?.notificationText || '배경음악이 준비되어 있어요'}</span>}
           <button type="button" onClick={toggleMusic} aria-label={playing ? '배경음악 끄기' : '배경음악 켜기'}
             style={{ position: 'relative', width: 34, height: 34, borderRadius: '50%', border: 0, background: 'rgba(255,255,255,0.88)', boxShadow: '0 2px 10px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>

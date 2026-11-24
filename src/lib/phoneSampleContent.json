@@ -535,8 +535,8 @@
  },
  "rsvpMealOption": true,
  "bgm": {
-  "enabled": true,
-  "url": "/api/r2/audio/wedding-bgm.mp3",
-  "autoplay": true
+  "enabled": false,
+  "url": "",
+  "autoplay": false
  }
 }

@@ -5595,12 +5595,15 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
   const [swiping, setSwiping] = useState(false)
   const swipeSt = useRef<{ x: number; y: number; sc: number; on: boolean } | null>(null)
   const swipeToHome = !hist.length && (!backTo.current || backTo.current.screen === 'home')
+  const EDGE = 44 // 왼쪽 끝에서 이만큼 안에서 시작하면 밀어서 뒤로 (설계 px)
   const onSwipeDown = (e: React.PointerEvent) => {
+    // 손가락은 아래 터치 처리(touchmove 를 막아야 안드로이드 · 카카오톡이 가로 밀기를 가져가지 않음), 여기는 마우스만
+    if (e.pointerType !== 'mouse') return
     if (!isAppScreen(screen) || anim) return
     const r = rootRef.current?.getBoundingClientRect()
     if (!r) return
     const sc = r.width / PHONE_W || 1
-    if ((e.clientX - r.left) / sc > 26) return
+    if ((e.clientX - r.left) / sc > EDGE) return
     swipeSt.current = { x: e.clientX, y: e.clientY, sc, on: false }
   }
   const onSwipeMove = (e: React.PointerEvent) => {
@@ -5625,6 +5628,41 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
       setTimeout(() => { goBack(); setLeaving(null); setUnder(null); setAnim(null); setSwipe(0) }, 180)
     } else setSwipe(0)
   }
+  // 손가락 밀기 — 직접 터치 이벤트로 받고, 밀기가 시작되면 브라우저의 가로 동작을 막음 (passive: false)
+  const swipeLive = useRef({ swipe: 0, canStart: false })
+  useEffect(() => { swipeLive.current = { swipe, canStart: isAppScreen(screen) && !anim } })
+  const onSwipeUpRef = useRef(onSwipeUp)
+  useEffect(() => { onSwipeUpRef.current = onSwipeUp })
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root || !invitationId) return
+    const start = (e: TouchEvent) => {
+      if (e.touches.length !== 1 || !swipeLive.current.canStart) return
+      const r = root.getBoundingClientRect(), t = e.touches[0]
+      const sc = r.width / PHONE_W || 1
+      if ((t.clientX - r.left) / sc > EDGE) return
+      swipeSt.current = { x: t.clientX, y: t.clientY, sc, on: false }
+    }
+    const move = (e: TouchEvent) => {
+      const st = swipeSt.current
+      if (!st) return
+      const t = e.touches[0]
+      const dx = (t.clientX - st.x) / st.sc, dy = (t.clientY - st.y) / st.sc
+      if (!st.on) {
+        if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { swipeSt.current = null; return }
+        if (dx < 6) return
+        st.on = true; setSwiping(true)
+      }
+      if (e.cancelable) e.preventDefault()
+      setSwipe(Math.max(0, dx))
+    }
+    const end = () => { onSwipeUpRef.current() }
+    root.addEventListener('touchstart', start, { passive: true })
+    root.addEventListener('touchmove', move, { passive: false })
+    root.addEventListener('touchend', end)
+    root.addEventListener('touchcancel', end)
+    return () => { root.removeEventListener('touchstart', start); root.removeEventListener('touchmove', move); root.removeEventListener('touchend', end); root.removeEventListener('touchcancel', end) }
+  }, [invitationId])
   const onScreenRef = useRef(onScreen)
   useEffect(() => { onScreenRef.current = onScreen })
   useEffect(() => { if (screen !== 'code') onScreenRef.current?.(screen) }, [screen])

@@ -2286,9 +2286,9 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
-  // 짧은 화면(카카오톡 등) 하객 화면 — 위젯 모양은 그대로 두고, 빈 곳(위 여백 · 칸 사이 · 하단 바 아래)부터 줄임
+  // 하객 화면 — 위젯 모양은 그대로 두고, 화면이 짧으면 빈 곳(위 여백 · 칸 사이 · 하단 바 아래)부터 줄임
   // 그래도 모자랄 때만 위젯 · 하단 바를 통째로 조금 줄임 (바탕 · 펼친 폴더는 꽉 채움)
-  const compact = !editing && screenH < PHONE_H - 24
+  const compact = !editing
   const ch = compact ? GRID.cellH : cellHFor(screenH)
   const onPhoto = t.homeBg === 'photo'
   // 바탕 흐림 — 가장자리가 비지 않게 살짝 키움
@@ -2306,7 +2306,7 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
     const dockH = dock.length > 0 ? 98 : 0
     // f 0 → 1 : 넉넉한 간격 → 가장 좁은 간격
     const at = (f: number) => {
-      const top = (GRID.top - CT) * (1 - f), gap = GRID.gapY - 6 * f, below = (multi ? 30 : 14) - 6 * f, db = 22 - 12 * f
+      const top = Math.max(0, GRID.top - CT) * (1 - f), gap = GRID.gapY - 6 * f, below = (multi ? 30 : 14) - 6 * f, db = 22 - 12 * f
       return { top, gap, db, need: top + rows * ch + (rows - 1) * gap + below + dockH + db }
     }
     const avail = screenH - CT

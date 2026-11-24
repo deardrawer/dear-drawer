@@ -223,7 +223,7 @@ const Field = ({ label, children }: { label: string; children: ReactNode }) => (
   </label>
 )
 // 입력 칸 — 휴대폰은 16px(아이폰이 작은 글자 칸을 누르면 화면을 확대함) · 높이 44
-const inputCls = 'w-full px-3 min-h-[44px] py-2 text-[16px] sm:text-sm rounded-xl border border-[color:var(--ed-border)] bg-white focus:outline-none focus:ring-1 focus:ring-[color:var(--ed-accent)]'
+const inputCls = 'w-full min-w-0 px-3 min-h-[44px] py-2 text-[16px] sm:text-sm rounded-xl border border-[color:var(--ed-border)] bg-white focus:outline-none focus:ring-1 focus:ring-[color:var(--ed-accent)]'
 const pill = (on: boolean) => `px-3 py-2 rounded-lg border text-[13px] font-medium transition-colors ${on ? 'border-[color:var(--ed-accent)] bg-[color:var(--ed-accent)] text-[#F5F0ED]' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'}`
 
 /** 추천 색 + 직접 고르기(컬러 피커). value 가 비면 '기본' */
@@ -2195,9 +2195,10 @@ function PhoneEditorContent() {
             <Field label="보여 줄 기간">
               {wd ? (
                 <>
-                  <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
+                  {/* 좁은 설정 칸(휴대폰 서랍)에서는 위아래로 — 날짜 칸이 칸 밖으로 밀려나지 않게 */}
+                  <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-1.5 sm:gap-2 items-center">
                     <input type="date" className={inputCls + ' !px-2 text-[13px]'} value={v.displayStart || shift(-7)} min={shift(-10)} max={v.displayEnd || wd} onChange={e => set({ displayStart: e.target.value })} />
-                    <span className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>~</span>
+                    <span className="text-sm text-center leading-none" style={{ color: 'var(--ed-text-muted)' }}>~</span>
                     <input type="date" className={inputCls + ' !px-2 text-[13px]'} value={v.displayEnd || wd} min={v.displayStart || shift(-7)} max={shift(30)} onChange={e => set({ displayEnd: e.target.value })} />
                   </div>
                   <p className="text-[12px] mt-1.5" style={{ color: 'var(--ed-text-muted)' }}>예식 10일 전부터 30일 뒤까지 선택할 수 있습니다.</p>
@@ -2872,7 +2873,7 @@ function PhoneEditorContent() {
             </button>
           </div>
           <button type="button" aria-label="추가" onClick={() => setMobMenu('add')} className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ background: 'var(--ed-accent)' }}><Plus size={20} aria-hidden /></button>
-          <button type="button" aria-label="기본 설정" onClick={() => setMobMenu('set')} className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-white border" style={{ borderColor: 'var(--ed-border)', color: 'var(--ed-text)' }}><SlidersHorizontal size={18} aria-hidden /></button>
+          <button type="button" aria-label="기본 설정 (결혼식 정보 · 배경음악 · D-Day 팝업)" onClick={() => setMobMenu('set')} className="shrink-0 h-10 px-2.5 rounded-xl flex items-center gap-1 bg-white border text-[13px] font-semibold" style={{ borderColor: 'var(--ed-border)', color: 'var(--ed-text)' }}><SlidersHorizontal size={16} aria-hidden />설정</button>
         </div>
       )}
       <div className="flex-1 min-h-0 relative overflow-hidden">
@@ -2909,7 +2910,7 @@ function PhoneEditorContent() {
               <button type="button" aria-label="닫기" onClick={() => { closeSheet(); if (isAppScr) goScreen('home') }} className="w-9 h-9 flex items-center justify-center text-lg" style={{ color: 'var(--ed-text-muted)' }}><X size={16} className="mx-auto" aria-hidden /></button>
             </div>
             <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 pb-8"
-              onFocusCapture={e => { const el = e.target as HTMLElement; if (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 320) }}>{decoSheet}</div>
+              onFocusCapture={e => { const el = e.target as HTMLElement; if (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) { const box = e.currentTarget; setTimeout(() => { el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' }); setTimeout(() => { box.scrollLeft = 0 }, 400) }, 320) } }}>{decoSheet}</div>
           </div>
         </div>
       )}

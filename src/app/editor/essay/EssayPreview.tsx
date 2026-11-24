@@ -72,7 +72,7 @@ export default function EssayPreview({ data, fullscreen }: EssayPreviewProps) {
 
   return (
     <div
-      className={`h-full ${!fullscreen ? (isBook ? 'essay-preview-book-container' : 'essay-preview-scroll-container') : 'overflow-y-auto'}`}
+      className={`ed-preview h-full ${!fullscreen ? (isBook ? 'essay-preview-book-container' : 'essay-preview-scroll-container') : 'overflow-y-auto'}`}
       style={{ WebkitOverflowScrolling: 'touch' }}
     >
       {/* Preview: fixed→absolute 변환 + min-h-screen→container 높이 변환 + 데스크탑 wrapper 위치 보정 */}

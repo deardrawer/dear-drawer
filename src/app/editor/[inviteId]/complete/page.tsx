@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { PartyPopper, LockKeyhole, Smartphone, Users, ClipboardList, MessageCircle, Link2, Check } from 'lucide-react'
 
 export default function EditorCompletePage() {
   const params = useParams()
@@ -271,7 +272,7 @@ export default function EditorCompletePage() {
       <div className="w-full max-w-[400px]">
         {/* 축하 헤더 */}
         <div className="text-center mb-8 pt-8">
-          <div className="text-5xl mb-4">🎉</div>
+          <PartyPopper className="w-11 h-11 mx-auto mb-4" strokeWidth={1.5} style={{ color: '#C9A962' }} />
           <h1
             className="text-2xl font-bold mb-2"
             style={{ color: '#2C2C2C' }}
@@ -295,7 +296,7 @@ export default function EditorCompletePage() {
             style={{ border: '1px solid #E8E4DD' }}
           >
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-2xl">🔐</span>
+              <LockKeyhole className="w-6 h-6 shrink-0" strokeWidth={1.75} style={{ color: '#2C2C2C' }} />
               <div>
                 <h2
                   className="font-semibold"
@@ -466,7 +467,7 @@ export default function EditorCompletePage() {
               color: '#2C2C2C',
             }}
           >
-            <span className="text-xl">📱</span>
+            <Smartphone className="w-5 h-5" strokeWidth={1.75} />
             청첩장 미리보기
           </Link>
 
@@ -481,7 +482,7 @@ export default function EditorCompletePage() {
                 color: '#2C2C2C',
               }}
             >
-              <span className="text-xl">👥</span>
+              <Users className="w-5 h-5" strokeWidth={1.75} />
               게스트 관리하기
             </button>
           )}
@@ -497,7 +498,7 @@ export default function EditorCompletePage() {
                 color: '#2C2C2C',
               }}
             >
-              <span className="text-xl">📋</span>
+              <ClipboardList className="w-5 h-5" strokeWidth={1.75} />
               청첩장 관리하기
             </Link>
           )}
@@ -511,7 +512,7 @@ export default function EditorCompletePage() {
               color: '#191919',
             }}
           >
-            <span className="text-xl">💬</span>
+            <MessageCircle className="w-5 h-5" strokeWidth={1.75} />
             카카오톡 공유
           </button>
 
@@ -524,7 +525,7 @@ export default function EditorCompletePage() {
               color: '#FFF',
             }}
           >
-            <span className="text-xl">{isCopied ? '✓' : '📋'}</span>
+            {isCopied ? <Check className="w-5 h-5" strokeWidth={2} /> : <Link2 className="w-5 h-5" strokeWidth={1.75} />}
             {isCopied ? '복사됨!' : '링크 복사'}
           </button>
         </div>
@@ -540,7 +541,7 @@ export default function EditorCompletePage() {
                 게스트 관리에서 개인화 링크를 생성할 수 있어요
               </p>
               <p className="text-xs">
-                각 게스트에게 맞춤 인사말을 보내보세요 ✨
+                각 게스트에게 맞춤 인사말을 보내보세요
               </p>
             </>
           ) : (
@@ -549,7 +550,7 @@ export default function EditorCompletePage() {
                 카카오톡이나 링크로 청첩장을 공유해보세요
               </p>
               <p className="text-xs">
-                소중한 분들에게 행복한 소식을 전해보세요 💕
+                소중한 분들에게 행복한 소식을 전해보세요
               </p>
             </>
           )}

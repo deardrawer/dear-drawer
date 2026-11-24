@@ -249,7 +249,7 @@ export default function InterviewForm({
             onClick={() => handleVersionChange('short')}
           >
             <h4 className={`font-semibold ${data.version === 'short' ? 'text-rose-700' : 'text-gray-900'}`}>
-              💬 간결한 답변
+              간결한 답변
             </h4>
             <p className="font-semibold text-pink-600 text-sm mt-1">2-3개 질문</p>
             <p className="text-xs text-gray-600 mt-2">
@@ -271,7 +271,7 @@ export default function InterviewForm({
             onClick={() => handleVersionChange('rich')}
           >
             <h4 className={`font-semibold ${data.version === 'rich' ? 'text-rose-700' : 'text-gray-900'}`}>
-              📝 풍부한 답변
+              풍부한 답변
             </h4>
             <p className="font-semibold text-pink-600 text-sm mt-1">2-3개 질문</p>
             <p className="text-xs text-gray-600 mt-2">
@@ -300,15 +300,15 @@ export default function InterviewForm({
         <TabsList className="grid grid-cols-3 w-full">
           <TabsTrigger value="auto" className="text-xs sm:text-sm">
             <span className="flex flex-col items-center gap-0.5">
-              <span>✨ AI 자동</span>
+              <span>AI 자동</span>
               <span className="text-[10px] text-rose-500 font-medium">추천</span>
             </span>
           </TabsTrigger>
           <TabsTrigger value="popular" className="text-xs sm:text-sm">
-            ⭐ 인기 질문
+            인기 질문
           </TabsTrigger>
           <TabsTrigger value="custom" className="text-xs sm:text-sm">
-            ✏️ 직접 입력
+            직접 입력
           </TabsTrigger>
         </TabsList>
 
@@ -316,7 +316,7 @@ export default function InterviewForm({
         <TabsContent value="auto" className="mt-6 space-y-6">
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-800">
-              💡 입력하신 스토리 정보를 바탕으로 2-3개의 질문을 만들어드려요
+              입력하신 스토리 정보를 바탕으로 2-3개의 질문을 만들어드려요
             </p>
             <p className="text-xs text-blue-600 mt-1">
               간결한 버전: 핵심 위주 답변 (5-7문장) / 풍부한 버전: 에피소드 포함 상세 답변 (10-15문장)
@@ -407,7 +407,7 @@ export default function InterviewForm({
         <TabsContent value="popular" className="mt-6 space-y-6">
           <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
             <p className="text-sm text-purple-800">
-              ⭐ 가장 많이 사용하는 질문들입니다. 2-3개를 선택해주세요
+              가장 많이 사용하는 질문들입니다. 2-3개를 선택해주세요
             </p>
             <p className="text-xs text-purple-600 mt-1">
               간결한 버전: 핵심 위주 / 풍부한 버전: 에피소드와 디테일 포함
@@ -445,7 +445,7 @@ export default function InterviewForm({
                         <div className="flex-1">
                           <span className="text-sm">{question.text}</span>
                           <p className="text-xs text-gray-400 mt-0.5">
-                            {question.answerStyle === 'individual' ? '🙋‍♂️ 신랑 / 🙋‍♀️ 신부 각각 답변' : '💑 함께 답변'}
+                            {question.answerStyle === 'individual' ? '신랑 / 신부 각각 답변' : '함께 답변'}
                           </p>
                         </div>
                       </label>
@@ -471,10 +471,10 @@ export default function InterviewForm({
                 ))}
               </ul>
               {data.selectedQuestions.length < 2 && (
-                <p className="text-sm text-orange-600 mt-2">💡 최소 2개를 선택해주세요</p>
+                <p className="text-sm text-orange-600 mt-2">최소 2개를 선택해주세요</p>
               )}
               {data.selectedQuestions.length > 3 && (
-                <p className="text-sm text-orange-600 mt-2">💡 최대 3개까지 선택 가능합니다</p>
+                <p className="text-sm text-orange-600 mt-2">최대 3개까지 선택 가능합니다</p>
               )}
             </div>
           )}
@@ -484,7 +484,7 @@ export default function InterviewForm({
         <TabsContent value="custom" className="mt-6 space-y-6">
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
             <p className="text-sm text-green-800">
-              ✏️ 우리만의 특별한 질문을 직접 만들어보세요 (2-3개)
+              우리만의 특별한 질문을 직접 만들어보세요 (2-3개)
             </p>
             <p className="text-xs text-green-600 mt-1">
               답변 힌트를 입력하면 선택하신 버전에 맞게 답변을 작성해드려요
@@ -533,7 +533,7 @@ export default function InterviewForm({
                           : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                       }`}
                     >
-                      🙋‍♂️🙋‍♀️ 신랑/신부 각각 답변
+                      신랑/신부 각각 답변
                     </button>
                     <button
                       type="button"
@@ -544,7 +544,7 @@ export default function InterviewForm({
                           : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                       }`}
                     >
-                      💑 함께 답변
+                      함께 답변
                     </button>
                   </div>
                 </div>
@@ -557,13 +557,13 @@ export default function InterviewForm({
                   {q.answerStyle === 'individual' ? (
                     <div className="space-y-2">
                       <Input
-                        placeholder="🤵 신랑 답변 힌트"
+                        placeholder="신랑 답변 힌트"
                         value={data.hints?.[`q${index}`]?.groom || ''}
                         onChange={(e) => updateHint(`q${index}`, 'groom', e.target.value)}
                         className="text-sm"
                       />
                       <Input
-                        placeholder="👰 신부 답변 힌트"
+                        placeholder="신부 답변 힌트"
                         value={data.hints?.[`q${index}`]?.bride || ''}
                         onChange={(e) => updateHint(`q${index}`, 'bride', e.target.value)}
                         className="text-sm"
@@ -571,7 +571,7 @@ export default function InterviewForm({
                     </div>
                   ) : (
                     <Input
-                      placeholder="💑 답변 힌트"
+                      placeholder="답변 힌트"
                       value={data.hints?.[`q${index}`]?.joint || ''}
                       onChange={(e) => updateHint(`q${index}`, 'joint', e.target.value)}
                       className="text-sm"
@@ -626,12 +626,12 @@ export default function InterviewForm({
           >
             {isGenerating ? (
               <span className="flex items-center gap-2">
-                <span className="animate-spin">⏳</span>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 생성 중...
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                ✨ 초안 생성하기
+                초안 생성하기
               </span>
             )}
           </Button>
@@ -647,7 +647,7 @@ export default function InterviewForm({
 
       {/* 안내 메시지 */}
       <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <p className="text-sm text-blue-800 font-medium">💡 Tip</p>
+        <p className="text-sm text-blue-800 font-medium">Tip</p>
         <p className="text-xs text-blue-700 mt-1">
           인터뷰 내용은 입력하신 정보를 바탕으로 자연스럽게 만들어드려요.
           생성 후 원하는 대로 수정할 수 있어요!

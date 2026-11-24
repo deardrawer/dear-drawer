@@ -403,7 +403,7 @@ function EditorContent() {
 
     // 신랑/신부 이름 필수 검증
     if (!invitation.groom.name?.trim() || !invitation.bride.name?.trim()) {
-      alert('📋 신랑/신부 이름을 모두 입력해주세요.')
+      alert('신랑/신부 이름을 모두 입력해주세요.')
       useEditorStore.getState().setWizardStep(2)  // 인트로 탭으로 이동
       useEditorStore.getState().setValidationError({ tab: 'names', message: '신랑/신부 이름을 입력해주세요.' })
       return
@@ -644,7 +644,7 @@ function EditorContent() {
   // 인증 상태 확인 중이거나 기존 청첩장 로딩 중이면 스피너 표시
   if (status === 'loading' || (editId && isLoading)) {
     return (
-      <div className="h-screen flex items-center justify-center bg-white">
+      <div className="ed-ui h-screen flex items-center justify-center bg-white">
         <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
       </div>
     )
@@ -652,7 +652,7 @@ function EditorContent() {
 
   if (!activeTemplate && !editId) {
     return (
-      <div className="h-screen flex items-center justify-center bg-white">
+      <div className="ed-ui h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <h1 className="text-xl font-light text-gray-900 mb-6 tracking-wide">Template not found</h1>
           <Link href="/">
@@ -667,7 +667,7 @@ function EditorContent() {
 
   if (!invitation) {
     return (
-      <div className="h-screen flex items-center justify-center bg-white">
+      <div className="ed-ui h-screen flex items-center justify-center bg-white">
         <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
       </div>
     )
@@ -677,7 +677,7 @@ function EditorContent() {
   const isOurTemplate = true
 
   return (
-    <div className={`h-screen flex flex-col ${isOurTemplate ? 'theme-neu' : 'bg-white'}`}>
+    <div className={`ed-ui h-screen flex flex-col ${isOurTemplate ? 'theme-neu' : 'bg-white'}`}>
       {/* Action Bar */}
       <header className={`h-12 sm:h-14 flex items-center justify-between px-3 sm:px-6 shrink-0 ${isOurTemplate ? 'editor-header' : 'border-b border-gray-100 bg-white'}`}>
         <div className="flex items-center gap-2 sm:gap-4">
@@ -933,6 +933,7 @@ function EditorContent() {
       {/* AI 스토리 생성기 다이얼로그 - React Portal로 직접 렌더링 */}
       {isAIStoryGeneratorOpen && typeof document !== 'undefined' && createPortal(
         <div
+          className="ed-ui"
           style={{
             position: 'fixed',
             top: 0,
@@ -1102,7 +1103,7 @@ function EditorContent() {
 // 에디터 전용 에러 Fallback
 function EditorErrorFallback({ resetError }: { resetError: () => void }) {
   return (
-    <div className="h-screen flex items-center justify-center bg-white">
+    <div className="ed-ui h-screen flex items-center justify-center bg-white">
       <div className="max-w-md w-full p-8 text-center">
         <div className="w-16 h-16 mx-auto mb-6 bg-rose-100 rounded-full flex items-center justify-center">
           <svg className="w-8 h-8 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1136,7 +1137,7 @@ export default function EditorPage() {
     >
       <Suspense
         fallback={
-          <div className="h-screen flex items-center justify-center bg-white">
+          <div className="ed-ui h-screen flex items-center justify-center bg-white">
             <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
           </div>
         }

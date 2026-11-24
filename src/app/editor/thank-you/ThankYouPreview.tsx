@@ -52,7 +52,7 @@ export default function ThankYouPreview({ data, fontStyle = 'classic', accentCol
   }, [wizardStep])
 
   return (
-    <div className="relative h-full">
+    <div className="ed-preview relative h-full">
       <div
         ref={scrollContainerRef}
         className="h-full overflow-y-auto"
@@ -70,7 +70,7 @@ export default function ThankYouPreview({ data, fontStyle = 'classic', accentCol
       {/* 리셋 버튼 */}
       <button
         onClick={handleReset}
-        className="absolute top-3 right-3 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm transition-opacity hover:opacity-100 opacity-70"
+        className="ed-ui absolute top-3 right-3 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm transition-opacity hover:opacity-100 opacity-70"
         style={{ background: 'rgba(0,0,0,0.5)', color: '#fff' }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

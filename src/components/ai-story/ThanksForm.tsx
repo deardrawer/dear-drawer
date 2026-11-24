@@ -113,7 +113,7 @@ export default function ThanksForm({ data, onChange }: ThanksFormProps) {
       {/* 안내 메시지 */}
       <div className="p-4 bg-gray-50 rounded-lg">
         <p className="text-sm text-gray-600">
-          💡 선택하신 스타일에 맞춰 두 분만의 감사 인사를 생성해드립니다.
+          선택하신 스타일에 맞춰 두 분만의 감사 인사를 생성해드립니다.
         </p>
       </div>
     </div>

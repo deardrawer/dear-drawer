@@ -444,7 +444,7 @@ export default function Step6Publish({
 
       {/* 발행 완료 모달 */}
       <Dialog open={showSuccessModal} onOpenChange={handleCloseModal}>
-        <DialogContent className="max-w-sm mx-auto">
+        <DialogContent className="ed-ui max-w-sm mx-auto">
           <DialogTitle className="sr-only">발행 완료</DialogTitle>
           {/* 축하 헤더 */}
           <div className="text-center pt-2 pb-4">

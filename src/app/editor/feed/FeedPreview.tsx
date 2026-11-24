@@ -63,7 +63,7 @@ export default function FeedPreview({ data, fullscreen: _fullscreen }: FeedPrevi
   }), [data, content])
 
   return (
-    <div className="relative">
+    <div className="ed-preview relative">
       <InvitationClientExhibit
         invitation={invitation}
         content={content}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, X, Loader2 } from 'lucide-react'
+import { Plus, X, Loader2, Bell } from 'lucide-react'
 import type { DdayPopupData, DdayPopupPage, ImageWithSettings, ImageSettings } from '@/lib/ddayPopupTypes'
 import { uploadImage } from '@/lib/imageUpload'
 import ColorField from '@/components/editor/ColorField'
@@ -494,7 +494,7 @@ export default function DdayPopupEditor({ value, weddingDate, onChange, onPrevie
               onClick={onPreview}
               className="mt-3 w-full flex items-center justify-center gap-1.5 border border-stone-300 rounded-md py-2 text-xs text-stone-600 hover:border-stone-500 hover:text-stone-800 transition-colors"
             >
-              <span style={{ fontSize: 14 }}>🔔</span>
+              <Bell className="w-3.5 h-3.5" strokeWidth={1.75} />
               팝업 미리보기
             </button>
           )}

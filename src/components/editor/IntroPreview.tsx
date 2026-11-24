@@ -74,7 +74,7 @@ function PreviewStage({ children }: { children: React.ReactNode }) {
   }, [])
   const k = box.w / STAGE_W
   return (
-    <div ref={ref} className="relative w-full h-full overflow-hidden bg-black">
+    <div ref={ref} className="ed-preview relative w-full h-full overflow-hidden bg-black">
       {box.w > 0 && (
         <div style={{ position: 'absolute', left: 0, top: 0, width: STAGE_W, height: box.h / k, transform: `scale(${k})`, transformOrigin: '0 0' }}>
           {children}

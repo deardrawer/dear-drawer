@@ -34,7 +34,6 @@ interface ResultViewerProps {
 
 interface SectionCardProps {
   title: string
-  icon: string
   content: string
   sectionKey: string
   isEditing: boolean
@@ -144,7 +143,6 @@ function RegenBadge({ status }: { status: RegenStatus }) {
 
 function SectionCard({
   title,
-  icon,
   content,
   sectionKey,
   isEditing,
@@ -269,7 +267,6 @@ function SectionCard({
     >
       <CardHeader className="border-b pb-4">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <span>{icon}</span>
           {title}
         </CardTitle>
         <CardAction>
@@ -282,7 +279,7 @@ function SectionCard({
                 className="text-xs h-8"
                 aria-label={`${title} 수정`}
               >
-                ✏️ 수정
+                수정
               </Button>
               {!hideRegenerate && (
                 <Button
@@ -298,7 +295,7 @@ function SectionCard({
                   aria-label={`${title} 다시 생성`}
                   title={!canRegen ? '최대 재생성 횟수에 도달했습니다' : undefined}
                 >
-                  🔄 다시 생성
+                  다시 생성
                   <RegenBadge status={regenStatus} />
                 </Button>
               )}
@@ -309,7 +306,7 @@ function SectionCard({
                 className="text-xs h-8"
                 aria-label={`${title} 복사`}
               >
-                📋 복사
+                복사
               </Button>
             </div>
           )}
@@ -434,7 +431,7 @@ function InterviewItem({
           {(item.groomAnswer !== undefined || !item.jointAnswer) && (
             <div>
               <label className="text-sm font-medium text-blue-600 mb-1 flex items-center gap-1">
-                🙋‍♂️ {groomName}
+                {groomName}
               </label>
               <Textarea
                 value={editedItem.groomAnswer || ''}
@@ -451,7 +448,7 @@ function InterviewItem({
           {(item.brideAnswer !== undefined || !item.jointAnswer) && (
             <div>
               <label className="text-sm font-medium text-pink-600 mb-1 flex items-center gap-1">
-                🙋‍♀️ {brideName}
+                {brideName}
               </label>
               <Textarea
                 value={editedItem.brideAnswer || ''}
@@ -468,7 +465,7 @@ function InterviewItem({
           {item.jointAnswer !== undefined && (
             <div>
               <label className="text-sm font-medium text-purple-600 mb-1 flex items-center gap-1">
-                💑 함께
+                함께
               </label>
               <Textarea
                 value={editedItem.jointAnswer || ''}
@@ -487,7 +484,7 @@ function InterviewItem({
           {item.groomAnswer && (
             <div>
               <p className="text-sm font-medium text-blue-600 mb-1 flex items-center gap-1">
-                🙋‍♂️ {groomName}
+                {groomName}
               </p>
               <p className="text-gray-800 whitespace-pre-wrap pl-5">
                 {item.groomAnswer}
@@ -498,7 +495,7 @@ function InterviewItem({
           {item.brideAnswer && (
             <div>
               <p className="text-sm font-medium text-pink-600 mb-1 flex items-center gap-1">
-                🙋‍♀️ {brideName}
+                {brideName}
               </p>
               <p className="text-gray-800 whitespace-pre-wrap pl-5">
                 {item.brideAnswer}
@@ -509,7 +506,7 @@ function InterviewItem({
           {item.jointAnswer && (
             <div>
               <p className="text-sm font-medium text-purple-600 mb-1 flex items-center gap-1">
-                💑 함께
+                함께
               </p>
               <p className="text-gray-800 whitespace-pre-wrap pl-5">
                 {item.jointAnswer}
@@ -730,9 +727,6 @@ export default function ResultViewer({
       <div className="flex flex-col items-center justify-center py-16 space-y-4">
         <div className="relative">
           <div className="w-16 h-16 border-4 border-rose-200 border-t-rose-500 rounded-full animate-spin" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-2xl">✨</span>
-          </div>
         </div>
         <p className="text-gray-700 font-medium">스토리 초안을 작성하고 있어요...</p>
         <p className="text-sm text-gray-500">잠시만 기다려주세요</p>
@@ -750,7 +744,6 @@ export default function ResultViewer({
   if (!hasRequiredContent) {
     return (
       <div className="text-center py-16">
-        <div className="text-5xl mb-4">📝</div>
         <p className="text-gray-600 font-medium">생성된 결과가 없습니다.</p>
         <p className="text-sm text-gray-400 mt-2">
           이전 단계를 완료하고 생성 버튼을 눌러주세요.
@@ -769,7 +762,7 @@ export default function ResultViewer({
       {/* 헤더 */}
       <div className="text-center mb-8 animate-fade-in">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          ✨ 생성이 완료되었어요!
+          생성이 완료되었어요!
         </h2>
         <p className="text-gray-600">
           각 섹션을 확인하고 원하시면 수정하거나 다시 생성할 수 있어요
@@ -788,7 +781,6 @@ export default function ResultViewer({
           <Card className="animate-fade-in shadow-sm">
             <CardHeader className="border-b pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <span>💕</span>
                 서로를 선택한 이유
               </CardTitle>
               <CardAction>
@@ -803,7 +795,7 @@ export default function ResultViewer({
                       : 'text-gray-400 border-gray-200 cursor-not-allowed'
                   }`}
                 >
-                  {regeneratingSection === 'whyWeChose' ? '생성 중...' : '🔄 다시 생성'}
+                  {regeneratingSection === 'whyWeChose' ? '생성 중...' : '다시 생성'}
                 </Button>
               </CardAction>
             </CardHeader>
@@ -819,7 +811,6 @@ export default function ResultViewer({
                   {/* 신랑이 신부를 선택한 이유 */}
                   <SectionCard
                     title={`${groomName}이 ${brideName}을 선택한 이유`}
-                    icon="🤵"
                     content={whyWeChose.groomDescription}
                     sectionKey="whyWeChose.groomDescription"
                     isEditing={editingSection === 'whyWeChose.groomDescription'}
@@ -849,7 +840,6 @@ export default function ResultViewer({
                   {/* 신부가 신랑을 선택한 이유 */}
                   <SectionCard
                     title={`${brideName}이 ${groomName}을 선택한 이유`}
-                    icon="👰"
                     content={whyWeChose.brideDescription}
                     sectionKey="whyWeChose.brideDescription"
                     isEditing={editingSection === 'whyWeChose.brideDescription'}
@@ -890,7 +880,6 @@ export default function ResultViewer({
           {/* 1. 인사말 */}
           <SectionCard
             title="인사말"
-            icon="📝"
             content={editedContent.greeting}
             sectionKey="greeting"
             isEditing={editingSection === 'greeting'}
@@ -908,7 +897,6 @@ export default function ResultViewer({
           {/* 2. 감사말 */}
           <SectionCard
             title="감사 인사"
-            icon="💕"
             content={editedContent.thanks}
             sectionKey="thanks"
             isEditing={editingSection === 'thanks'}
@@ -926,7 +914,6 @@ export default function ResultViewer({
           {/* 3. 신랑 소개 */}
           <SectionCard
             title={`신랑 소개 (${groomName})`}
-            icon="🤵"
             content={editedContent.groomProfile}
             sectionKey="groomProfile"
             isEditing={editingSection === 'groomProfile'}
@@ -944,7 +931,6 @@ export default function ResultViewer({
           {/* 4. 신부 소개 */}
           <SectionCard
             title={`신부 소개 (${brideName})`}
-            icon="👰"
             content={editedContent.brideProfile}
             sectionKey="brideProfile"
             isEditing={editingSection === 'brideProfile'}
@@ -963,7 +949,6 @@ export default function ResultViewer({
           <Card className="animate-fade-in shadow-sm">
             <CardHeader className="border-b pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <span>💑</span>
                 우리의 러브스토리
               </CardTitle>
               <CardAction>
@@ -978,7 +963,7 @@ export default function ResultViewer({
                       : 'text-gray-400 border-gray-200 cursor-not-allowed'
                   }`}
                 >
-                  {regeneratingSection === 'story' ? '생성 중...' : '🔄 전체 다시 생성'}
+                  {regeneratingSection === 'story' ? '생성 중...' : '전체 다시 생성'}
                   {regenStatuses['story'] && <RegenBadge status={regenStatuses['story']} />}
                 </Button>
               </CardAction>
@@ -988,7 +973,6 @@ export default function ResultViewer({
               {/* 1단계: 연애의 시작 */}
               <SectionCard
                 title="1단계: 연애의 시작"
-                icon=""
                 content={story.first}
                 sectionKey="story.first"
                 isEditing={editingSection === 'story.first'}
@@ -1010,7 +994,6 @@ export default function ResultViewer({
               {/* 2단계: 함께 성장한 시간 */}
               <SectionCard
                 title="2단계: 함께 성장한 시간"
-                icon=""
                 content={story.together}
                 sectionKey="story.together"
                 isEditing={editingSection === 'story.together'}
@@ -1034,7 +1017,6 @@ export default function ResultViewer({
               {/* 3단계: 결혼 준비 */}
               <SectionCard
                 title="3단계: 결혼 준비"
-                icon=""
                 content={story.preparation}
                 sectionKey="story.preparation"
                 isEditing={editingSection === 'story.preparation'}
@@ -1066,7 +1048,6 @@ export default function ResultViewer({
         <Card className="animate-fade-in shadow-sm">
           <CardHeader className="border-b pb-4">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <span>🎤</span>
               웨딩 인터뷰
             </CardTitle>
             <CardAction>
@@ -1077,7 +1058,7 @@ export default function ResultViewer({
                   onClick={copyAllInterview}
                   className="text-xs h-8"
                 >
-                  📋 전체 복사
+                  전체 복사
                 </Button>
                 <Button
                   variant="outline"
@@ -1092,7 +1073,7 @@ export default function ResultViewer({
                 >
                   {regeneratingSection === 'interview'
                     ? '생성 중...'
-                    : '🔄 전체 다시 생성'}
+                    : '전체 다시 생성'}
                   {regenStatuses['interview'] && <RegenBadge status={regenStatuses['interview']} />}
                 </Button>
               </div>
@@ -1134,7 +1115,6 @@ export default function ResultViewer({
       {isFamilyTemplate && editedContent && (
         <SectionCard
           title="감사 인사"
-          icon="🙏"
           content={editedContent.thanks}
           sectionKey="thanks"
           isEditing={editingSection === 'thanks'}
@@ -1158,7 +1138,7 @@ export default function ResultViewer({
           disabled={!editedContent}
           className="bg-rose-500 hover:bg-rose-600 text-white px-12 py-6 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300"
         >
-          ✨ 에디터에 적용하기
+          에디터에 적용하기
         </Button>
       </div>
 

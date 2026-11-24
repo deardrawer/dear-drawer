@@ -330,7 +330,7 @@ export default function GuestManager({ invitationId }: GuestManagerProps) {
 
       {/* Add/Edit Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="ed-ui sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
               {editingGuest ? '게스트 편집' : '게스트 추가'}

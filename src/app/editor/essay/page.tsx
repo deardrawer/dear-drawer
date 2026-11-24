@@ -490,14 +490,14 @@ function EssayEditorContent() {
 
   if (status === 'loading' || (editId && isLoading)) {
     return (
-      <div className="h-screen flex items-center justify-center bg-white">
+      <div className="ed-ui h-screen flex items-center justify-center bg-white">
         <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
       </div>
     )
   }
 
   return (
-    <div className="h-screen flex flex-col theme-neu">
+    <div className="ed-ui h-screen flex flex-col theme-neu">
       {/* Header */}
       <header className="h-12 sm:h-14 editor-header flex items-center justify-between px-3 sm:px-6 shrink-0">
         <div className="flex items-center gap-2 sm:gap-4">
@@ -544,7 +544,7 @@ function EssayEditorContent() {
             {/* Preview - 왼쪽 sticky 고정, 카드형 디바이스 프리뷰 (데스크탑) */}
             {!isMobile && (
               <div className="sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ width: `${previewColW}px`, minWidth: `${previewColW}px`, height: 'calc(100vh - 88px)' }}>
-                <div className="w-[390px] shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ height: '710px', transform: `scale(${previewScale})`, transformOrigin: 'center top' }}>
+                <div className="ed-preview w-[390px] shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ height: '710px', transform: `scale(${previewScale})`, transformOrigin: 'center top' }}>
                   <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <EssayPreview data={data} />
                   </div>
@@ -574,7 +574,7 @@ function EssayEditorContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                 </button>
-                <div className="w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200 flex-1 relative" style={{ maxHeight: '630px' }}>
+                <div className="ed-preview w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200 flex-1 relative" style={{ maxHeight: '630px' }}>
                   <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <EssayPreview key={previewKey} data={data} />
                   </div>
@@ -690,7 +690,7 @@ function EssayEditorContent() {
 export default function EssayEditorPage() {
   return (
     <ErrorBoundary fallback={
-      <div className="h-screen flex items-center justify-center bg-white">
+      <div className="ed-ui h-screen flex items-center justify-center bg-white">
         <div className="max-w-md w-full p-8 text-center">
           <h2 className="text-xl font-medium text-gray-900 mb-2">에디터 오류</h2>
           <p className="text-gray-600 mb-6">에디터를 불러오는 중 문제가 발생했습니다.</p>
@@ -698,7 +698,7 @@ export default function EssayEditorPage() {
         </div>
       </div>
     }>
-      <Suspense fallback={<div className="h-screen flex items-center justify-center bg-white"><div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" /></div>}>
+      <Suspense fallback={<div className="ed-ui h-screen flex items-center justify-center bg-white"><div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" /></div>}>
         <EssayEditorContent />
       </Suspense>
     </ErrorBoundary>

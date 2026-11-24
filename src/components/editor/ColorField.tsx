@@ -106,7 +106,7 @@ export default function ColorField({ value, onChange, label, presets = DEFAULT_P
       )}
 
       {open && createPortal(
-        <div ref={modalRef} className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" onClick={() => setOpen(false)}>
+        <div ref={modalRef} className="ed-ui fixed inset-0 z-[100] flex items-end sm:items-center justify-center" onClick={() => setOpen(false)}>
           <div className="absolute inset-0 bg-black/40" />
           <div
             className="relative w-full sm:max-w-sm bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl p-5 pb-7 space-y-4 safe-area-bottom"

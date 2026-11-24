@@ -129,7 +129,7 @@ export default function ParentsPreview({
   }, [onTabChange])
 
   return (
-    <div className={`relative ${fullscreen ? 'w-full h-full' : 'w-full h-full'} overflow-hidden`}>
+    <div className={`ed-preview relative ${fullscreen ? 'w-full h-full' : 'w-full h-full'} overflow-hidden`}>
       <style jsx global>{`
         .hide-scrollbar {
           -ms-overflow-style: none;

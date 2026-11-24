@@ -177,7 +177,7 @@ export default function ParentsGreetingForm({ data, onChange }: ParentsGreetingF
       {/* 안내 메시지 */}
       <div className="p-4 bg-gray-50 rounded-lg">
         <p className="text-sm text-gray-600">
-          💡 입력하신 내용을 바탕으로 부모님의 마음이 담긴 인사말을 생성해드립니다.
+          입력하신 내용을 바탕으로 부모님의 마음이 담긴 인사말을 생성해드립니다.
         </p>
       </div>
     </div>

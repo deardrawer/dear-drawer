@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import { Smartphone, Users, Sparkles } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -446,7 +447,7 @@ export default function ParentsStep4Publish({
 
       {/* 발행 완료 모달 */}
       <Dialog open={showSuccessModal} onOpenChange={handleCloseModal}>
-        <DialogContent className="max-w-sm mx-auto">
+        <DialogContent className="ed-ui max-w-sm mx-auto">
           <DialogTitle className="sr-only">발행 완료</DialogTitle>
           {/* 축하 헤더 */}
           <div className="text-center pt-2 pb-4">
@@ -483,7 +484,7 @@ export default function ParentsStep4Publish({
               onClick={() => invitationUrl && window.open(invitationUrl, '_blank')}
               className="flex flex-col items-center gap-1.5 p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors"
             >
-              <span className="text-xl">📱</span>
+              <Smartphone className="w-5 h-5 text-gray-700" strokeWidth={1.75} />
               <span className="text-xs font-medium text-gray-700">미리보기</span>
             </button>
 
@@ -503,7 +504,7 @@ export default function ParentsStep4Publish({
               onClick={handleGoToAdmin}
               className="flex flex-col items-center gap-1.5 p-3 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors"
             >
-              <span className="text-xl">👥</span>
+              <Users className="w-5 h-5 text-gray-700" strokeWidth={1.75} />
               <span className="text-xs font-medium text-gray-700">게스트관리</span>
             </button>
           </div>
@@ -512,7 +513,7 @@ export default function ParentsStep4Publish({
           {!isPaid && (
             <div className="mt-3 p-4 bg-rose-50 border border-rose-200 rounded-xl">
               <div className="flex items-start gap-3">
-                <span className="text-xl">💎</span>
+                <Sparkles className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" strokeWidth={1.75} />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-rose-800 mb-1">워터마크 제거</p>
                   <p className="text-xs text-rose-600 mb-3">

@@ -314,7 +314,7 @@ export default function ShareModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="ed-ui max-w-lg">
         <DialogHeader>
           <DialogTitle>청첩장 공유하기</DialogTitle>
         </DialogHeader>

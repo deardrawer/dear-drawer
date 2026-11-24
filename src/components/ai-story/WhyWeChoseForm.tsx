@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { User, Users } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -26,14 +27,12 @@ interface WhyWeChoseFormProps {
 function VersionCard({
   selected,
   onClick,
-  icon,
   title,
   description,
   detail
 }: {
   selected: boolean
   onClick: () => void
-  icon: string
   title: string
   description: string
   detail: string
@@ -48,7 +47,6 @@ function VersionCard({
           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
       }`}
     >
-      <div className="text-2xl mb-2">{icon}</div>
       <h4 className="font-semibold text-gray-900">{title}</h4>
       <p className="text-sm text-gray-600 mt-1">{description}</p>
       <p className="text-xs text-gray-400 mt-2">{detail}</p>
@@ -112,7 +110,6 @@ function ThemeCard({
       }`}
     >
       <div className="flex items-center gap-2">
-        <span className="text-xl">{theme.icon}</span>
         <div>
           <p className="font-medium text-sm text-gray-900">{theme.title}</p>
           <p className="text-xs text-gray-500">{theme.description}</p>
@@ -125,12 +122,10 @@ function ThemeCard({
 // 섹션 헤더 컴포넌트
 function PersonHeader({
   person,
-  icon,
   color,
   theme
 }: {
   person: '신랑' | '신부'
-  icon: string
   color: 'blue' | 'pink'
   theme?: string
 }) {
@@ -140,7 +135,7 @@ function PersonHeader({
   return (
     <div className="flex items-center gap-3">
       <span className={`w-8 h-8 rounded-full ${bgColor} ${textColor} flex items-center justify-center font-bold text-sm`}>
-        {icon}
+        <User className="w-4 h-4" strokeWidth={1.75} />
       </span>
       <div className="text-left flex-1">
         <h3 className="font-semibold text-gray-900">{person}</h3>
@@ -205,7 +200,6 @@ export default function WhyWeChoseForm({ data, onChange }: WhyWeChoseFormProps) 
           <VersionCard
             selected={version === 'short'}
             onClick={() => handleVersionChange('short')}
-            icon="📝"
             title="간결한 이야기"
             description="핵심만 담백하게"
             detail="예상 길이: 3-4문장"
@@ -213,7 +207,6 @@ export default function WhyWeChoseForm({ data, onChange }: WhyWeChoseFormProps) 
           <VersionCard
             selected={version === 'rich'}
             onClick={() => handleVersionChange('rich')}
-            icon="📖"
             title="풍부한 이야기"
             description="디테일하게 표현"
             detail="예상 길이: 5-6문장"
@@ -233,7 +226,7 @@ export default function WhyWeChoseForm({ data, onChange }: WhyWeChoseFormProps) 
           <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-50">
             <div className="flex items-center gap-3">
               <span className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-sm">
-                👫
+                <Users className="w-4 h-4" strokeWidth={1.75} />
               </span>
               <div className="text-left">
                 <h3 className="font-semibold text-gray-900">커플 정보</h3>
@@ -268,9 +261,8 @@ export default function WhyWeChoseForm({ data, onChange }: WhyWeChoseFormProps) 
           <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-blue-50/50">
             <PersonHeader
               person="신랑"
-              icon="👨"
               color="blue"
-              theme={groomThemeData ? `${groomThemeData.icon} ${groomThemeData.title}` : undefined}
+              theme={groomThemeData ? groomThemeData.title : undefined}
             />
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-4 bg-blue-50/30">
@@ -339,9 +331,8 @@ export default function WhyWeChoseForm({ data, onChange }: WhyWeChoseFormProps) 
           <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-pink-50/50">
             <PersonHeader
               person="신부"
-              icon="👩"
               color="pink"
-              theme={brideThemeData ? `${brideThemeData.icon} ${brideThemeData.title}` : undefined}
+              theme={brideThemeData ? brideThemeData.title : undefined}
             />
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-4 bg-pink-50/30">
@@ -409,7 +400,7 @@ export default function WhyWeChoseForm({ data, onChange }: WhyWeChoseFormProps) 
       {/* 팁 */}
       <div className="p-4 bg-amber-50 rounded-lg border border-amber-100">
         <p className="text-sm text-amber-800">
-          <span className="font-semibold">💡 Tip</span><br />
+          <span className="font-semibold">Tip</span><br />
           신랑과 신부가 서로 다른 테마를 선택해도 괜찮아요.<br />
           각자의 진심을 담아 작성해주세요.
         </p>

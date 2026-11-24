@@ -1396,14 +1396,14 @@ function TheSimpleEditorContent() {
 
   if (status === 'loading' || (editId && isLoading)) {
     return (
-      <div className="h-screen flex items-center justify-center bg-white">
+      <div className="ed-ui h-screen flex items-center justify-center bg-white">
         <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
       </div>
     )
   }
 
   return (
-    <div className="h-screen flex flex-col bg-stone-50">
+    <div className="ed-ui h-screen flex flex-col bg-white">
       {/* Header */}
       <header className="h-12 sm:h-14 bg-white border-b border-stone-200 flex items-center justify-between px-3 sm:px-6 shrink-0">
         <div className="flex items-center gap-2 sm:gap-4">
@@ -1472,7 +1472,7 @@ function TheSimpleEditorContent() {
         {isMobile && (
           <>
             <div ref={previewAreaRef} className="flex-shrink-0 overflow-hidden flex items-center justify-center bg-stone-100 relative" style={{ height: `${splitRatio}%` }}>
-              <div className="relative h-full overflow-hidden rounded-[10px] shadow-lg" style={{ width: `${180 * previewZoom}px`, transition: 'width 0.15s ease-out' }}>
+              <div className="ed-preview relative h-full overflow-hidden rounded-[10px] shadow-lg" style={{ width: `${180 * previewZoom}px`, transition: 'width 0.15s ease-out' }}>
                 <div
                   className="bg-white overflow-hidden absolute top-0 left-0"
                   style={{
@@ -1519,7 +1519,7 @@ function TheSimpleEditorContent() {
                     <button
                       type="button"
                       onClick={() => { setCoverDismissed(false); setCoverOverlayFading(false); setCoverOverlayGone(false); setCoverKey((k) => k + 1) }}
-                      className="absolute top-2 right-2 z-50 px-2 py-1 rounded-full bg-black/60 text-white text-[8px] tracking-wider hover:bg-black/80 transition-colors backdrop-blur-sm"
+                      className="ed-ui absolute top-2 right-2 z-50 px-2 py-1 rounded-full bg-black/60 text-white text-[8px] tracking-wider hover:bg-black/80 transition-colors backdrop-blur-sm"
                     >
                       커버 다시 보기
                     </button>
@@ -1587,7 +1587,7 @@ function TheSimpleEditorContent() {
           {!isMobile && (
             <div className="sticky top-0 flex justify-center items-start p-4" style={{ width: `${previewColW}px`, minWidth: `${previewColW}px` }}>
               <div
-                className="w-[390px] shadow-2xl bg-white overflow-hidden rounded-[22px] relative"
+                className="ed-preview w-[390px] shadow-2xl bg-white overflow-hidden rounded-[22px] relative"
                 style={{ height: 'calc(100vh - 88px)', transform: `scale(${previewScale}) translateZ(0)`, transformOrigin: 'top center' }}
               >
                 <div className="ts-editor-scroll w-full h-full overflow-y-auto relative" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', ['--ts-intro-vh' as string]: 'calc(100vh - 88px)' } as React.CSSProperties}>
@@ -1625,7 +1625,7 @@ function TheSimpleEditorContent() {
                     <button
                       type="button"
                       onClick={() => { setCoverDismissed(false); setCoverOverlayFading(false); setCoverOverlayGone(false); setCoverKey((k) => k + 1) }}
-                      className="absolute top-3 right-3 z-50 px-3 py-1.5 rounded-full bg-black/60 text-white text-[10px] tracking-wider hover:bg-black/80 transition-colors backdrop-blur-sm"
+                      className="ed-ui absolute top-3 right-3 z-50 px-3 py-1.5 rounded-full bg-black/60 text-white text-[10px] tracking-wider hover:bg-black/80 transition-colors backdrop-blur-sm"
                     >
                       커버 다시 보기
                     </button>
@@ -3125,7 +3125,7 @@ export default function TheSimpleEditorPage() {
   return (
     <ErrorBoundary
       fallback={
-        <div className="h-screen flex items-center justify-center bg-white">
+        <div className="ed-ui h-screen flex items-center justify-center bg-white">
           <div className="max-w-md w-full p-8 text-center">
             <h2 className="text-xl font-medium text-gray-900 mb-2">에디터 오류</h2>
             <p className="text-gray-600 mb-6">에디터를 불러오는 중 문제가 발생했습니다.</p>
@@ -3140,7 +3140,7 @@ export default function TheSimpleEditorPage() {
     >
       <Suspense
         fallback={
-          <div className="h-screen flex items-center justify-center bg-white">
+          <div className="ed-ui h-screen flex items-center justify-center bg-white">
             <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
           </div>
         }

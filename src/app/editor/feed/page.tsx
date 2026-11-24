@@ -567,14 +567,14 @@ function FeedEditorContent() {
 
   if (status === 'loading' || (editId && isLoading)) {
     return (
-      <div className="h-screen flex items-center justify-center bg-white">
+      <div className="ed-ui h-screen flex items-center justify-center bg-white">
         <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
       </div>
     )
   }
 
   return (
-    <div className="h-screen flex flex-col theme-neu">
+    <div className="ed-ui h-screen flex flex-col theme-neu">
       {/* Header */}
       <header className="h-12 sm:h-14 editor-header flex items-center justify-between px-3 sm:px-6 shrink-0">
         <div className="flex items-center gap-2 sm:gap-4">
@@ -653,7 +653,7 @@ function FeedEditorContent() {
             {/* Preview - 왼쪽 sticky 고정, 카드형 디바이스 프리뷰 (데스크탑) */}
             {!isMobile && (
               <div className="sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ width: `${previewColW}px`, minWidth: `${previewColW}px`, height: 'calc(100vh - 88px)' }}>
-                <div className="relative w-[360px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px', transform: `scale(${previewScale}) translateZ(0)`, transformOrigin: 'center top' }}>
+                <div className="ed-preview relative w-[360px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px', transform: `scale(${previewScale}) translateZ(0)`, transformOrigin: 'center top' }}>
                   <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <FeedPreview data={data} />
                   </div>
@@ -683,7 +683,7 @@ function FeedEditorContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                 </button>
-                <div className="relative w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200 flex-1" style={{ maxHeight: '630px', transform: 'translateZ(0)' }}>
+                <div className="ed-preview relative w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200 flex-1" style={{ maxHeight: '630px', transform: 'translateZ(0)' }}>
                   <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <FeedPreview key={previewKey} data={data} />
                   </div>
@@ -828,7 +828,7 @@ function FeedEditorContent() {
 
 function EditorErrorFallback({ resetError }: { resetError: () => void }) {
   return (
-    <div className="h-screen flex items-center justify-center bg-white">
+    <div className="ed-ui h-screen flex items-center justify-center bg-white">
       <div className="max-w-md w-full p-8 text-center">
         <div className="w-16 h-16 mx-auto mb-6 bg-rose-100 rounded-full flex items-center justify-center">
           <svg className="w-8 h-8 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -856,7 +856,7 @@ export default function FeedEditorPage() {
   return (
     <ErrorBoundary fallback={<EditorErrorFallback resetError={() => window.location.reload()} />}>
       <Suspense fallback={
-        <div className="h-screen flex items-center justify-center bg-white">
+        <div className="ed-ui h-screen flex items-center justify-center bg-white">
           <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
         </div>
       }>

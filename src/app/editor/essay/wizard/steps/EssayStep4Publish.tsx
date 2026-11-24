@@ -317,7 +317,7 @@ export default function EssayStep4Publish({ data, invitationId, slug, onSave, on
 
       {/* 발행 완료 모달 */}
       <Dialog open={showSuccessModal} onOpenChange={handleCloseModal}>
-        <DialogContent className="max-w-sm mx-auto">
+        <DialogContent className="ed-ui max-w-sm mx-auto">
           <DialogTitle className="sr-only">발행 완료</DialogTitle>
           <div className="text-center pt-2 pb-4">
             <div className="mb-3 flex justify-center">

@@ -508,7 +508,7 @@ function ScaledPhoneBox({ children }: { children: React.ReactNode }) {
   return (
     <div ref={boxRef} className="flex-1 min-h-0 w-full flex justify-center items-start overflow-hidden">
       <div style={{ width: PV_W * sc, height: PV_H * sc, flexShrink: 0 }}>
-        <div className="relative shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ width: PV_W, height: PV_H, transform: `scale(${sc})`, transformOrigin: '0 0' }}>
+        <div className="ed-preview relative shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ width: PV_W, height: PV_H, transform: `scale(${sc})`, transformOrigin: '0 0' }}>
           {children}
         </div>
       </div>
@@ -834,14 +834,14 @@ function ParentsEditorContent() {
 
   if (status === 'loading' || (editId && isLoading)) {
     return (
-      <div className="h-screen flex items-center justify-center theme-neu">
+      <div className="ed-ui h-screen flex items-center justify-center theme-neu">
         <div className="animate-spin rounded-full h-6 w-6 border border-[#A37E69]/30 border-t-[#A37E69]" />
       </div>
     )
   }
 
   return (
-    <div className="h-screen flex flex-col theme-neu">
+    <div className="ed-ui h-screen flex flex-col theme-neu">
       {/* Header */}
       <header className="h-12 sm:h-14 editor-header flex items-center justify-between px-3 sm:px-6 shrink-0">
         <div className="flex items-center gap-2 sm:gap-4">
@@ -949,7 +949,7 @@ function ParentsEditorContent() {
                           </button>
                         </div>
                       )}
-                      <div className="w-[360px] relative shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px', transform: `scale(${previewScale})`, transformOrigin: 'center top' }}>
+                      <div className="ed-preview w-[360px] relative shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px', transform: `scale(${previewScale})`, transformOrigin: 'center top' }}>
                         <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                           <ParentsPreview data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} activeSection={activeSection} />
                         </div>
@@ -1170,7 +1170,7 @@ function ParentsEditorContent() {
 
 function EditorErrorFallback({ resetError }: { resetError: () => void }) {
   return (
-    <div className="h-screen flex items-center justify-center bg-white">
+    <div className="ed-ui h-screen flex items-center justify-center bg-white">
       <div className="max-w-md w-full p-8 text-center">
         <div className="w-16 h-16 mx-auto mb-6 bg-rose-100 rounded-full flex items-center justify-center">
           <svg className="w-8 h-8 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1198,7 +1198,7 @@ export default function ParentsEditorPage() {
   return (
     <ErrorBoundary fallback={<EditorErrorFallback resetError={() => window.location.reload()} />}>
       <Suspense fallback={
-        <div className="h-screen flex items-center justify-center bg-white">
+        <div className="ed-ui h-screen flex items-center justify-center bg-white">
           <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
         </div>
       }>

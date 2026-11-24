@@ -2217,6 +2217,8 @@ export interface HomeEditing {
   onRemove?: (w: PhoneWidget) => void
   /** 지금 고치는 홈 화면 장 (0부터) */
   page?: number
+  /** 깔끔하게 — 칸 점선은 끌 때만, '−' 는 고른 위젯에만 (휴대폰 꾸미기) */
+  clean?: boolean
 }
 
 export function HomeScreen(props: Parameters<typeof HomeScreenInner>[0]) {
@@ -2271,7 +2273,7 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
         ? <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: t.bg, overflow: 'hidden' }}><div style={blurCss}><Photo src={data.phone.homeImage} crop={data.phone.homeImageCrop} mono={!!data.phone.photoMono} /></div><div style={{ position: 'absolute', inset: 0, background: (data.phone.homeDim ?? -12) < 0 ? `rgba(0,0,0,${-(data.phone.homeDim ?? -12) / 100})` : `rgba(255,255,255,${(data.phone.homeDim ?? 0) / 100})` }} />{data.phone.homeTint && <div style={{ position: 'absolute', inset: 0, background: data.phone.homeTint, opacity: (data.phone.homeTintAlpha ?? 35) / 100, mixBlendMode: 'normal' }} />}</div>
         : <LightBg t={t} />}
 
-      {editing && (
+      {editing && (!editing.clean || !!editing.ghost || !!editing.draggingId) && (
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
           {Array.from({ length: GRID.rows * GRID.cols }, (_, i) => (
             <div key={i} style={{ position: 'absolute', left: cellX(i % GRID.cols), top: cellY(Math.floor(i / GRID.cols), ch), width: GRID.cellW, height: ch, borderRadius: 14, border: `1px dashed ${onPhoto ? 'rgba(255,255,255,0.28)' : 'rgba(43,42,40,0.12)'}` }} />
@@ -2338,7 +2340,7 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
               <button type="button" aria-label="사진첩 열기" onClick={() => open('album')} style={{ position: 'absolute', inset: 0, border: 0, padding: 0, background: 'transparent', cursor: 'pointer', zIndex: 2 }} />
             )}
             </div>
-            {editing?.onRemove && editing.draggingId !== w.id && (
+            {editing?.onRemove && editing.draggingId !== w.id && (!editing.clean || sel) && (
               <button type="button" aria-label="위젯 빼기" onPointerDown={e => e.stopPropagation()} onClick={e => { e.stopPropagation(); editing.onRemove!(w) }}
                 style={{ position: 'absolute', left: -8, top: -8, width: 22, height: 22, borderRadius: '50%', border: 0, padding: 0, background: 'rgba(120,120,128,0.82)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', boxShadow: '0 1px 4px rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 4 }}>
                 <span style={{ width: 10, height: 2, borderRadius: 1, background: '#FFFFFF' }} />

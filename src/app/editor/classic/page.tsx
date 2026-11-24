@@ -508,14 +508,14 @@ function ClassicEditorContent() {
 
   if (status === 'loading' || (editId && isLoading)) {
     return (
-      <div className="h-screen flex items-center justify-center bg-white">
+      <div className="ed-ui h-screen flex items-center justify-center bg-white">
         <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
       </div>
     )
   }
 
   return (
-    <div className="h-screen flex flex-col theme-neu">
+    <div className="ed-ui h-screen flex flex-col theme-neu">
       {/* Header */}
       <header className="h-12 sm:h-14 editor-header flex items-center justify-between px-3 sm:px-6 shrink-0">
         <div className="flex items-center gap-2 sm:gap-4">
@@ -563,7 +563,7 @@ function ClassicEditorContent() {
             {!isMobile && (
               <div className="sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ width: `${previewColW}px`, minWidth: `${previewColW}px`, height: 'calc(100vh - 88px)' }}>
                 {/* 고정 390×PV_H(9:16)로 렌더 후 균일 scale → 창 비율과 무관하게 프레임 왜곡 없음 */}
-                <div className="shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ width: 390 * frameScale, height: PV_H * frameScale, borderRadius: 10 }}>
+                <div className="ed-preview shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ width: 390 * frameScale, height: PV_H * frameScale, borderRadius: 10 }}>
                   <div className="absolute top-0 left-0 bg-white" style={{ width: 390, height: PV_H, transform: `scale(${frameScale})`, transformOrigin: 'top left' }}>
                     <div className="w-full h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                       <ClassicPreview data={data} />
@@ -597,7 +597,7 @@ function ClassicEditorContent() {
                 </button>
                 {/* 실제 폰 크기(390×PV_H)로 렌더 후 CSS scale로 축소 (THE SIMPLE 방식)
                     → 인트로가 짧은 프레임에 눌려 겹치던 문제 해결. 창은 고정 뷰포트, 내용은 내부 스크롤 */}
-                <div className="relative overflow-hidden shadow-2xl bg-white border border-gray-200" style={{ width: 190, height: Math.round(PV_H * 0.4872), maxHeight: '100%', borderRadius: 10 }}>
+                <div className="ed-preview relative overflow-hidden shadow-2xl bg-white border border-gray-200" style={{ width: 190, height: Math.round(PV_H * 0.4872), maxHeight: '100%', borderRadius: 10 }}>
                   <div className="absolute top-0 left-0 bg-white" style={{ width: 390, height: PV_H, transform: 'scale(0.4872)', transformOrigin: 'top left' }}>
                     <div className="w-full h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                       <ClassicPreview key={previewKey} data={data} />
@@ -712,7 +712,7 @@ function ClassicEditorContent() {
 export default function ClassicEditorPage() {
   return (
     <ErrorBoundary fallback={
-      <div className="h-screen flex items-center justify-center bg-white">
+      <div className="ed-ui h-screen flex items-center justify-center bg-white">
         <div className="max-w-md w-full p-8 text-center">
           <h2 className="text-xl font-medium text-gray-900 mb-2">에디터 오류</h2>
           <p className="text-gray-600 mb-6">에디터를 불러오는 중 문제가 발생했습니다.</p>
@@ -720,7 +720,7 @@ export default function ClassicEditorPage() {
         </div>
       </div>
     }>
-      <Suspense fallback={<div className="h-screen flex items-center justify-center bg-white"><div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" /></div>}>
+      <Suspense fallback={<div className="ed-ui h-screen flex items-center justify-center bg-white"><div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" /></div>}>
         <ClassicEditorContent />
       </Suspense>
     </ErrorBoundary>

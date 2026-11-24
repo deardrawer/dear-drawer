@@ -244,14 +244,12 @@ function CheckboxGroup({
 function VersionCard({
   selected,
   onClick,
-  icon,
   title,
   description,
   detail
 }: {
   selected: boolean
   onClick: () => void
-  icon: string
   title: string
   description: string
   detail: string
@@ -266,7 +264,6 @@ function VersionCard({
           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
       }`}
     >
-      <div className="text-2xl mb-2">{icon}</div>
       <h4 className="font-semibold text-gray-900">{title}</h4>
       <p className="text-sm text-gray-600 mt-1">{description}</p>
       <p className="text-xs text-gray-400 mt-2">{detail}</p>
@@ -347,7 +344,6 @@ export default function StoryForm({ data, onChange }: StoryFormProps) {
           <VersionCard
             selected={version === 'short'}
             onClick={() => setVersion('short')}
-            icon="📝"
             title="간결한 스토리"
             description="7개 필수 질문"
             detail="예상 길이: 200-300자"
@@ -355,7 +351,6 @@ export default function StoryForm({ data, onChange }: StoryFormProps) {
           <VersionCard
             selected={version === 'rich'}
             onClick={() => setVersion('rich')}
-            icon="📖"
             title="풍부한 스토리"
             description="12개 질문"
             detail="예상 길이: 400-500자"
@@ -539,14 +534,14 @@ export default function StoryForm({ data, onChange }: StoryFormProps) {
                   // 공식 사귄 날짜가 있으면 자동 계산된 값 표시
                   <div className="p-4 bg-rose-50 rounded-lg border border-rose-100">
                     <p className="text-sm text-gray-600 mb-2">
-                      📅 {data.officialDate.year}년 {data.officialDate.month}월 {data.officialDate.day || 1}일부터
+                      {data.officialDate.year}년 {data.officialDate.month}월 {data.officialDate.day || 1}일부터
                     </p>
                     <p className="text-lg font-semibold text-rose-600">
                       {data.relationshipDuration.years}년 {data.relationshipDuration.months}개월째 함께하고 있어요!
                     </p>
                     {totalDays > 0 && (
                       <p className="text-sm text-rose-500 mt-1">
-                        (약 {totalDays.toLocaleString()}일) 💕
+                        (약 {totalDays.toLocaleString()}일)
                       </p>
                     )}
                   </div>
@@ -554,7 +549,7 @@ export default function StoryForm({ data, onChange }: StoryFormProps) {
                   // 공식 날짜 없으면 직접 입력
                   <>
                     <p className="text-xs text-gray-500 mb-2">
-                      💡 위에서 &apos;공식 사귄 날짜&apos;를 입력하면 자동으로 계산됩니다
+                      위에서 &apos;공식 사귄 날짜&apos;를 입력하면 자동으로 계산됩니다
                     </p>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
@@ -586,7 +581,7 @@ export default function StoryForm({ data, onChange }: StoryFormProps) {
                     </div>
                     {totalDays > 0 && (
                       <p className="text-sm text-rose-600 mt-2">
-                        약 {totalDays.toLocaleString()}일 함께 하셨네요! 💕
+                        약 {totalDays.toLocaleString()}일 함께 하셨네요!
                       </p>
                     )}
                   </>

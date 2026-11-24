@@ -524,7 +524,7 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
       )}
       <div className="flex-1 min-h-0 flex justify-center px-6 pb-6">
         <div className="relative h-full max-h-[710px]">
-          <div className="w-[360px] shadow-2xl bg-white flex flex-col relative border border-gray-200 h-full" style={{ containerType: 'size' as any }}>
+          <div className="ed-preview w-[360px] shadow-2xl bg-white flex flex-col relative border border-gray-200 h-full" style={{ containerType: 'size' as any }}>
             <style>{`
               #preview-content .full-height-divider,
               #preview-content .divider-section { min-height: 100cqh !important; }

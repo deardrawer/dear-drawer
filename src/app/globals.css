@@ -1225,6 +1225,20 @@
 }
 
 /* =====================
+   에디터 UI 글꼴 (Pretendard)
+   - .ed-ui      : 에디터 화면 루트(+ 포털로 뜨는 에디터 모달)에 지정 → 입력창·버튼·라벨 모두 Pretendard
+   - .ed-preview : 에디터 안 청첩장 미리보기 루트에 지정 → 하객이 보는 기본 글꼴(body = font-sans)로 되돌림
+   ===================== */
+@layer components {
+  .ed-ui {
+    font-family: 'Pretendard Variable', Pretendard, system-ui, -apple-system, sans-serif;
+  }
+  .ed-preview {
+    @apply font-sans;
+  }
+}
+
+/* =====================
    Neumorphism Theme for Editor (OUR template)
    ===================== */
 /* ========== Apple+Magazine Mix Theme (추천) ========== */
@@ -1246,23 +1260,24 @@
   .theme-neu {
     /* ── 에디터 셸 디자인 토큰 (웜그레이 중립 + 단일 강조) ── */
     --ed-text: #2C2824;        /* 본문 */
-    --ed-text-muted: #6E6660;  /* 보조 */
-    --ed-text-faint: #A8A099;  /* 비활성 */
+    --ed-text-muted: #71717A;  /* 보조 (중립 회색) */
+    --ed-text-faint: #A1A1AA;  /* 비활성 */
     --ed-surface: #FFFFFF;      /* 표면 1 (패널·입력) */
-    --ed-surface-2: #F6F2EE;    /* 표면 2 (옅은 웜그레이) */
-    --ed-border: rgba(44,40,36,0.10); /* 구분선 */
+    --ed-surface-2: #F5F5F4;    /* 표면 2 (아주 옅은 회색) */
+    --ed-border: rgba(0,0,0,0.08); /* 구분선 */
     --ed-accent: #7A5A44;       /* 유일한 강조(웜브라운) — 회색 텍스트와 구분되게 또렷한 톤 */
     --ed-accent-weak: rgba(122,90,68,0.08);
     --ed-radius-sm: 8px;        /* 작은 요소 */
     --ed-radius: 12px;          /* 입력·카드·패널 */
     --ed-radius-pill: 999px;    /* 토글·세그먼트 */
 
-    background: linear-gradient(160deg, #F4F0EC 0%, #EFEAE4 100%) !important;
+    /* 화이트 셸 — 갈색은 버튼 · 선택 표시에만 */
+    background: #FFFFFF !important;
     color: var(--ed-text);
   }
 
   .theme-neu .editor-header {
-    background: rgba(244,240,236,0.95) !important;
+    background: rgba(255,255,255,0.96) !important;
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border-bottom: 1px solid var(--ed-border) !important;
@@ -1369,14 +1384,14 @@
   }
 
   .theme-neu .wizard-sticky-header {
-    background: rgba(244,240,236,0.92) !important;
+    background: rgba(255,255,255,0.94) !important;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--ed-border) !important;
   }
 
   .theme-neu .wizard-sticky-footer {
-    background: rgba(244,240,236,0.92) !important;
+    background: rgba(255,255,255,0.94) !important;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-top: 1px solid var(--ed-border) !important;

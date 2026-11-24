@@ -215,14 +215,12 @@ function CheckboxGroup({
 function VersionCard({
   selected,
   onClick,
-  icon,
   title,
   description,
   detail
 }: {
   selected: boolean
   onClick: () => void
-  icon: string
   title: string
   description: string
   detail: string
@@ -237,7 +235,6 @@ function VersionCard({
           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
       }`}
     >
-      <div className="text-2xl mb-2">{icon}</div>
       <h4 className="font-semibold text-gray-900">{title}</h4>
       <p className="text-sm text-gray-600 mt-1">{description}</p>
       <p className="text-xs text-gray-400 mt-2">{detail}</p>
@@ -267,7 +264,6 @@ export default function ProfileForm({ data, onChange, role }: ProfileFormProps) 
 
   const personLabel = role === 'groom' ? '신랑' : '신부'
   const partnerLabel = role === 'groom' ? '신부' : '신랑'
-  const personIcon = role === 'groom' ? '🤵' : '👰'
   const bgColor = role === 'groom' ? 'bg-blue-50' : 'bg-pink-50'
   const borderColor = role === 'groom' ? 'border-blue-200' : 'border-pink-200'
 
@@ -276,7 +272,7 @@ export default function ProfileForm({ data, onChange, role }: ProfileFormProps) 
       {/* 헤더 */}
       <div className={`p-4 rounded-lg ${bgColor} border ${borderColor}`}>
         <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-          {personIcon} {personLabel} 소개
+          {personLabel} 소개
         </h3>
         <p className="text-sm text-gray-600 mt-1">
           {partnerLabel}가 작성하는 {personLabel} 소개글이에요
@@ -289,7 +285,6 @@ export default function ProfileForm({ data, onChange, role }: ProfileFormProps) 
           <VersionCard
             selected={version === 'short'}
             onClick={() => setVersion('short')}
-            icon="📝"
             title="간결한 소개"
             description="2-3문단 / 4개 질문"
             detail="예상 길이: 150-200자"
@@ -297,7 +292,6 @@ export default function ProfileForm({ data, onChange, role }: ProfileFormProps) 
           <VersionCard
             selected={version === 'rich'}
             onClick={() => setVersion('rich')}
-            icon="📖"
             title="풍부한 소개"
             description="4-5문단 / 9개 질문"
             detail="예상 길이: 300-400자"

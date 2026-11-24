@@ -20,6 +20,8 @@ import {
 } from '@/components/invitation/phone/phoneTypes'
 import { PHONE_FONT_VARS } from '@/components/invitation/phone/phoneFonts'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
+import ShareModal from '@/components/share/ShareModal'
+import { Check, ChevronDown, ChevronRight, ChevronUp, Copy, Eye, History, LayoutGrid, Link2, Pencil, Play, Plus, Share2, SlidersHorizontal, SquareStack, Star, Trash2, X } from 'lucide-react'
 import { bgmPresets, getBgmPresetByUrl } from '@/lib/bgmPresets'
 import SharedRsvpLinkField from '@/components/editor/SharedRsvpLinkField'
 import RsvpForm from '@/components/invitation/RsvpForm'
@@ -46,7 +48,7 @@ function CropModal({ title, src, crop, aspect, onChange, onClose, preview }: {
           <div>
             <h3 className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>{title}</h3>
           </div>
-          <button type="button" onClick={onClose} aria-label="닫기" className="w-8 h-8 rounded-full hover:bg-black/5 text-lg leading-none" style={{ color: 'var(--ed-text-muted)' }}>×</button>
+          <button type="button" onClick={onClose} aria-label="닫기" className="w-8 h-8 rounded-full hover:bg-black/5 text-lg leading-none" style={{ color: 'var(--ed-text-muted)' }}><X size={16} className="mx-auto" aria-hidden /></button>
         </div>
         <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start justify-center">
           <div className="shrink-0">
@@ -86,6 +88,9 @@ const COLOR_MOODS: ColorMood[] = [
   { id: 'midnight', label: '미드나잇', bg: '#15171C', card: '#23262D', bar: '#1E2026', accent: '#C9B48A', clock: '#F3EBDD', text: '#F3EBDD' },
   { id: 'glass', label: '글래스블러', bg: '#DCD8D2', card: 'rgba(255,255,255,0.35)', bar: 'rgba(255,255,255,0.3)', accent: '#FFFFFF', clock: '#FFFFFF', text: '#FFFFFF', glass: true },
 ]
+
+/** 에디터 화면(설정 · 버튼) 글꼴 — fonts.css 의 Pretendard Variable */
+const EDITOR_UI_FONT = "'Pretendard Variable', Pretendard, system-ui, -apple-system, sans-serif"
 
 type PanelId = PhoneScreenId | 'info' | 'bgm' | 'dday'
 const SCREENS: { id: PhoneScreenId; label: string }[] = [
@@ -177,15 +182,15 @@ function SearchItemsEditor({ items, apps, onChange, onReset }: { items: PhoneSea
       {items.map((x, i) => (
         <div key={i} className="grid grid-cols-[auto_1fr_104px_auto_auto] gap-1.5 items-center">
           <span className="flex flex-col">
-            <button type="button" aria-label="위로" disabled={i === 0} className={arrow} onClick={() => move(i, -1)}>▲</button>
-            <button type="button" aria-label="아래로" disabled={i === items.length - 1} className={arrow} onClick={() => move(i, 1)}>▼</button>
+            <button type="button" aria-label="위로" disabled={i === 0} className={arrow} onClick={() => move(i, -1)}><ChevronUp size={14} aria-hidden /></button>
+            <button type="button" aria-label="아래로" disabled={i === items.length - 1} className={arrow} onClick={() => move(i, 1)}><ChevronDown size={14} aria-hidden /></button>
           </span>
           <input className={inputCls + ' !px-2'} maxLength={20} placeholder="검색어" value={x.label} onChange={e => set(i, { label: e.target.value })} style={x.pin ? { borderColor: 'var(--ed-accent)', fontWeight: 600 } : undefined} />
           <select className={inputCls + ' !px-2'} value={x.app} onChange={e => set(i, { app: e.target.value as PhoneAppId })}>
             {apps.map(a => <option key={a} value={a}>{APP_META[a].label}</option>)}
           </select>
-          <button type="button" aria-label={x.pin ? '강조 끄기' : '강조하기'} title="강조 — 맨 위에 '추천'으로" className="px-0.5 text-[15px] leading-none" style={{ color: x.pin ? 'var(--ed-accent)' : '#C9C4BD' }} onClick={() => set(i, { pin: !x.pin || undefined })}>{x.pin ? '★' : '☆'}</button>
-          <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-0.5" onClick={() => onChange(items.filter((_, j) => j !== i))}>×</button>
+          <button type="button" aria-label={x.pin ? '강조 끄기' : '강조하기'} title="강조 — 맨 위에 '추천'으로" className="px-0.5 text-[15px] leading-none" style={{ color: x.pin ? 'var(--ed-accent)' : '#C9C4BD' }} onClick={() => set(i, { pin: !x.pin || undefined })}><Star size={15} fill={x.pin ? 'currentColor' : 'none'} aria-hidden /></button>
+          <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-0.5" onClick={() => onChange(items.filter((_, j) => j !== i))}><X size={16} className="mx-auto" aria-hidden /></button>
         </div>
       ))}
       <div className="flex gap-1.5 flex-wrap">
@@ -205,8 +210,8 @@ const Section = ({ title, children, hint, action }: { title: string; children: R
   return (
     <section className="space-y-4 pb-6 mb-6 border-b" style={{ borderColor: 'var(--ed-border)' }}>
       <div>
-        <div className="flex items-center justify-between gap-2"><h3 className="text-sm font-semibold" style={{ color: 'var(--ed-text)' }}>{title}</h3>{action}</div>
-        {hint && <p className="text-xs mt-0.5" style={{ color: 'var(--ed-text-muted)' }}>{hint}</p>}
+        <div className="flex items-center justify-between gap-2"><h3 className="text-[15px] font-bold" style={{ color: 'var(--ed-text)' }}>{title}</h3>{action}</div>
+        {hint && <p className="text-[13px] mt-1" style={{ color: 'var(--ed-text-muted)' }}>{hint}</p>}
       </div>
       {children}
     </section>
@@ -214,12 +219,13 @@ const Section = ({ title, children, hint, action }: { title: string; children: R
 }
 const Field = ({ label, children }: { label: string; children: ReactNode }) => (
   <label className="block">
-    <span className="block text-[12px] font-medium mb-1.5" style={{ color: 'var(--ed-text-muted)' }}>{label}</span>
+    <span className="block text-[13px] font-semibold mb-1.5" style={{ color: '#5E554D' }}>{label}</span>
     {children}
   </label>
 )
-const inputCls = 'w-full px-3 py-2 text-sm rounded-md border border-gray-200 bg-white focus:outline-none focus:ring-1 focus:ring-[color:var(--ed-accent)]'
-const pill = (on: boolean) => `px-3 py-1.5 rounded-md border text-xs transition-colors ${on ? 'border-[color:var(--ed-accent)] bg-[color:var(--ed-accent)] text-[#F5F0ED]' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'}`
+// 입력 칸 — 휴대폰은 16px(아이폰이 작은 글자 칸을 누르면 화면을 확대함) · 높이 44
+const inputCls = 'w-full px-3 min-h-[44px] py-2 text-[16px] sm:text-sm rounded-xl border border-[color:var(--ed-border)] bg-white focus:outline-none focus:ring-1 focus:ring-[color:var(--ed-accent)]'
+const pill = (on: boolean) => `px-3 py-2 rounded-lg border text-[13px] font-medium transition-colors ${on ? 'border-[color:var(--ed-accent)] bg-[color:var(--ed-accent)] text-[#F5F0ED]' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'}`
 
 /** 추천 색 + 직접 고르기(컬러 피커). value 가 비면 '기본' */
 function ColorRow({ value, options: raw, onChange, fallback }: { value?: string; options: string[]; onChange: (c: string | undefined) => void; fallback?: string }) {
@@ -227,16 +233,19 @@ function ColorRow({ value, options: raw, onChange, fallback }: { value?: string;
   const cur = (value || fallback || '').toUpperCase()
   const custom = !!value && !options.map(o => o.toUpperCase()).includes(value.toUpperCase())
   const ring = (on: boolean) => (on ? '0 0 0 2px #fff, 0 0 0 4px var(--ed-accent)' : undefined)
+  // 맨 앞 '기본'(빗금) · 색 · 맨 뒤 '직접 고르기' — 글자 버튼 없이 동그라미만
   return (
     <div className="flex gap-2 flex-wrap items-center">
+      <button type="button" aria-label="기본" title="기본" onClick={() => onChange(undefined)} className="w-7 h-7 rounded-full border border-gray-300 bg-white"
+        style={{ backgroundImage: 'linear-gradient(135deg, transparent 46%, #C9C1B8 46%, #C9C1B8 54%, transparent 54%)', boxShadow: ring(!value) }} />
       {options.map(c => (
-        <button key={c} type="button" aria-label={c} onClick={() => onChange(c)} className="w-7 h-7 rounded-full border border-gray-200" style={{ background: c, boxShadow: ring(cur === c.toUpperCase()) }} />
+        <button key={c} type="button" aria-label={c} onClick={() => onChange(c)} className="w-7 h-7 rounded-full border border-gray-200" style={{ background: c, boxShadow: ring(!!value && cur === c.toUpperCase()) }} />
       ))}
-      <label className="relative w-7 h-7 rounded-full border border-gray-300 cursor-pointer overflow-hidden" title="직접 고르기"
+      <label className="relative w-7 h-7 rounded-full border border-gray-300 cursor-pointer overflow-hidden flex items-center justify-center" title="직접 고르기" aria-label="직접 고르기"
         style={{ background: custom ? value : 'conic-gradient(#E46A6A,#E4C66A,#7FC47F,#6AA9E4,#B37FE4,#E46A6A)', boxShadow: ring(custom) }}>
+        {!custom && <span className="w-3.5 h-3.5 rounded-full bg-white/90 flex items-center justify-center"><Plus size={10} strokeWidth={3} aria-hidden style={{ color: '#6E655D' }} /></span>}
         <input type="color" className="absolute inset-0 opacity-0 cursor-pointer" value={/^#[0-9a-f]{6}$/i.test(value || '') ? value : (fallback || '#FFFFFF')} onChange={e => onChange(e.target.value)} />
       </label>
-      {value && <button type="button" className="text-[11px] hover:underline" style={{ color: 'var(--ed-text-muted)' }} onClick={() => onChange(undefined)}>기본</button>}
     </div>
   )
 }
@@ -392,6 +401,16 @@ function PhoneEditorContent() {
   }, [undo, redo])
   const setPhone = (patch: Partial<PhoneData['phone']>) => update(d => ({ ...d, phone: { ...d.phone, ...patch } }))
   const setWidgets = (fn: (ws: PhoneWidget[]) => PhoneWidget[]) => update(d => ({ ...d, phone: { ...d.phone, widgets: fn(d.phone.widgets) } }))
+  const [mobMenu, setMobMenu] = useState<null | 'add' | 'set'>(null)
+  // '고칠 곳을 눌러 보세요' — 처음 한 번만 (이 기기)
+  const [coachDone, setCoachDone] = useState(() => { try { return typeof window !== 'undefined' && localStorage.getItem('pf-ed-coach') === '1' } catch { return false } })
+  const doneCoach = () => { if (coachDone) return; setCoachDone(true); try { localStorage.setItem('pf-ed-coach', '1') } catch { /* noop */ } }
+  // 저장 뒤 '바로 보내기'
+  const [savedSheet, setSavedSheet] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+  // 저장하지 않은 내용 — 이 기기에 임시로 (다시 열면 이어서 꾸밀지 물음)
+  const [resume, setResume] = useState<{ at: number; data: PhoneData } | null>(null)
   const [infoErr, setInfoErr] = useState(false) // 저장하려다 이름 · 연락처가 비어 있었음 → 빈 칸 표시
   const flash = (s: string) => { setNotice(s); setTimeout(() => setNotice(''), 2200) }
 
@@ -400,6 +419,23 @@ function PhoneEditorContent() {
     if (isAdminMode) { const pw = typeof window !== 'undefined' ? localStorage.getItem('admin_password') : null; if (pw) h['x-admin-password'] = pw }
     return h
   }, [isAdminMode])
+
+  /* 저장하지 않은 내용 임시 보관 — 이 기기 (휴대폰은 다른 앱을 오가다 새로 열리는 일이 많음) */
+  const draftKey = `pf-draft-${editId || 'new'}`
+  const offerResume = () => {
+    try {
+      const raw = localStorage.getItem(draftKey)
+      if (!raw) return
+      const d = JSON.parse(raw) as { at: number; data: PhoneData }
+      if (d?.data && Date.now() - d.at < 14 * 86400000) setResume({ at: d.at, data: normalizePhoneData(d.data) })
+      else localStorage.removeItem(draftKey)
+    } catch { /* noop */ }
+  }
+  useEffect(() => {
+    if (!isDirty) return
+    const id = setTimeout(() => { try { localStorage.setItem(draftKey, JSON.stringify({ at: Date.now(), data })) } catch { /* 용량 초과 등 — 무시 */ } }, 800)
+    return () => clearTimeout(id)
+  }, [data, isDirty, draftKey])
 
   /* 새 청첩장 — 샘플(THE PHONE 샘플 청첩장)을 처음 모습으로 깔고 시작 (못 불러오면 기본값) */
   useEffect(() => {
@@ -414,10 +450,12 @@ function PhoneEditorContent() {
           // 이름 · 연락처는 고객이 직접 — 샘플 값은 입력 칸 안내 글씨로만
           const blank = (x: PhoneData['groom']) => ({ ...x, name: '', lastName: '', firstName: '', nameEn: '', phone: '' })
           setData({ ...d, groom: blank(d.groom), bride: blank(d.bride) }); past.current = []; future.current = []; setHist({ undo: 0, redo: 0 })
+          offerResume()
         } catch { /* 기본값 그대로 */ }
       })
       .catch(() => { /* 기본값 그대로 */ })
     return () => { off = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editId])
 
   /* 불러오기 */
@@ -427,9 +465,10 @@ function PhoneEditorContent() {
       .then(r => r.json() as Promise<{ invitation?: { content?: string; groom_name?: string; bride_name?: string } }>)
       .then(res => {
         if (!res.invitation?.content) return
-        try { setData(normalizePhoneData(JSON.parse(res.invitation.content))); past.current = []; future.current = []; setHist({ undo: 0, redo: 0 }) } catch (e) { console.error('Failed to parse content:', e) }
+        try { setData(normalizePhoneData(JSON.parse(res.invitation.content))); past.current = []; future.current = []; setHist({ undo: 0, redo: 0 }); offerResume() } catch (e) { console.error('Failed to parse content:', e) }
       })
       .catch(e => console.error('Failed to load:', e))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editId, status, adminHeaders])
 
   /* 나가기 전 확인 */
@@ -669,6 +708,7 @@ function PhoneEditorContent() {
     selectedId, draggingId: drag?.id, ghost: drag?.ghost, page: curPage,
     onWidgetPointerDown, onBackgroundPointerDown: () => setSelectedId(null),
     onResizePointerDown, canResize: w => widgetMeta(w.type).sizes.length > 1, onRemove: w => removeWidget(w),
+    clean: mob && mobMode === 'deco',
   }
 
   /* ───── 저장 ───── */
@@ -710,7 +750,8 @@ function PhoneEditorContent() {
         window.history.replaceState({}, '', `/editor/phone?id=${result.invitation.id}${isAdminMode ? '&admin=true' : ''}`)
       }
       setIsDirty(false)
-      flash('저장되었습니다.')
+      try { localStorage.removeItem(draftKey) } catch { /* noop */ }
+      setSavedSheet(true)
     } catch (e) {
       flash(e instanceof Error ? e.message : '저장에 실패했습니다.')
     } finally { setIsSaving(false) }
@@ -867,9 +908,9 @@ function PhoneEditorContent() {
                         </label>
                         {icon && <button type="button" title="기본 아이콘으로" className="text-[11px] shrink-0 hover:underline" style={{ color: 'var(--ed-text-muted)' }} onClick={() => setIcon(undefined)}>기본</button>}
                         <span className="flex shrink-0 opacity-40 group-hover:opacity-100 transition-opacity">
-                          <button type="button" aria-label="위로" disabled={i === 0} className="w-6 h-7 text-[11px] text-gray-500 hover:text-gray-900 disabled:opacity-20" onClick={() => move(-1)}>↑</button>
-                          <button type="button" aria-label="아래로" disabled={i === cur.length - 1} className="w-6 h-7 text-[11px] text-gray-500 hover:text-gray-900 disabled:opacity-20" onClick={() => move(1)}>↓</button>
-                          <button type="button" aria-label="폴더에서 빼기" className="w-6 h-7 text-gray-400 hover:text-red-600" onClick={() => toggle(a)}>×</button>
+                          <button type="button" aria-label="위로" disabled={i === 0} className="inline-flex items-center justify-center w-6 h-7 text-[11px] text-gray-500 hover:text-gray-900 disabled:opacity-20" onClick={() => move(-1)}><ChevronUp size={15} aria-hidden /></button>
+                          <button type="button" aria-label="아래로" disabled={i === cur.length - 1} className="inline-flex items-center justify-center w-6 h-7 text-[11px] text-gray-500 hover:text-gray-900 disabled:opacity-20" onClick={() => move(1)}><ChevronDown size={15} aria-hidden /></button>
+                          <button type="button" aria-label="폴더에서 빼기" className="w-6 h-7 text-gray-400 hover:text-red-600" onClick={() => toggle(a)}><X size={16} className="mx-auto" aria-hidden /></button>
                         </span>
                       </div>
                     )
@@ -1020,14 +1061,14 @@ function PhoneEditorContent() {
               </div>
             </Field>
           </>}
-          <div className="flex gap-4">
-            <button type="button" className="text-xs hover:underline" style={{ color: 'var(--ed-text)' }} onClick={() => {
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <button type="button" className="h-10 rounded-xl border bg-white text-[13.5px] font-semibold flex items-center justify-center gap-1.5" style={{ borderColor: 'var(--ed-border)', color: 'var(--ed-text)' }} onClick={() => {
               const spot = nearestFit(data.phone.widgets.filter(x => (x.page || 0) === (w.page || 0)), w.size, w.col, w.row + SIZE_SPAN[w.size].h)
               if (!spot) { flash('빈 칸이 없어요'); return }
               const copyW: PhoneWidget = { ...w, id: newWidgetId(), col: spot.col, row: spot.row, props: { ...w.props } }
               setWidgets(ws => [...ws, copyW]); setSelectedId(copyW.id)
-            }}>복제</button>
-            <button type="button" className="text-xs text-red-600 hover:underline" onClick={() => removeWidget(w)}>삭제</button>
+            }}><Copy size={15} aria-hidden />복제</button>
+            <button type="button" className="h-10 rounded-xl border text-[13.5px] font-semibold flex items-center justify-center gap-1.5" style={{ borderColor: '#F0D2CD', background: '#FFF8F7', color: '#C24A3E' }} onClick={() => removeWidget(w)}><Trash2 size={15} aria-hidden />삭제</button>
           </div>
         </Section>
       </>
@@ -1192,7 +1233,7 @@ function PhoneEditorContent() {
             <div className="grid grid-cols-[84px_1fr_auto] gap-1.5 items-center">
               <input className={inputCls + ' !px-2'} placeholder="관계" value={f.relation} onChange={e => setF(i, { relation: e.target.value })} />
               <input className={inputCls + ' !px-2'} placeholder="이름" value={f.name} onChange={e => setF(i, { name: e.target.value })} />
-              <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1" onClick={() => setP({ family: fam.filter((_, j) => j !== i) })}>×</button>
+              <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1" onClick={() => setP({ family: fam.filter((_, j) => j !== i) })}><X size={16} className="mx-auto" aria-hidden /></button>
             </div>
             <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
               <input className={inputCls + ' !px-2'} type="tel" inputMode="numeric" placeholder={f.deceased ? '' : '010-0000-0000'} disabled={f.deceased} value={f.deceased ? '' : f.phone || ''} onChange={e => setF(i, { phone: formatPhone(e.target.value) })} />
@@ -1364,7 +1405,7 @@ function PhoneEditorContent() {
               </button>
             </>
           )
-          const x = (onClick: () => void) => <button type="button" aria-label="지우기" className="w-7 h-7 shrink-0 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center" onClick={onClick}>×</button>
+          const x = (onClick: () => void) => <button type="button" aria-label="지우기" className="w-7 h-7 shrink-0 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center" onClick={onClick}><X size={16} className="mx-auto" aria-hidden /></button>
           return (
             <div className="space-y-4">
               {groups.map((g, gi) => {
@@ -1388,7 +1429,7 @@ function PhoneEditorContent() {
                                 <button type="button" title="자르기" onClick={() => setCropFor({ kind: 'story', i: hi, k })} className="block w-9 h-9 rounded-md overflow-hidden border border-gray-200">
                                   <CroppedImageDiv src={m[k]!} crop={k === 'src' ? m.srcCrop : m.src2Crop} className="w-full h-full" />
                                 </button>
-                                <button type="button" aria-label="사진 삭제" className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-black/60 text-white text-[10px] leading-4" onClick={() => setItem(hi, { [k]: undefined, [k === 'src' ? 'srcCrop' : 'src2Crop']: undefined })}>×</button>
+                                <button type="button" aria-label="사진 삭제" className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-black/60 text-white text-[10px] leading-4" onClick={() => setItem(hi, { [k]: undefined, [k === 'src' ? 'srcCrop' : 'src2Crop']: undefined })}><X size={16} className="mx-auto" aria-hidden /></button>
                               </span>}
                               {!m[k] && <UploadButton label="+ 사진" busy={busy === `story${hi}${k}`} onFile={f => upload(`story${hi}${k}`, f, url => { setItem(hi, { [k]: url, [k === 'src' ? 'srcCrop' : 'src2Crop']: undefined }); setCropFor({ kind: 'story', i: hi, k }) })} />}
                             </span>
@@ -1460,7 +1501,7 @@ function PhoneEditorContent() {
                 </select>
                 <textarea rows={2} className={inputCls} value={x.text} placeholder={{ subway: '2호선 선릉역 1번 출구 도보 5분', bus: '선릉역 정류장 하차', car: '내비게이션에 예식장 이름 검색', parking: '건물 지하 B2~B4, 2시간 무료', etc: '' }[x.kind]}
                   onChange={e => setPhone({ directions: (data.phone.directions || []).map((y, j) => (j === i ? { ...y, text: e.target.value } : y)) })} />
-                <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1 pt-2" onClick={() => setPhone({ directions: (data.phone.directions || []).filter((_, j) => j !== i) })}>×</button>
+                <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1 pt-2" onClick={() => setPhone({ directions: (data.phone.directions || []).filter((_, j) => j !== i) })}><X size={16} className="mx-auto" aria-hidden /></button>
               </div>
             ))}
             <div className="flex gap-1.5 flex-wrap">
@@ -1475,7 +1516,7 @@ function PhoneEditorContent() {
           <div key={i} className="flex gap-2 items-start">
             {/* 줄바꿈 가능 — 쓴 만큼 칸이 늘어남 */}
             <textarea rows={Math.max(2, m.split(/\n/).length + (m.length > 40 ? 1 : 0))} className={inputCls + ' resize-y leading-relaxed'} value={m} onChange={e => setPhone({ memo: data.phone.memo.map((x, j) => (j === i ? e.target.value : x)) })} />
-            <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1" onClick={() => setPhone({ memo: data.phone.memo.filter((_, j) => j !== i) })}>×</button>
+            <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1" onClick={() => setPhone({ memo: data.phone.memo.filter((_, j) => j !== i) })}><X size={16} className="mx-auto" aria-hidden /></button>
           </div>
         ))}
         <button type="button" className={pill(false)} onClick={() => setPhone({ memo: [...data.phone.memo, ''] })}>+ 안내</button>
@@ -1503,7 +1544,7 @@ function PhoneEditorContent() {
                     {/* 호칭 — 고르거나 직접 적기 */}
                     <input className={inputCls + ' !px-2'} list={`rel-${role}`} placeholder="호칭" value={a.relation || ''} onChange={e => setA({ relation: e.target.value })} />
                     <input className={inputCls + ' !px-2'} placeholder="예금주" value={a.holder} onChange={e => setA({ holder: e.target.value })} />
-                    <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1" onClick={() => update(d => ({ ...d, [role]: { ...d[role], accounts: d[role].accounts.filter((_, j) => j !== i) } }))}>×</button>
+                    <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1" onClick={() => update(d => ({ ...d, [role]: { ...d[role], accounts: d[role].accounts.filter((_, j) => j !== i) } }))}><X size={16} className="mx-auto" aria-hidden /></button>
                     <input className={inputCls + ' !px-2'} placeholder="은행" value={a.bank} onChange={e => setA({ bank: e.target.value })} />
                     <input className={inputCls + ' !px-2 col-span-2'} inputMode="numeric" placeholder="계좌번호" value={a.number} onChange={e => setA({ number: e.target.value })} />
                   </>
@@ -1554,13 +1595,13 @@ function PhoneEditorContent() {
                   <div className="flex items-center gap-2">
                     <input className={inputCls + ' flex-1 font-semibold'} placeholder={folders.length > 1 ? `폴더 ${fi + 1} 이름` : '폴더 이름 (비워도 돼요)'} value={f.name}
                       onChange={e => save(folders.map((x, j) => (j === fi ? { ...x, name: e.target.value } : x)))} />
-                    {folders.length > 1 && <button type="button" aria-label="폴더 삭제" title="폴더 삭제 (사진도 함께)" className="w-7 h-7 shrink-0 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50" onClick={() => save(folders.filter((_, j) => j !== fi))}>×</button>}
+                    {folders.length > 1 && <button type="button" aria-label="폴더 삭제" title="폴더 삭제 (사진도 함께)" className="w-7 h-7 shrink-0 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50" onClick={() => save(folders.filter((_, j) => j !== fi))}><X size={16} className="mx-auto" aria-hidden /></button>}
                   </div>
                   {f.images.length > 0 && (
                     <div className="grid grid-cols-4 gap-1.5">
                       {f.images.map((src, i) => (
                         <div key={src + i} className="relative aspect-square rounded-md bg-cover bg-center" style={{ backgroundImage: `url(${src})` }}>
-                          <button type="button" aria-label="사진 삭제" className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white text-xs leading-5" onClick={() => save(folders.map((x, j) => (j === fi ? { ...x, images: x.images.filter((_, k) => k !== i) } : x)))}>×</button>
+                          <button type="button" aria-label="사진 삭제" className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white text-xs leading-5" onClick={() => save(folders.map((x, j) => (j === fi ? { ...x, images: x.images.filter((_, k) => k !== i) } : x)))}><X size={16} className="mx-auto" aria-hidden /></button>
                         </div>
                       ))}
                     </div>
@@ -1620,9 +1661,9 @@ function PhoneEditorContent() {
                     {(Object.keys(LETTER_KINDS) as PhoneLetterKind[]).map(k => <option key={k} value={k}>{LETTER_KINDS[k].label}</option>)}
                   </select>
                   <span className="flex-1" />
-                  <button type="button" aria-label="위로" disabled={i === 0} className="w-7 h-7 text-gray-500 hover:text-gray-900 disabled:opacity-25" onClick={() => { const n = [...own]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; setL(n) }}>↑</button>
-                  <button type="button" aria-label="아래로" disabled={i === own.length - 1} className="w-7 h-7 text-gray-500 hover:text-gray-900 disabled:opacity-25" onClick={() => { const n = [...own]; [n[i], n[i + 1]] = [n[i + 1], n[i]]; setL(n) }}>↓</button>
-                  <button type="button" aria-label="편지 지우기" className="w-7 h-7 text-gray-400 hover:text-red-600" onClick={() => setL(own.filter(x => x.id !== l.id))}>×</button>
+                  <button type="button" aria-label="위로" disabled={i === 0} className="inline-flex items-center justify-center w-7 h-7 text-gray-500 hover:text-gray-900 disabled:opacity-25" onClick={() => { const n = [...own]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; setL(n) }}><ChevronUp size={15} aria-hidden /></button>
+                  <button type="button" aria-label="아래로" disabled={i === own.length - 1} className="inline-flex items-center justify-center w-7 h-7 text-gray-500 hover:text-gray-900 disabled:opacity-25" onClick={() => { const n = [...own]; [n[i], n[i + 1]] = [n[i + 1], n[i]]; setL(n) }}><ChevronDown size={15} aria-hidden /></button>
+                  <button type="button" aria-label="편지 지우기" className="w-7 h-7 text-gray-400 hover:text-red-600" onClick={() => setL(own.filter(x => x.id !== l.id))}><X size={16} className="mx-auto" aria-hidden /></button>
                 </div>
                 <input className={inputCls} maxLength={30} placeholder={LETTER_KINDS[l.kind].title} value={l.title || ''} onChange={e => patchL(l.id, { title: e.target.value })} />
                 <textarea className={inputCls + ' !h-auto leading-relaxed'} rows={5} maxLength={1200} placeholder="편지 내용" value={l.body} onChange={e => patchL(l.id, { body: e.target.value })} />
@@ -1638,7 +1679,7 @@ function PhoneEditorContent() {
                           {x.who === 'groom' ? `신랑 ${givenFirst(data.groom)}` : `신부 ${givenFirst(data.bride)}`}
                         </button>
                         <textarea className={inputCls + ' !h-auto !py-2 leading-snug resize-none'} rows={Math.min(5, Math.max(1, x.text.split('\n').length))} maxLength={300} placeholder={x.who === 'groom' ? '신랑이 하는 말' : '신부가 하는 말'} value={x.text} onChange={e => setLines((l.lines || []).map((y, j) => (j === k ? { ...y, text: e.target.value } : y)))} />
-                        <button type="button" aria-label="이 말 지우기" className="shrink-0 w-7 h-7 text-gray-400 hover:text-red-600" onClick={() => setLines((l.lines || []).filter((_, j) => j !== k))}>×</button>
+                        <button type="button" aria-label="이 말 지우기" className="shrink-0 w-7 h-7 text-gray-400 hover:text-red-600" onClick={() => setLines((l.lines || []).filter((_, j) => j !== k))}><X size={16} className="mx-auto" aria-hidden /></button>
                       </div>
                     )
                   })}
@@ -1682,8 +1723,8 @@ function PhoneEditorContent() {
                       <span key={src + k} className="relative w-14 h-14 rounded-md overflow-hidden border group" style={{ borderColor: 'var(--ed-border)' }}>
                         <button type="button" title="눌러서 자르기" className="absolute inset-0" onClick={() => setCropFor({ kind: 'letter', id: l.id, src })}><CroppedImageDiv src={src} crop={l.crops?.[src]} className="w-full h-full" /></button>
                         {k === 0 && <span className="absolute left-0 right-0 bottom-0 text-[9.5px] text-center text-white bg-black/45 pointer-events-none">대표</span>}
-                        <button type="button" aria-label="사진 빼기" className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/55 text-white text-[11px] leading-none" onClick={() => patchL(l.id, { photos: (l.photos || []).filter((_, j) => j !== k) })}>×</button>
-                        {k > 0 && <button type="button" aria-label="대표 사진으로" className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-black/55 text-white text-[10px] leading-none opacity-0 group-hover:opacity-100" onClick={() => { const ph = [...(l.photos || [])]; const [x] = ph.splice(k, 1); patchL(l.id, { photos: [x, ...ph] }) }}>★</button>}
+                        <button type="button" aria-label="사진 빼기" className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/55 text-white text-[11px] leading-none" onClick={() => patchL(l.id, { photos: (l.photos || []).filter((_, j) => j !== k) })}><X size={16} className="mx-auto" aria-hidden /></button>
+                        {k > 0 && <button type="button" aria-label="대표 사진으로" className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-black/55 text-white text-[10px] leading-none opacity-0 group-hover:opacity-100" onClick={() => { const ph = [...(l.photos || [])]; const [x] = ph.splice(k, 1); patchL(l.id, { photos: [x, ...ph] }) }}><Star size={11} fill="currentColor" className="mx-auto" aria-hidden /></button>}
                       </span>
                     ))}
                     {(l.photos?.length || 0) < LETTER_PHOTOS_MAX && <UploadButton label={`+ 사진 (${l.photos?.length || 0}/${LETTER_PHOTOS_MAX})`} busy={busy === `letter-${l.id}`} onFiles={fs => addPhotos(l.id, fs)} />}
@@ -1721,8 +1762,8 @@ function PhoneEditorContent() {
                         <input className={inputCls + ' !px-2'} maxLength={40} placeholder={`제목 (비우면 '우리 영상 ${i + 1}')`} value={v.title || ''} onChange={e => setV(vids.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} />
                       </div>
                       <div className="flex flex-col gap-0.5 shrink-0">
-                        <button type="button" aria-label="위로" disabled={i === 0} className="text-gray-400 hover:text-gray-700 disabled:opacity-30 px-1" onClick={() => { const n = [...vids]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; setV(n) }}>↑</button>
-                        <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1" onClick={() => setV(vids.filter((_, j) => j !== i))}>×</button>
+                        <button type="button" aria-label="위로" disabled={i === 0} className="inline-flex items-center justify-center text-gray-400 hover:text-gray-700 disabled:opacity-30 px-1" onClick={() => { const n = [...vids]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; setV(n) }}><ChevronUp size={15} aria-hidden /></button>
+                        <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1" onClick={() => setV(vids.filter((_, j) => j !== i))}><X size={16} className="mx-auto" aria-hidden /></button>
                       </div>
                     </div>
                     {v.url.trim() && !id && <p className="text-[11.5px]" style={{ color: '#C0392B' }}>유튜브 주소가 올바르지 않습니다 (youtube.com · youtu.be · shorts)</p>}
@@ -1778,7 +1819,7 @@ function PhoneEditorContent() {
                   <div key={i} className="grid grid-cols-[96px_1fr_auto] gap-1.5 items-center">
                     <input className={inputCls + ' !px-2'} placeholder="질문" value={x.q} onChange={e => setItem(i, { q: e.target.value })} />
                     <input className={inputCls + ' !px-2'} placeholder="답" value={x.a} onChange={e => setItem(i, { a: e.target.value })} />
-                    <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1" onClick={() => setP({ items: items.filter((_, j) => j !== i) })}>×</button>
+                    <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1" onClick={() => setP({ items: items.filter((_, j) => j !== i) })}><X size={16} className="mx-auto" aria-hidden /></button>
                   </div>
                 ))}
                 <div className="flex gap-1.5 flex-wrap">
@@ -1862,7 +1903,7 @@ function PhoneEditorContent() {
                   {sched.map((e, i) => (
                     <div key={i} className="grid grid-cols-[1fr_auto] gap-1.5 p-2 rounded-md border" style={{ borderColor: 'var(--ed-border)' }}>
                       <input className={inputCls + ' !px-2'} placeholder="예식, 식사, 사진 촬영" value={e.title} onChange={ev => setS(sched.map((x, j) => (j === i ? { ...x, title: ev.target.value } : x)))} />
-                      <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1" onClick={() => setS(sched.filter((_, j) => j !== i))}>×</button>
+                      <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1" onClick={() => setS(sched.filter((_, j) => j !== i))}><X size={16} className="mx-auto" aria-hidden /></button>
                       <div className="flex items-center gap-1.5 col-span-2 text-[12px]" style={{ color: 'var(--ed-text-muted)' }}>
                         <input type="time" aria-label="시작" className={inputCls + ' !w-[118px] !px-2 !py-1.5 text-xs'} value={e.time} onChange={ev => setS(sched.map((x, j) => (j === i ? { ...x, time: ev.target.value } : x)))} />
                         –
@@ -2128,14 +2169,14 @@ function PhoneEditorContent() {
                 <div key={i} className="rounded-lg border bg-white p-3 space-y-2.5" style={{ borderColor: 'var(--ed-border)' }}>
                   <div className="flex items-center gap-2">
                     <input className={inputCls + ' flex-1 font-semibold'} maxLength={30} placeholder={`안내 ${i + 1} 제목`} value={p.title} onChange={e => setPage(i, { title: e.target.value })} />
-                    <button type="button" aria-label="안내 삭제" className="w-7 h-7 shrink-0 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50" onClick={() => set({ pages: pages.filter((_, j) => j !== i) })}>×</button>
+                    <button type="button" aria-label="안내 삭제" className="w-7 h-7 shrink-0 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50" onClick={() => set({ pages: pages.filter((_, j) => j !== i) })}><X size={16} className="mx-auto" aria-hidden /></button>
                   </div>
                   <textarea rows={3} className={inputCls} maxLength={200} placeholder="주차, 식사, 셔틀처럼 당일 알려 드릴 내용" value={p.body} onChange={e => setPage(i, { body: e.target.value })} />
                   <div className="flex gap-2 items-center flex-wrap">
                     {(p.images || []).map((im, k) => (
                       <span key={k} className="relative">
                         <span className="block w-11 h-11 rounded-md bg-cover bg-center border border-gray-200" style={{ backgroundImage: `url(${im.url})` }} />
-                        <button type="button" aria-label="사진 삭제" className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-black/60 text-white text-[10px] leading-4" onClick={() => setPage(i, { images: (p.images || []).filter((_, j) => j !== k) })}>×</button>
+                        <button type="button" aria-label="사진 삭제" className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-black/60 text-white text-[10px] leading-4" onClick={() => setPage(i, { images: (p.images || []).filter((_, j) => j !== k) })}><X size={16} className="mx-auto" aria-hidden /></button>
                       </span>
                     ))}
                     {(p.images || []).length < 3 && <UploadButton label="+ 사진" busy={busy === `dday${i}`} onFile={f => upload(`dday${i}`, f, url => setPage(i, { images: [...(p.images || []), { url, settings: { scale: 1, positionX: 0, positionY: 0 } }] }))} />}
@@ -2145,7 +2186,7 @@ function PhoneEditorContent() {
                     <div key={k} className="grid grid-cols-[96px_1fr_auto] gap-1.5 items-center">
                       <input className={inputCls + ' !px-2'} maxLength={10} placeholder="버튼 글" value={l.label} onChange={e => setPage(i, { links: (p.links || []).map((x, j) => (j === k ? { ...x, label: e.target.value } : x)) })} />
                       <input className={inputCls + ' !px-2'} placeholder="https://" value={l.url} onChange={e => setPage(i, { links: (p.links || []).map((x, j) => (j === k ? { ...x, url: e.target.value } : x)) })} />
-                      <button type="button" aria-label="링크 삭제" className="text-gray-400 hover:text-red-600 px-1" onClick={() => setPage(i, { links: (p.links || []).filter((_, j) => j !== k) })}>×</button>
+                      <button type="button" aria-label="링크 삭제" className="text-gray-400 hover:text-red-600 px-1" onClick={() => setPage(i, { links: (p.links || []).filter((_, j) => j !== k) })}><X size={16} className="mx-auto" aria-hidden /></button>
                     </div>
                   ))}
                 </div>
@@ -2237,7 +2278,7 @@ function PhoneEditorContent() {
                     <span className="block text-sm truncate">{pr.name}</span>
                     <span className="block text-[11px] truncate" style={{ color: 'var(--ed-text-muted)' }}>{pr.description}</span>
                   </button>
-                  {bgm.url === pr.url && <span className="text-xs font-semibold" style={{ color: 'var(--ed-accent)' }}>✓</span>}
+                  {bgm.url === pr.url && <Check size={15} strokeWidth={2.6} style={{ color: 'var(--ed-accent)' }} aria-hidden />}
                 </div>
               ))}
             </div>
@@ -2662,7 +2703,7 @@ function PhoneEditorContent() {
         e.preventDefault()
         if (/^(tel|sms|mailto):/i.test(href)) { flash(`하객 화면에서 ${/^tel/i.test(href) ? '전화' : /^sms/i.test(href) ? '문자' : '메일'}가 열려요`); return }
         window.open(href, '_blank', 'noopener')
-      }} style={{ width: PHONE_W, height: PHONE_H, transform: `scale(${scale})`, transformOrigin: '0 0', position: 'relative', overflow: 'hidden', borderRadius: 44, boxShadow: '0 30px 60px -28px rgba(20,18,15,0.55), 0 0 0 10px #1C1A18', background: t.bg, userSelect: 'none' }}>
+      }} className="ed-preview" style={{ width: PHONE_W, height: PHONE_H, transform: `scale(${scale})`, transformOrigin: '0 0', position: 'relative', overflow: 'hidden', borderRadius: 44, boxShadow: '0 30px 60px -28px rgba(20,18,15,0.55), 0 0 0 10px #1C1A18', background: t.bg, userSelect: 'none' }}>
         {preview ? <PhoneFlow key={previewKey} data={data} height={PHONE_H} renderRsvp={renderRsvpPreview} startScreen={previewStart} onScreen={followPreview} photoShareHref={photoShareHref} /> : <>
           {screen === 'lock' && revealing && <HomeScreen data={data} reveal />}
           {screen === 'lock' && !revealing && (showCode && data.phone.usePasscode
@@ -2694,6 +2735,7 @@ function PhoneEditorContent() {
     homebg: [{ panel: 'home', secs: ['홈 화면', '바탕', '위젯 · 아이콘'] }],
   }
   const onDecoClick = (e: React.MouseEvent) => {
+    doneCoach()
     if (widgetDragged.current) { e.stopPropagation(); return }
     // 설정을 넣어 둔 채 폰을 누르면 다시 꺼냄
     if (decoOn) setSheetFrac(f => (f < 0.08 ? 0.75 : f))
@@ -2717,7 +2759,7 @@ function PhoneEditorContent() {
       <>
         {selected.type === 'app' && selected.props.app && (
           <button type="button" className="w-full h-11 rounded-xl text-sm font-semibold text-white mb-5" style={{ background: 'var(--ed-accent)' }}
-            onClick={() => { const a = selected.props.app!; closeSheet(); navHist.current = []; setScreen(a) }}>{APP_META[selected.props.app].label} 내용 고치기 →</button>
+            onClick={() => { const a = selected.props.app!; closeSheet(); navHist.current = []; setScreen(a) }}>{APP_META[selected.props.app].label} 내용 고치기<ChevronRight size={16} className="inline -mt-0.5 ml-0.5" aria-hidden /></button>
         )}
         {widgetPanel(selected)}
       </>
@@ -2748,9 +2790,9 @@ function PhoneEditorContent() {
     })
     return () => cancelAnimationFrame(id)
   }, [sheetOpen, selectedId, sheet, draft, screen])
-  const decoPill = (label: string, on: boolean, onClick: () => void, dashed = false) => (
-    <button key={label} type="button" onClick={onClick} className={`shrink-0 h-8 px-3.5 rounded-full text-[12.5px] font-semibold border ${dashed ? 'border-dashed' : ''}`}
-      style={on ? { background: 'var(--ed-accent)', color: '#F5F0ED', borderColor: 'transparent' } : { background: '#FFFFFF', color: dashed ? 'var(--ed-accent)' : 'var(--ed-text)', borderColor: 'var(--ed-border)' }}>{label}</button>
+  const segTab = (label: string, on: boolean, onClick: () => void) => (
+    <button key={label} type="button" onClick={onClick} className="shrink-0 h-[34px] min-w-[52px] px-3 rounded-[9px] text-[13px] font-semibold transition-colors"
+      style={on ? { background: '#FFFFFF', color: 'var(--ed-text)', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' } : { color: '#6E655D' }}>{label}</button>
   )
   const goScreen = (sc: PhoneScreenId, page?: number) => { closeSheet(); navHist.current = []; lockReturn.current = null; setScreen(sc); if (page !== undefined) setHomePage(page) }
   const toView = () => { closeSheet(); setMobMode('view'); setPreview(true); setPreviewStart(screen); setPreviewKey(k => k + 1) }
@@ -2758,28 +2800,23 @@ function PhoneEditorContent() {
   const mobileDeco = (
     <div className="flex-1 min-h-0 flex flex-col">
       {mobMode === 'deco' && (
-        <div className="shrink-0 px-3 pt-2.5 pb-1 space-y-1.5">
-          <div className="flex items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-            {decoPill('잠금화면', screen === 'lock', () => goScreen('lock'))}
-            {Array.from({ length: pageCount }, (_, i) => decoPill(pageCount > 1 ? `홈 ${i + 1}` : '홈 화면', screen === 'home' && curPage === i, () => goScreen('home', i)))}
-            {isAppScr && decoPill(SCREENS.find(x => x.id === screen)?.label || '', true, () => {})}
-            {screen === 'home' && decoPill('+ 위젯', sheet?.kind === 'add' || !!draft, () => { clearTap(); setSelectedId(null); setDraft(null); setSheet({ kind: 'add' }) }, true)}
-            {/* 홈 화면 장 더하기 · 마지막 빈 장 지우기 (PC 의 '화면' 줄과 같음) */}
-            {pageCount < HOME_PAGES_MAX && decoPill('+ 화면', false, () => { closeSheet(); setPhone({ homePages: pageCount + 1 }); goScreen('home', pageCount); flash(`홈 ${pageCount + 1} 화면을 더했어요`) }, true)}
-            {screen === 'home' && pageCount > 1 && curPage === pageCount - 1 && decoPill('화면 삭제', false, () => { if (pageWs.length) { flash('위젯을 먼저 빼 주세요'); return } setPhone({ homePages: pageCount - 1 }); goScreen('home', pageCount - 2) })}
+        <div className="shrink-0 px-3 pt-2.5 pb-2 flex items-center gap-2">
+          {/* 화면 탭 — 잠금 · 홈 · 앱 화면 */}
+          <div className="flex-1 min-w-0 flex gap-0.5 p-[3px] rounded-xl overflow-x-auto" style={{ background: '#F2F2F2', scrollbarWidth: 'none' }}>
+            {segTab('잠금', screen === 'lock', () => goScreen('lock'))}
+            {Array.from({ length: pageCount }, (_, i) => segTab(pageCount > 1 ? `홈 ${i + 1}` : '홈', screen === 'home' && curPage === i, () => goScreen('home', i)))}
+            <label className="relative shrink-0 h-[34px] px-2.5 rounded-[9px] flex items-center gap-1 text-[13px] font-semibold"
+              style={isAppScr ? { background: '#FFFFFF', color: 'var(--ed-text)', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' } : { color: '#6E655D' }}>
+              <span className="max-w-[88px] truncate">{isAppScr ? SCREENS.find(x => x.id === screen)?.label : '앱'}</span><ChevronDown size={14} aria-hidden />
+              <select aria-label="화면 고르기" className="absolute inset-0 opacity-0" value={isAppScr ? screen : ''}
+                onChange={e => { if (e.target.value) { clearTap(); goScreen(e.target.value as PhoneScreenId) } }}>
+                <option value="">앱 화면 고르기</option>
+                {SCREENS.filter(x => x.id !== 'lock' && x.id !== 'home').map(x => <option key={x.id} value={x.id}>{x.label}</option>)}
+              </select>
+            </label>
           </div>
-          <div className="flex items-center gap-1.5 overflow-x-auto text-[12px]" style={{ scrollbarWidth: 'none' }}>
-            <select aria-label="화면 고르기" className="shrink-0 h-7 pl-2.5 pr-1 rounded-full border bg-white font-medium" style={{ borderColor: 'var(--ed-border)', color: 'var(--ed-text)' }}
-              value={isAppScr ? screen : ''} onChange={e => { if (e.target.value) { clearTap(); goScreen(e.target.value as PhoneScreenId) } }}>
-              <option value="">화면 내용 ▾</option>
-              {SCREENS.filter(x => x.id !== 'lock' && x.id !== 'home').map(x => <option key={x.id} value={x.id}>{x.label}</option>)}
-            </select>
-            {([['info', '결혼식 정보'], ['bgm', '배경음악'], ['dday', 'D-Day 팝업']] as const).map(([id, l]) => {
-              const on = sheet?.kind === 'focus' && sheet.parts[0]?.panel === id
-              return <button key={id} type="button" onClick={() => { clearTap(); openFocus([{ panel: id, secs: null }]) }} className="shrink-0 h-7 px-2.5 rounded-full border font-medium"
-                style={on ? { background: 'var(--ed-accent)', color: '#F5F0ED', borderColor: 'transparent' } : { background: '#FFFFFF', color: 'var(--ed-text-muted)', borderColor: 'var(--ed-border)' }}>{l}</button>
-            })}
-          </div>
+          <button type="button" aria-label="추가" onClick={() => setMobMenu('add')} className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ background: 'var(--ed-accent)' }}><Plus size={20} aria-hidden /></button>
+          <button type="button" aria-label="기본 설정" onClick={() => setMobMenu('set')} className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-white border" style={{ borderColor: 'var(--ed-border)', color: 'var(--ed-text)' }}><SlidersHorizontal size={18} aria-hidden /></button>
         </div>
       )}
       <div className="flex-1 min-h-0 relative overflow-hidden">
@@ -2788,25 +2825,26 @@ function PhoneEditorContent() {
         <div onClickCapture={onDecoClick} onPointerDownCapture={e => { const r = phoneRef.current?.getBoundingClientRect(); decoTapY.current = r ? e.clientY - r.top : null; decoTapX.current = r ? e.clientX - r.left : null; decoDownOnWidget.current = !!(e.target as HTMLElement).closest('[data-widget-id]'); if (decoOn && screen === 'lock') e.stopPropagation() }}
           // 서랍이 나와 있으면 폰을 왼쪽 끝으로 붙여 보이는 부분을 넓게
           style={{ transform: `translate(${sheetOpen && sheetFrac >= 0.08 ? -Math.max(0, (window.innerWidth - PHONE_W * scale) / 2 - 10) : 0}px, -6px)`, transition: 'transform 0.25s ease' }}>{canvas}</div>
-        {decoOn && !decoSheet && <p className="absolute bottom-1.5 left-0 right-0 text-center text-[11.5px] pointer-events-none" style={{ color: 'var(--ed-text-muted)' }}>고칠 곳을 누르면 설정이 열립니다</p>}
+        {decoOn && !decoSheet && !coachDone && <p className="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full text-[12.5px] font-semibold text-white pointer-events-none whitespace-nowrap" style={{ background: 'rgba(44,40,36,0.88)' }}>고칠 곳을 눌러 보세요</p>}
         {canvasOverlays}
       </div>
       {decoSheet && (
         <div className="absolute top-0 bottom-0 right-0 z-30 flex" style={{ width: `calc(${sheetFrac * 100}% + 18px)`, transition: sheetDrag.current ? 'none' : 'width 0.25s ease' }}>
           {/* 손잡이 — 좌우로 끌어 필요한 만큼 꺼냄 · 누르면 넣기 ↔ 꺼내기 */}
           <div role="separator" aria-label="설정 꺼내기 · 넣기" className="shrink-0 w-[18px] self-center h-24 flex items-center justify-center touch-none cursor-col-resize select-none rounded-l-xl border border-r-0"
-            style={{ borderColor: 'var(--ed-border)', background: '#FBF9F6', boxShadow: '-4px 0 12px rgba(44,40,36,0.10)' }}
+            style={{ borderColor: 'var(--ed-border)', background: '#FFFFFF', boxShadow: '-4px 0 12px rgba(0,0,0,0.08)' }}
             onPointerDown={e => { sheetDrag.current = { x: e.clientX, f: sheetFrac, moved: false }; try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* noop */ } }}
             onPointerMove={e => { const d = sheetDrag.current; if (!d) return; if (Math.abs(e.clientX - d.x) > 4) d.moved = true; if (d.moved) setSheetFrac(Math.max(0, Math.min(0.92, d.f - (e.clientX - d.x) / Math.max(1, window.innerWidth)))) }}
             onPointerUp={() => { const d = sheetDrag.current; sheetDrag.current = null; if (!d) return; if (!d.moved) setSheetFrac(f => (f < 0.08 ? 0.75 : 0)); else setSheetFrac(f => (f < 0.12 ? 0 : f)) }}
             onPointerCancel={() => { sheetDrag.current = null }}>
             <span className="text-[14px] leading-none" style={{ color: 'var(--ed-text-muted)' }}>{sheetFrac < 0.08 ? '‹' : '›'}</span>
           </div>
-          <div className="flex-1 min-w-0 flex flex-col overflow-hidden border-l" style={{ background: '#FBF9F6', borderColor: 'var(--ed-border)', boxShadow: '-10px 0 30px rgba(44,40,36,0.12)' }}>
+          <div className="flex-1 min-w-0 flex flex-col overflow-hidden border-l" style={{ background: '#FFFFFF', borderColor: 'var(--ed-border)', boxShadow: '-10px 0 30px rgba(44,40,36,0.12)' }}>
             <div className="shrink-0 h-9 flex items-center justify-end px-1">
-              <button type="button" aria-label="닫기" onClick={() => { closeSheet(); if (isAppScr) goScreen('home') }} className="w-9 h-9 flex items-center justify-center text-lg" style={{ color: 'var(--ed-text-muted)' }}>×</button>
+              <button type="button" aria-label="닫기" onClick={() => { closeSheet(); if (isAppScr) goScreen('home') }} className="w-9 h-9 flex items-center justify-center text-lg" style={{ color: 'var(--ed-text-muted)' }}><X size={16} className="mx-auto" aria-hidden /></button>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 pb-8">{decoSheet}</div>
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 pb-8"
+              onFocusCapture={e => { const el = e.target as HTMLElement; if (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 320) }}>{decoSheet}</div>
           </div>
         </div>
       )}
@@ -2815,9 +2853,9 @@ function PhoneEditorContent() {
         <div className="shrink-0 px-3 pt-2 border-t bg-white/90" style={{ borderColor: 'var(--ed-border)', paddingBottom: 'calc(8px + env(safe-area-inset-bottom))' }}>
           {/* 꾸미기 ↔ 미리보기 (하객이 보는 그대로 눌러 보기) */}
           <div className="grid grid-cols-2 p-1 rounded-xl border bg-white" style={{ borderColor: 'var(--ed-border)' }}>
-            {([['deco', '✎ 꾸미기', toDeco], ['view', '▶ 미리보기', toView]] as const).map(([m, l, go]) => (
-              <button key={m} type="button" onClick={() => { if (mobMode !== m) go() }} className="h-10 rounded-lg text-sm font-semibold transition-colors"
-                style={mobMode === m ? { background: 'var(--ed-accent)', color: '#F5F0ED' } : { color: 'var(--ed-text-muted)' }}>{l}</button>
+            {([['deco', '꾸미기', toDeco, Pencil], ['view', '미리보기', toView, Play]] as const).map(([m, l, go, Ic]) => (
+              <button key={m} type="button" onClick={() => { if (mobMode !== m) go() }} className="h-10 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-1.5"
+                style={mobMode === m ? { background: 'var(--ed-accent)', color: '#F5F0ED' } : { color: 'var(--ed-text-muted)' }}><Ic size={16} aria-hidden />{l}</button>
             ))}
           </div>
         </div>
@@ -2826,7 +2864,84 @@ function PhoneEditorContent() {
   )
 
   return (
-    <div className={`theme-neu flex flex-col ${mob ? 'h-[100dvh] overflow-hidden' : 'min-h-screen'} ${PHONE_FONT_VARS}`}>
+    // 에디터 화면 글꼴은 Pretendard — 폰 미리보기 안은 하객 화면과 같은 기본 글꼴로 되돌림 (canvas 참고)
+    <div className={`theme-neu pf-ed pf-m flex flex-col ${mob ? 'h-[100dvh] overflow-hidden' : 'min-h-screen'} ${PHONE_FONT_VARS}`} style={{ fontFamily: EDITOR_UI_FONT }}>
+      <style>{`.pf-ed input[type=checkbox]{appearance:none;-webkit-appearance:none;flex-shrink:0;width:38px;height:22px;border-radius:999px;background:#D9D2CA;position:relative;cursor:pointer;transition:background .2s}
+.pf-ed input[type=checkbox]::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .2s}
+.pf-ed input[type=checkbox]:checked{background:var(--ed-accent)}.pf-ed input[type=checkbox]:checked::after{transform:translateX(16px)}
+@layer components{.theme-neu.pf-ed.pf-m{background:#FFFFFF!important;--ed-surface-2:#F5F5F4;--ed-border:rgba(0,0,0,0.08);--ed-text-muted:#71717A;--ed-text-faint:#A1A1AA}
+.theme-neu.pf-ed.pf-m .editor-header{background:rgba(255,255,255,0.96)!important}}`}</style>
+      {/* 휴대폰 ＋ · 기본 설정 메뉴 */}
+      {mobMenu && (
+        <div className="fixed inset-0 z-[60]" onClick={() => setMobMenu(null)}>
+          <div className="absolute inset-0" style={{ background: 'rgba(30,26,22,0.35)' }} />
+          <div className="absolute left-3 right-3 bottom-4 rounded-[20px] bg-white p-2 shadow-2xl" style={{ paddingBottom: 'calc(8px + env(safe-area-inset-bottom))' }} onClick={e => e.stopPropagation()}>
+            {(mobMenu === 'add'
+              ? [
+                  { Icon: LayoutGrid, t: '위젯 추가', d: '디데이 · 달력 · 사진 · 방명록 …', on: () => { setMobMenu(null); clearTap(); if (screen !== 'home') goScreen('home'); setSelectedId(null); setDraft(null); setSheet({ kind: 'add' }) } },
+                  ...(pageCount < HOME_PAGES_MAX ? [{ Icon: SquareStack, t: '홈 화면 추가', d: '옆으로 넘기는 화면을 하나 더', on: () => { setMobMenu(null); closeSheet(); setPhone({ homePages: pageCount + 1 }); goScreen('home', pageCount); flash(`홈 ${pageCount + 1} 화면을 더했습니다`) } }] : []),
+                  ...(screen === 'home' && pageCount > 1 && curPage === pageCount - 1 ? [{ Icon: Trash2, t: '이 홈 화면 삭제', d: '위젯이 없는 마지막 화면만 지울 수 있습니다', on: () => { setMobMenu(null); if (pageWs.length) { flash('위젯을 먼저 빼 주세요'); return } setPhone({ homePages: pageCount - 1 }); goScreen('home', pageCount - 2) } }] : []),
+                ]
+              : ([['info', '결혼식 정보', '이름 · 연락처 · 예식 · 공유 썸네일'], ['bgm', '배경음악', '청첩장을 열면 흐르는 음악'], ['dday', 'D-Day 팝업', '처음 열 때 뜨는 안내']] as const).map(([id, t, d]) => ({ Icon: SlidersHorizontal, t, d, on: () => { setMobMenu(null); clearTap(); openFocus([{ panel: id, secs: null }]) } }))
+            ).map((it, i) => (
+              <button key={it.t} type="button" onClick={it.on} className="w-full flex items-center gap-3 p-3 text-left" style={i ? { borderTop: '1px solid #F1ECE6' } : undefined}>
+                <span className="w-[42px] h-[42px] rounded-xl flex items-center justify-center shrink-0" style={{ background: 'var(--ed-accent-weak)', color: 'var(--ed-accent)' }}><it.Icon size={20} aria-hidden /></span>
+                <span className="min-w-0"><span className="block text-[15px] font-bold" style={{ color: 'var(--ed-text)' }}>{it.t}</span><span className="block text-[12.5px] mt-0.5" style={{ color: 'var(--ed-text-muted)' }}>{it.d}</span></span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {/* 이어서 꾸밀까요? */}
+      {resume && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-6" style={{ background: 'rgba(30,26,22,0.4)' }}>
+          <div className="w-full max-w-[360px] rounded-[22px] bg-white p-5 shadow-2xl">
+            <span className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3.5" style={{ background: 'var(--ed-accent-weak)', color: 'var(--ed-accent)' }}><History size={24} aria-hidden /></span>
+            <h3 className="text-lg font-bold" style={{ color: 'var(--ed-text)' }}>이어서 꾸밀까요?</h3>
+            <p className="text-sm mt-1.5 leading-relaxed" style={{ color: 'var(--ed-text-muted)' }}>저장하지 않은 내용이 이 기기에 남아 있습니다.</p>
+            <p className="mt-3.5 mb-4 px-3 py-2.5 rounded-xl text-[13px]" style={{ background: '#F5F5F4', color: '#5E554D' }}>마지막 수정 · {new Date(resume.at).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" className="h-11 rounded-xl text-[14.5px] font-bold" style={{ background: '#F2F2F2', color: '#52525B' }} onClick={() => { try { localStorage.removeItem(draftKey) } catch { /* noop */ } setResume(null) }}>새로 시작</button>
+              <button type="button" className="h-11 rounded-xl text-[14.5px] font-bold text-white" style={{ background: 'var(--ed-accent)' }} onClick={() => { setData(resume.data); setIsDirty(true); setResume(null) }}>이어서 꾸미기</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 저장 뒤 — 바로 보내기 */}
+      {savedSheet && invitationId && (() => {
+        const link = `https://invite.deardrawer.com/i/${invitationId}`
+        return (
+          <div className="fixed inset-0 z-[65] flex items-end sm:items-center justify-center" onClick={() => setSavedSheet(false)}>
+            <div className="absolute inset-0" style={{ background: 'rgba(30,26,22,0.35)' }} />
+            <div className="relative w-full sm:max-w-[420px] rounded-t-[24px] sm:rounded-[22px] bg-white px-5 pt-3 pb-6 shadow-2xl" style={{ paddingBottom: 'calc(24px + env(safe-area-inset-bottom))' }} onClick={e => e.stopPropagation()}>
+              <div className="w-10 h-1 rounded-full mx-auto mb-4 sm:hidden" style={{ background: '#DDD5CD' }} />
+              <div className="flex items-center gap-2.5 mb-4">
+                <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: '#E7EFE6', color: '#3C6B45' }}><Check size={19} strokeWidth={2.6} aria-hidden /></span>
+                <div><h3 className="text-[17px] font-bold" style={{ color: 'var(--ed-text)' }}>청첩장이 저장되었습니다</h3><p className="text-[12.5px] mt-0.5" style={{ color: 'var(--ed-text-muted)' }}>이제 하객에게 보내 보세요</p></div>
+                <button type="button" aria-label="닫기" className="ml-auto w-9 h-9 rounded-lg flex items-center justify-center" style={{ color: 'var(--ed-text-muted)' }} onClick={() => setSavedSheet(false)}><X size={18} aria-hidden /></button>
+              </div>
+              <div className="flex items-center gap-2 pl-3.5 pr-2 py-2 rounded-2xl mb-4" style={{ background: '#F5F5F4' }}>
+                <Link2 size={17} aria-hidden style={{ color: '#8A8178' }} />
+                <span className="flex-1 min-w-0 truncate text-[13.5px] font-semibold" style={{ color: '#3A322C' }}>{link.replace('https://', '')}</span>
+                <button type="button" className="h-9 px-3 rounded-xl text-[13px] font-semibold text-white flex items-center gap-1" style={{ background: 'var(--ed-accent)' }}
+                  onClick={() => { navigator.clipboard?.writeText(link).then(() => { setLinkCopied(true); setTimeout(() => setLinkCopied(false), 1600) }).catch(() => {}) }}>
+                  <Copy size={14} aria-hidden />{linkCopied ? '복사됨' : '복사'}</button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" className="h-12 rounded-xl text-[14px] font-bold flex items-center justify-center gap-1.5 text-white" style={{ background: 'var(--ed-accent)' }} onClick={() => { setSavedSheet(false); setShareOpen(true) }}><Share2 size={17} aria-hidden />카카오톡 · QR 공유</button>
+                <a href={`/i/${invitationId}`} target="_blank" rel="noreferrer" className="h-12 rounded-xl text-[14px] font-bold flex items-center justify-center gap-1.5 border" style={{ borderColor: 'var(--ed-border)', color: 'var(--ed-text)' }}><Eye size={17} aria-hidden />하객 화면 보기</a>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+      {invitationId && (
+        <ShareModal open={shareOpen} onOpenChange={setShareOpen} invitationId={invitationId}
+          groomName={data.groom.name} brideName={data.bride.name} weddingDate={data.wedding.date} weddingTime={data.wedding.timeDisplay}
+          venueName={data.wedding.venue.name} venueAddress={data.wedding.venue.address}
+          thumbnailUrl={data.meta.kakaoThumbnail || data.meta.ogImage || data.phone.wallpaper || data.gallery.images[0] || ''}
+          shareTitle={data.meta.title} shareDescription={data.meta.description} kakaoImageRatio={data.meta.kakaoThumbnailRatio} />
+      )}
       {newDrag && (
         <div style={{ position: 'fixed', left: newDrag.x, top: newDrag.y, transform: 'translate(-50%, -130%)', zIndex: 100, pointerEvents: 'none' }}
           className="text-[12.5px] font-medium text-white">
@@ -2951,7 +3066,9 @@ function PhoneEditorContent() {
           </button>
           <div className="hidden sm:block h-4 w-px" style={{ background: 'var(--ed-border)' }} />
           <span className="hidden sm:inline text-sm font-light tracking-[0.2em]" style={{ color: 'var(--ed-text-faint)' }}>THE PHONE</span>
-          {isDirty && <span className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>저장 안 됨</span>}
+          {(isDirty || invitationId) && <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+            <i className="block w-1.5 h-1.5 rounded-full" style={{ background: isDirty ? '#D9A441' : '#5C9A63' }} />{isDirty ? '저장 전' : '저장됨'}
+          </span>}
         </div>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => { setPreview(v => !v); setPreviewStart('lock'); setPreviewKey(k => k + 1); setSelectedId(null) }}
@@ -2959,15 +3076,15 @@ function PhoneEditorContent() {
           {invitationId && <a href={`/i/${invitationId}`} target="_blank" rel="noreferrer" aria-label="새 창에서 열기" title="새 창에서 열기" className="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center">
             <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </a>}
-          <span className="hidden sm:flex items-center gap-1">
+          <span className="flex items-center gap-1">
             <button type="button" onClick={undo} disabled={!hist.undo} aria-label="실행 취소" title="실행 취소 (Ctrl+Z)" className="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center disabled:opacity-35">
               <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7L4 12l5 5M4 12h11a5 5 0 0 1 0 10h-2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
-            <button type="button" onClick={redo} disabled={!hist.redo} aria-label="다시 실행" title="다시 실행 (Ctrl+Shift+Z)" className="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center disabled:opacity-35">
+            <button type="button" onClick={redo} disabled={!hist.redo} aria-label="다시 실행" title="다시 실행 (Ctrl+Shift+Z)" className="max-sm:hidden w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center disabled:opacity-35">
               <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 7l5 5-5 5M20 12H9a5 5 0 0 0 0 10h2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
           </span>
-          <button type="button" onClick={handleSave} disabled={isSaving} className="px-4 py-1.5 rounded-lg text-sm text-[#F5F0ED] disabled:opacity-60" style={{ background: 'var(--ed-accent)' }}>{isSaving ? '저장 중…' : '저장'}</button>
+          <button type="button" onClick={handleSave} disabled={isSaving} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-semibold text-[#F5F0ED] disabled:opacity-60" style={{ background: 'var(--ed-accent)' }}><Check size={15} strokeWidth={2.4} aria-hidden />{isSaving ? '저장 중…' : '저장'}</button>
         </div>
       </header>
 
@@ -3044,9 +3161,9 @@ function PhoneEditorContent() {
           style={mob ? { height: mobPreviewH } : undefined}>
           {/* 편집(누르면 그 위젯 설정) ↔ 미리보기(하객처럼 누르면 화면 열림) */}
           <div className="mb-2 lg:mb-[22px] inline-flex p-1 rounded-full border bg-white text-[13px] shadow-sm max-lg:sticky max-lg:top-0 max-lg:z-20 max-lg:shrink-0" style={{ borderColor: 'var(--ed-border)' }}>
-            {([[false, '✎ 편집'], [true, '▶ 미리보기']] as const).map(([v, l]) => (
+            {([[false, '편집', Pencil], [true, '미리보기', Play]] as const).map(([v, l, Ic]) => (
               <button key={l} type="button" onClick={() => { if (preview !== v) { setPreview(v); setPreviewStart('lock'); setPreviewKey(k => k + 1); setSelectedId(null) } }}
-                className="h-8 px-4 rounded-full font-medium transition-colors" style={preview === v ? { background: 'var(--ed-accent)', color: '#F5F0ED' } : { color: 'var(--ed-text-muted)' }}>{l}</button>
+                className="h-8 px-4 rounded-full font-medium transition-colors inline-flex items-center gap-1.5" style={preview === v ? { background: 'var(--ed-accent)', color: '#F5F0ED' } : { color: 'var(--ed-text-muted)' }}><Ic size={14} aria-hidden />{l}</button>
             ))}
           </div>
           {canvas}

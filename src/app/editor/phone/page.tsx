@@ -2849,7 +2849,7 @@ function PhoneEditorContent() {
       </div>
       {/* 확대 · 안내 · 첫 안내 — 폰 칸 위에 고정 (확대해서 넘겨도 제자리) */}
       {!decoSheet && zoom <= 1 && <div className="absolute bottom-1 left-0 right-0 pointer-events-none">{example && !invitationId && <p className="text-[11.5px] text-center pointer-events-none" style={{ color: 'var(--ed-text-faint)' }}>비어 있는 곳은 예시로 보여 줍니다 · 직접 넣으면 바뀝니다</p>}</div>}
-      {!decoSheet && <div className="absolute right-3 bottom-7 z-20"><div className="flex items-center gap-0.5 p-0.5 rounded-full bg-white border shadow-sm" style={{ borderColor: 'var(--ed-border)' }}>
+      {decoOn && !decoSheet && <div className="absolute right-3 bottom-7 z-20"><div className="flex items-center gap-0.5 p-0.5 rounded-full bg-white border shadow-sm" style={{ borderColor: 'var(--ed-border)' }}>
           <button type="button" aria-label="축소" disabled={zoom <= 1} onClick={() => zoomBy(-0.25)} className="w-8 h-8 rounded-full flex items-center justify-center disabled:opacity-30" style={{ color: 'var(--ed-text)' }}><ZoomOut size={16} aria-hidden /></button>
           <button type="button" aria-label="맞춤 크기" onClick={() => setZoom(1)} className="min-w-[44px] h-8 px-1 text-[12px] font-semibold tabular-nums" style={{ color: 'var(--ed-text-muted)' }}>{Math.round(zoom * 100)}%</button>
           <button type="button" aria-label="확대" disabled={zoom >= 2.5} onClick={() => zoomBy(0.25)} className="w-8 h-8 rounded-full flex items-center justify-center disabled:opacity-30" style={{ color: 'var(--ed-text)' }}><ZoomIn size={16} aria-hidden /></button>

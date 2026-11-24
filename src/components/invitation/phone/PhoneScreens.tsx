@@ -37,7 +37,7 @@ const LOCK_INTRO_CSS = `
 .pf-intro [data-ed="clock"] > *:nth-child(1) { animation-delay: 0.35s; }
 .pf-intro [data-ed="clock"] > *:nth-child(2) { animation-delay: 0.45s; }
 .pf-intro [data-ed="clock"] > *:nth-child(n+3) { animation-delay: 1.9s; }
-.pf-intro [data-ed="notice"] { animation: pfPop 0.6s cubic-bezier(0.22, 0.7, 0.2, 1) 2.15s both; }
+.pf-intro [data-ed="notice"] > * { animation: pfPop 0.6s cubic-bezier(0.22, 0.7, 0.2, 1) 2.15s both; }
 .pf-intro .pf-roll { animation: pfRoll 1.15s cubic-bezier(0.25, 0.9, 0.25, 1) both; }
 .pf-intro .pf-knob { animation: pfNudge 1.3s ease-in-out 4.2s 2; }
 @media (prefers-reduced-motion: reduce) { .pf-intro, .pf-intro * { animation: none !important; } }`
@@ -2180,6 +2180,8 @@ function LockScreenInner({ data: base, onOpen, onOpenVenue, onOpenApp, cameraHre
 /** 비밀번호로 열리는 움직임 (하객 흐름 · 에디터 캔버스 모두에서 쓰려고 컴포넌트가 직접 넣는다) */
 const REVEAL_CSS = `@keyframes pfRise { from { opacity: 0; transform: translateY(18px) scale(0.96); } to { opacity: 1; transform: none; } }
 @keyframes pfBeat { 0% { transform: scale(1); } 35% { transform: scale(1.18); } 60% { transform: scale(0.96); } 100% { transform: scale(1); } }
+@keyframes pfNextKey { 0%, 100% { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.32), 0 0 0 0 rgba(255,255,255,0.0); background: rgba(255,255,255,0.16); } 50% { box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.9), 0 0 0 10px rgba(255,255,255,0.14); background: rgba(255,255,255,0.32); } }
+.pf-next-key { animation: pfNextKey 1.4s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .pf-reveal, .pf-reveal * { animation: none !important; transition: none !important; } }`
 
 /* ───────── 비밀번호 ───────── */
@@ -2193,9 +2195,13 @@ function PasscodeScreenInner({ data: raw, onDone, onCancel }: { data: PhoneData;
   const answer = wp.d ? `${String(wp.month).padStart(2, '0')}${String(wp.day).padStart(2, '0')}` : ''
   const [code, setCode] = useState('')
   const [err, setErr] = useState('')
+  // 다음에 누를 숫자 안내 — 2.5초 동안 아무것도 안 누르거나 틀리면, 다음 숫자가 은은하게 빛남
+  const [nudge, setNudge] = useState(false)
   const [opened, setOpened] = useState(false)
+  useEffect(() => { if (opened) return; const id = setTimeout(() => setNudge(true), 2500); return () => clearTimeout(id) }, [code, opened])
   const press = (n: string) => {
     if (opened) return
+    setNudge(false)
     const next = (code + n).slice(0, 4)
     if (next.length < 4) { setCode(next); setErr(''); return }
     if (next === answer) {
@@ -2232,7 +2238,7 @@ function PasscodeScreenInner({ data: raw, onDone, onCancel }: { data: PhoneData;
         <span style={{ marginTop: 14, height: 18, fontSize: 13, color: '#FFD9CF' }}>{err}</span>
         <div style={{ marginTop: 22, display: 'grid', gridTemplateColumns: 'repeat(3, 76px)', gap: '16px 24px' }}>
           {keys.map((k, i) => k
-            ? <button key={i} type="button" onClick={() => press(k)} style={{ width: 76, height: 76, borderRadius: '50%', border: 0, background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(14px) saturate(1.4)', WebkitBackdropFilter: 'blur(14px) saturate(1.4)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.32), inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 18px rgba(0,0,0,0.12)', color: '#FFFFFF', fontSize: 30, fontWeight: 300, cursor: 'pointer' }}>{k}</button>
+            ? <button key={i} type="button" onClick={() => press(k)} className={(nudge || !!err) && !opened && answer && answer[code.length] === k ? 'pf-next-key' : undefined} style={{ width: 76, height: 76, borderRadius: '50%', border: 0, background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(14px) saturate(1.4)', WebkitBackdropFilter: 'blur(14px) saturate(1.4)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.32), inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 18px rgba(0,0,0,0.12)', color: '#FFFFFF', fontSize: 30, fontWeight: 300, cursor: 'pointer' }}>{k}</button>
             : i === 9
             ? <button key={i} type="button" onClick={onCancel} style={{ width: 76, height: 76, border: 0, background: 'transparent', color: '#FFFFFF', fontSize: 15, cursor: 'pointer', font: 'inherit' }}>취소</button>
             // 폰 비밀번호 화면처럼 — 숫자를 누르면 '건너뛰기' 자리가 '지우기'로 (한 칸씩)
@@ -2530,6 +2536,20 @@ function StoryEssay({ chs, nm, ink, data, bleed }: { chs: Chapter[]; nm: { a: st
   )
 }
 
+/** 뒤로 — 모든 앱 화면 같은 자리: 왼쪽 위 top 52 · left 12 · 40px 동그라미 (오른쪽 위 음악 버튼과 같은 줄)
+ *  - 스크롤 영역 바깥(화면 맨 위 층)에 형제로 두면 그대로 고정
+ *  - 화면 전체가 스크롤되는 곳은 sticky — 스크롤 영역의 '첫 자식'으로 (내용을 내려도 그 자리에 떠 있음)
+ *  dark: 사진 · 어두운 화면 (어두운 반투명 + 흰 테두리) / 아니면 밝은 반투명 + 옅은 그림자 */
+function BackCircle({ onClick, ink, dark, bg, sticky, label = '뒤로' }: { onClick?: () => void; ink?: string; dark?: boolean; bg?: string; sticky?: boolean; label?: string }) {
+  const btn = (
+    <button type="button" onClick={onClick} aria-label={label} style={{ position: 'absolute', top: 52, left: 12, zIndex: 4, width: 40, height: 40, borderRadius: '50%', border: 0, padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: bg || (dark ? 'rgba(0,0,0,0.26)' : 'rgba(255,255,255,0.82)'), backdropFilter: 'blur(12px) saturate(1.3)', WebkitBackdropFilter: 'blur(12px) saturate(1.3)', boxShadow: dark ? 'inset 0 0 0 1px rgba(255,255,255,0.16)' : '0 2px 10px rgba(0,0,0,0.12)' }}>
+      <PhoneIcon name="back" color={ink || (dark ? '#FFFFFF' : '#111111')} size={22} stroke={2} />
+    </button>
+  )
+  return sticky ? <div style={{ position: 'sticky', top: 0, height: 0, zIndex: 6 }}>{btn}</div> : btn
+}
+
 /** 스토리 넘기기 — 사진이 화면을 채우고, 눌러서 다음 장 */
 function StorySlides({ data, chs, nm, onBack }: { data: PhoneData; chs: Chapter[]; nm: { a: string; b: string }; onBack?: () => void }) {
   const [i, setI] = useState(0)
@@ -2543,12 +2563,14 @@ function StorySlides({ data, chs, nm, onBack }: { data: PhoneData; chs: Chapter[
       {/* 왼쪽 · 오른쪽 눌러서 이전 · 다음 */}
       <button type="button" aria-label="이전" onClick={() => setI(v => Math.max(0, v - 1))} style={{ position: 'absolute', left: 0, top: 90, bottom: 0, width: '35%', border: 0, background: 'transparent', cursor: 'pointer', zIndex: 1 }} />
       <button type="button" aria-label="다음" onClick={() => setI(v => Math.min(n - 1, v + 1))} style={{ position: 'absolute', right: 0, top: 90, bottom: 0, width: '65%', border: 0, background: 'transparent', cursor: 'pointer', zIndex: 1 }} />
-      <div style={{ position: 'absolute', top: 52, left: 14, right: 14, display: 'flex', gap: 4, zIndex: 2 }}>
+      {/* 진행 막대는 뒤로 · 음악 버튼 줄(52~92) 바로 위 */}
+      <div style={{ position: 'absolute', top: 42, left: 14, right: 14, display: 'flex', gap: 4, zIndex: 2 }}>
         {Array.from({ length: n }, (_, k) => <i key={k} style={{ flex: 1, height: 3, borderRadius: 2, background: k <= i ? '#FFFFFF' : 'rgba(255,255,255,0.38)' }} />)}
       </div>
-      <div style={{ position: 'absolute', top: 66, left: 16, right: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
-        <span style={{ fontSize: 13.5, fontWeight: 600 }}>{nm.a} · {nm.b}</span>
-        <button type="button" onClick={onBack} aria-label="닫기" style={{ width: 40, height: 40, border: 0, background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><PhoneIcon name="close" color="#FFFFFF" size={20} stroke={2} /></button>
+      {/* 뒤로 — 왼쪽 위 (오른쪽 위는 음악 버튼 자리), 이름은 그 옆 */}
+      <BackCircle onClick={onBack} dark />
+      <div style={{ position: 'absolute', top: 52, left: 62, right: 60, height: 40, display: 'flex', alignItems: 'center', zIndex: 2, pointerEvents: 'none' }}>
+        <span style={{ fontSize: 13.5, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nm.a} · {nm.b}</span>
       </div>
       <div style={{ position: 'absolute', left: 24, right: 24, bottom: 64, zIndex: 0, pointerEvents: 'none' }}>
         <div style={{ ...numCss(data, 11), letterSpacing: '0.2em', opacity: 0.85 }}>{String(i + 1).padStart(2, '0')} / {String(n).padStart(2, '0')}</div>
@@ -2784,7 +2806,6 @@ function LetterChat({ data, list, lockOf, focus, onBack, onNavigate }: { data: P
     <div style={{ position: 'absolute', inset: 0, background: '#FFFFFF', color: '#1C1C1E', fontFamily: SYS, overflow: 'hidden' }}>
       <style>{'@keyframes pfMsgIn { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }'}</style>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2, padding: '50px 0 10px', background: 'rgba(250,250,250,0.94)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', borderBottom: `0.5px solid ${IOS.line}`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-        <button type="button" onClick={onBack} aria-label="뒤로" style={{ position: 'absolute', left: 6, top: 56, border: 0, background: 'transparent', padding: 4, display: 'flex', cursor: 'pointer', color: 'var(--pa, #8C6A5A)' }}><PhoneIcon name="back" color="currentColor" size={24} stroke={2} /></button>
         <span style={{ width: 46, height: 46, borderRadius: '50%', overflow: 'hidden', background: data.phone.accent, position: 'relative' }}>{(data.phone.letterAvatar?.src || cover) && <Photo src={data.phone.letterAvatar?.src || cover} crop={data.phone.letterAvatar?.crop} />}</span>
         <span style={{ fontSize: 12, fontWeight: 600 }}>{nm.a} · {nm.b}</span>
       </div>
@@ -2840,6 +2861,7 @@ function LetterChat({ data, list, lockOf, focus, onBack, onNavigate }: { data: P
           <button type="button" onClick={() => onNavigate?.('guestbook')} style={{ width: '100%', height: 40, borderRadius: 20, border: `1px solid ${IOS.line}`, background: '#FFFFFF', display: 'flex', alignItems: 'center', padding: '0 16px', fontSize: 15, color: IOS.gray, cursor: 'pointer', font: 'inherit', textAlign: 'left' }}>축하 메시지 남기기</button>
         </div>
       )}
+      <BackCircle onClick={onBack} ink="var(--pa, #8C6A5A)" />
       {zoom && <ZoomOverlay src={zoom.src} imgs={zoom.imgs} onClose={() => setZoom(null)} />}
     </div>
   )
@@ -2856,11 +2878,8 @@ function LetterNotes({ data, list, focus, onBack }: { data: PhoneData; list: Pho
   return (
     <div style={{ position: 'absolute', inset: 0, background: '#FFFFFF', color: '#2B2926', fontFamily: SYS, overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', padding: '0 0 48px' }}>
-        <div style={{ height: 44, marginTop: 50, display: 'flex', alignItems: 'center', padding: '0 8px' }}>
-          <button type="button" onClick={onBack} aria-label="뒤로" style={{ border: 0, background: 'transparent', padding: '4px 6px', display: 'flex', alignItems: 'center', gap: 2, color: 'var(--pa, #8C6A5A)', fontSize: 17, cursor: 'pointer', font: 'inherit' }}>
-            <PhoneIcon name="back" color="currentColor" size={22} stroke={2} />홈
-          </button>
-        </div>
+        {/* 뒤로 자리 — 버튼은 스크롤 바깥에 고정 (아래) */}
+        <div aria-hidden style={{ height: 44, marginTop: 50 }} />
         <div style={{ padding: '0 20px 14px' }}>
           <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em' }}>{title}</div>
           <div style={{ fontSize: 13.5, color: IOS.gray, marginTop: 3 }}>{screenText(data, 'letter', 'eyebrow', `${nm.a} · ${nm.b}의 편지`)} {list.length}통</div>
@@ -2895,6 +2914,7 @@ function LetterNotes({ data, list, focus, onBack }: { data: PhoneData; list: Pho
           )
         })}
       </div>
+      <BackCircle onClick={onBack} ink="var(--pa, #8C6A5A)" />
       {zoom && <ZoomOverlay src={zoom.src} imgs={zoom.imgs} onClose={() => setZoom(null)} />}
     </div>
   )
@@ -2918,13 +2938,9 @@ function LetterApp({ data, onBack, onNavigate }: AppProps) {
   const title = screenText(data, 'letter', 'title', '초대의 글')
   const st = screenStyle(data, 'letter')
   const openLabel = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`
-  const head = (label: string, onClick?: () => void) => (
-    <div style={{ height: 44, marginTop: 50, display: 'flex', alignItems: 'center', padding: '0 8px' }}>
-      <button type="button" onClick={onClick} aria-label="뒤로" style={{ border: 0, background: 'transparent', padding: '4px 6px', display: 'flex', alignItems: 'center', gap: 2, color: ac, fontSize: 17, cursor: 'pointer', font: 'inherit' }}>
-        <PhoneIcon name="back" color="currentColor" size={22} stroke={2} />{label}
-      </button>
-    </div>
-  )
+  // 위쪽 뒤로 줄 자리 (버튼은 왼쪽 위에 고정 — 스크롤해도 그 자리)
+  const headGap = <div aria-hidden style={{ height: 44, marginTop: 50 }} />
+  const back = (label: string, onClick?: () => void, sticky?: boolean) => <BackCircle onClick={onClick} ink={ac} sticky={sticky} label={label ? `뒤로 · ${label}` : '뒤로'} />
   const avatar = (s: number) => {
     const own = data.phone.letterAvatar
     const c = own?.src || coverOf(data)
@@ -2946,14 +2962,16 @@ function LetterApp({ data, onBack, onNavigate }: AppProps) {
           <button type="button" aria-label="이전 편지" onClick={() => go(-1)} style={{ flex: 1, border: 0, background: 'transparent', cursor: 'pointer' }} />
           <button type="button" aria-label="다음 편지" onClick={() => go(1)} style={{ flex: 2, border: 0, background: 'transparent', cursor: 'pointer' }} />
         </div>
-        <div style={{ position: 'absolute', top: 54, left: 12, right: 12, display: 'flex', gap: 4 }}>
+        {/* 진행 막대는 뒤로 · 음악 버튼 줄(52~92) 바로 위 */}
+        <div style={{ position: 'absolute', top: 42, left: 12, right: 12, display: 'flex', gap: 4 }}>
           {open.map((l, k) => <span key={l.id} style={{ flex: 1, height: 2.5, borderRadius: 2, background: k <= i ? '#FFFFFF' : 'rgba(255,255,255,0.35)' }} />)}
         </div>
-        <div style={{ position: 'absolute', top: 66, left: 14, right: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+        {/* 뒤로 — 왼쪽 위 (오른쪽 위는 음악 버튼 자리), 보낸 사람은 그 옆 */}
+        <div style={{ position: 'absolute', top: 52, left: 62, right: 60, height: 40, display: 'flex', alignItems: 'center', gap: 10, pointerEvents: 'none' }}>
           {avatar(32)}
-          <b style={{ fontSize: 14 }}>{letterFrom(data, cur)}</b>
-          <button type="button" onClick={close} aria-label="닫기" style={{ marginLeft: 'auto', width: 38, height: 38, border: 0, background: 'transparent', color: '#FFFFFF', fontSize: 24, lineHeight: 1, cursor: 'pointer' }}>×</button>
+          <b style={{ fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{letterFrom(data, cur)}</b>
         </div>
+        <BackCircle onClick={close} dark />
         <div style={{ position: 'absolute', left: 24, right: 24, bottom: 54 }}>
           <div style={{ fontFamily: LETTER_SERIF, fontSize: 25, lineHeight: 1.35, letterSpacing: '-0.02em', wordBreak: 'keep-all' }}>{letterTitle(cur)}</div>
           {letterSnippet(cur) && <div style={{ fontSize: 15.5, lineHeight: 1.75, marginTop: 12, opacity: 0.94, whiteSpace: 'pre-line', wordBreak: 'keep-all', display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{cur.body.trim() || letterSnippet(cur)}</div>}
@@ -2986,7 +3004,7 @@ function LetterApp({ data, onBack, onNavigate }: AppProps) {
     return (
       <div style={{ position: 'absolute', inset: 0, background: '#FFFFFF', color: '#1C1C1E', fontFamily: SYS, overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingBottom: acts.length && !lock ? 90 : 40 }}>
-          {head(list.length > 1 || !fromWidget ? title : '홈', close)}
+          {headGap}
           {lock ? (
             <div style={{ padding: '120px 36px 0', textAlign: 'center' }}>
               <div style={{ display: 'flex', justifyContent: 'center' }}><LockGlyph c="#1C1C1E" s={44} /></div>
@@ -3034,6 +3052,7 @@ function LetterApp({ data, onBack, onNavigate }: AppProps) {
             {acts.map(([a, label]) => <button key={a} type="button" onClick={() => onNavigate?.(a)} style={{ border: 0, background: 'transparent', color: ac, fontSize: 13.5, fontWeight: 600, cursor: 'pointer', font: 'inherit' }}>{label}</button>)}
           </div>
         )}
+        {back(list.length > 1 || !fromWidget ? title : '홈', close)}
         {zoom && <ZoomOverlay src={zoom.src} imgs={zoom.imgs} onClose={() => setZoom(null)} />}
       </div>
     )
@@ -3042,7 +3061,9 @@ function LetterApp({ data, onBack, onNavigate }: AppProps) {
   // 받은편지함
   return (
     <div style={{ position: 'absolute', inset: 0, background: '#FFFFFF', color: '#1C1C1E', fontFamily: SYS, overflowY: 'auto' }}>
-      {head('홈', onBack)}
+      {/* 이 화면은 전체가 스크롤 — 뒤로는 sticky 로 첫 자식 */}
+      {back('', onBack, true)}
+      {headGap}
       <div style={{ padding: '2px 20px 12px' }}>
         <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.02em' }}>{title}</div>
         <div style={{ fontSize: 13.5, color: IOS.gray, marginTop: 3 }}>{screenText(data, 'letter', 'eyebrow', `${nm.a} · ${nm.b}의 편지`)} {list.length}통</div>
@@ -3246,9 +3267,8 @@ function InviteApp({ app, data, onBack, onNavigate, renderRsvp }: AppProps) {
         ) : null}
         {children}
       </div>
-      <button type="button" onClick={onBack} aria-label="홈으로" style={{ position: 'absolute', top: 52, left: 16, width: 40, height: 40, borderRadius: '50%', border: 0, background: 'rgba(0,0,0,0.24)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 3 }}>
-        <PhoneIcon name="back" color="#FFFFFF" size={20} stroke={2} />
-      </button>
+      {/* 스크롤 영역 바깥 — 내용을 내려도 왼쪽 위 고정. 밝은 유리면 밝은 동그라미 */}
+      <BackCircle onClick={onBack} dark={!light} ink={INK} />
       {zoom && <ZoomOverlay src={zoom} imgs={app === 'album' ? folderImgs : data.gallery.images} onClose={() => setZoom(null)} />}
     </div>
   )
@@ -3503,14 +3523,21 @@ function NativeApp({ app, data, onBack, onNavigate, renderRsvp }: AppProps) {
       {zoom && <ZoomOverlay src={zoom} imgs={app === 'album' ? folderImages(data, folder) : data.gallery.images} onClose={() => setZoom(null)} />}
     </div>
   )
+  // 뒤로 — 내용을 내려도 왼쪽 위에 떠 있음 (오른쪽 위 음악 버튼과 같은 줄). 줄 안에는 같은 폭 빈 칸
   const nav = (label: string, color: string, bg: string, right?: ReactNode, center?: ReactNode) => (
-    <div style={{ position: 'relative', zIndex: 2, background: bg === '#000000' ? bg : 'transparent', padding: '59px 10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 44 }}>
-      <button type="button" onClick={onBack} aria-label={label ? undefined : '뒤로'} style={{ border: 0, background: 'transparent', color, fontSize: 17, letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', font: 'inherit', padding: '0 4px 0 0' }}>
-        <PhoneIcon name="back" color={color} size={24} stroke={1.9} />{label}
+    <>
+    <div style={{ position: 'sticky', top: 0, height: 0, zIndex: 6 }}>
+      <button type="button" onClick={onBack} aria-label={label ? `뒤로 · ${label}` : '뒤로'} style={{ position: 'absolute', top: 52, left: 12, width: 40, height: 40, borderRadius: '50%', border: 0, padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: bg === '#000000' ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', boxShadow: bg === '#000000' ? undefined : '0 2px 10px rgba(0,0,0,0.12)' }}>
+        <PhoneIcon name="back" color={color} size={22} stroke={2} />
       </button>
+    </div>
+    <div style={{ position: 'relative', zIndex: 2, background: bg === '#000000' ? bg : 'transparent', padding: '59px 10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 44 }}>
+      <span aria-hidden style={{ width: 40, height: 40, flexShrink: 0 }} />
       {center}
       <span style={{ minWidth: 40, display: 'flex', justifyContent: 'flex-end' }}>{right}</span>
     </div>
+    </>
   )
   const avatar = (s: number) => (
     <span style={{ width: s, height: s, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: `linear-gradient(160deg, #B9B9BE, #8E8E93)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -3848,11 +3875,9 @@ function useMemoInfo(data: PhoneData) {
     notes: data.phone.memo.filter(Boolean),
   }
 }
-const backCircle = (onBack?: () => void, dark?: boolean) => (
-  <button type="button" onClick={onBack} aria-label="뒤로" style={{ position: 'absolute', top: 52, left: 14, zIndex: 4, width: 40, height: 40, borderRadius: '50%', border: 0, background: dark ? 'rgba(0,0,0,0.3)' : '#FFFFFF', boxShadow: dark ? undefined : '0 2px 10px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-    <PhoneIcon name="back" color={dark ? '#FFFFFF' : '#111111'} size={20} stroke={2.2} />
-  </button>
-)
+// 예식 안내 화면들 — 스크롤 영역 바깥에 두어 고정 (top 52 · left 12 · 40px)
+const backCircle = (onBack?: () => void, dark?: boolean) => <BackCircle onClick={onBack} dark={dark} />
+
 
 /** 지도처럼 그린 바탕 (실제 지도 아님) — 지도 · 지도 탑승권이 함께 쓴다 */
 /** 하트 핀 + 예식장 이름 (지도 위에 얹음) */
@@ -4242,7 +4267,7 @@ function StoryPlaylist({ data, onBack, onNavigate }: AppProps) {
           <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6l8 6-8 6zM12 6l8 6-8 6z" fill="#111111" /></svg>
         </button>
       </div>
-      <button type="button" onClick={onBack} aria-label="뒤로" style={{ position: 'absolute', top: 52, left: 14, zIndex: 4, width: 40, height: 40, borderRadius: '50%', border: 0, background: 'rgba(255,255,255,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><PhoneIcon name="back" color="#111111" size={20} stroke={2.2} /></button>
+      <BackCircle onClick={onBack} />
     </div>
   )
 }
@@ -4268,13 +4293,17 @@ function VideoApp({ data, onBack, onNavigate }: AppProps) {
   return (
     <div style={{ position: 'absolute', inset: 0, fontFamily: SYS, color: '#0F0F0F', background: '#FFFFFF', overflow: 'hidden' }}>
       {/* 위 막대 — 로고처럼 */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 98, paddingTop: 50, boxSizing: 'border-box', display: 'flex', alignItems: 'center', gap: 6, padding: '50px 14px 0 8px', background: '#FFFFFF', zIndex: 3 }}>
-        <button type="button" onClick={onBack} aria-label="뒤로" style={{ border: 0, background: 'transparent', padding: 4, display: 'flex', cursor: 'pointer' }}><PhoneIcon name="back" color="#0F0F0F" size={24} stroke={1.9} /></button>
-        <span style={{ width: 30, height: 21, borderRadius: 6, background: red, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <svg width="10" height="11" viewBox="0 0 10 11" aria-hidden><path d="M0 0l10 5.5L0 11z" fill="#FFFFFF" /></svg>
-        </span>
-        <span style={{ fontSize: 19, fontWeight: 800, letterSpacing: '-0.04em' }}>{title}</span>
+      {/* 줄 높이 52~92 — 왼쪽 위 뒤로(아래 고정 버튼) · 오른쪽 위 음악 버튼과 같은 줄. 뒤로 자리는 빈 칸 */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 98, boxSizing: 'border-box', padding: '52px 14px 0 12px', background: '#FFFFFF', zIndex: 3 }}>
+        <div style={{ height: 40, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span aria-hidden style={{ width: 40, height: 40, flexShrink: 0 }} />
+          <span style={{ width: 30, height: 21, borderRadius: 6, background: red, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="10" height="11" viewBox="0 0 10 11" aria-hidden><path d="M0 0l10 5.5L0 11z" fill="#FFFFFF" /></svg>
+          </span>
+          <span style={{ fontSize: 19, fontWeight: 800, letterSpacing: '-0.04em' }}>{title}</span>
+        </div>
       </div>
+      <BackCircle onClick={onBack} ink="#0F0F0F" />
       <div style={{ position: 'absolute', top: 98, left: 0, right: 0, bottom: 0, overflowY: 'auto' }}>
         {!v ? (
           <div style={{ padding: '80px 24px', textAlign: 'center', color: '#606060', fontSize: 14.5 }}>아직 올린 영상이 없어요</div>
@@ -4345,9 +4374,7 @@ function CameraApp({ data, onBack }: AppProps) {
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 108, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 14, boxSizing: 'border-box' }}>
         <span style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: '0.24em', color: '#FFD60A' }}>PHOTO BOX</span>
       </div>
-      <button type="button" onClick={onBack} aria-label="닫기" style={{ position: 'absolute', top: 54, left: 14, width: 36, height: 36, borderRadius: '50%', border: 0, background: 'rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 3 }}>
-        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden><path d="M2 2l10 10M12 2L2 12" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" /></svg>
-      </button>
+      <BackCircle onClick={onBack} dark bg="rgba(255,255,255,0.14)" />
       {/* 뷰파인더 — 대표 사진 위에 격자 */}
       <div style={{ position: 'absolute', top: 108, left: 0, right: 0, height: 470, overflow: 'hidden', background: '#1C1C1E' }}>
         {cover && <Photo src={cover} />}
@@ -4388,9 +4415,11 @@ function StoryFeed({ data, onBack, onNavigate }: AppProps) {
   return (
     <div style={{ position: 'absolute', inset: 0, fontFamily: SYS, color: '#111111', overflow: 'hidden', backgroundColor: '#FFFFFF', backgroundImage: TINT }}>
       <div style={{ position: 'absolute', inset: 0, overflowY: 'auto' }}>
-        <div style={{ position: 'sticky', top: 0, zIndex: 2, background: 'rgba(255,255,255,0.95)', padding: '60px 14px 10px', display: 'flex', alignItems: 'center', gap: 6, borderBottom: `0.5px solid ${IOS.line}` }}>
-          <button type="button" onClick={onBack} aria-label="뒤로" style={{ border: 0, background: 'transparent', cursor: 'pointer', padding: 0, display: 'flex' }}><PhoneIcon name="back" color="#111111" size={24} stroke={1.9} /></button>
-          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em' }}>{storyTitleOf(data)}</span>
+        {/* 위 막대 — 스크롤 영역의 첫 자식 sticky 라 내용을 내려도 고정. 뒤로는 막대 안 왼쪽 위(top 52 · left 12), 줄 안에는 같은 폭 빈 칸 */}
+        <div style={{ position: 'sticky', top: 0, zIndex: 2, background: 'rgba(255,255,255,0.95)', padding: '52px 56px 8px 12px', display: 'flex', alignItems: 'center', gap: 8, minHeight: 40, borderBottom: `0.5px solid ${IOS.line}` }}>
+          <span aria-hidden style={{ width: 40, height: 40, flexShrink: 0 }} />
+          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{storyTitleOf(data)}</span>
+          <BackCircle onClick={onBack} />
         </div>
         {/* 프로필 */}
         <div style={{ padding: '16px 16px 14px', display: 'flex', alignItems: 'center', gap: 22 }}>
@@ -4444,11 +4473,8 @@ function StoryFeed({ data, onBack, onNavigate }: AppProps) {
 
 /* ───────── 연락하기 · 사진첩 · 참석 회신 — 앱 모양 더 ───────── */
 // 뒤로 — 화면 위에 떠 있어서, 내용을 올려도 겹쳐 보이지 않게 반투명 동그라미 위에
-const backBtn = (onBack?: () => void, color = '#111111', bg = 'transparent') => (
-  <button type="button" onClick={onBack} aria-label="뒤로" style={{ position: 'absolute', top: 52, left: 12, zIndex: 4, width: 40, height: 40, borderRadius: '50%', border: 0, background: bg !== 'transparent' ? bg : color === '#FFFFFF' ? 'rgba(0,0,0,0.22)' : 'rgba(255,255,255,0.78)', backdropFilter: 'blur(12px) saturate(1.3)', WebkitBackdropFilter: 'blur(12px) saturate(1.3)', boxShadow: color === '#FFFFFF' ? undefined : '0 1px 4px rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-    <PhoneIcon name="back" color={color} size={24} stroke={1.9} />
-  </button>
-)
+// (스크롤 영역 바깥에 형제로 둘 것 — 같은 BackCircle)
+const backBtn = (onBack?: () => void, color = '#111111', bg?: string) => <BackCircle onClick={onBack} ink={color} dark={color === '#FFFFFF'} bg={bg} />
 
 /* ───────── 연락처 — 신랑 · 신부 + 가족 ───────── */
 interface AvatarInfo { kind?: 'initial' | 'emoji' | 'photo'; emoji?: string; photo?: string; crop?: PhoneImageSettings; initial: string }
@@ -4536,7 +4562,8 @@ function CallChats({ data, onBack }: AppProps) {
   const accent = data.phone.accent
   return (
     <div style={{ position: 'absolute', inset: 0, fontFamily: SYS, color: '#111111', backgroundColor: '#FFFFFF', backgroundImage: TINT, overflow: 'hidden' }}>
-      {backBtn(onBack, IOS.blue)}
+      {/* 가족이 많으면 목록이 길어짐 — 스크롤 영역, 뒤로는 그 바깥에 고정 */}
+      <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingBottom: 40 }}>
       <div style={{ padding: '114px 18px 0' }}>
         {eyebrow(screenText(data, 'call', 'eyebrow', 'MESSAGES'))}<div style={{ fontSize: 31, fontWeight: 700, letterSpacing: '-0.035em' }}>{screenText(data, 'call', 'title', '메시지')}</div>
         <div style={{ marginTop: 12, height: 36, borderRadius: 10, background: '#EEEEF0', display: 'flex', alignItems: 'center', padding: '0 10px', gap: 6, color: IOS.gray, fontSize: 15 }}>
@@ -4563,6 +4590,8 @@ function CallChats({ data, onBack }: AppProps) {
           return phone ? <a key={k} href={`sms:${phone}`} style={row}>{inner}</a> : <div key={k} style={row}>{inner}</div>
         })}
       </div>
+      </div>
+      {backBtn(onBack, IOS.blue)}
     </div>
   )
 }
@@ -5061,9 +5090,7 @@ function IntroProfileView({ data, ps, start, onClose, onZoom }: { data: PhoneDat
         <span aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0) 18%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.55) 100%)' }} />
       </div>
       {/* 위 — 닫기 · 넘기기 점 */}
-      <button type="button" onClick={onClose} aria-label="닫기" style={{ position: 'absolute', top: 54, left: 14, zIndex: 2, width: 38, height: 38, borderRadius: '50%', border: 0, background: 'rgba(0,0,0,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden><path d="M2 2l10 10M12 2L2 12" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" /></svg>
-      </button>
+      <BackCircle onClick={onClose} dark />
       {ps.length > 1 && (
         <div style={{ position: 'absolute', top: 68, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 6, zIndex: 2, pointerEvents: 'none' }}>
           {ps.map((x, k) => <button key={x.k} type="button" aria-label={x.role} onClick={() => setI(k)} style={{ pointerEvents: 'auto', width: k === i ? 18 : 6, height: 6, borderRadius: 3, border: 0, padding: 0, background: '#FFFFFF', opacity: k === i ? 0.95 : 0.45, cursor: 'pointer', transition: 'all 0.25s' }} />)}
@@ -5712,7 +5739,8 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
       )}
       {/* 배경음악 버튼 — 잠금 해제 뒤 오른쪽 위 */}
       {audioUrl && screen !== 'lock' && screen !== 'code' && (
-        <div style={{ position: 'absolute', top: 14, right: 14, zIndex: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+        // 앱 화면에서는 왼쪽 위 '뒤로'(top 52, 40px)와 같은 줄 가운데에 맞춤
+        <div style={{ position: 'absolute', top: screen === 'home' ? 14 : 55, right: 14, zIndex: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
           {hint && <span style={{ padding: '7px 11px', borderRadius: 999, background: 'rgba(20,20,20,0.82)', color: '#FFFFFF', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{data.bgm?.notificationText || '배경음악이 준비되어 있어요'}</span>}
           <button type="button" onClick={toggleMusic} aria-label={playing ? '배경음악 끄기' : '배경음악 켜기'}
             style={{ position: 'relative', width: 34, height: 34, borderRadius: '50%', border: 0, background: 'rgba(255,255,255,0.88)', boxShadow: '0 2px 10px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>

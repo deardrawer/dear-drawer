@@ -22,7 +22,7 @@ import { PHONE_FONT_VARS } from '@/components/invitation/phone/phoneFonts'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import ShareModal from '@/components/share/ShareModal'
 import { clearPhoneContent, fillPhoneExample } from '@/components/invitation/phone/phoneExample'
-import { Check, ChevronDown, ChevronRight, ChevronUp, Copy, Eye, History, LayoutGrid, Link2, Pencil, Play, Plus, Share2, SlidersHorizontal, SquareStack, Star, Trash2, X } from 'lucide-react'
+import { BellRing, CalendarHeart, Check, ChevronDown, ChevronRight, ChevronUp, Copy, Eye, History, LayoutGrid, Link2, Music, Pencil, Play, Plus, Share2, SlidersHorizontal, SquareStack, Star, Trash2, X, ZoomIn, ZoomOut } from 'lucide-react'
 import { bgmPresets, getBgmPresetByUrl } from '@/lib/bgmPresets'
 import SharedRsvpLinkField from '@/components/editor/SharedRsvpLinkField'
 import RsvpForm from '@/components/invitation/RsvpForm'
@@ -405,6 +405,11 @@ function PhoneEditorContent() {
   // 새 청첩장 — 미리보기 빈 칸을 채울 예시(샘플). 처음 저장하기 전까지만
   const [example, setExample] = useState<PhoneData | null>(null)
   const [mobMenu, setMobMenu] = useState<null | 'add' | 'set'>(null)
+  // 폰 미리보기 확대 (1 = 화면에 맞춤) — 버튼 · 두 손가락으로
+  const [zoom, setZoom] = useState(1)
+  const zoomRef = useRef(1)
+  zoomRef.current = zoom
+  const baseScale = useRef(0.8)
   // '고칠 곳을 눌러 보세요' — 처음 한 번만 (이 기기)
   const [coachDone, setCoachDone] = useState(() => { try { return typeof window !== 'undefined' && localStorage.getItem('pf-ed-coach') === '1' } catch { return false } })
   const doneCoach = () => { if (coachDone) return; setCoachDone(true); try { localStorage.setItem('pf-ed-coach', '1') } catch { /* noop */ } }
@@ -513,7 +518,7 @@ function PhoneEditorContent() {
         else { setPreview(true); setPreviewStart('lock'); setPreviewKey(k => k + 1) }
       }
       // 머리 줄(56) · 위아래 여백(48) · 편집/미리보기 버튼(62) · 폰 테두리(20)
-      if (desk) setScale(Math.min(1, (window.innerHeight - 56 - 48 - 62 - 20) / PHONE_H))
+      if (desk) { baseScale.current = Math.min(1, (window.innerHeight - 56 - 48 - 62 - 20) / PHONE_H); setScale(baseScale.current * zoomRef.current) }
       else if (mobMode === 'full') {
         // 나눠 보기: 폰은 화면 폭에 맞춘 크기 그대로 — 위 칸이 작으면 줄이지 않고 위아래로 넘겨 봄
         setScale(Math.max(0.2, Math.min(0.92, (window.innerWidth - 40) / PHONE_W)))
@@ -522,12 +527,17 @@ function PhoneEditorContent() {
     fit(); window.addEventListener('resize', fit)
     return () => window.removeEventListener('resize', fit)
   }, [split, mobMode, editId])
+  useEffect(() => { setScale(baseScale.current * zoom) }, [zoom])
+  const zoomBy = (d: number) => setZoom(z => Math.round(Math.max(1, Math.min(2.5, z + d)) * 100) / 100)
+  // 두 손가락으로 벌리고 오므려 확대 · 축소 (휴대폰)
+  const pinch = useRef<{ d: number; z: number } | null>(null)
+  const touchDist = (t: React.TouchList) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY)
   // 꾸미기 · 보기 — 남은 칸에 폰을 꽉 맞춤. 설정 시트가 열려도 폰은 그 크기 그대로 (줄이지 않고 누른 곳이 보이게 넘김)
   const sheetOpenRef = useRef(false)
   useEffect(() => {
     const el = decoAreaRef.current
     if (!el || !mob || mobMode === 'full') return
-    const fit = () => { if (sheetOpenRef.current) return; const r = el.getBoundingClientRect(); if (r.height > 0) setScale(Math.max(0.2, Math.min(1, (r.width - 32) / PHONE_W, (r.height - 46) / PHONE_H))) }
+    const fit = () => { if (sheetOpenRef.current) return; const r = el.getBoundingClientRect(); if (r.height > 0) { baseScale.current = Math.max(0.2, Math.min(1, (r.width - 32) / PHONE_W, (r.height - 46) / PHONE_H)); setScale(baseScale.current * zoomRef.current) } }
     fit()
     const ro = new ResizeObserver(fit); ro.observe(el)
     return () => ro.disconnect()
@@ -2828,11 +2838,19 @@ function PhoneEditorContent() {
       )}
       <div className="flex-1 min-h-0 relative overflow-hidden">
       {/* 폰 — 늘 화면 가득 그대로. 설정은 오른쪽에서 폰 위로 꺼내 쓰는 서랍 */}
-      <div ref={decoAreaRef} className="absolute inset-0 flex justify-center items-center overflow-hidden">
+      <div ref={decoAreaRef} className={`absolute inset-0 ${zoom > 1 ? 'block overflow-auto' : 'flex justify-center items-center overflow-hidden'}`} style={{ touchAction: zoom > 1 ? 'pan-x pan-y' : undefined }}
+        onTouchStart={e => { if (e.touches.length === 2) pinch.current = { d: touchDist(e.touches), z: zoomRef.current } }}
+        onTouchMove={e => { const pc = pinch.current; if (!pc || e.touches.length !== 2) return; setZoom(Math.round(Math.max(1, Math.min(2.5, pc.z * touchDist(e.touches) / pc.d)) * 100) / 100) }}
+        onTouchEnd={e => { if (e.touches.length < 2) pinch.current = null }}>
         <div onClickCapture={onDecoClick} onPointerDownCapture={e => { const r = phoneRef.current?.getBoundingClientRect(); decoTapY.current = r ? e.clientY - r.top : null; decoTapX.current = r ? e.clientX - r.left : null; decoDownOnWidget.current = !!(e.target as HTMLElement).closest('[data-widget-id]'); if (decoOn && screen === 'lock') e.stopPropagation() }}
           // 서랍이 나와 있으면 폰을 왼쪽 끝으로 붙여 보이는 부분을 넓게
-          style={{ transform: `translate(${sheetOpen && sheetFrac >= 0.08 ? -Math.max(0, (window.innerWidth - PHONE_W * scale) / 2 - 10) : 0}px, -6px)`, transition: 'transform 0.25s ease' }}>{canvas}</div>
+          style={zoom > 1 ? { width: 'max-content', margin: '12px auto 40px', padding: '0 16px' } : { transform: `translate(${sheetOpen && sheetFrac >= 0.08 ? -Math.max(0, (window.innerWidth - PHONE_W * scale) / 2 - 10) : 0}px, -6px)`, transition: 'transform 0.25s ease' }}>{canvas}</div>
         {!decoSheet && <div className="absolute bottom-1 left-0 right-0">{example && !invitationId && <p className="text-[11.5px] text-center pointer-events-none" style={{ color: 'var(--ed-text-faint)' }}>비어 있는 곳은 예시로 보여 줍니다 · 직접 넣으면 바뀝니다</p>}</div>}
+        {!decoSheet && <div className="absolute right-3 bottom-7 z-20"><div className="flex items-center gap-0.5 p-0.5 rounded-full bg-white border shadow-sm" style={{ borderColor: 'var(--ed-border)' }}>
+            <button type="button" aria-label="축소" disabled={zoom <= 1} onClick={() => zoomBy(-0.25)} className="w-8 h-8 rounded-full flex items-center justify-center disabled:opacity-30" style={{ color: 'var(--ed-text)' }}><ZoomOut size={16} aria-hidden /></button>
+            <button type="button" aria-label="맞춤 크기" onClick={() => setZoom(1)} className="min-w-[44px] h-8 px-1 text-[12px] font-semibold tabular-nums" style={{ color: 'var(--ed-text-muted)' }}>{Math.round(zoom * 100)}%</button>
+            <button type="button" aria-label="확대" disabled={zoom >= 2.5} onClick={() => zoomBy(0.25)} className="w-8 h-8 rounded-full flex items-center justify-center disabled:opacity-30" style={{ color: 'var(--ed-text)' }}><ZoomIn size={16} aria-hidden /></button>
+          </div></div>}
         {decoOn && !decoSheet && !coachDone && <p className="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full text-[12.5px] font-semibold text-white pointer-events-none whitespace-nowrap" style={{ background: 'rgba(44,40,36,0.88)' }}>고칠 곳을 눌러 보세요</p>}
         {canvasOverlays}
       </div>
@@ -2890,7 +2908,7 @@ function PhoneEditorContent() {
                   ...(pageCount < HOME_PAGES_MAX ? [{ Icon: SquareStack, t: '홈 화면 추가', d: '옆으로 넘기는 화면을 하나 더', on: () => { setMobMenu(null); closeSheet(); setPhone({ homePages: pageCount + 1 }); goScreen('home', pageCount); flash(`홈 ${pageCount + 1} 화면을 더했습니다`) } }] : []),
                   ...(screen === 'home' && pageCount > 1 && curPage === pageCount - 1 ? [{ Icon: Trash2, t: '이 홈 화면 삭제', d: '위젯이 없는 마지막 화면만 지울 수 있습니다', on: () => { setMobMenu(null); if (pageWs.length) { flash('위젯을 먼저 빼 주세요'); return } setPhone({ homePages: pageCount - 1 }); goScreen('home', pageCount - 2) } }] : []),
                 ]
-              : ([['info', '결혼식 정보', '이름 · 연락처 · 예식 · 공유 썸네일'], ['bgm', '배경음악', '청첩장을 열면 흐르는 음악'], ['dday', 'D-Day 팝업', '처음 열 때 뜨는 안내']] as const).map(([id, t, d]) => ({ Icon: SlidersHorizontal, t, d, on: () => { setMobMenu(null); clearTap(); openFocus([{ panel: id, secs: null }]) } }))
+              : ([['info', '결혼식 정보', '이름 · 연락처 · 예식 · 공유 썸네일', CalendarHeart], ['bgm', '배경음악', '청첩장을 열면 흐르는 음악', Music], ['dday', 'D-Day 팝업', '처음 열 때 뜨는 안내', BellRing]] as const).map(([id, t, d, Icon]) => ({ Icon, t, d, on: () => { setMobMenu(null); clearTap(); openFocus([{ panel: id, secs: null }]) } }))
             ).map((it, i) => (
               <button key={it.t} type="button" onClick={it.on} className="w-full flex items-center gap-3 p-3 text-left" style={i ? { borderTop: '1px solid #F1ECE6' } : undefined}>
                 <span className="w-[42px] h-[42px] rounded-xl flex items-center justify-center shrink-0" style={{ background: 'var(--ed-accent-weak)', color: 'var(--ed-accent)' }}><it.Icon size={20} aria-hidden /></span>
@@ -3159,7 +3177,7 @@ function PhoneEditorContent() {
         </aside>
 
         {/* 가운데: 폰 캔버스 */}
-        <main className="lg:flex-1 flex flex-col items-center justify-start max-lg:shrink-0 max-lg:overflow-y-auto max-lg:overflow-x-hidden max-lg:pt-2 max-lg:pb-6 lg:justify-center lg:h-[calc(100vh-56px)] order-1 lg:order-2 relative"
+        <main className={`lg:flex-1 flex flex-col items-center justify-start max-lg:shrink-0 max-lg:overflow-y-auto max-lg:overflow-x-hidden max-lg:pt-2 max-lg:pb-6 ${zoom > 1 ? 'lg:justify-start lg:overflow-auto lg:pt-6 lg:pb-10' : 'lg:justify-center'} lg:h-[calc(100vh-56px)] order-1 lg:order-2 relative`}
           style={mob ? { height: mobPreviewH } : undefined}>
           {/* 편집(누르면 그 위젯 설정) ↔ 미리보기(하객처럼 누르면 화면 열림) */}
           <div className="mb-2 lg:mb-[22px] inline-flex p-1 rounded-full border bg-white text-[13px] shadow-sm max-lg:sticky max-lg:top-0 max-lg:z-20 max-lg:shrink-0" style={{ borderColor: 'var(--ed-border)' }}>
@@ -3168,6 +3186,11 @@ function PhoneEditorContent() {
                 className="h-8 px-4 rounded-full font-medium transition-colors inline-flex items-center gap-1.5" style={preview === v ? { background: 'var(--ed-accent)', color: '#F5F0ED' } : { color: 'var(--ed-text-muted)' }}><Ic size={14} aria-hidden />{l}</button>
             ))}
           </div>
+          {!mob && <div className="absolute right-5 top-5 z-20"><div className="flex items-center gap-0.5 p-0.5 rounded-full bg-white border shadow-sm" style={{ borderColor: 'var(--ed-border)' }}>
+            <button type="button" aria-label="축소" disabled={zoom <= 1} onClick={() => zoomBy(-0.25)} className="w-8 h-8 rounded-full flex items-center justify-center disabled:opacity-30" style={{ color: 'var(--ed-text)' }}><ZoomOut size={16} aria-hidden /></button>
+            <button type="button" aria-label="맞춤 크기" onClick={() => setZoom(1)} className="min-w-[44px] h-8 px-1 text-[12px] font-semibold tabular-nums" style={{ color: 'var(--ed-text-muted)' }}>{Math.round(zoom * 100)}%</button>
+            <button type="button" aria-label="확대" disabled={zoom >= 2.5} onClick={() => zoomBy(0.25)} className="w-8 h-8 rounded-full flex items-center justify-center disabled:opacity-30" style={{ color: 'var(--ed-text)' }}><ZoomIn size={16} aria-hidden /></button>
+          </div></div>}
           {canvas}
           {!mob && <div className="mt-3">{example && !invitationId && <p className="text-[11.5px] text-center pointer-events-none" style={{ color: 'var(--ed-text-faint)' }}>비어 있는 곳은 예시로 보여 줍니다 · 직접 넣으면 바뀝니다</p>}</div>}
           {canvasOverlays}

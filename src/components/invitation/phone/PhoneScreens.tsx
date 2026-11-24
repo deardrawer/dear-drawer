@@ -2195,13 +2195,10 @@ function PasscodeScreenInner({ data: raw, onDone, onCancel }: { data: PhoneData;
   const answer = wp.d ? `${String(wp.month).padStart(2, '0')}${String(wp.day).padStart(2, '0')}` : ''
   const [code, setCode] = useState('')
   const [err, setErr] = useState('')
-  // 다음에 누를 숫자 안내 — 2.5초 동안 아무것도 안 누르거나 틀리면, 다음 숫자가 은은하게 빛남
-  const [nudge, setNudge] = useState(false)
+
   const [opened, setOpened] = useState(false)
-  useEffect(() => { if (opened) return; const id = setTimeout(() => setNudge(true), 2500); return () => clearTimeout(id) }, [code, opened])
   const press = (n: string) => {
     if (opened) return
-    setNudge(false)
     const next = (code + n).slice(0, 4)
     if (next.length < 4) { setCode(next); setErr(''); return }
     if (next === answer) {
@@ -2238,7 +2235,7 @@ function PasscodeScreenInner({ data: raw, onDone, onCancel }: { data: PhoneData;
         <span style={{ marginTop: 14, height: 18, fontSize: 13, color: '#FFD9CF' }}>{err}</span>
         <div style={{ marginTop: 22, display: 'grid', gridTemplateColumns: 'repeat(3, 76px)', gap: '16px 24px' }}>
           {keys.map((k, i) => k
-            ? <button key={i} type="button" onClick={() => press(k)} className={(nudge || !!err) && !opened && answer && answer[code.length] === k ? 'pf-next-key' : undefined} style={{ width: 76, height: 76, borderRadius: '50%', border: 0, background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(14px) saturate(1.4)', WebkitBackdropFilter: 'blur(14px) saturate(1.4)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.32), inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 18px rgba(0,0,0,0.12)', color: '#FFFFFF', fontSize: 30, fontWeight: 300, cursor: 'pointer' }}>{k}</button>
+            ? <button key={i} type="button" onClick={() => press(k)} className={!opened && answer && answer[code.length] === k ? 'pf-next-key' : undefined} style={{ width: 76, height: 76, borderRadius: '50%', border: 0, background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(14px) saturate(1.4)', WebkitBackdropFilter: 'blur(14px) saturate(1.4)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.32), inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 18px rgba(0,0,0,0.12)', color: '#FFFFFF', fontSize: 30, fontWeight: 300, cursor: 'pointer' }}>{k}</button>
             : i === 9
             ? <button key={i} type="button" onClick={onCancel} style={{ width: 76, height: 76, border: 0, background: 'transparent', color: '#FFFFFF', fontSize: 15, cursor: 'pointer', font: 'inherit' }}>취소</button>
             // 폰 비밀번호 화면처럼 — 숫자를 누르면 '건너뛰기' 자리가 '지우기'로 (한 칸씩)
@@ -3321,10 +3318,10 @@ function InviteApp({ app, data, onBack, onNavigate, renderRsvp }: AppProps) {
         {data.phone.memo.filter(Boolean).length > 0 && <>
           {section('알려드려요')}
           <div style={{ ...GLASS, padding: '2px 16px' }}>
-            {data.phone.memo.filter(Boolean).map((m, i, arr) => (
+            {data.phone.memo.map((m, i) => ({ m, t: (data.phone.memoTitles?.[i] || '').trim() })).filter(x => x.m).map(({ m, t: mt }, i, arr) => (
               <div key={i} style={{ display: 'flex', gap: 12, padding: '13px 0', borderBottom: i < arr.length - 1 ? `1px solid ${LN}` : undefined, fontSize: 14.5, lineHeight: 1.55 }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: INK, opacity: 0.7, marginTop: 8, flexShrink: 0 }} />
-                <span style={{ whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{m}</span>
+                <span style={{ whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{mt && <b style={{ display: 'block', fontWeight: 700, marginBottom: 2 }}>{mt}</b>}{m}</span>
               </div>
             ))}
           </div>
@@ -3873,6 +3870,8 @@ function useMemoInfo(data: PhoneData) {
     dateFull: wp.d ? `${wp.year}년 ${wp.month}월 ${wp.day}일 ${wp.dayKo}요일` : '예식일',
     dday: ddayText(ddayCount(data.wedding.date)),
     notes: data.phone.memo.filter(Boolean),
+    // 안내 사항 제목 (notes 와 같은 순서)
+    noteTitles: data.phone.memo.map((m, i) => (m ? (data.phone.memoTitles?.[i] || '').trim() : null)).filter((x): x is string => x !== null),
   }
 }
 // 예식 안내 화면들 — 스크롤 영역 바깥에 두어 고정 (top 52 · left 12 · 40px)
@@ -3975,7 +3974,7 @@ function MapArt({ label, height, pinTop = 232 }: { label: string; height: number
 
 /** 1. 지도 — 지도 위 핀 + 아래에서 올라온 장소 카드 */
 function MemoMap({ data, onBack, onNavigate }: MemoProps) {
-  const { wp, v, q, dateFull, dday, notes } = useMemoInfo(data)
+  const { wp, v, q, dateFull, dday, notes, noteTitles } = useMemoInfo(data)
   const { copied, copy } = useCopy()
   const act = (icon: string, label: string, primary: boolean, props: { href?: string; onClick?: () => void }) => {
     const css: CSSProperties = { font: 'inherit', flex: 1, height: 56, borderRadius: 14, border: 0, background: primary ? IOS.blue : '#EFEFF4', color: primary ? '#FFFFFF' : IOS.blue, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, fontSize: 12.5, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }
@@ -4002,6 +4001,8 @@ function MemoMap({ data, onBack, onNavigate }: MemoProps) {
         <div style={{ padding: '12px 18px 40px' }}>
           <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em' }}>{v.name || '예식장'}</div>
           <div style={{ fontSize: 14, color: IOS.gray, marginTop: 2 }}>웨딩홀{v.hall ? ` · ${v.hall}` : ''}</div>
+          {/* 인사말 — 모든 디자인에서 보이게 */}
+          {data.phone.greeting && <p style={{ marginTop: 12, fontSize: 14, lineHeight: 1.65, color: '#3A3A3C', whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{data.phone.greeting}</p>}
           <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
             {act('map', '네이버 길찾기', true, { href: q ? `https://map.naver.com/p/search/${q}` : undefined })}
             {act('map', '카카오맵', false, { href: q ? `https://map.kakao.com/link/search/${q}` : undefined })}
@@ -4010,7 +4011,7 @@ function MemoMap({ data, onBack, onNavigate }: MemoProps) {
           <div style={{ marginTop: 16, background: '#F7F7FA', borderRadius: 14, padding: '2px 14px' }}>
             {row('calendar', dateFull, wp.timeShort || wp.timeKo, <span style={{ fontSize: 12, fontWeight: 700, color: data.phone.accent }}>{dday}</span>)}
             {row('map', v.address || '주소', v.hall, undefined, !notes.length)}
-            {notes.map((m, i) => row('memo', m, undefined, undefined, i === notes.length - 1, i))}
+            {notes.map((m, i) => (noteTitles[i] ? row('memo', noteTitles[i], m, undefined, i === notes.length - 1, i) : row('memo', m, undefined, undefined, i === notes.length - 1, i)))}
           </div>
           {(data.phone.directions || []).some(x => x.text.trim()) && (
             <div style={{ marginTop: 12, background: '#F7F7FA', borderRadius: 14, padding: '2px 14px' }}>
@@ -4026,7 +4027,7 @@ function MemoMap({ data, onBack, onNavigate }: MemoProps) {
 
 /** 2. 탑승권 — 지갑 속 웨딩 패스 (withMap: 지도 위에 패스를 올린 '지도 탑승권') */
 function MemoPass({ data, onBack, onNavigate, withMap }: MemoProps & { withMap?: boolean }) {
-  const { wp, v, q, dday, notes } = useMemoInfo(data)
+  const { wp, v, q, dday, notes, noteTitles } = useMemoInfo(data)
   const { copied, copy } = useCopy()
   const accent = data.phone.accent
   const tn = titleNames(data)
@@ -4085,6 +4086,7 @@ function MemoPass({ data, onBack, onNavigate, withMap }: MemoProps & { withMap?:
             {q && <a href={`https://map.kakao.com/link/search/${q}`} target="_blank" rel="noreferrer" style={{ height: 44, borderRadius: 12, background: '#FFFFFF', color: '#111111', fontSize: 13.5, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>카카오맵</a>}
             {v.address && <button type="button" onClick={() => copy('addr', v.address)} style={{ font: 'inherit', height: 44, borderRadius: 12, border: 0, background: '#FFFFFF', color: '#111111', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>{copied === 'addr' ? '복사됨' : '주소 복사'}</button>}
           </div>
+          {data.phone.greeting && <div style={{ marginTop: 14, background: '#FFFFFF', borderRadius: 14, padding: '14px 16px', fontSize: 14, lineHeight: 1.65, color: '#3A3A3C', whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{data.phone.greeting}</div>}
           {(data.phone.directions || []).some(x => x.text.trim()) && (
             <div style={{ marginTop: 14, background: '#FFFFFF', borderRadius: 14, padding: '2px 16px' }}>
               <Directions data={data} ink="#111111" sub="#6C6C70" line={IOS.line} icon={IOS.gray} />
@@ -4092,7 +4094,7 @@ function MemoPass({ data, onBack, onNavigate, withMap }: MemoProps & { withMap?:
           )}
           {notes.length > 0 && (
             <div style={{ marginTop: 14, background: '#FFFFFF', borderRadius: 14, padding: '6px 16px' }}>
-              {notes.map((m, i) => <div key={i} style={{ fontSize: 14, lineHeight: 1.55, padding: '9px 0', borderBottom: i < notes.length - 1 ? `0.5px solid ${IOS.line}` : undefined, wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{m}</div>)}
+              {notes.map((m, i) => <div key={i} style={{ fontSize: 14, lineHeight: 1.55, padding: '9px 0', borderBottom: i < notes.length - 1 ? `0.5px solid ${IOS.line}` : undefined, wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{noteTitles[i] && <b style={{ display: 'block', fontWeight: 700, marginBottom: 1 }}>{noteTitles[i]}</b>}{m}</div>)}
             </div>
           )}
           {!isAppOff(data, 'rsvp') && <button type="button" onClick={() => onNavigate?.('rsvp')} style={{ font: 'inherit', marginTop: 14, width: '100%', height: 50, borderRadius: 14, border: 0, background: '#111111', color: '#FFFFFF', fontSize: 15.5, fontWeight: 700, cursor: 'pointer' }}>참석 여부 알려 주기</button>}
@@ -4105,7 +4107,7 @@ function MemoPass({ data, onBack, onNavigate, withMap }: MemoProps & { withMap?:
 
 /** 3. 위젯 모음 — 정보 하나가 타일 하나 */
 function MemoTiles({ data, onBack, onNavigate }: MemoProps) {
-  const { wp, v, q, dday, notes } = useMemoInfo(data)
+  const { wp, v, q, dday, notes, noteTitles } = useMemoInfo(data)
   const { copied, copy } = useCopy()
   const accent = data.phone.accent
   const tile: CSSProperties = { background: '#FFFFFF', borderRadius: 22, boxShadow: SOFT, padding: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box' }
@@ -4116,6 +4118,7 @@ function MemoTiles({ data, onBack, onNavigate }: MemoProps) {
         <div style={{ padding: '114px 16px 50px' }}>
           <div style={{ paddingLeft: 2, marginBottom: 14 }}>{eyebrow(screenText(data, 'memo', 'eyebrow', 'THE WEDDING'))}<div style={{ fontSize: 31, fontWeight: 700, letterSpacing: '-0.035em' }}>{screenText(data, 'memo', 'title', '예식 안내')}</div></div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridAutoRows: 'minmax(104px, auto)', gap: 12 }}>
+            {data.phone.greeting && <div style={{ ...tile, gridColumn: 'span 2', fontSize: 14, lineHeight: 1.65, color: '#3A3A3C', whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{data.phone.greeting}</div>}
             <div style={{ ...tile, gridRow: 'span 2', justifyContent: 'space-between' }}>
               {cap(wp.dayEn || 'DATE', accent)}
               <span style={{ ...numCss(data, 64) }}>{wp.day ?? '—'}</span>
@@ -4154,7 +4157,10 @@ function MemoTiles({ data, onBack, onNavigate }: MemoProps) {
             {notes.map((m, i) => (
               <div key={i} style={{ ...tile, gridColumn: notes.length % 2 === 1 && i === notes.length - 1 ? 'span 2' : undefined, justifyContent: 'space-between' }}>
                 <span style={{ width: 30, height: 30, borderRadius: 10, background: `${accent}1F`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><PhoneIcon name="memo" color={accent} size={17} stroke={1.9} /></span>
-                <span style={{ fontSize: 13.5, lineHeight: 1.4, fontWeight: 600, wordBreak: 'keep-all', whiteSpace: 'pre-line', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{m}</span>
+                <span style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {noteTitles[i] && <span style={{ fontSize: 13.5, fontWeight: 800, wordBreak: 'keep-all' }}>{noteTitles[i]}</span>}
+                  <span style={{ fontSize: 13.5, lineHeight: 1.4, fontWeight: noteTitles[i] ? 500 : 600, wordBreak: 'keep-all', whiteSpace: 'pre-line', display: '-webkit-box', WebkitLineClamp: noteTitles[i] ? 3 : 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{m}</span>
+                </span>
               </div>
             ))}
             {!isAppOff(data, 'rsvp') && (
@@ -4701,7 +4707,7 @@ function Directions({ data, ink, sub, line, icon }: { data: PhoneData; ink: stri
         <div key={i} style={{ display: 'flex', gap: 12, padding: '12px 0', borderBottom: i < list.length - 1 ? `0.5px solid ${line}` : undefined }}>
           <DirIcon kind={x.kind} color={icon} />
           <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: ink }}>{DIR_LABEL[x.kind]}</span>
+            <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: ink }}>{x.title?.trim() || DIR_LABEL[x.kind]}</span>
             <span style={{ display: 'block', fontSize: 13.5, lineHeight: 1.55, color: sub, marginTop: 2, whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{x.text}</span>
           </span>
         </div>
@@ -5564,6 +5570,61 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
     if (b) { setReopen(b.key || null); setAnim(null); setScreen(b.screen); return }
     setReopen(null); setAnim('back'); setScreen('home')
   }
+  // 하객 화면 — 앱을 열 때마다 브라우저 기록에 한 칸. 안드로이드 뒤로 · 아이폰 왼쪽 끝 밀기 · 브라우저 뒤로가 청첩장 안에서 한 단계 뒤로
+  const goBackRef = useRef(goBack)
+  useEffect(() => { goBackRef.current = goBack })
+  const histDepth = useRef(0)
+  const ignorePop = useRef(0)
+  useEffect(() => {
+    if (!invitationId) return
+    const want = isAppScreen(screen) ? 1 + hist.length : 0
+    if (want > histDepth.current) { while (histDepth.current < want) { histDepth.current += 1; window.history.pushState({ ...(window.history.state || {}), pfDepth: histDepth.current }, '') } }
+    else if (want < histDepth.current) { const n = histDepth.current - want; histDepth.current = want; ignorePop.current += 1; window.history.go(-n) }
+  }, [screen, hist.length, invitationId])
+  useEffect(() => {
+    if (!invitationId) return
+    const onPop = () => {
+      if (ignorePop.current) { ignorePop.current -= 1; return }
+      if (histDepth.current > 0) { histDepth.current -= 1; goBackRef.current() }
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [invitationId])
+  // 왼쪽 끝에서 오른쪽으로 밀어 뒤로 — 손가락을 따라 화면이 밀려나고, 3분의 1 넘게 밀면 뒤로
+  const [swipe, setSwipe] = useState(0)
+  const [swiping, setSwiping] = useState(false)
+  const swipeSt = useRef<{ x: number; y: number; sc: number; on: boolean } | null>(null)
+  const swipeToHome = !hist.length && (!backTo.current || backTo.current.screen === 'home')
+  const onSwipeDown = (e: React.PointerEvent) => {
+    if (!isAppScreen(screen) || anim) return
+    const r = rootRef.current?.getBoundingClientRect()
+    if (!r) return
+    const sc = r.width / PHONE_W || 1
+    if ((e.clientX - r.left) / sc > 26) return
+    swipeSt.current = { x: e.clientX, y: e.clientY, sc, on: false }
+  }
+  const onSwipeMove = (e: React.PointerEvent) => {
+    const st = swipeSt.current
+    if (!st) return
+    const dx = (e.clientX - st.x) / st.sc, dy = (e.clientY - st.y) / st.sc
+    if (!st.on) {
+      if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { swipeSt.current = null; return }
+      if (dx < 8) return
+      st.on = true; setSwiping(true)
+      try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) } catch { /* noop */ }
+    }
+    setSwipe(Math.max(0, dx))
+  }
+  const onSwipeUp = () => {
+    const st = swipeSt.current
+    swipeSt.current = null
+    if (!st?.on) return
+    setSwiping(false)
+    if (swipe > PHONE_W * 0.33) {
+      setSwipe(PHONE_W)
+      setTimeout(() => { goBack(); setLeaving(null); setUnder(null); setAnim(null); setSwipe(0) }, 180)
+    } else setSwipe(0)
+  }
   const onScreenRef = useRef(onScreen)
   useEffect(() => { onScreenRef.current = onScreen })
   useEffect(() => { if (screen !== 'code') onScreenRef.current?.(screen) }, [screen])
@@ -5699,7 +5760,7 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
     <MusicCtx.Provider value={{ playing, toggle: toggleMusic, has: !!audioUrl }}>
     <div ref={rootRef} style={{ position: 'relative', width: PHONE_W, height, overflow: 'hidden', background: '#000' }}>
       <style>{FLOW_CSS}</style>
-      {(screen === 'home' || showHomeBehind || under === 'home') && (
+      {(screen === 'home' || showHomeBehind || under === 'home' || (swipe > 0 && swipeToHome)) && (
         <div aria-hidden={screen !== 'home' && under === 'home' ? true : undefined} className={screen === 'home' ? (anim === 'unlock' || anim === 'home' ? 'pf-home-in' : anim === 'back' ? 'pf-home-back' : undefined) : undefined}
           style={{ position: 'absolute', inset: 0, ...(screen !== 'home' && under === 'home' ? { pointerEvents: 'none' } : null), ...(showHomeBehind ? { transform: `scale(${1.08 + (drag / 844) * 0.08})`, opacity: Math.min(1, -drag / 300) } : null) }}
           onAnimationEnd={() => setAnim(null)}>
@@ -5716,12 +5777,18 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
       {/* 앱 화면들 — 같은 key 로 이어 그려서 이전 화면이 다시 마운트되지 않음 (스크롤 유지) */}
       {[
         ...(under && under !== 'home' && under !== screen ? [{ a: under, role: 'under' as const }] : []),
+        ...(swipe > 0 && hist.length && !(under && under !== 'home') ? [{ a: hist[hist.length - 1], role: 'under' as const }] : []),
         ...(isAppScreen(screen) ? [{ a: screen, role: 'cur' as const }] : []),
         ...(leaving && leaving !== screen ? [{ a: leaving, role: 'out' as const }] : []),
       ].map(({ a, role }) => (
         <div key={a} aria-hidden={role !== 'cur' ? true : undefined}
           className={role === 'cur' ? (plainIn ? undefined : 'pf-app-in') : role === 'out' ? 'pf-app-out' : undefined}
-          style={{ position: 'absolute', inset: 0, ...(role !== 'cur' ? { pointerEvents: 'none' } : null) }}
+          style={{ position: 'absolute', inset: 0, ...(role !== 'cur' ? { pointerEvents: 'none' } : null),
+            // 들어올 때 애니메이션(transform 고정)이 손가락 따라가기를 덮지 않게 끔 · 끄는 동안 글자 선택 막음
+            ...(role === 'cur' && swipe > 0 ? { transform: `translateX(${swipe}px)`, animation: 'none', transition: swiping ? 'none' : 'transform 0.2s ease-out', boxShadow: '-12px 0 30px rgba(0,0,0,0.18)', zIndex: 3, userSelect: 'none', WebkitUserSelect: 'none' } : null),
+            ...(role === 'cur' ? { touchAction: 'pan-y' } : null) }}
+          onPointerDown={role === 'cur' && invitationId ? onSwipeDown : undefined} onPointerMove={role === 'cur' && invitationId ? onSwipeMove : undefined}
+          onPointerUp={role === 'cur' && invitationId ? onSwipeUp : undefined} onPointerCancel={role === 'cur' && invitationId ? onSwipeUp : undefined}
           onAnimationEnd={e => { if (e.target !== e.currentTarget) return; if (role === 'cur') setUnder(null); else if (role === 'out') setLeaving(null) }}>
           <AppScreen key={a} app={a} data={data} onBack={goBack} onNavigate={n => { setHist(h => [...h, a]); setPlainIn(false); setUnder(a); setScreen(n) }} renderRsvp={renderRsvp} />
         </div>

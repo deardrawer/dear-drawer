@@ -166,7 +166,7 @@ function RadioGroup({
 }) {
   return (
     <div
-      className={`grid gap-2 ${columns === 2 ? 'grid-cols-2' : columns === 3 ? 'grid-cols-3' : 'grid-cols-1'}`}
+      className={`grid break-keep wrap-anywhere gap-2 ${columns === 2 ? 'grid-cols-2' : columns === 3 ? 'grid-cols-3' : 'grid-cols-1'}`}
       role="radiogroup"
       aria-label={name}
     >
@@ -216,7 +216,7 @@ function CheckboxGroup({
 
   return (
     <div
-      className="grid grid-cols-2 gap-2"
+      className="grid break-keep wrap-anywhere grid-cols-2 gap-2"
       role="group"
       aria-label={name}
     >
@@ -340,7 +340,7 @@ export default function StoryForm({ data, onChange }: StoryFormProps) {
 
       {/* 버전 선택 */}
       <Section title="어떤 스타일을 원하시나요?">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid break-keep wrap-anywhere grid-cols-2 gap-3">
           <VersionCard
             selected={version === 'short'}
             onClick={() => setVersion('short')}

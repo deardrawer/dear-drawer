@@ -285,11 +285,11 @@ export default function Step5MenuSettings() {
       label: '하단 네비바',
       desc: '아이콘+텍스트 고정 바',
       icon: (
-        <div className="w-full h-10 rounded-lg bg-gray-200 flex items-center justify-center gap-3 px-2">
+        <div className="w-full h-10 rounded-lg bg-gray-200 flex items-center justify-center gap-1.5 sm:gap-3 px-1 sm:px-2">
           {['축하', '참석', '길'].map((t) => (
             <div key={t} className="flex flex-col items-center">
               <div className="w-3 h-3 rounded-full bg-gray-400" />
-              <span className="text-[8px] text-gray-500 mt-0.5">{t}</span>
+              <span className="text-[8px] text-gray-500 mt-0.5 whitespace-nowrap">{t}</span>
             </div>
           ))}
         </div>
@@ -333,7 +333,7 @@ export default function Step5MenuSettings() {
             >
               <div className="w-full flex justify-center mb-2">{opt.icon}</div>
               <p className={`text-xs font-medium ${(invitation.navStyle || 'hamburger') === opt.value ? '' : 'text-gray-700'}`} style={(invitation.navStyle || 'hamburger') === opt.value ? { color: 'var(--ed-accent)' } : undefined}>{opt.label}</p>
-              <p className="text-[10px] text-gray-500 mt-0.5">{opt.desc}</p>
+              <p className="text-[10px] text-gray-500 mt-0.5 break-keep">{opt.desc}</p>
             </button>
           ))}
         </div>

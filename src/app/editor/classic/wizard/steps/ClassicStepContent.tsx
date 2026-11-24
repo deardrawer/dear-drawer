@@ -322,7 +322,7 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
                 </button>
               </div>
               <span className="w-5 text-center text-xs font-medium text-gray-400">{i + 1}</span>
-              <span className={`flex-1 text-sm ${isHidden(key) ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{labelOf(key)}</span>
+              <span className={`flex-1 text-sm break-keep ${isHidden(key) ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{labelOf(key)}</span>
               {TINTABLE.has(key) && !isHidden(key) && (
                 <div className="flex rounded-md border border-gray-200 overflow-hidden text-[11px] shrink-0">
                   <button type="button" onClick={() => setBgMode(key, false)} className={`px-2 py-1 transition-colors ${!isTintedMode(key) ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500'}`}>기본</button>

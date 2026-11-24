@@ -189,6 +189,8 @@ export interface PhoneData {
     widgets: PhoneWidget[]
     story: PhoneStoryMessage[]
     memo: string[]
+    /** 안내 사항마다 제목 (memo 와 같은 순서, 비우면 제목 없이) */
+    memoTitles?: string[]
     appStyle: PhoneAppStyle
     /** number = 홈 화면 · 앱, lockNumber = 잠금화면 (비우면 number) */
     /** body = 한글 본문 글꼴 id (KR_FONTS) */
@@ -196,7 +198,7 @@ export interface PhoneData {
     /** 글자 포인트 색 (위젯 이름 · 작은 제목) — 비우면 자동 */
     accentText?: string
     /** 오시는 길 — 지하철 · 버스 · 자가용 · 주차 · 기타 */
-    directions?: { kind: 'subway' | 'bus' | 'car' | 'parking' | 'etc'; text: string }[]
+    directions?: { kind: 'subway' | 'bus' | 'car' | 'parking' | 'etc'; text: string; /** 제목 (비우면 지하철 · 버스 …) */ title?: string }[]
     /** 유리 카드 색 — 검정(기본) · 흰색 */
     glassTone?: 'dark' | 'light'
     /** 고인 표시 — 故(기본) · 국화 */

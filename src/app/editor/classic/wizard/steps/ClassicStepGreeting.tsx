@@ -54,7 +54,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           <div>
             <p className="text-sm font-medium text-gray-700">인사말 카드 프레임</p>
           </div>
-          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+          <div className="grid grid-cols-3 sm:inline-flex sm:flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
             {([
               { id: 'wave', label: '웨이브' },
               { id: 'wavy', label: '물결' },
@@ -65,7 +65,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             ] as const).map((opt) => {
               const active = (data.content.classicLetterFrame || 'wave') === opt.id
               return (
-                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicLetterFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicLetterFrame', opt.id)} className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                   {opt.label}
                 </button>
               )
@@ -152,14 +152,14 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           {(data.content.classicLetterSign || 'parents') === 'hosts' && (
             <div>
               <span className="block text-sm font-medium text-gray-700">혼주 (표시할 측)</span>
-              <div className="mt-1 inline-flex rounded-lg border border-gray-200 overflow-hidden">
+              <div className="mt-1 inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
                 {([
                   { id: 'groom', label: '신랑측' },
                   { id: 'bride', label: '신부측' },
                 ] as const).map((opt) => {
                   const active = (data.content.classicHostSide || 'groom') === opt.id
                   return (
-                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicHostSide', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicHostSide', opt.id)} className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                       {opt.label}
                     </button>
                   )
@@ -182,14 +182,14 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           {['parents', 'hosts'].includes(data.content.classicLetterSign || 'parents') && (
           <div>
             <span className="block text-sm font-medium text-gray-700">고인 표시 스타일</span>
-            <div className="mt-1 inline-flex rounded-lg border border-gray-200 overflow-hidden">
+            <div className="mt-1 inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
               {([
                 { id: 'flower', label: '국화꽃' },
                 { id: 'hanja', label: '故 한자' },
               ] as const).map((opt) => {
                 const active = (data.content.classicDeceasedStyle || 'flower') === opt.id
                 return (
-                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDeceasedStyle', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDeceasedStyle', opt.id)} className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                     {opt.label}
                   </button>
                 )
@@ -247,14 +247,14 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           />
           <div className="flex items-center gap-2 pt-1">
             <span className="text-[11px] text-gray-500">제목 크기</span>
-            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+            <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
               {([
                 { id: 'kicker', label: '작게' },
                 { id: 'title', label: '크게' },
               ] as const).map((opt) => {
                 const active = (data.content.classicIntroTitleStyle || 'kicker') === opt.id
                 return (
-                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroTitleStyle', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroTitleStyle', opt.id)} className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                     {opt.label}
                   </button>
                 )
@@ -263,7 +263,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           </div>
         </div>
 
-        <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+        <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
           {([
             { id: 'each', label: '각자' },
             { id: 'together', label: '함께' },
@@ -271,7 +271,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           ] as const).map((opt) => {
             const active = (data.content.classicIntroMode || 'each') === opt.id
             return (
-              <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroMode', opt.id)} className={`px-6 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+              <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroMode', opt.id)} className={`px-6 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                 {opt.label}
               </button>
             )
@@ -301,14 +301,14 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               </div>
               <div>
                 <span className="block text-sm font-medium text-gray-700">고인 표시 스타일</span>
-                <div className="mt-1 inline-flex rounded-lg border border-gray-200 overflow-hidden">
+                <div className="mt-1 inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
                   {([
                     { id: 'flower', label: '국화꽃' },
                     { id: 'hanja', label: '故 한자' },
                   ] as const).map((opt) => {
                     const active = (data.content.classicDeceasedStyle || 'flower') === opt.id
                     return (
-                      <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDeceasedStyle', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                      <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDeceasedStyle', opt.id)} className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                         {opt.label}
                       </button>
                     )
@@ -323,7 +323,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           <div className="space-y-4">
             <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50 space-y-3">
               <p className="text-sm font-medium text-gray-700">카드 프레임</p>
-              <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+              <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
                 {([
                   { id: 'plaque', label: '웨이브 플라크' },
                   { id: 'stamp', label: '우표' },
@@ -331,7 +331,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 ] as const).map((opt) => {
                   const active = (data.content.classicIntroEachFrame || 'plaque') === opt.id
                   return (
-                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroEachFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroEachFrame', opt.id)} className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                       {opt.label}
                     </button>
                   )
@@ -340,14 +340,14 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               {(data.content.classicIntroEachFrame || 'plaque') === 'box' && (
                 <div className="space-y-1.5 pt-1">
                   <p className="text-xs font-medium text-gray-600">종이 레이아웃</p>
-                  <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="grid grid-cols-2 sm:inline-flex sm:flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
                     {([
                       { id: 'v', label: '세로 (사진 옆 텍스트)' },
                       { id: 'h', label: '가로 (사진 위 텍스트)' },
                     ] as const).map((opt) => {
                       const active = (data.content.classicIntroEachBoxLayout || 'v') === opt.id
                       return (
-                        <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroEachBoxLayout', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                        <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroEachBoxLayout', opt.id)} className={`px-2 sm:px-4 py-1.5 text-xs break-keep sm:whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                           {opt.label}
                         </button>
                       )
@@ -404,7 +404,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             <p className="text-sm font-medium text-gray-700">함께 사진 · 소개 문구</p>
             <div>
               <span className="block text-sm font-medium text-gray-700">함께 소개 프레임</span>
-              <div className="mt-1 inline-flex rounded-lg border border-gray-200 overflow-hidden">
+              <div className="mt-1 inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
                 {([
                   { id: 'pearl', label: '진주' },
                   { id: 'filigree', label: '필리그리' },
@@ -412,7 +412,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 ] as const).map((opt) => {
                   const active = (data.content.classicIntroTogetherFrame || 'pearl') === opt.id
                   return (
-                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroTogetherFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroTogetherFrame', opt.id)} className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                       {opt.label}
                     </button>
                   )
@@ -664,14 +664,14 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           </div>
           <div className="pt-1">
             <p className="text-sm font-medium text-gray-700 mb-1.5">달력 숫자 폰트</p>
-            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+            <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
               {([
                 { id: 'display', label: '영문 폰트' },
                 { id: 'body', label: '한글 폰트' },
               ] as const).map((opt) => {
                 const active = (data.content.classicDateNumFont || 'display') === opt.id
                 return (
-                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDateNumFont', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDateNumFont', opt.id)} className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                     {opt.label}
                   </button>
                 )
@@ -698,14 +698,14 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               <div>
                 <span className="text-sm font-medium text-gray-700">사진 프레임</span>
               </div>
-              <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+              <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
                 {([
                   { id: 'heart', label: '하트' },
                   { id: 'stamp', label: '우표' },
                 ] as const).map((opt) => {
                   const active = (data.content.classicDateFrame || 'heart') === opt.id
                   return (
-                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDateFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDateFrame', opt.id)} className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                       {opt.label}
                     </button>
                   )
@@ -738,14 +738,14 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50 space-y-3">
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">지도 위치</Label>
-            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+            <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
               {([
                 { id: 'top', label: '상단' },
                 { id: 'bottom', label: '하단' },
               ] as const).map((opt) => {
                 const active = (data.content.classicDirectionsMapPosition || 'top') === opt.id
                 return (
-                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDirectionsMapPosition', opt.id)} className={`px-5 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDirectionsMapPosition', opt.id)} className={`px-5 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                     {opt.label}
                   </button>
                 )
@@ -754,14 +754,14 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           </div>
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">지도 종류</Label>
-            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+            <div className="grid grid-cols-2 sm:inline-flex sm:flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
               {([
                 { id: 'kakao', label: '카카오맵 + 버튼' },
                 { id: 'google', label: '구글맵 (버튼 없음)' },
               ] as const).map((opt) => {
                 const active = (data.content.classicMapProvider || 'kakao') === opt.id
                 return (
-                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicMapProvider', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicMapProvider', opt.id)} className={`px-2 sm:px-4 py-1.5 text-xs break-keep sm:whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                     {opt.label}
                   </button>
                 )
@@ -901,14 +901,14 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           return (
             <div className="space-y-2 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
               <span className="block text-sm font-medium text-gray-700">공유 버튼</span>
-              <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+              <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
                 {([
                   { id: 'kakao', label: '카카오톡 공유' },
                   { id: 'native', label: '일반 공유' },
                 ] as const).map((opt) => {
                   const active = shareMode === opt.id
                   return (
-                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicShareMode', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`} aria-pressed={active}>
+                    <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicShareMode', opt.id)} className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`} aria-pressed={active}>
                       {opt.label}
                     </button>
                   )
@@ -919,14 +919,14 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         })()}
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <span className="block text-sm font-medium text-gray-700">감사 인사 프레임</span>
-          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+          <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
             {([
               { id: 'none', label: '없음' },
               { id: 'doily', label: '도일리' },
             ] as const).map((opt) => {
               const active = (data.content.classicThanksFrame || 'none') === opt.id
               return (
-                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksFrame', opt.id)} className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                   {opt.label}
                 </button>
               )
@@ -936,7 +936,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
 
         <div className="space-y-2 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <span className="block text-sm font-medium text-gray-700">나타나는 효과</span>
-          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+          <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
             {([
               { id: 'fade', label: '부드럽게 나타나기' },
               { id: 'typing', label: '타이핑' },
@@ -944,7 +944,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             ] as const).map((opt) => {
               const active = (data.content.classicThanksAnim || 'typing') === opt.id
               return (
-                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksAnim', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksAnim', opt.id)} className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                   {opt.label}
                 </button>
               )
@@ -954,7 +954,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
 
         <div className="space-y-2 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <span className="block text-sm font-medium text-gray-700">배치</span>
-          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+          <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
             {([
               { id: 'center', label: '중간' },
               { id: 'top', label: '상단(버튼 하단)' },
@@ -962,7 +962,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             ] as const).map((opt) => {
               const active = (data.content.classicThanksLayout || 'center') === opt.id
               return (
-                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksLayout', opt.id)} className={`px-3 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksLayout', opt.id)} className={`px-3 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                   {opt.label}
                 </button>
               )

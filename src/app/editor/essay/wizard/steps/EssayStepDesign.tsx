@@ -173,7 +173,7 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
                 </div>
                 <div className="px-3 py-2 border-t border-gray-100 bg-white">
                   <p className="text-sm font-medium text-gray-900">{c.name}</p>
-                  <p className="text-[11px] text-gray-500 leading-snug mt-0.5">{c.desc}</p>
+                  <p className="text-[11px] text-gray-500 leading-snug mt-0.5 break-keep">{c.desc}</p>
                 </div>
               </button>
             )

@@ -79,7 +79,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
           <div>
             <p className="text-sm font-medium text-gray-700">엠보스 프레임</p>
           </div>
-          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+          <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
             {([
               { id: 'frame1', label: '프레임 1' },
               { id: 'frame2', label: '프레임 2' },
@@ -87,7 +87,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             ] as const).map((opt) => {
               const active = (data.content.classicOpeningFrame || 'frame1') === opt.id
               return (
-                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicOpeningFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicOpeningFrame', opt.id)} className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                   {opt.label}
                 </button>
               )
@@ -309,7 +309,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
         <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           English를 고르면 안내 문구·버튼·날짜/시간 형식·RSVP 항목이 영어로 바뀌어요. 직접 입력한 문구는 그대로예요.
         </p>
-        <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+        <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
           {([
             { id: 'ko', label: '한국어' },
             { id: 'en', label: 'English' },
@@ -320,7 +320,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
                 key={opt.id}
                 type="button"
                 onClick={() => updateNestedData('content.classicLanguage', opt.id === 'ko' ? undefined : opt.id)}
-                className={`px-4 py-2 text-sm transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
+                className={`px-4 py-2 text-sm whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
                 aria-pressed={active}
               >
                 {opt.label}
@@ -466,14 +466,14 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
           </div>
           <div>
             <span className="block text-sm font-medium text-gray-700">영문 대소문자</span>
-            <div className="mt-1 inline-flex rounded-lg border border-gray-200 overflow-hidden">
+            <div className="mt-1 grid grid-cols-2 sm:inline-flex sm:flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
               {([
                 { id: 'upper', label: '전부 대문자 (THEO)' },
                 { id: 'title', label: '첫 글자만 (Theo)' },
               ] as const).map((opt) => {
                 const active = (data.content.classicNameCase || 'upper') === opt.id
                 return (
-                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicNameCase', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicNameCase', opt.id)} className={`px-2 sm:px-4 py-1.5 text-xs break-keep sm:whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                     {opt.label}
                   </button>
                 )
@@ -541,7 +541,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
           <div className="flex flex-col">
             <span className="text-sm font-medium text-gray-700">이름 표기</span>
           </div>
-          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+          <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
             {([
               { id: 'en', label: '영문' },
               { id: 'ko', label: '한글' },
@@ -552,7 +552,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
                   key={opt.id}
                   type="button"
                   onClick={() => updateNestedData('content.classicOpeningNameLang', opt.id)}
-                  className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
+                  className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
                 >
                   {opt.label}
                 </button>

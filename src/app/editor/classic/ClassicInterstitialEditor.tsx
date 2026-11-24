@@ -84,7 +84,7 @@ export default function ClassicInterstitialEditor({ value, onChange, onRemove, i
               <button type="button" onClick={() => remove(i)} className="text-[11px] text-red-400 hover:text-red-500">삭제</button>
             </div>
 
-            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+            <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
               {TYPES.map((t) => {
                 const active = it.type === t.id
                 return (
@@ -92,7 +92,7 @@ export default function ClassicInterstitialEditor({ value, onChange, onRemove, i
                     key={t.id}
                     type="button"
                     onClick={() => update(i, { type: t.id })}
-                    className={`px-3 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
+                    className={`px-3 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
                   >
                     {t.label}
                   </button>
@@ -143,7 +143,7 @@ export default function ClassicInterstitialEditor({ value, onChange, onRemove, i
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-[11px] text-gray-500">정렬</span>
-                    <div className="inline-flex rounded-md border border-gray-200 overflow-hidden">
+                    <div className="inline-flex flex-wrap max-w-full rounded-md border border-gray-200 overflow-hidden">
                       {([
                         { id: 'left', label: '좌' },
                         { id: 'center', label: '중앙' },
@@ -155,7 +155,7 @@ export default function ClassicInterstitialEditor({ value, onChange, onRemove, i
                             key={opt.id}
                             type="button"
                             onClick={() => update(i, { textAlign: opt.id })}
-                            className={`px-2.5 py-1 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
+                            className={`px-2.5 py-1 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
                           >
                             {opt.label}
                           </button>
@@ -189,7 +189,7 @@ export default function ClassicInterstitialEditor({ value, onChange, onRemove, i
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-[11px] text-gray-500">본문 정렬</span>
-                    <div className="inline-flex rounded-md border border-gray-200 overflow-hidden">
+                    <div className="inline-flex flex-wrap max-w-full rounded-md border border-gray-200 overflow-hidden">
                       {([
                         { id: 'left', label: '좌' },
                         { id: 'center', label: '중앙' },
@@ -201,7 +201,7 @@ export default function ClassicInterstitialEditor({ value, onChange, onRemove, i
                             key={opt.id}
                             type="button"
                             onClick={() => update(i, { bodyAlign: opt.id })}
-                            className={`px-2.5 py-1 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
+                            className={`px-2.5 py-1 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
                           >
                             {opt.label}
                           </button>
@@ -217,7 +217,7 @@ export default function ClassicInterstitialEditor({ value, onChange, onRemove, i
                 <span className="text-sm font-medium text-gray-700">{it.type === 'photoText' ? '서명 (선택)' : '출처 / 서명 (선택)'}</span>
                 <div className="flex items-center gap-3">
                   <Input className="flex-1" value={it.caption || ''} onChange={(e) => update(i, { caption: e.target.value })} placeholder="신랑 & 신부" />
-                  <div className="inline-flex shrink-0 rounded-md border border-gray-200 overflow-hidden" aria-label="서명 정렬">
+                  <div className="inline-flex flex-wrap max-w-full shrink-0 rounded-md border border-gray-200 overflow-hidden" aria-label="서명 정렬">
                     {([
                       { id: 'left', label: '좌' },
                       { id: 'center', label: '중앙' },
@@ -230,7 +230,7 @@ export default function ClassicInterstitialEditor({ value, onChange, onRemove, i
                           key={opt.id}
                           type="button"
                           onClick={() => update(i, { captionAlign: opt.id })}
-                          className={`px-2.5 py-1 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
+                          className={`px-2.5 py-1 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
                         >
                           {opt.label}
                         </button>

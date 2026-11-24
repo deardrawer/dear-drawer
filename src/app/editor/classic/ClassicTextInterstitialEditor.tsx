@@ -90,13 +90,13 @@ function Field({ label, hint, children }: { label: string; hint?: ReactNode; chi
 // 작은 세그먼트 버튼 묶음
 function Segment<T extends string | number>({ options, value, onPick }: { options: { id: T; label: string }[]; value: T; onPick: (v: T) => void }) {
   return (
-    <div className="inline-flex rounded-md border border-gray-200 overflow-hidden">
+    <div className="inline-flex flex-wrap max-w-full rounded-md border border-gray-200 overflow-hidden">
       {options.map((opt) => (
         <button
           key={String(opt.id)}
           type="button"
           onClick={() => onPick(opt.id)}
-          className={`px-2.5 py-1 text-xs transition-colors ${value === opt.id ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
+          className={`px-2.5 py-1 text-xs whitespace-nowrap transition-colors ${value === opt.id ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
         >
           {opt.label}
         </button>
@@ -178,7 +178,7 @@ export default function ClassicTextInterstitialEditor({ value, onChange, onRemov
                       key={t.id}
                       type="button"
                       onClick={() => pickType(i, t.id)}
-                      className={`px-2 py-1.5 rounded-md border text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] border-transparent text-white' : 'bg-white border-gray-200 text-gray-500 hover:text-gray-800'}`}
+                      className={`px-2 py-1.5 rounded-md border text-xs break-keep wrap-anywhere transition-colors ${active ? 'bg-[color:var(--ed-accent)] border-transparent text-white' : 'bg-white border-gray-200 text-gray-500 hover:text-gray-800'}`}
                     >
                       {t.label}
                     </button>

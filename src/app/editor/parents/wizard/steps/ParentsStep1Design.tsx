@@ -430,7 +430,7 @@ export default function ParentsStep1Design({
                     }}
                   >
                     <span className="w-5 h-5 rounded-full shrink-0" style={{ backgroundColor: c.value || '#1F1D1A' }} />
-                    <span className="text-xs font-medium" style={{ color: 'var(--ed-text)' }}>{c.label}</span>
+                    <span className="text-xs font-medium break-keep wrap-anywhere" style={{ color: 'var(--ed-text)' }}>{c.label}</span>
                   </button>
                 )
               })}
@@ -670,7 +670,7 @@ export default function ParentsStep1Design({
                       backgroundColor: isSelected ? 'var(--ed-accent-weak)' : 'var(--ed-surface)',
                     }}
                   >
-                    <span className="text-[15px]" style={{ fontFamily: f.cssVariable, color: 'var(--ed-text)' }}>늘 저희 가족을 아껴 주셔서 감사합니다</span>
+                    <span className="text-[15px] min-w-0 break-keep" style={{ fontFamily: f.cssVariable, color: 'var(--ed-text)' }}>늘 저희 가족을 아껴 주셔서 감사합니다</span>
                     <span className="text-[11px] shrink-0" style={{ color: 'var(--ed-text-muted)' }}>{f.fontName}{id === RECOMMENDED_BODY && <RecommendBadge />}</span>
                   </button>
                 )

@@ -146,7 +146,7 @@ function RadioGroup({
 }) {
   return (
     <div
-      className={`grid gap-2 ${columns === 2 ? 'grid-cols-2' : columns === 3 ? 'grid-cols-3' : 'grid-cols-1'}`}
+      className={`grid break-keep wrap-anywhere gap-2 ${columns === 2 ? 'grid-cols-2' : columns === 3 ? 'grid-cols-3' : 'grid-cols-1'}`}
       role="radiogroup"
       aria-label={name}
     >
@@ -202,7 +202,7 @@ function CheckboxGroup({
 
   return (
     <div
-      className="grid grid-cols-2 gap-2"
+      className="grid break-keep wrap-anywhere grid-cols-2 gap-2"
       role="group"
       aria-label={name}
     >

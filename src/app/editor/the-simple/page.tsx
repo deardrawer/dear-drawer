@@ -2281,7 +2281,7 @@ function TheSimpleEditorContent() {
                               )}
                             </div>
                             <p className="text-[10px] font-medium">{opt.label}</p>
-                            <p className={`text-[9px] mt-0.5 ${isActive ? 'text-stone-300' : 'text-stone-400'}`}>{opt.desc}</p>
+                            <p className={`text-[9px] mt-0.5 break-keep ${isActive ? 'text-stone-300' : 'text-stone-400'}`}>{opt.desc}</p>
                           </button>
                         )
                       })}

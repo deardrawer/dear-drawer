@@ -262,11 +262,11 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
             />
             <div className="pt-1 space-y-1.5">
               <span className="block text-sm font-medium text-gray-700">썸네일 비율</span>
-              <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+              <div className="inline-flex flex-wrap max-w-full rounded-lg border border-gray-200 overflow-hidden">
                 {RATIO_OPTIONS.map((opt) => {
                   const active = kakaoRatio === opt.value
                   return (
-                    <button key={opt.value} type="button" onClick={() => updateNestedData('meta.kakaoThumbnailRatio', opt.value)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    <button key={opt.value} type="button" onClick={() => updateNestedData('meta.kakaoThumbnailRatio', opt.value)} className={`px-4 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-[color:var(--ed-accent)] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                       {opt.label}
                     </button>
                   )

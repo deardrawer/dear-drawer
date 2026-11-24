@@ -156,7 +156,7 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
             }`}
           >
             <div className="text-sm font-medium text-gray-900">러브스토리</div>
-            <div className="text-xs text-gray-500 mt-1">챕터별로 이야기를 풀어가는 서사형</div>
+            <div className="text-xs text-gray-500 mt-1 break-keep">챕터별로 이야기를 풀어가는 서사형</div>
           </button>
           <button
             onClick={() => updateData({ contentMode: 'interview' })}
@@ -165,7 +165,7 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
             }`}
           >
             <div className="text-sm font-medium text-gray-900">인터뷰</div>
-            <div className="text-xs text-gray-500 mt-1">Q&amp;A로 서로를 소개하는 대화형</div>
+            <div className="text-xs text-gray-500 mt-1 break-keep">Q&amp;A로 서로를 소개하는 대화형</div>
           </button>
         </div>
       </section>
@@ -550,15 +550,16 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
 
       {/* 크롭 모달 */}
       {cropModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setCropModal(null)}>
-          <div className="bg-white rounded-xl w-[90vw] max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+        // 휴대폰에서 화면보다 길어도 갇히지 않게 — 창 안에서 넘겨 보고, 위 제목줄 · 아래 적용 단추는 늘 보임
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/70" onClick={() => setCropModal(null)}>
+          <div className="bg-white rounded-t-2xl sm:rounded-xl w-full sm:w-[90vw] max-w-md max-h-[92dvh] overflow-y-auto overscroll-contain" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="사진 크롭">
+            <div className="sticky top-0 z-10 bg-white px-4 py-3 border-b border-gray-100 flex items-center justify-between">
               <h4 className="text-sm font-semibold text-gray-900">사진 크롭</h4>
               <button onClick={() => setCropModal(null)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="relative w-full" style={{ height: '60vw', maxHeight: '360px' }}>
+            <div className="relative w-full" style={{ height: 'min(60vw, 360px, 50dvh)' }}>
               <Cropper
                 image={cropModal.photo}
                 crop={cropPosition}
@@ -569,7 +570,7 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
                 onCropComplete={(croppedArea) => onCropChange(croppedArea)}
               />
             </div>
-            <div className="px-4 py-3 space-y-3">
+            <div className="sticky bottom-0 bg-white px-4 py-3 space-y-3" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
               <div className="flex items-center gap-3">
                 <span className="text-xs text-gray-500 w-8 shrink-0">축소</span>
                 <input

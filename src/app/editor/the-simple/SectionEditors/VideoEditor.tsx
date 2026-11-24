@@ -145,7 +145,7 @@ export default function VideoEditor({ value, invitationId, onChange }: VideoEdit
       </label>
 
       {/* 소스 선택: 유튜브 / 파일 */}
-      <div className="inline-flex rounded-md border border-stone-200 overflow-hidden">
+      <div className="inline-flex flex-wrap max-w-full rounded-md border border-stone-200 overflow-hidden">
         {([
           { id: 'youtube', label: '유튜브 (추천)' },
           { id: 'file', label: '파일 업로드' },
@@ -156,7 +156,7 @@ export default function VideoEditor({ value, invitationId, onChange }: VideoEdit
               key={opt.id}
               type="button"
               onClick={() => setMode(opt.id)}
-              className={`px-3 py-1.5 text-xs transition-colors ${active ? 'bg-stone-800 text-white' : 'bg-white text-stone-500 hover:text-stone-800'}`}
+              className={`px-3 py-1.5 text-xs whitespace-nowrap transition-colors ${active ? 'bg-stone-800 text-white' : 'bg-white text-stone-500 hover:text-stone-800'}`}
             >
               {opt.label}
             </button>

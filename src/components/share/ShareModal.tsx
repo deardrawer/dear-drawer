@@ -396,7 +396,7 @@ export default function ShareModal({
 
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-sm text-gray-600 font-medium mb-2">문자 메시지 템플릿</p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 wrap-anywhere">
                 {shareTitle || `${groomName || '신랑'} ♥ ${brideName || '신부'} 결혼합니다`}
                 <br /><br />
                 {shareDescription || (() => {

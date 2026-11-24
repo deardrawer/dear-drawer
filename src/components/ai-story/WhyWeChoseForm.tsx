@@ -196,7 +196,7 @@ export default function WhyWeChoseForm({ data, onChange }: WhyWeChoseFormProps) 
 
       {/* 버전 선택 */}
       <Section title="어떤 스타일을 원하시나요?">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid break-keep wrap-anywhere grid-cols-2 gap-3">
           <VersionCard
             selected={version === 'short'}
             onClick={() => handleVersionChange('short')}

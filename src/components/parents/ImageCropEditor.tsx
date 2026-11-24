@@ -380,7 +380,8 @@ export default function ImageCropEditor({
             {/* 크롭 프레임 */}
             <div
               className="absolute border-2 border-white cursor-move"
-              style={cropStyle}
+              // 휴대폰: 크롭 틀을 끄는 동안 창 · 페이지가 같이 스크롤되지 않게 (틀 밖을 끌면 그대로 스크롤)
+              style={{ ...cropStyle, touchAction: 'none' }}
               onMouseDown={(e) => handleDragStart(e, 'move')}
               onTouchStart={(e) => handleDragStart(e, 'move')}
             >

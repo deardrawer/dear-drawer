@@ -243,7 +243,7 @@ export default function InterviewForm({
 
       {/* 버전 선택 */}
       <Section title="답변 스타일을 선택해주세요">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid break-keep wrap-anywhere grid-cols-2 gap-4">
           <VersionCard
             selected={data.version === 'short'}
             onClick={() => handleVersionChange('short')}

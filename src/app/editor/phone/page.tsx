@@ -43,14 +43,14 @@ function CropModal({ title, src, crop, aspect, onChange, onClose, preview }: {
   }, [onClose])
   const PV = 0.44
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(28,26,24,0.55)' }} onClick={onClose}>
-      <div className="theme-neu rounded-2xl shadow-2xl w-full max-w-[640px] p-5 sm:p-6" style={{ background: '#FBF9F6' }} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={title}>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>{title}</h3>
-          </div>
-          <button type="button" onClick={onClose} aria-label="닫기" className="w-8 h-8 rounded-full hover:bg-black/5 text-lg leading-none" style={{ color: 'var(--ed-text-muted)' }}><X size={16} className="mx-auto" aria-hidden /></button>
+    // 휴대폰에서 화면보다 길어도 갇히지 않게 — 창 안에서 넘겨 보고, 위쪽 '완료'는 늘 보임
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4" style={{ background: 'rgba(28,26,24,0.55)' }} onClick={onClose}>
+      <div className="theme-neu rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-[640px] max-h-[92dvh] overflow-y-auto overscroll-contain" style={{ background: '#FFFFFF' }} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={title}>
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-2 px-5 sm:px-6 py-3 border-b" style={{ background: '#FFFFFF', borderColor: 'var(--ed-border)' }}>
+          <h3 className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>{title}</h3>
+          <button type="button" onClick={onClose} className="h-9 px-4 rounded-lg text-sm font-semibold text-[#F5F0ED]" style={{ background: 'var(--ed-accent)' }}>완료</button>
         </div>
+        <div className="p-5 sm:p-6">
         <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start justify-center">
           <div className="shrink-0">
             <InlineCropEditor imageUrl={src} settings={crop || { scale: 1, positionX: 0, positionY: 0 }} onUpdate={c => onChange({ ...(crop || {}), ...c })} aspectRatio={aspect} containerWidth={280} />
@@ -62,8 +62,6 @@ function CropModal({ title, src, crop, aspect, onChange, onClose, preview }: {
             <span className="text-[11px]" style={{ color: 'var(--ed-text-muted)' }}>미리보기</span>
           </div>
         </div>
-        <div className="flex justify-end gap-2 mt-5">
-          <button type="button" onClick={onClose} className="px-5 py-2 rounded-lg text-sm text-[#F5F0ED]" style={{ background: 'var(--ed-accent)' }}>완료</button>
         </div>
       </div>
     </div>
@@ -134,7 +132,7 @@ function FullscreenHelp() {
       <button type="button" aria-label="열 때 전체 화면 설명" aria-expanded={open} onClick={e => { e.preventDefault(); setOpen(o => !o) }}
         className="w-4 h-4 rounded-full border text-[10.5px] leading-none flex items-center justify-center cursor-help" style={{ borderColor: 'var(--ed-border)', color: 'var(--ed-text-muted)', background: '#FFFFFF' }}>?</button>
       {open && (
-        <span role="tooltip" className="fh absolute left-1/2 -translate-x-1/2 top-6 z-30 w-[260px] rounded-xl p-3 text-white shadow-xl" style={{ background: 'rgba(30,28,26,0.96)' }}>
+        <span role="tooltip" className="fh absolute left-1/2 -translate-x-1/2 top-6 z-30 w-[260px] max-lg:fixed max-lg:left-4 max-lg:right-4 max-lg:top-auto max-lg:bottom-6 max-lg:w-auto max-lg:translate-x-0 rounded-xl p-3 text-white shadow-xl" style={{ background: 'rgba(30,28,26,0.96)' }}>
           <style>{css}</style>
           <span className="flex gap-3 items-center">
             {/* 작은 폰 */}
@@ -404,7 +402,7 @@ function PhoneEditorContent() {
   const setWidgets = (fn: (ws: PhoneWidget[]) => PhoneWidget[]) => update(d => ({ ...d, phone: { ...d.phone, widgets: fn(d.phone.widgets) } }))
   // 새 청첩장 — 미리보기 빈 칸을 채울 예시(샘플). 처음 저장하기 전까지만
   const [example, setExample] = useState<PhoneData | null>(null)
-  const [mobMenu, setMobMenu] = useState<null | 'add' | 'set'>(null)
+  const [mobMenu, setMobMenu] = useState<null | 'add' | 'set' | 'apps'>(null)
   // 폰 미리보기 확대 (1 = 화면에 맞춤) — 버튼 · 두 손가락으로
   const [zoom, setZoom] = useState(1)
   const zoomRef = useRef(1)
@@ -487,6 +485,22 @@ function PhoneEditorContent() {
     window.addEventListener('beforeunload', h)
     return () => window.removeEventListener('beforeunload', h)
   }, [isDirty])
+  // 뒤로 가기(휴대폰 뒤로 · 브라우저 뒤로)로 나갈 때도 — 저장 안 한 내용이 있으면 묻기.
+  // 고치기 시작하면 같은 주소로 기록 한 칸을 쌓아 두고, 뒤로 가면 그 칸에서 멈춰 물어봄
+  const [leaveAsk, setLeaveAsk] = useState(false)
+  const guard = useRef(false)
+  const dirtyRef = useRef(isDirty)
+  useEffect(() => { dirtyRef.current = isDirty; if (isDirty && !guard.current) { guard.current = true; window.history.pushState({ ...(window.history.state || {}), pfEditorGuard: true }, '') } }, [isDirty])
+  useEffect(() => {
+    const onPop = () => {
+      if (!guard.current) return
+      if (dirtyRef.current) { window.history.pushState({ ...(window.history.state || {}), pfEditorGuard: true }, ''); setLeaveAsk(true) }
+      else { guard.current = false; window.history.back() }
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+  const leaveNow = () => { setLeaveAsk(false); guard.current = false; dirtyRef.current = false; window.history.go(-2) }
 
   /* 휴대폰 — 기본은 '폰에서 바로 꾸미기' (view: 하객처럼 보기 · deco: 누른 곳 설정이 아래 시트로),
      '전체 설정'(full)은 듀얼 화면 (위: 미리보기 고정 · 아래: 설정 스크롤, 가운데 막대로 비율 조절) */
@@ -1509,16 +1523,23 @@ function PhoneEditorContent() {
         </div>
         <Field label="오시는 길">
           <div className="space-y-2">
-            {(data.phone.directions || []).map((x, i) => (
-              <div key={i} className="flex gap-2 items-start">
-                <select className={inputCls + ' !w-[88px] shrink-0'} value={x.kind} onChange={e => setPhone({ directions: (data.phone.directions || []).map((y, j) => (j === i ? { ...y, kind: e.target.value as typeof x.kind } : y)) })}>
-                  <option value="subway">지하철</option><option value="bus">버스</option><option value="car">자가용</option><option value="parking">주차</option><option value="etc">기타</option>
-                </select>
-                <textarea rows={2} className={inputCls} value={x.text} placeholder={{ subway: '2호선 선릉역 1번 출구 도보 5분', bus: '선릉역 정류장 하차', car: '내비게이션에 예식장 이름 검색', parking: '건물 지하 B2~B4, 2시간 무료', etc: '' }[x.kind]}
-                  onChange={e => setPhone({ directions: (data.phone.directions || []).map((y, j) => (j === i ? { ...y, text: e.target.value } : y)) })} />
-                <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1 pt-2" onClick={() => setPhone({ directions: (data.phone.directions || []).filter((_, j) => j !== i) })}><X size={16} className="mx-auto" aria-hidden /></button>
-              </div>
-            ))}
+            {(data.phone.directions || []).map((x, i) => {
+              const setD = (patch: Partial<typeof x>) => setPhone({ directions: (data.phone.directions || []).map((y, j) => (j === i ? { ...y, ...patch } : y)) })
+              return (
+                // 휴대폰에서도 넉넉하게 — 위 줄: 종류 · 제목 · 지우기, 아래 줄: 내용
+                <div key={i} className="rounded-xl border p-2.5 space-y-2" style={{ borderColor: 'var(--ed-border)' }}>
+                  <div className="flex gap-2 items-center">
+                    <select className={inputCls + ' !w-[92px] shrink-0'} value={x.kind} onChange={e => setD({ kind: e.target.value as typeof x.kind })}>
+                      <option value="subway">지하철</option><option value="bus">버스</option><option value="car">자가용</option><option value="parking">주차</option><option value="etc">기타</option>
+                    </select>
+                    <input className={inputCls} value={x.title || ''} placeholder="제목 (선택)" onChange={e => setD({ title: e.target.value || undefined })} />
+                    <button type="button" aria-label="지우기" className="shrink-0 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-600" onClick={() => setPhone({ directions: (data.phone.directions || []).filter((_, j) => j !== i) })}><X size={16} aria-hidden /></button>
+                  </div>
+                  <textarea rows={2} className={inputCls + ' leading-relaxed'} value={x.text} placeholder={{ subway: '2호선 선릉역 1번 출구 도보 5분', bus: '선릉역 정류장 하차', car: '내비게이션에 예식장 이름 검색', parking: '건물 지하 B2~B4, 2시간 무료', etc: '셔틀버스 · 기타 안내' }[x.kind]}
+                    onChange={e => setD({ text: e.target.value })} />
+                </div>
+              )
+            })}
             <div className="flex gap-1.5 flex-wrap">
               {([['subway', '지하철'], ['bus', '버스'], ['car', '자가용'], ['parking', '주차']] as const).map(([k, l]) => (
                 <button key={k} type="button" className={pill(false)} onClick={() => setPhone({ directions: [...(data.phone.directions || []), { kind: k, text: '' }] })}>+ {l}</button>
@@ -1527,14 +1548,22 @@ function PhoneEditorContent() {
           </div>
         </Field>
         <span className="text-[12px] font-medium block" style={{ color: 'var(--ed-text-muted)' }}>안내 사항</span>
-        {data.phone.memo.map((m, i) => (
-          <div key={i} className="flex gap-2 items-start">
-            {/* 줄바꿈 가능 — 쓴 만큼 칸이 늘어남 */}
-            <textarea rows={Math.max(2, m.split(/\n/).length + (m.length > 40 ? 1 : 0))} className={inputCls + ' resize-y leading-relaxed'} value={m} onChange={e => setPhone({ memo: data.phone.memo.map((x, j) => (j === i ? e.target.value : x)) })} />
-            <button type="button" aria-label="지우기" className="text-gray-400 hover:text-red-600 px-1" onClick={() => setPhone({ memo: data.phone.memo.filter((_, j) => j !== i) })}><X size={16} className="mx-auto" aria-hidden /></button>
-          </div>
-        ))}
-        <button type="button" className={pill(false)} onClick={() => setPhone({ memo: [...data.phone.memo, ''] })}>+ 안내</button>
+        {data.phone.memo.map((m, i) => {
+          const titles = data.phone.memoTitles || []
+          return (
+            <div key={i} className="rounded-xl border p-2.5 space-y-2" style={{ borderColor: 'var(--ed-border)' }}>
+              <div className="flex gap-2 items-center">
+                <input className={inputCls} value={titles[i] || ''} placeholder="제목 (선택) · 예: 식사 안내"
+                  onChange={e => { const n = [...titles]; while (n.length < data.phone.memo.length) n.push(''); n[i] = e.target.value; setPhone({ memoTitles: n }) }} />
+                <button type="button" aria-label="지우기" className="shrink-0 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-600"
+                  onClick={() => setPhone({ memo: data.phone.memo.filter((_, j) => j !== i), memoTitles: titles.filter((_, j) => j !== i) })}><X size={16} aria-hidden /></button>
+              </div>
+              {/* 줄바꿈 가능 — 쓴 만큼 칸이 늘어남 */}
+              <textarea rows={Math.max(2, m.split(/\n/).length + (m.length > 40 ? 1 : 0))} className={inputCls + ' resize-y leading-relaxed'} value={m} placeholder="안내 내용" onChange={e => setPhone({ memo: data.phone.memo.map((x, j) => (j === i ? e.target.value : x)) })} />
+            </div>
+          )
+        })}
+        <button type="button" className={pill(false)} onClick={() => setPhone({ memo: [...data.phone.memo, ''], memoTitles: [...(data.phone.memoTitles || []), ...Array(Math.max(0, data.phone.memo.length - (data.phone.memoTitles || []).length)).fill(''), ''] })}>+ 안내</button>
       </Section>
     )
     if (screen === 'gift') return (
@@ -1608,7 +1637,7 @@ function PhoneEditorContent() {
               {folders.map((f, fi) => (
                 <div key={fi} className="rounded-lg border bg-white p-3 space-y-2.5" style={{ borderColor: 'var(--ed-border)' }}>
                   <div className="flex items-center gap-2">
-                    <input className={inputCls + ' flex-1 font-semibold'} placeholder={folders.length > 1 ? `폴더 ${fi + 1} 이름` : '폴더 이름 (비워도 돼요)'} value={f.name}
+                    <input className={inputCls + ' flex-1 font-semibold'} placeholder={folders.length > 1 ? `폴더 ${fi + 1} 이름` : '폴더 이름 (선택)'} value={f.name}
                       onChange={e => save(folders.map((x, j) => (j === fi ? { ...x, name: e.target.value } : x)))} />
                     {folders.length > 1 && <button type="button" aria-label="폴더 삭제" title="폴더 삭제 (사진도 함께)" className="w-7 h-7 shrink-0 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50" onClick={() => save(folders.filter((_, j) => j !== fi))}><X size={16} className="mx-auto" aria-hidden /></button>}
                   </div>
@@ -1954,9 +1983,9 @@ function PhoneEditorContent() {
               {tog('rsvpPhoneOption', '연락처 뒷자리 4자리', !!data.rsvpPhoneOption)}
               {tog('rsvpSideDetail', '부모님 하객 구분', !!data.rsvpSideDetail)}
               {data.rsvpSideDetail && (
-                <div className="grid grid-cols-3 gap-1.5 pl-6">
+                <div className="flex flex-wrap gap-x-3 gap-y-1.5 pl-6">
                   {([['groomSelf', '신랑'], ['groomFather', '신랑 아버지'], ['groomMother', '신랑 어머니'], ['brideSelf', '신부'], ['brideFather', '신부 아버지'], ['brideMother', '신부 어머니']] as const).map(([k2, l]) => (
-                    <label key={k2} className="flex items-center gap-1.5 text-xs"><input type="checkbox" checked={sideOpts[k2] ?? true} onChange={e => update(d => ({ ...d, rsvpSideDetailOptions: { ...(d.rsvpSideDetailOptions || {}), [k2]: e.target.checked } }))} />{l}</label>
+                    <label key={k2} className="flex items-center gap-1.5 text-xs whitespace-nowrap"><input type="checkbox" checked={sideOpts[k2] ?? true} onChange={e => update(d => ({ ...d, rsvpSideDetailOptions: { ...(d.rsvpSideDetailOptions || {}), [k2]: e.target.checked } }))} />{l}</label>
                   ))}
                 </div>
               )}
@@ -1971,7 +2000,7 @@ function PhoneEditorContent() {
   }
 
   /* ── 설정 조각 (패널마다 필요한 것만 골라 씀) ── */
-  const choiceCls = (on: boolean) => `rounded-md border px-2.5 py-2 text-center text-[13px] transition-colors ${on ? 'border-[color:var(--ed-accent)] ring-1 ring-[color:var(--ed-accent)] bg-white font-semibold' : 'border-[color:var(--ed-border)] bg-transparent hover:bg-white/60'}`
+  const choiceCls = (on: boolean) => `rounded-md border px-2.5 py-2 text-center text-[13px] break-keep wrap-anywhere transition-colors ${on ? 'border-[color:var(--ed-accent)] ring-1 ring-[color:var(--ed-accent)] bg-white font-semibold' : 'border-[color:var(--ed-border)] bg-transparent hover:bg-white/60'}`
   const titleFontField = () => (
     <Field label="제목 글꼴">
       <div className="grid grid-cols-2 gap-1.5">
@@ -2113,7 +2142,7 @@ function PhoneEditorContent() {
                 <Field label="설명"><textarea rows={2} className={inputCls + ' resize-none'} value={m.description} placeholder={autoDesc || '2027년 5월 22일 토요일 오후 2시\n더채플앳청담'} onChange={e => setMeta({ description: e.target.value })} /></Field>
                 <details className="text-[11px]" style={{ color: 'var(--ed-text-muted)' }}>
                   <summary className="cursor-pointer">한 번 공유한 뒤 바꾸면 늦게 반영될 수 있습니다</summary>
-                  <p className="mt-1.5 leading-relaxed">카카오톡이 이전 미리보기를 잠시 저장합니다. <a href="https://developers.kakao.com/tool/debugger/sharing" target="_blank" rel="noopener noreferrer" className="underline">카카오 공유 디버거</a>에서 청첩장 주소를 넣고 캐시를 초기화한 뒤 다시 공유하면 됩니다.</p>
+                  <p className="mt-1.5 leading-relaxed">카카오톡이 이전 미리보기를 잠시 저장합니다. <a href="https://developers.kakao.com/tool/debugger/sharing" target="_blank" rel="noopener noreferrer" className="underline whitespace-nowrap">카카오 공유 디버거</a>에서 청첩장 주소를 넣고 캐시를 초기화한 뒤 다시 공유하면 됩니다.</p>
                 </details>
               </Section>
               <Section title="문자 · SNS 미리보기">
@@ -2671,8 +2700,8 @@ function PhoneEditorContent() {
                 onPointerDown={e => startNewDrag(e, { type: m.type, size: sizeForNew(m.type, m.defaultSize), variant: 0, label: m.label })}
                 onClick={() => { if (dragClick.current) return; setDraft({ type: m.type, size: sizeForNew(m.type, m.defaultSize), variant: 0 }); setSelectedId(null); setPanel('home'); setScreenRaw('home'); setMobileTab('settings') }} className="text-left px-3 py-2 rounded-lg border border-transparent bg-[#F5F3F0] hover:border-gray-300 hover:bg-white cursor-grab active:cursor-grabbing touch-none"
                 style={used ? { background: '#FFFFFF', borderColor: 'var(--ed-accent)' } : { background: '#EFEDEA', color: '#A39D95' }}>
-                <span className="text-sm flex justify-between items-center gap-2">
-                  <span style={{ fontWeight: used ? 700 : 400, color: used ? 'var(--ed-accent)' : undefined }}>{m.label}</span>
+                <span className="text-sm flex flex-wrap justify-between items-center gap-x-2 gap-y-0.5">
+                  <span className="break-keep" style={{ fontWeight: used ? 700 : 400, color: used ? 'var(--ed-accent)' : undefined }}>{m.label}</span>
                   {used
                     ? <span className="text-[10.5px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center text-white" style={{ background: 'var(--ed-accent)' }} title={`홈에 ${used}개`}>{used}</span>
                     : <span className="text-[11px]" style={{ color: 'var(--ed-text-muted)' }}>{SIZE_LABEL[m.defaultSize]}</span>}
@@ -2807,6 +2836,18 @@ function PhoneEditorContent() {
     })
     return () => cancelAnimationFrame(id)
   }, [sheetOpen, selectedId, sheet, draft, screen])
+  // 화면마다 진행 상태 — 휴대폰 '앱' 목록에서 무엇이 남았는지 보이게
+  const appState = (a: PhoneAppId): 'done' | 'todo' | 'off' => {
+    if (isAppOff(data, a)) return 'off'
+    if (a === 'camera') return photoShareHref ? 'done' : 'todo'
+    if (a === 'memo') return data.wedding.venue.name?.trim() ? 'done' : 'todo'
+    return isEmptyApp(data, a) ? 'todo' : 'done'
+  }
+  const appIds = SCREENS.filter(x => x.id !== 'lock' && x.id !== 'home').map(x => x.id as PhoneAppId)
+  const infoDone = !!(data.groom.name.trim() && data.bride.name.trim() && data.groom.phone && data.bride.phone && data.wedding.date && data.wedding.venue.name.trim())
+  const appsOn = appIds.filter(a => appState(a) !== 'off')
+  const progDone = appsOn.filter(a => appState(a) === 'done').length + (infoDone ? 1 : 0)
+  const progAll = appsOn.length + 1
   const segTab = (label: string, on: boolean, onClick: () => void) => (
     <button key={label} type="button" onClick={onClick} className="shrink-0 h-[34px] min-w-[52px] px-3 rounded-[9px] text-[13px] font-semibold transition-colors"
       style={on ? { background: '#FFFFFF', color: 'var(--ed-text)', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' } : { color: '#6E655D' }}>{label}</button>
@@ -2820,17 +2861,15 @@ function PhoneEditorContent() {
         <div className="shrink-0 px-3 pt-2.5 pb-2 flex items-center gap-2">
           {/* 화면 탭 — 잠금 · 홈 · 앱 화면 */}
           <div className="flex-1 min-w-0 flex gap-0.5 p-[3px] rounded-xl overflow-x-auto" style={{ background: '#F2F2F2', scrollbarWidth: 'none' }}>
-            {segTab('잠금', screen === 'lock', () => goScreen('lock'))}
-            {Array.from({ length: pageCount }, (_, i) => segTab(pageCount > 1 ? `홈 ${i + 1}` : '홈', screen === 'home' && curPage === i, () => goScreen('home', i)))}
-            <label className="relative shrink-0 h-[34px] px-2.5 rounded-[9px] flex items-center gap-1 text-[13px] font-semibold"
+            {/* 지금 보고 있는 탭을 한 번 더 누르면 그 화면 설정이 열림 */}
+            {segTab('잠금', screen === 'lock', () => { if (screen === 'lock') { clearTap(); openFocus([{ panel: 'lock', secs: null }]) } else goScreen('lock') })}
+            {Array.from({ length: pageCount }, (_, i) => segTab(pageCount > 1 ? `홈 ${i + 1}` : '홈', screen === 'home' && curPage === i, () => { if (screen === 'home' && curPage === i) { clearTap(); openFocus([{ panel: 'home', secs: null }]) } else goScreen('home', i) }))}
+            <button type="button" onClick={() => setMobMenu('apps')} className="relative shrink-0 h-[34px] px-2.5 rounded-[9px] flex items-center gap-1 text-[13px] font-semibold"
               style={isAppScr ? { background: '#FFFFFF', color: 'var(--ed-text)', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' } : { color: '#6E655D' }}>
-              <span className="max-w-[88px] truncate">{isAppScr ? SCREENS.find(x => x.id === screen)?.label : '앱'}</span><ChevronDown size={14} aria-hidden />
-              <select aria-label="화면 고르기" className="absolute inset-0 opacity-0" value={isAppScr ? screen : ''}
-                onChange={e => { if (e.target.value) { clearTap(); goScreen(e.target.value as PhoneScreenId) } }}>
-                <option value="">앱 화면 고르기</option>
-                {SCREENS.filter(x => x.id !== 'lock' && x.id !== 'home').map(x => <option key={x.id} value={x.id}>{x.label}</option>)}
-              </select>
-            </label>
+              <span className="max-w-[88px] truncate">{isAppScr ? SCREENS.find(x => x.id === screen)?.label : '앱'}</span>
+              {progDone < progAll && <span className="min-w-[18px] h-[18px] px-1 rounded-full text-[10.5px] font-bold text-white flex items-center justify-center" style={{ background: '#D9A441' }}>{progAll - progDone}</span>}
+              <ChevronDown size={14} aria-hidden />
+            </button>
           </div>
           <button type="button" aria-label="추가" onClick={() => setMobMenu('add')} className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ background: 'var(--ed-accent)' }}><Plus size={20} aria-hidden /></button>
           <button type="button" aria-label="기본 설정" onClick={() => setMobMenu('set')} className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-white border" style={{ borderColor: 'var(--ed-border)', color: 'var(--ed-text)' }}><SlidersHorizontal size={18} aria-hidden /></button>
@@ -2898,8 +2937,46 @@ function PhoneEditorContent() {
 .pf-ed input[type=checkbox]:checked{background:var(--ed-accent)}.pf-ed input[type=checkbox]:checked::after{transform:translateX(16px)}
 @layer components{.theme-neu.pf-ed.pf-m{background:#FFFFFF!important;--ed-surface-2:#F5F5F4;--ed-border:rgba(0,0,0,0.08);--ed-text-muted:#71717A;--ed-text-faint:#A1A1AA}
 .theme-neu.pf-ed.pf-m .editor-header{background:rgba(255,255,255,0.96)!important}}`}</style>
+      {/* 휴대폰 — 화면 목록 + 무엇이 남았는지 */}
+      {mobMenu === 'apps' && (
+        <div className="fixed inset-0 z-[60]" onClick={() => setMobMenu(null)}>
+          <div className="absolute inset-0" style={{ background: 'rgba(30,26,22,0.35)' }} />
+          <div className="absolute left-0 right-0 bottom-0 rounded-t-[22px] bg-white flex flex-col" style={{ maxHeight: '86dvh', paddingBottom: 'env(safe-area-inset-bottom)' }} onClick={e => e.stopPropagation()}>
+            <div className="shrink-0 px-5 pt-3 pb-3 border-b" style={{ borderColor: 'var(--ed-border)' }}>
+              <div className="w-10 h-1 rounded-full mx-auto mb-3" style={{ background: '#DDD5CD' }} />
+              <div className="flex items-baseline justify-between">
+                <h3 className="text-[17px] font-bold" style={{ color: 'var(--ed-text)' }}>화면 채우기</h3>
+                <span className="text-[13px] font-semibold tabular-nums" style={{ color: progDone === progAll ? '#3C6B45' : 'var(--ed-text-muted)' }}>{progDone}/{progAll} 완료</span>
+              </div>
+              <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: '#F2F2F2' }}>
+                <div className="h-full rounded-full" style={{ width: `${(progDone / progAll) * 100}%`, background: 'var(--ed-accent)' }} />
+              </div>
+              <p className="text-[12.5px] mt-2" style={{ color: 'var(--ed-text-muted)' }}>{progDone === progAll ? '모두 채웠습니다. 저장하고 보내 보세요.' : '동그라미가 빈 화면을 채우면 완성입니다.'}</p>
+            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto px-2 py-2">
+              {([{ id: 'info' as const, label: '결혼식 정보', st: infoDone ? 'done' as const : 'todo' as const, hint: '이름 · 연락처 · 날짜 · 예식장' },
+                ...appIds.map(a => ({ id: a, label: SCREENS.find(x => x.id === a)?.label || a, st: appState(a), hint: '' }))]).map(it => (
+                <button key={it.id} type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left active:bg-black/[0.03]"
+                  onClick={() => { setMobMenu(null); clearTap(); if (it.id === 'info') openFocus([{ panel: 'info', secs: null }]); else goScreen(it.id) }}>
+                  {it.st === 'done'
+                    ? <span className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--ed-accent)' }}><Check size={14} strokeWidth={3} color="#FFFFFF" aria-label="완료" /></span>
+                    : it.st === 'off'
+                    ? <span className="w-6 h-6 rounded-full shrink-0" style={{ background: '#F2F2F2' }} aria-label="꺼짐" />
+                    : <span className="w-6 h-6 rounded-full shrink-0" style={{ border: '2px solid #D9A441' }} aria-label="채우기 전" />}
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-[15px]" style={{ fontWeight: it.st === 'todo' ? 700 : 500, color: it.st === 'off' ? 'var(--ed-text-faint)' : 'var(--ed-text)' }}>{it.label}</span>
+                    {(it.hint || it.st !== 'done') && <span className="block text-[12px] mt-0.5" style={{ color: it.st === 'todo' ? '#B07D1E' : 'var(--ed-text-faint)' }}>{it.st === 'off' ? '꺼짐 · 하객에게 안 보임' : it.st === 'todo' ? (it.hint ? `채우기 전 · ${it.hint}` : '채우기 전') : it.hint}</span>}
+                  </span>
+                  {isAppScr && screen === it.id && <span className="text-[11.5px] font-semibold shrink-0" style={{ color: 'var(--ed-accent)' }}>보는 중</span>}
+                  <ChevronRight size={16} className="shrink-0" style={{ color: 'var(--ed-text-faint)' }} aria-hidden />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       {/* 휴대폰 ＋ · 기본 설정 메뉴 */}
-      {mobMenu && (
+      {mobMenu && mobMenu !== 'apps' && (
         <div className="fixed inset-0 z-[60]" onClick={() => setMobMenu(null)}>
           <div className="absolute inset-0" style={{ background: 'rgba(30,26,22,0.35)' }} />
           <div className="absolute left-3 right-3 bottom-4 rounded-[20px] bg-white p-2 shadow-2xl" style={{ paddingBottom: 'calc(8px + env(safe-area-inset-bottom))' }} onClick={e => e.stopPropagation()}>
@@ -2916,6 +2993,19 @@ function PhoneEditorContent() {
                 <span className="min-w-0"><span className="block text-[15px] font-bold" style={{ color: 'var(--ed-text)' }}>{it.t}</span><span className="block text-[12.5px] mt-0.5" style={{ color: 'var(--ed-text-muted)' }}>{it.d}</span></span>
               </button>
             ))}
+          </div>
+        </div>
+      )}
+      {leaveAsk && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-6" style={{ background: 'rgba(30,26,22,0.45)' }} onClick={() => setLeaveAsk(false)}>
+          <div className="w-full max-w-[340px] rounded-[22px] bg-white p-5 shadow-2xl" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+            <h3 className="text-[17px] font-bold" style={{ color: 'var(--ed-text)' }}>저장하지 않고 나갈까요?</h3>
+            <p className="text-sm mt-1.5 leading-relaxed" style={{ color: 'var(--ed-text-muted)' }}>고친 내용은 이 기기에 임시로 남아 있어, 다시 열면 이어서 꾸밀 수 있습니다.</p>
+            <div className="mt-4 space-y-2">
+              <button type="button" className="w-full h-11 rounded-xl text-[14.5px] font-bold text-white" style={{ background: 'var(--ed-accent)' }} onClick={async () => { setLeaveAsk(false); await handleSave() }}>저장하기</button>
+              <button type="button" className="w-full h-11 rounded-xl text-[14.5px] font-bold" style={{ background: '#F2F2F2', color: '#52525B' }} onClick={leaveNow}>저장하지 않고 나가기</button>
+              <button type="button" className="w-full h-10 text-[13.5px] font-semibold" style={{ color: 'var(--ed-text-muted)' }} onClick={() => setLeaveAsk(false)}>계속 꾸미기</button>
+            </div>
           </div>
         </div>
       )}

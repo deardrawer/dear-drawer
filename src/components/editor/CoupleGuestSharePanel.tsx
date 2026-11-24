@@ -39,12 +39,14 @@ function DefaultCropModal({ src, crop, onChange, onClose, preview }: CropArgs) {
   }, [onClose])
   const PV = 0.44
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4" style={{ background: 'rgba(28,26,24,0.55)' }} onClick={onClose}>
-      <div className="rounded-2xl shadow-2xl w-full max-w-[640px] p-5 sm:p-6" style={{ background: '#FBF9F6' }} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="첫 화면 사진">
-        <div className="flex items-center justify-between mb-4">
+    // 휴대폰에서 화면보다 길어도 갇히지 않게 — 창 안에서 넘겨 보고, 위쪽 '완료'는 늘 보임 (THE PHONE 자르기 창과 같은 틀)
+    <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center sm:p-4" style={{ background: 'rgba(28,26,24,0.55)' }} onClick={onClose}>
+      <div className="rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-[640px] max-h-[92dvh] overflow-y-auto overscroll-contain" style={{ background: '#FBF9F6' }} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="첫 화면 사진">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-2 px-5 sm:px-6 py-3 border-b" style={{ background: '#FBF9F6', borderColor: 'var(--ed-border)' }}>
           <h3 className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>첫 화면 사진</h3>
-          <button type="button" onClick={onClose} aria-label="닫기" className="w-8 h-8 rounded-full hover:bg-black/5 text-lg leading-none" style={{ color: 'var(--ed-text-muted)' }}>×</button>
+          <button type="button" onClick={onClose} className="h-9 px-4 rounded-lg text-sm font-semibold text-[#F5F0ED]" style={{ background: 'var(--ed-accent, #7A5A44)' }}>완료</button>
         </div>
+        <div className="p-5 sm:p-6">
         <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start justify-center">
           <div className="shrink-0">
             <InlineCropEditor imageUrl={src} settings={crop || { scale: 1, positionX: 0, positionY: 0 }} onUpdate={c => onChange({ ...(crop || { cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }), ...c } as Crop)} aspectRatio={390 / 560} containerWidth={280} />
@@ -56,8 +58,6 @@ function DefaultCropModal({ src, crop, onChange, onClose, preview }: CropArgs) {
             <span className="text-[11px]" style={{ color: 'var(--ed-text-muted)' }}>미리보기</span>
           </div>
         </div>
-        <div className="flex justify-end mt-5">
-          <button type="button" onClick={onClose} className="px-5 py-2 rounded-lg text-sm text-white" style={{ background: 'var(--ed-accent, #3A3A3A)' }}>완료</button>
         </div>
       </div>
     </div>
@@ -152,9 +152,10 @@ export default function CoupleGuestSharePanel({ onChange, upload, renderCrop }: 
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {s.look?.cover && <img src={s.look.cover} alt="" className="w-full h-full object-cover" style={{ objectPosition: s.look.coverCrop ? `${(s.look.coverCrop.cropX + s.look.coverCrop.cropWidth / 2) * 100}% ${(s.look.coverCrop.cropY + s.look.coverCrop.cropHeight / 2) * 100}%` : `50% ${s.look.coverY}%` }} />}
           </span>
-          <span className="min-w-0 text-[13px] font-semibold">첫 화면 사진</span>
+          <span className="text-[13px] font-semibold whitespace-nowrap">첫 화면 사진</span>
         </span>
-        <span className="flex gap-1.5 shrink-0">
+        {/* 칸이 좁으면 버튼이 다음 줄로 (제목이 한 글자씩 꺾이지 않게) */}
+        <span className="flex flex-wrap justify-end gap-1.5 min-w-0">
           {upload && <>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={async e => {
               const f = e.target.files?.[0]; e.target.value = ''
@@ -174,7 +175,7 @@ export default function CoupleGuestSharePanel({ onChange, upload, renderCrop }: 
       <div className={row}>
         <span className="min-w-0">
           <span className="block text-[13px] font-semibold">이름 표기</span>
-          {!s.look?.hasEn && <span className="block text-[11.5px]" style={{ color: 'var(--ed-text-muted)' }}>영문 이름을 입력해야 선택할 수 있습니다</span>}
+          {!s.look?.hasEn && <span className="block text-[11.5px] break-keep" style={{ color: 'var(--ed-text-muted)' }}>영문 이름을 입력해야 선택할 수 있습니다</span>}
         </span>
         <span className="flex gap-1 shrink-0 p-0.5 rounded-md" style={{ background: 'var(--ed-border)' }}>
           {([['en', '영문'], ['ko', '한글']] as const).map(([v, l]) => {
@@ -212,13 +213,15 @@ export default function CoupleGuestSharePanel({ onChange, upload, renderCrop }: 
       {preview && s.look && (
         // 하객 화면 미리보기 — 폰 크기 틀 안에 (transform 으로 안쪽 고정 요소가 틀 기준이 됨)
         <div className="fixed inset-0 z-[80] flex items-center justify-center" style={{ background: 'rgba(20,18,15,0.55)' }} onClick={() => setPreview(false)}>
-          <div onClick={e => e.stopPropagation()} className="relative" style={{ transform: `scale(${typeof window !== 'undefined' ? Math.min(1, (window.innerHeight - 40) / 844) : 1})` }}>
+          {/* 휴대폰: 옆 닫기 단추가 화면 밖으로 나가므로 화면 오른쪽 위에 따로 */}
+          <button type="button" onClick={() => setPreview(false)} aria-label="닫기" className="sm:hidden absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white text-lg shadow">×</button>
+          <div onClick={e => e.stopPropagation()} className="relative" style={{ transform: `scale(${typeof window !== 'undefined' ? Math.min(1, (window.innerHeight - 40) / 844, (window.innerWidth - 24) / 390) : 1})` }}>
             <div style={{ width: 390, height: 844, borderRadius: 44, overflow: 'hidden', boxShadow: '0 0 0 10px #1C1A18, 0 30px 60px rgba(0,0,0,0.4)', background: '#FFFFFF', transform: 'translateZ(0)', ['--gs-vh' as string]: '844px' } as React.CSSProperties}>
               <div style={{ position: 'absolute', inset: 0, overflowY: 'auto' }}>
                 <GuestShareClient slug="" coupleSlug={s.slug || ''} coupleName={`${s.look.groomKo} · ${s.look.brideKo}`} title={title} description={desc} look={{ ...s.look, coverY: s.look.coverY }} preview />
               </div>
             </div>
-            <button type="button" onClick={() => setPreview(false)} aria-label="닫기" className="absolute -top-3 -right-14 w-10 h-10 rounded-full bg-white text-lg shadow">×</button>
+            <button type="button" onClick={() => setPreview(false)} aria-label="닫기" className="hidden sm:block absolute -top-3 -right-14 w-10 h-10 rounded-full bg-white text-lg shadow">×</button>
           </div>
         </div>
       )}

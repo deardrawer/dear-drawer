@@ -24,6 +24,47 @@ import {
 
 /* ───────── 우리 노래 재생 ───────── */
 const MusicCtx = createContext<{ playing: boolean; toggle: () => void; has?: boolean } | null>(null)
+/** 청첩장을 처음 열 때 잠금화면 등장 연출 (화면 켜짐 → 시계가 예식 시각으로 → 알림 도착 → 밀어서 열기 안내) */
+const LockIntroCtx = createContext(false)
+const LOCK_INTRO_CSS = `
+@keyframes pfWake { 0% { filter: brightness(0); transform: scale(1.05); } 35% { filter: brightness(0.35); } 100% { filter: none; transform: none; } }
+@keyframes pfUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes pfPop { 0% { opacity: 0; transform: translateY(26px) scale(0.94); } 60% { opacity: 1; transform: translateY(-4px) scale(1.01); } 100% { opacity: 1; transform: none; } }
+@keyframes pfRoll { from { transform: translateY(0); } to { transform: translateY(calc(var(--n) * -1em)); } }
+@keyframes pfNudge { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(22px); } 55% { transform: translateX(0); } 70% { transform: translateX(9px); } }
+.pf-intro { animation: pfWake 0.9s cubic-bezier(0.22, 0.7, 0.2, 1) both; transform-origin: 50% 40%; }
+.pf-intro [data-ed="clock"] > * { animation: pfUp 0.6s cubic-bezier(0.22, 0.7, 0.2, 1) both; }
+.pf-intro [data-ed="clock"] > *:nth-child(1) { animation-delay: 0.35s; }
+.pf-intro [data-ed="clock"] > *:nth-child(2) { animation-delay: 0.45s; }
+.pf-intro [data-ed="clock"] > *:nth-child(n+3) { animation-delay: 1.9s; }
+.pf-intro [data-ed="notice"] { animation: pfPop 0.6s cubic-bezier(0.22, 0.7, 0.2, 1) 2.15s both; }
+.pf-intro .pf-roll { animation: pfRoll 1.15s cubic-bezier(0.25, 0.9, 0.25, 1) both; }
+.pf-intro .pf-knob { animation: pfNudge 1.3s ease-in-out 4.2s 2; }
+@media (prefers-reduced-motion: reduce) { .pf-intro, .pf-intro * { animation: none !important; } }`
+/** 시계 숫자가 지금 시각에서 예식 시각으로 촤르르 돌아감 (처음 열 때만) */
+function RollClock({ to }: { to: string }) {
+  const intro = useContext(LockIntroCtx)
+  const [from, setFrom] = useState<string | null>(null)
+  // 지금 시각은 화면에 붙은 뒤에 (서버 그림과 어긋나지 않게)
+  useEffect(() => { if (!intro) return; const id = requestAnimationFrame(() => { const d = new Date(); setFrom(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`) }); return () => cancelAnimationFrame(id) }, [intro])
+  if (!intro || !from) return <>{to}</>
+  const f = to.length === from.length ? from : from.replace(/^0/, '')
+  if (f.length !== to.length) return <>{to}</>
+  return <>{to.split('').map((ch, i) => {
+    const a = f[i]
+    if (!/\d/.test(ch) || !/\d/.test(a)) return <span key={i}>{ch}</span>
+    // 한 바퀴 더 돌고 멈춤
+    const from0 = +a, to0 = +ch, steps = 10 + ((to0 - from0 + 10) % 10)
+    const seq = Array.from({ length: steps + 1 }, (_, k) => (from0 + k) % 10)
+    return (
+      <span key={i} style={{ display: 'inline-block', height: '1em', overflow: 'hidden', verticalAlign: 'top' }}>
+        <span className="pf-roll" style={{ display: 'block', ['--n' as string]: steps, animationDelay: `${0.75 + i * 0.09}s` }}>
+          {seq.map((d, j) => <span key={j} style={{ display: 'block', height: '1em', lineHeight: 1 }}>{d}</span>)}
+        </span>
+      </span>
+    )
+  })}</>
+}
 
 /* ───────── 방명록 — 하객 화면에선 실제 글, 에디터에선 예시 ───────── */
 interface GbMsg { id: string; name: string; message: string; at?: string; mine?: boolean }
@@ -1818,6 +1859,7 @@ function SlideToOpen({ onOpen, onDark, accent }: { onOpen?: () => void; onDark: 
           setTimeout(() => { start.current = null }, 0)
         }}
         onPointerCancel={() => { setDragging(false); start.current = null; setX(0) }}
+        className="pf-knob"
         style={{ position: 'absolute', left: PAD, top: PAD, width: KNOB, height: KNOB, borderRadius: '50%', background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `translateX(${x}px)`, transition: dragging ? 'none' : 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)', cursor: 'grab', touchAction: 'none' }}>
         <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M8 6.5l5.5 5.5L8 17.5" fill="none" stroke={accent} strokeOpacity={0.35} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
@@ -2090,7 +2132,7 @@ function LockScreenInner({ data: base, onOpen, onOpenVenue, onOpenApp, cameraHre
       <div style={{ position: 'absolute', inset: 0, background: bgColor, ...(t.pattern === 'grid' && !dark ? { backgroundImage: 'linear-gradient(rgba(0,0,0,0.075) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.075) 1px, transparent 1px)', backgroundSize: '22px 22px' } : null) }} />
       <div data-ed="clock" style={block(96)}>
         <span style={{ fontSize: 20, fontWeight: 500, color: tc || ink.date }}>{caption || dateEn}</span>
-        <span style={{ ...numCss(data, cap(80, 258)), color: cc || ink.clock, marginTop: 10 }}>{clock}</span>
+        <span style={{ ...numCss(data, cap(80, 258)), color: cc || ink.clock, marginTop: 10 }}><RollClock to={clock} /></span>
         {below(dark ? '#FFFFFF' : '#3A3A3A', ink.info, 18)}
       </div>
       {data.phone.lockNoticeShow !== false && noticeEl(dark ? 'dark' : 'light', { bottom: 128 + (data.phone.lockSearch ? 64 + Math.max(0, data.phone.lockSearchY || 0) : 0), transform: ny ? `translateY(${Math.min(ny, 18)}px)` : undefined })}
@@ -2109,7 +2151,7 @@ function LockScreenInner({ data: base, onOpen, onOpenVenue, onOpenApp, cameraHre
         </div>
         <div data-ed="clock" style={block(tall ? 88 : 100)}>
           <span style={{ fontSize: 20, fontWeight: 500, color: tc || '#3A3A3A' }}>{caption || dateEn}</span>
-          <span style={{ ...numCss(data, tall ? cap(136, 262) : cap(84, 258)), color: cc || '#A0A0A0', marginTop: tall ? 4 : 10, letterSpacing: tall ? '-0.03em' : nf.letterSpacing }}>{clock}</span>
+          <span style={{ ...numCss(data, tall ? cap(136, 262) : cap(84, 258)), color: cc || '#A0A0A0', marginTop: tall ? 4 : 10, letterSpacing: tall ? '-0.03em' : nf.letterSpacing }}><RollClock to={clock} /></span>
           {below('#3A3A3A', '#6A6A6A', tall ? 14 : 18)}
         </div>
         {data.phone.lockNoticeShow === true && noticeEl('photo', { bottom: 128, transform: ny ? `translateY(${Math.min(ny, 18)}px)` : undefined })}
@@ -2126,7 +2168,7 @@ function LockScreenInner({ data: base, onOpen, onOpenVenue, onOpenApp, cameraHre
       <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 320, background: 'linear-gradient(rgba(0,0,0,0.28), rgba(0,0,0,0))' }} />
       <div data-ed="clock" style={{ ...block(84), textShadow: shadow }}>
         <span style={{ fontSize: 20, fontWeight: 500, color: tc }}>{caption || dateKo}</span>
-        <span style={{ ...numCss(data, cap(76, 258)), marginTop: 10, color: cc }}>{clock}</span>
+        <span style={{ ...numCss(data, cap(76, 258)), marginTop: 10, color: cc }}><RollClock to={clock} /></span>
         {below('#FFFFFF', 'rgba(255,255,255,0.92)', 14)}
       </div>
       {data.phone.lockNoticeShow !== false && noticeEl('photo', { top: Math.max(120, Math.min(318 + ny, noticeMaxTop)) })}
@@ -5474,6 +5516,10 @@ const isAppScreen = (s: PhoneScreenId | 'code'): s is PhoneAppId => s !== 'lock'
 
 export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invitationId, photoShareHref, onScreen }: { data: PhoneData; height: number | string; renderRsvp?: RenderRsvp; startScreen?: PhoneScreenId; invitationId?: string; photoShareHref?: string | null; /** 화면이 바뀔 때 (에디터 미리보기 — 왼쪽 목록을 따라 바꿈) */ onScreen?: (s: PhoneScreenId) => void }) {
   const [screen, setScreen] = useState<PhoneScreenId | 'code'>(startScreen)
+  // 처음 열 때만 잠금화면 등장 연출 — 잠금화면을 떠나거나 6초 지나면 끝
+  const [intro, setIntro] = useState(startScreen === 'lock')
+  useEffect(() => { if (!intro) return; const id = setTimeout(() => setIntro(false), 7000); return () => clearTimeout(id) }, [intro])
+  useEffect(() => { if (screen !== 'lock') setIntro(false) }, [screen])
   // 화면 사이를 옮겨 다닌 길 — 뒤로 가기는 이전 화면으로, 처음 화면에서는 홈으로
   const [hist, setHist] = useState<PhoneAppId[]>([])
   // 잠금화면 검색에서 고른 화면 — 비밀번호를 연 뒤 그 화면으로
@@ -5654,11 +5700,14 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
         </div>
       ))}
       {screen === 'lock' && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
+        <div className={intro ? 'pf-intro' : undefined} style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
+          {intro && <style>{LOCK_INTRO_CSS}</style>}
+          <LockIntroCtx.Provider value={intro}>
           <ReturnCtx.Provider value={{ startOpen: reopen, go: (a, key) => { backTo.current = { screen: 'lock', key }; setReopen(null); lockOpen(a) } }}>
           <LockScreen data={data} cameraHref={photoShareHref ?? null} onOpen={() => { setReopen(null); unlock(0) }} onOpenVenue={() => { if (next !== 'home') return unlock(0); backTo.current = { screen: 'lock', key: '' }; setDrag(0); setLockOut(true); setAnim(null); setUnder(null); setLeaving(null); setPlainIn(true); setScreen('memo') }}
             onOpenApp={lockOpen} />
           </ReturnCtx.Provider>
+          </LockIntroCtx.Provider>
         </div>
       )}
       {/* 배경음악 버튼 — 잠금 해제 뒤 오른쪽 위 */}

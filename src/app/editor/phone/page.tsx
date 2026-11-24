@@ -2845,15 +2845,16 @@ function PhoneEditorContent() {
         <div onClickCapture={onDecoClick} onPointerDownCapture={e => { const r = phoneRef.current?.getBoundingClientRect(); decoTapY.current = r ? e.clientY - r.top : null; decoTapX.current = r ? e.clientX - r.left : null; decoDownOnWidget.current = !!(e.target as HTMLElement).closest('[data-widget-id]'); if (decoOn && screen === 'lock') e.stopPropagation() }}
           // 서랍이 나와 있으면 폰을 왼쪽 끝으로 붙여 보이는 부분을 넓게
           style={zoom > 1 ? { width: 'max-content', margin: '12px auto 40px', padding: '0 16px' } : { transform: `translate(${sheetOpen && sheetFrac >= 0.08 ? -Math.max(0, (window.innerWidth - PHONE_W * scale) / 2 - 10) : 0}px, -6px)`, transition: 'transform 0.25s ease' }}>{canvas}</div>
-        {!decoSheet && <div className="absolute bottom-1 left-0 right-0">{example && !invitationId && <p className="text-[11.5px] text-center pointer-events-none" style={{ color: 'var(--ed-text-faint)' }}>비어 있는 곳은 예시로 보여 줍니다 · 직접 넣으면 바뀝니다</p>}</div>}
-        {!decoSheet && <div className="absolute right-3 bottom-7 z-20"><div className="flex items-center gap-0.5 p-0.5 rounded-full bg-white border shadow-sm" style={{ borderColor: 'var(--ed-border)' }}>
-            <button type="button" aria-label="축소" disabled={zoom <= 1} onClick={() => zoomBy(-0.25)} className="w-8 h-8 rounded-full flex items-center justify-center disabled:opacity-30" style={{ color: 'var(--ed-text)' }}><ZoomOut size={16} aria-hidden /></button>
-            <button type="button" aria-label="맞춤 크기" onClick={() => setZoom(1)} className="min-w-[44px] h-8 px-1 text-[12px] font-semibold tabular-nums" style={{ color: 'var(--ed-text-muted)' }}>{Math.round(zoom * 100)}%</button>
-            <button type="button" aria-label="확대" disabled={zoom >= 2.5} onClick={() => zoomBy(0.25)} className="w-8 h-8 rounded-full flex items-center justify-center disabled:opacity-30" style={{ color: 'var(--ed-text)' }}><ZoomIn size={16} aria-hidden /></button>
-          </div></div>}
-        {decoOn && !decoSheet && !coachDone && <p className="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full text-[12.5px] font-semibold text-white pointer-events-none whitespace-nowrap" style={{ background: 'rgba(44,40,36,0.88)' }}>고칠 곳을 눌러 보세요</p>}
         {canvasOverlays}
       </div>
+      {/* 확대 · 안내 · 첫 안내 — 폰 칸 위에 고정 (확대해서 넘겨도 제자리) */}
+      {!decoSheet && zoom <= 1 && <div className="absolute bottom-1 left-0 right-0 pointer-events-none">{example && !invitationId && <p className="text-[11.5px] text-center pointer-events-none" style={{ color: 'var(--ed-text-faint)' }}>비어 있는 곳은 예시로 보여 줍니다 · 직접 넣으면 바뀝니다</p>}</div>}
+      {!decoSheet && <div className="absolute right-3 bottom-7 z-20"><div className="flex items-center gap-0.5 p-0.5 rounded-full bg-white border shadow-sm" style={{ borderColor: 'var(--ed-border)' }}>
+          <button type="button" aria-label="축소" disabled={zoom <= 1} onClick={() => zoomBy(-0.25)} className="w-8 h-8 rounded-full flex items-center justify-center disabled:opacity-30" style={{ color: 'var(--ed-text)' }}><ZoomOut size={16} aria-hidden /></button>
+          <button type="button" aria-label="맞춤 크기" onClick={() => setZoom(1)} className="min-w-[44px] h-8 px-1 text-[12px] font-semibold tabular-nums" style={{ color: 'var(--ed-text-muted)' }}>{Math.round(zoom * 100)}%</button>
+          <button type="button" aria-label="확대" disabled={zoom >= 2.5} onClick={() => zoomBy(0.25)} className="w-8 h-8 rounded-full flex items-center justify-center disabled:opacity-30" style={{ color: 'var(--ed-text)' }}><ZoomIn size={16} aria-hidden /></button>
+        </div></div>}
+      {decoOn && !decoSheet && !coachDone && <p className="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full text-[12.5px] font-semibold text-white pointer-events-none whitespace-nowrap" style={{ background: 'rgba(44,40,36,0.88)' }}>고칠 곳을 눌러 보세요</p>}
       {decoSheet && (
         <div className="absolute top-0 bottom-0 right-0 z-30 flex" style={{ width: `calc(${sheetFrac * 100}% + 18px)`, transition: sheetDrag.current ? 'none' : 'width 0.25s ease' }}>
           {/* 손잡이 — 좌우로 끌어 필요한 만큼 꺼냄 · 누르면 넣기 ↔ 꺼내기 */}

@@ -239,7 +239,7 @@ export interface PhoneData {
     /** 포스터 잠금화면 — 사진 높이(px) · 경계 부드러움(%, 0이면 또렷한 선) */
     posterH?: number
     posterFade?: number
-    /** 홈 위 상태바 (시각 · 신호 · 하트 배터리) — 기본 켜짐 */
+    /** 예전 홈 위 상태바 — 지금은 쓰지 않음 (저장된 값 호환용) */
     statusBar?: boolean
     /** 잠금화면 검색창 — 누르면 검색어를 골라 그 화면으로 (비우면 홈 검색창과 같은 추천) */
     lockSearch?: boolean

@@ -10,6 +10,7 @@
  * - 날짜 줄은 시계 바로 위에 바짝 (틈 ≤ 12px)
  */
 import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type PointerEvent as ReactPointerEvent } from 'react'
+import { createPortal } from 'react-dom'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 import ZoomableImage from '@/components/invitation/ZoomableImage'
 import { YouTubeLite } from '@/components/invitation/YouTubeLite'
@@ -26,6 +27,14 @@ import {
 const MusicCtx = createContext<{ playing: boolean; toggle: () => void; has?: boolean } | null>(null)
 /** 청첩장을 처음 열 때 잠금화면 등장 연출 (화면 켜짐 → 시계가 예식 시각으로 → 알림 도착 → 밀어서 열기 안내) */
 const LockIntroCtx = createContext(false)
+/** 홈 칸 사이 세로 간격 — 짧은 화면에서는 줄어듦 (위젯 안 글자 맞춤에 씀) */
+const GapCtx = createContext<number>(GRID.gapY)
+/** 펼친 폴더 · 검색 화면을 그릴 곳 — 홈 위젯을 통째로 줄여도 덮개는 화면 끝까지 */
+const OverlayHostCtx = createContext<HTMLElement | null>(null)
+function PfOverlay({ children }: { children: ReactNode }) {
+  const host = useContext(OverlayHostCtx)
+  return host ? createPortal(children, host) : <>{children}</>
+}
 const LOCK_INTRO_CSS = `
 @keyframes pfWake { 0% { filter: brightness(0); transform: scale(1.05); } 35% { filter: brightness(0.35); } 100% { filter: none; transform: none; } }
 @keyframes pfUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
@@ -173,6 +182,7 @@ export function WidgetView({ w, data, t: theme, onOpenApp, editing, ch = GRID.ce
   const gbList = useGuestbook().list
   const letterUnread = useLetterUnread(data)
   const revealing = useContext(HomeRevealCtx) && !editing
+  const gy = useContext(GapCtx)
   // 홈 위젯 숫자 — 잠금화면 시계보다 한 단계 작고 가볍게 (산세리프는 굵기 500)
   const wn = (cap: number): CSSProperties => {
     const c = numCss(data, Math.round(cap * 0.86))
@@ -820,7 +830,7 @@ export function WidgetView({ w, data, t: theme, onOpenApp, editing, ch = GRID.ce
       const isLatinLine = (l: string) => !/[가-힣]/.test(l) && /[A-Za-z]/.test(l)
       const lineEm = (l: string) => [...l].reduce((n, ch) => n + (/[가-힣]/.test(ch) ? 1 : ch === ' ' ? 0.28 : 0.46 * (isLatinLine(l) ? latinBoost : 1)), 0)
       const fsFit = mixed || (hasKo && tLines.length > 1)
-        ? Math.max(11, Math.min(base, Math.floor((spanW(w.size) - (w.variant === 2 ? 32 : 14)) / Math.max(1, ...tLines.map(lineEm))), Math.floor((spanH(w.size, ch) - (w.variant === 2 ? 30 : 10)) / (tLines.reduce((n, l) => n + (isLatinLine(l) ? latinBoost : 1), 0) * 1.18))))
+        ? Math.max(11, Math.min(base, Math.floor((spanW(w.size) - (w.variant === 2 ? 32 : 14)) / Math.max(1, ...tLines.map(lineEm))), Math.floor((spanH(w.size, ch) - (GRID.gapY - gy) * (SIZE_SPAN[w.size].h - 1) - (w.variant === 2 ? 30 : 10)) / (tLines.reduce((n, l) => n + (isLatinLine(l) ? latinBoost : 1), 0) * 1.18))))
         : fs0
       // 사용자가 고른 크기 (칸을 넘칠 수 있어 가장자리는 잘리지 않게 줄바꿈)
       const fs = Math.round(fsFit * userScale * 10) / 10
@@ -1251,6 +1261,7 @@ function GuestbookTicker({ list, size, memo, memoColor, labelColor, textColor, t
 /* ───────── 폴더 — 앱 여러 개를 한 칸에 (누르면 폰 폴더처럼 펼쳐짐) ───────── */
 function FolderWidget({ data, apps: raw, label, size, t, ch, editing, onOpenApp, mono, navKey = 'folder', appLabels, appIcons }: { navKey?: string; appLabels?: Partial<Record<PhoneAppId, string>>; appIcons?: Partial<Record<PhoneAppId, string>>; data: PhoneData; apps?: PhoneAppId[]; label?: string; size: WidgetSize; t: PhoneTheme; ch: number; editing: boolean; onOpenApp?: (a: PhoneAppId) => void; mono?: boolean }) {
   const nav = useContext(ReturnCtx)
+  const gy = useContext(GapCtx)
   const [open, setOpen] = useState(() => !editing && nav?.startOpen === navKey)
   const apps = (raw && raw.length ? raw : FOLDER_DEFAULT_APPS).filter(a => APP_META[a] && !isAppOff(data, a))
   const name = label?.trim() || '폴더'
@@ -1286,10 +1297,10 @@ function FolderWidget({ data, apps: raw, label, size, t, ch, editing, onOpenApp,
     <>
       <button type="button" onClick={() => { if (!editing) setOpen(true) }} aria-label={`${name} 폴더`}
         style={{ width: '100%', height: '100%', border: 0, background: 'transparent', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: big ? 'flex-start' : undefined, gap: 6, cursor: editing ? 'inherit' : 'pointer', font: 'inherit' }}>
-        {big ? tile(Math.min(spanW('M'), spanH('M', ch) - 20), cols) : tile(ic, cols)}
+        {big ? tile(Math.min(spanW('M'), spanH('M', ch) - (GRID.gapY - gy) - 20), cols) : tile(ic, cols)}
         <span style={{ fontSize: 11, fontWeight: 500, lineHeight: 1.3, color: t.labelInk, whiteSpace: 'nowrap', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 0 }}>{name}</span>
       </button>
-      {open && (
+      {open && (<PfOverlay>
         // 펼친 폴더 — 홈 위 흐린 막, 가운데 둥근 판에 앱 아이콘
         <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(20,20,20,0.3)', backdropFilter: 'blur(26px) saturate(1.4)', WebkitBackdropFilter: 'blur(26px) saturate(1.4)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, animation: 'pfFadeIn 0.25s ease' }}>
           <style>{'@keyframes pfFadeIn { from { opacity: 0; } to { opacity: 1; } } @keyframes pfFolder { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }'}</style>
@@ -1303,7 +1314,7 @@ function FolderWidget({ data, apps: raw, label, size, t, ch, editing, onOpenApp,
             ))}
           </div>
         </div>
-      )}
+      </PfOverlay>)}
     </>
   )
 }
@@ -1353,7 +1364,7 @@ function SearchWidget({ data, size, variant, hint, items: raw, rotate = true, t,
           <span style={{ display: 'flex', color: dark || glassy ? '#FFFFFF' : t.cardInk, flexShrink: 0 }}>{glass}</span>
         </span>
       </button>
-      {open && (
+      {open && (<PfOverlay>
         // 검색 화면 — 위에 입력칸, 아래 추천 검색어
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(250,250,250,0.88)', backdropFilter: 'blur(26px) saturate(1.3)', WebkitBackdropFilter: 'blur(26px) saturate(1.3)', fontFamily: SYSF, color: '#111111', animation: 'pfFadeIn 0.22s ease', display: 'flex', flexDirection: 'column' }}>
           <style>{'@keyframes pfFadeIn { from { opacity: 0; } to { opacity: 1; } }'}</style>
@@ -1381,7 +1392,7 @@ function SearchWidget({ data, size, variant, hint, items: raw, rotate = true, t,
             {!shown.length && <p style={{ fontSize: 14, color: '#8E8E93', padding: '14px 4px' }}>찾는 내용이 없어요</p>}
           </div>
         </div>
-      )}
+      </PfOverlay>)}
     </>
   )
 }
@@ -1577,22 +1588,6 @@ function SlidePhotos({ srcs, mono }: { srcs: string[]; mono?: boolean }) {
     </div>
   )
 }
-/** 홈 맨 위 상태바 — 예식 시각 · 신호 · 하트 배터리 */
-function StatusBar({ data, ink }: { data: PhoneData; ink: string }) {
-  return (
-    <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 50, padding: '0 30px 0 34px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: ink, pointerEvents: 'none', zIndex: 1, fontFamily: "var(--pf-body, 'Pretendard Variable'), 'Pretendard', sans-serif" }}>
-      <span style={{ fontSize: 15, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}>{data.wedding.time || '14:00'}</span>
-      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <svg width="17" height="11" viewBox="0 0 17 11" aria-hidden="true">{[0, 1, 2, 3].map(k => <rect key={k} x={k * 4.5} y={8 - k * 2.6} width="3" height={3 + k * 2.6} rx="0.8" fill={ink} />)}</svg>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11.5, fontWeight: 600 }}>
-          <svg width="14" height="13" viewBox="0 0 24 22" aria-hidden="true"><path d="M12 21s-9.5-5.8-9.5-12.4A5.4 5.4 0 0 1 12 5.4a5.4 5.4 0 0 1 9.5 3.2C21.5 15.2 12 21 12 21z" fill={ink} /></svg>
-          100%
-        </span>
-      </span>
-    </div>
-  )
-}
-
 /** 홈 '우리 이야기' 위젯 — 이야기를 하나씩 넘기며 미리 보여 줌 (누르면 우리 이야기) */
 function StoryWidget({ data, size, variant, t, accent, card, onOpen, editing, mono }: { data: PhoneData; size: WidgetSize; variant: number; mono: boolean; t: PhoneTheme; accent: string; card: CSSProperties; onOpen?: () => void; editing: boolean }) {
   const chs = chaptersOf(data).filter(c => c.title || c.src || c.lines.length)
@@ -2282,6 +2277,7 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
   const open = (a: PhoneAppId) => { if (!editing) onOpenApp?.(a) }
   // 실제 화면 높이(설계 px)에 맞춰 칸 높이를 정한다
   const rootRef = useRef<HTMLDivElement>(null)
+  const [host, setHost] = useState<HTMLDivElement | null>(null)
   const [screenH, setScreenH] = useState(PHONE_H)
   useEffect(() => {
     const el = rootRef.current
@@ -2290,9 +2286,10 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
-  // 짧은 화면(카카오톡 등) 하객 화면 — 칸을 낮추면 위젯 글이 잘리므로, 위젯 · 하단 바를 설계 높이 그대로 그린 뒤 통째로 줄임 (바탕은 꽉 채움)
-  const homeK = !editing && screenH < PHONE_H - 24 ? screenH / PHONE_H : 1
-  const ch = cellHFor(homeK < 1 ? PHONE_H : screenH)
+  // 짧은 화면(카카오톡 등) 하객 화면 — 위젯 모양은 그대로 두고, 빈 곳(위 여백 · 칸 사이 · 하단 바 아래)부터 줄임
+  // 그래도 모자랄 때만 위젯 · 하단 바를 통째로 조금 줄임 (바탕 · 펼친 폴더는 꽉 채움)
+  const compact = !editing && screenH < PHONE_H - 24
+  const ch = compact ? GRID.cellH : cellHFor(screenH)
   const onPhoto = t.homeBg === 'photo'
   // 바탕 흐림 — 가장자리가 비지 않게 살짝 키움
   const hb = Math.max(0, Math.min(40, data.phone.homeBlur ?? 0))
@@ -2300,6 +2297,26 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
   const pageTotal = homePagesOf(data)
   const shownPages = editing ? [Math.min(editing.page ?? 0, pageTotal - 1)] : Array.from({ length: pageTotal }, (_, k) => k)
   const multi = shownPages.length > 1
+  // 위 여백 — 오른쪽 위 음악 버튼이 있으면 그 아래부터
+  const CT = music?.has ? 54 : 24
+  const lay = (() => {
+    if (!compact) return null
+    const shown = data.phone.widgets.filter(w => !(w.type === 'app' && isEmptyApp(data, w.props.app || 'memo')))
+    const rows = Math.max(1, ...shown.map(w => w.row + SIZE_SPAN[w.size].h))
+    const dockH = dock.length > 0 ? 98 : 0
+    // f 0 → 1 : 넉넉한 간격 → 가장 좁은 간격
+    const at = (f: number) => {
+      const top = (GRID.top - CT) * (1 - f), gap = GRID.gapY - 6 * f, below = (multi ? 30 : 14) - 6 * f, db = 22 - 12 * f
+      return { top, gap, db, need: top + rows * ch + (rows - 1) * gap + below + dockH + db }
+    }
+    const avail = screenH - CT
+    const loose = at(0), tight = at(1)
+    if (loose.need <= avail) return { ...loose, k: 1, h: avail }
+    if (tight.need <= avail) return { ...at((loose.need - avail) / (loose.need - tight.need)), k: 1, h: avail }
+    return { ...tight, k: avail / tight.need, h: tight.need }
+  })()
+  const rowY = (row: number) => lay ? lay.top + row * (ch + lay.gap) : cellY(row, ch)
+  const boxH = (size: WidgetSize) => lay ? SIZE_SPAN[size].h * ch + (SIZE_SPAN[size].h - 1) * lay.gap : spanH(size, ch)
   const pagerRef = useRef<HTMLDivElement>(null)
   const [pg, setPg] = useState(0)
   // 마우스로도 넘기기 (PC 미리보기) — 끌면 따라오고, 놓으면 가까운 장으로. 끈 뒤엔 눌림으로 치지 않음
@@ -2308,10 +2325,11 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
   const goPage = (k: number) => { const el = pagerRef.current; if (el) el.scrollTo({ left: k * el.clientWidth, behavior: 'smooth' }) }
   const blurCss: CSSProperties = hb ? { position: 'absolute', inset: 0, filter: `blur(${hb}px)`, transform: `scale(${1 + hb / 120})` } : { position: 'absolute', inset: 0 }
   return (
-    <div ref={rootRef} data-ed="homebg" style={{ position: 'absolute', inset: 0, fontFamily: t.body, color: t.ink, overflow: 'hidden' }}
+    <OverlayHostCtx.Provider value={editing ? null : host}>
+    <GapCtx.Provider value={lay ? lay.gap : GRID.gapY}>
+    <div ref={el => { rootRef.current = el; setHost(el) }} data-ed="homebg" style={{ position: 'absolute', inset: 0, fontFamily: t.body, color: t.ink, overflow: 'hidden' }}
       onPointerDown={editing ? (e) => { if (e.target === e.currentTarget) editing.onBackgroundPointerDown() } : undefined}>
       {reveal && <style>{REVEAL_CSS}</style>}
-      {data.phone.statusBar !== false && <StatusBar data={data} ink={t.ink} />}
       {onPhoto
         ? <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}><div style={blurCss}><Backdrop data={data} t={t} home dim={Math.max(0, -(data.phone.homeDim ?? -34) / 100)} /></div>{(data.phone.homeDim ?? 0) > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(255,255,255,${data.phone.homeDim! / 100})` }} />}</div>
         : data.phone.homeImage
@@ -2330,7 +2348,7 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
         <div style={{ position: 'absolute', left: cellX(editing.ghost.col), top: cellY(editing.ghost.row, ch), width: spanW(editing.ghost.size), height: spanH(editing.ghost.size, ch), borderRadius: 22, background: editing.ghost.ok ? `${accent}33` : 'rgba(200,60,60,0.18)', border: `2px solid ${editing.ghost.ok ? accent : '#C83C3C'}`, pointerEvents: 'none' }} />
       )}
 
-      <div style={homeK < 1 ? { position: 'absolute', top: 0, left: (PHONE_W * (1 - homeK)) / 2, width: PHONE_W, height: PHONE_H, transform: `scale(${homeK})`, transformOrigin: '0 0' } : { display: 'contents' }}>
+      <div style={lay ? { position: 'absolute', top: CT, left: (PHONE_W * (1 - lay.k)) / 2, width: PHONE_W, height: lay.h, ...(lay.k < 1 ? { transform: `scale(${lay.k})`, transformOrigin: '0 0' } : null) } : { display: 'contents' }}>
       <HomeRevealCtx.Provider value={!!reveal}>
       {/* 홈 화면 장 — 에디터는 고치는 장 하나, 하객은 옆으로 넘김 */}
       <div ref={pagerRef} onScroll={multi ? (e => { const el = e.currentTarget; setPg(Math.round(el.scrollLeft / Math.max(1, el.clientWidth))) }) : undefined}
@@ -2368,7 +2386,7 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
             onPointerDown={editing ? (e) => editing.onWidgetPointerDown(e, w) : undefined}
             style={{
               pointerEvents: 'auto',
-              position: 'absolute', left: cellX(w.col), top: cellY(w.row, ch), width: spanW(w.size), height: spanH(w.size, ch),
+              position: 'absolute', left: cellX(w.col), top: rowY(w.row), width: spanW(w.size), height: boxH(w.size),
               opacity: editing?.draggingId === w.id || offInEditor ? 0.35 : 1, touchAction: editing ? 'none' : undefined, cursor: editing ? 'grab' : undefined,
               outline: sel ? `1.5px solid ${accent}` : undefined, outlineOffset: sel ? 3 : undefined, borderRadius: span.w === 1 ? 16 : 22,
               animation: reveal ? `pfRise 0.6s cubic-bezier(0.32, 0.72, 0, 1) ${0.05 + (w.row * 4 + w.col) * 0.025}s both` : undefined,
@@ -2425,7 +2443,7 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
       </div>
       </HomeRevealCtx.Provider>
       {multi && (
-        <div style={{ position: 'absolute', left: 0, right: 0, bottom: dock.length > 0 ? 122 : 24, display: 'flex', justifyContent: 'center', gap: 0, pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: lay ? lay.db + (dock.length > 0 ? 100 : 2) : dock.length > 0 ? 122 : 24, display: 'flex', justifyContent: 'center', gap: 0, pointerEvents: 'none' }}>
           {/* 점을 눌러도 그 장으로 */}
           {shownPages.map((k, i) => (
             <button key={k} type="button" aria-label={`홈 ${i + 1}`} onClick={editing ? undefined : () => goPage(i)}
@@ -2436,7 +2454,7 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
         </div>
       )}
 
-      {dock.length > 0 && <div data-ed="dock" style={{ position: 'absolute', left: 14, right: 14, bottom: 22, height: 98, borderRadius: 30, ...(data.phone.iconStyle === 'glass' ? { background: isDark(t.bg) || onPhoto || !!data.phone.homeImage ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.45)', backdropFilter: 'blur(22px) saturate(1.6)', WebkitBackdropFilter: 'blur(22px) saturate(1.6)', boxShadow: 'inset 0 1px 0.5px rgba(255,255,255,0.55), inset 0 0 0 1px rgba(255,255,255,0.22)' } : { background: t.bar }), display: 'grid', gridTemplateColumns: `repeat(${Math.max(1, dock.length)}, minmax(0, 1fr))`, alignItems: 'center', justifyItems: 'center' }}>
+      {dock.length > 0 && <div data-ed="dock" style={{ position: 'absolute', left: 14, right: 14, bottom: lay ? lay.db : 22, height: 98, borderRadius: 30, ...(data.phone.iconStyle === 'glass' ? { background: isDark(t.bg) || onPhoto || !!data.phone.homeImage ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.45)', backdropFilter: 'blur(22px) saturate(1.6)', WebkitBackdropFilter: 'blur(22px) saturate(1.6)', boxShadow: 'inset 0 1px 0.5px rgba(255,255,255,0.55), inset 0 0 0 1px rgba(255,255,255,0.22)' } : { background: t.bar }), display: 'grid', gridTemplateColumns: `repeat(${Math.max(1, dock.length)}, minmax(0, 1fr))`, alignItems: 'center', justifyItems: 'center' }}>
         {dock.map(d => {
           const look = iconLook(data, d.app)
           return (
@@ -2452,6 +2470,8 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
       </div>}
       </div>
     </div>
+    </GapCtx.Provider>
+    </OverlayHostCtx.Provider>
   )
 }
 
@@ -5468,7 +5488,7 @@ function IntroWidget({ data, size, variant, t, accent, card, onOpen, editing, ch
         </span>
         <span style={{ fontSize: 11, fontWeight: 500, lineHeight: 1.3, color: t.labelInk, whiteSpace: 'nowrap' }}>커플 소개</span>
       </button>
-      {folder && (
+      {folder && (<PfOverlay>
         // 펼친 폴더 — 홈 위에 흐린 막, 가운데 둥근 판에 두 사람 아이콘
         <div onClick={() => setFolder(false)} style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(20,20,20,0.3)', backdropFilter: 'blur(26px) saturate(1.4)', WebkitBackdropFilter: 'blur(26px) saturate(1.4)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, animation: 'pfFadeIn 0.25s ease' }}>
           <style>{'@keyframes pfFadeIn { from { opacity: 0; } to { opacity: 1; } } @keyframes pfFolder { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }'}</style>
@@ -5485,7 +5505,7 @@ function IntroWidget({ data, size, variant, t, accent, card, onOpen, editing, ch
             ))}
           </div>
         </div>
-      )}
+      </PfOverlay>)}
       </>
     )
   }
@@ -5916,7 +5936,7 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
       )}
       {audioUrl && screen !== 'lock' && screen !== 'code' && (
         // 앱 화면에서는 왼쪽 위 '뒤로'(top 52, 40px)와 같은 줄 가운데에 맞춤
-        <div style={{ position: 'absolute', top: screen === 'home' ? 46 : 55, right: 14, zIndex: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ position: 'absolute', top: screen === 'home' ? 16 : 55, right: 14, zIndex: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
           {hint && <span style={{ padding: '7px 11px', borderRadius: 999, background: 'rgba(20,20,20,0.82)', color: '#FFFFFF', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{data.bgm?.notificationText || '배경음악이 준비되어 있어요'}</span>}
           <button type="button" onClick={toggleMusic} aria-label={playing ? '배경음악 끄기' : '배경음악 켜기'}
             style={{ position: 'relative', width: 34, height: 34, borderRadius: '50%', border: 0, background: 'rgba(255,255,255,0.88)', boxShadow: '0 2px 10px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>

@@ -2645,7 +2645,6 @@ function PhoneEditorContent() {
           </Field>
           {accentField()}
           {monoField()}
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={data.phone.statusBar !== false} onChange={e => setPhone({ statusBar: e.target.checked })} />위쪽 상태바 (시각 · 배터리)</label>
         </Section>
         <Section title="하단 바">
           <Field label={`넣을 화면 (${dock.length}/${DOCK_MAX})`}>

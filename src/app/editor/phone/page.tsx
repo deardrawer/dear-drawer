@@ -548,9 +548,13 @@ function PhoneEditorContent() {
     if (undoTimer.current) clearTimeout(undoTimer.current)
     undoTimer.current = setTimeout(() => setUndoW(null), 5000)
   }
+  // 위젯을 끌어 옮긴 직후 따라오는 click 은 '누르기'로 치지 않음 (휴대폰 꾸미기에서 서랍이 열리지 않게)
+  const widgetDragged = useRef(false)
   const onWidgetPointerDown = (e: ReactPointerEvent, w: PhoneWidget) => {
     e.preventDefault(); e.stopPropagation()
-    setSelectedId(w.id); setPanel('home'); setMobileTab('settings'); setDraft(null)
+    // 휴대폰 꾸미기 — 누르면 설정, 끌면 옮기기 (누르는 순간 설정 서랍이 나와 폰을 덮지 않게 손을 뗄 때 정함)
+    const tapToSelect = mob && mobMode === 'deco' && !preview
+    if (!tapToSelect) { setSelectedId(w.id); setPanel('home'); setMobileTab('settings'); setDraft(null) }
     const sx = e.clientX, sy = e.clientY
     const ox = cellX(w.col), oy = cellY(w.row)
     const span = SIZE_SPAN[w.size]
@@ -570,9 +574,15 @@ function PhoneEditorContent() {
       last = { col, row, ok: !!placeWithReflow(pageWs, w, col, row) }
       setDrag({ id: w.id, ghost: { col, row, size: w.size, ok: last.ok } })
     }
-    const up = () => {
-      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up)
+    const cancel = () => {
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', cancel)
       setDrag(null); setOverTrash(false)
+    }
+    const up = () => {
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', cancel)
+      setDrag(null); setOverTrash(false)
+      if (tapToSelect && !moved) { setSelectedId(w.id); setPanel('home'); setDraft(null); return }
+      if (moved) { widgetDragged.current = true; setTimeout(() => { widgetDragged.current = false }, 0) }
       if (moved && inTrash) { removeWidget(w); return }
       if (moved && last) {
         // 겹치면 그 자리 위젯이 비켜남
@@ -581,7 +591,7 @@ function PhoneEditorContent() {
         else flash('놓을 자리가 없어요')
       }
     }
-    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up)
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', cancel)
   }
   /* 끌어서 새로 넣기 — 왼쪽 목록이나 모양 카드를 폰 화면 위로 끌어다 놓으면 그 칸에 들어감 (그냥 누르면 원래대로) */
   const phoneRef = useRef<HTMLDivElement>(null)
@@ -1936,13 +1946,14 @@ function PhoneEditorContent() {
   )
   const numberFontField = (label = '숫자 글꼴', key: 'number' | 'lockNumber' = 'number') => (
     <Field label={label}>
-      <div className="grid grid-cols-3 gap-1.5">
+      {/* 설정 칸이 좁아도(휴대폰 서랍) 숫자가 카드 밖으로 나가지 않게 — 칸 폭에 맞춰 글자 크기 */}
+      <div className="grid grid-cols-3 gap-1.5" style={{ containerType: 'inline-size' }}>
         {(Object.keys(NUMBER_FONTS) as PhoneNumberFont[]).map(id => {
           const f = NUMBER_FONTS[id]
           return (
-            <button key={id} type="button" onClick={() => setPhone({ fonts: { ...data.phone.fonts, [key]: id } })} className={choiceCls((key === 'lockNumber' ? data.phone.fonts.lockNumber || data.phone.fonts.number : data.phone.fonts.number) === id) + ' !p-2 !text-center'}>
-              <span className="block" style={{ fontFamily: f.family, fontWeight: f.weight, letterSpacing: f.letterSpacing, fontVariantNumeric: 'lining-nums tabular-nums', fontSize: Math.round(17 / f.capRatio), lineHeight: 1.15 }}>{data.wedding.time || '14:00'}</span>
-              <span className="text-[10.5px] block mt-0.5" style={{ color: 'var(--ed-text-muted)' }}>{f.label}</span>
+            <button key={id} type="button" onClick={() => setPhone({ fonts: { ...data.phone.fonts, [key]: id } })} className={choiceCls((key === 'lockNumber' ? data.phone.fonts.lockNumber || data.phone.fonts.number : data.phone.fonts.number) === id) + ' !p-2 !text-center overflow-hidden'}>
+              <span className="block whitespace-nowrap" style={{ fontFamily: f.family, fontWeight: f.weight, letterSpacing: f.letterSpacing, fontVariantNumeric: 'lining-nums tabular-nums', fontSize: `min(${Math.round(17 / f.capRatio)}px, ${(6.2 / f.capRatio).toFixed(1)}cqw)`, lineHeight: 1.15 }}>{data.wedding.time || '14:00'}</span>
+              <span className="text-[10.5px] block mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: 'var(--ed-text-muted)' }}>{f.label}</span>
             </button>
           )
         })}
@@ -2683,6 +2694,7 @@ function PhoneEditorContent() {
     homebg: [{ panel: 'home', secs: ['홈 화면', '바탕', '위젯 · 아이콘'] }],
   }
   const onDecoClick = (e: React.MouseEvent) => {
+    if (widgetDragged.current) { e.stopPropagation(); return }
     // 설정을 넣어 둔 채 폰을 누르면 다시 꺼냄
     if (decoOn) setSheetFrac(f => (f < 0.08 ? 0.75 : f))
     if (!decoOn || (screen !== 'lock' && screen !== 'home')) return
@@ -2758,7 +2770,7 @@ function PhoneEditorContent() {
           </div>
           <div className="flex items-center gap-1.5 overflow-x-auto text-[12px]" style={{ scrollbarWidth: 'none' }}>
             <select aria-label="화면 고르기" className="shrink-0 h-7 pl-2.5 pr-1 rounded-full border bg-white font-medium" style={{ borderColor: 'var(--ed-border)', color: 'var(--ed-text)' }}
-              value={isAppScr ? screen : ''} onChange={e => { if (e.target.value) goScreen(e.target.value as PhoneScreenId) }}>
+              value={isAppScr ? screen : ''} onChange={e => { if (e.target.value) { clearTap(); goScreen(e.target.value as PhoneScreenId) } }}>
               <option value="">화면 내용 ▾</option>
               {SCREENS.filter(x => x.id !== 'lock' && x.id !== 'home').map(x => <option key={x.id} value={x.id}>{x.label}</option>)}
             </select>
@@ -2774,7 +2786,8 @@ function PhoneEditorContent() {
       {/* 폰 — 늘 화면 가득 그대로. 설정은 오른쪽에서 폰 위로 꺼내 쓰는 서랍 */}
       <div ref={decoAreaRef} className="absolute inset-0 flex justify-center items-center overflow-hidden">
         <div onClickCapture={onDecoClick} onPointerDownCapture={e => { const r = phoneRef.current?.getBoundingClientRect(); decoTapY.current = r ? e.clientY - r.top : null; decoTapX.current = r ? e.clientX - r.left : null; decoDownOnWidget.current = !!(e.target as HTMLElement).closest('[data-widget-id]'); if (decoOn && screen === 'lock') e.stopPropagation() }}
-          className="-translate-y-1.5">{canvas}</div>
+          // 서랍이 나와 있으면 폰을 왼쪽 끝으로 붙여 보이는 부분을 넓게
+          style={{ transform: `translate(${sheetOpen && sheetFrac >= 0.08 ? -Math.max(0, (window.innerWidth - PHONE_W * scale) / 2 - 10) : 0}px, -6px)`, transition: 'transform 0.25s ease' }}>{canvas}</div>
         {decoOn && !decoSheet && <p className="absolute bottom-1.5 left-0 right-0 text-center text-[11.5px] pointer-events-none" style={{ color: 'var(--ed-text-muted)' }}>고칠 곳을 누르면 설정이 열립니다</p>}
         {canvasOverlays}
       </div>
@@ -2793,7 +2806,7 @@ function PhoneEditorContent() {
             <div className="shrink-0 h-9 flex items-center justify-end px-1">
               <button type="button" aria-label="닫기" onClick={() => { closeSheet(); if (isAppScr) goScreen('home') }} className="w-9 h-9 flex items-center justify-center text-lg" style={{ color: 'var(--ed-text-muted)' }}>×</button>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-8" style={{ minWidth: 220 }}>{decoSheet}</div>
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 pb-8">{decoSheet}</div>
           </div>
         </div>
       )}

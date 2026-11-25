@@ -39,10 +39,10 @@ export default async function CouplePhotoSharePage({ params, searchParams }: Pag
 
   if (!couple.enabled || !primary) return <GsStatusScreen look={look} kind="off" invitationHref={invitationHref} />
 
-  // 업로드 창: 예식 당일(Day 0) ~ 예식+10일. wedding_date 없으면 허용.
+  // 업로드 창: 예식 당일(Day 0) ~ 예식+10일. wedding_date 없으면 허용. '미리 열기'를 켜면 예식 전에도 받음.
   // 대표 청첩장의 현재 예식일을 기준으로(서랍 프로필의 시드 스냅샷은 예식일 변경 시 어긋날 수 있음).
   const since = look.since
-  if (since !== null && since < 0) return <GsStatusScreen look={look} kind="before" invitationHref={invitationHref} />
+  if (since !== null && since < 0 && !couple.earlyOpen) return <GsStatusScreen look={look} kind="before" invitationHref={invitationHref} />
   if (since !== null && since > GUEST_SHARE_OPEN_DAYS) return <GsStatusScreen look={look} kind="closed" invitationHref={invitationHref} />
 
   return <GuestShareClient slug="" coupleSlug={shareSlug} coupleName={coupleName} title={title} description={description} look={look} invitationHref={invitationHref} />

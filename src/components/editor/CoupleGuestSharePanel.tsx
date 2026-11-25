@@ -18,6 +18,7 @@ export interface CoupleShareStatus {
   description: string | null
   cover: string | null
   nameStyle: 'en' | 'ko' | null
+  earlyOpen?: boolean
   look?: ShareLook
   connected: boolean
   accountEmail: string | null
@@ -141,9 +142,19 @@ export default function CoupleGuestSharePanel({ onChange, upload, renderCrop }: 
           <div className="flex gap-1.5">
             <input readOnly value={url} onFocus={e => e.currentTarget.select()} className="flex-1 min-w-0 h-8 px-2 rounded-md border text-[12px] bg-gray-50" style={{ borderColor: 'var(--ed-border)' }} />
             <button type="button" className={btn} style={line} onClick={() => { navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1400) }}>{copied ? '복사됨' : '복사'}</button>
+            <a href={url} target="_blank" rel="noopener noreferrer" className={btn + ' flex items-center'} style={line}>열기</a>
           </div>
         </div>
       )}
+
+      {/* 예식 전에 미리 열기 — 테스트하거나 미리 받고 싶을 때 (마감은 그대로 예식 후 10일) */}
+      <div className={row}>
+        <span className="min-w-0">
+          <span className="block text-[13px] font-semibold">예식 전에 미리 열기 <span className="text-[11.5px] font-medium ml-1" style={{ color: s.earlyOpen ? 'var(--ed-accent)' : 'var(--ed-text-muted)' }}>{s.earlyOpen ? '켜짐' : '꺼짐'}</span></span>
+          <span className="block text-[11.5px] break-keep" style={{ color: 'var(--ed-text-muted)' }}>{s.earlyOpen ? '지금도 사진을 받을 수 있어요. 테스트로 보낸 사진도 실제 사진처럼 저장됩니다.' : '평소엔 예식 당일부터 열려요. 켜면 미리 보내 볼 수 있어요.'}</span>
+        </span>
+        <button type="button" disabled={busy || !s.enabled} className={btn} style={s.earlyOpen ? line : solid} onClick={() => save({ earlyOpen: !s.earlyOpen })}>{s.earlyOpen ? '끄기' : '켜기'}</button>
+      </div>
 
       {/* 첫 화면 사진 */}
       <div className={row}>

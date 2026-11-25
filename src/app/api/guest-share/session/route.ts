@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     // 대상 청첩장 결정: 커플 공유(coupleSlug)면 대표(가장 최근 결제) 청첩장 폴더로, 아니면 청첩장 slug로.
     let invitation: Awaited<ReturnType<typeof getInvitationBySlug>> = null
     let coupleMode = false
+    let earlyOpen = false
     const coupleSlug = (body.coupleSlug || '').trim()
     if (coupleSlug) {
       const couple = await getCoupleGuestShareBySlug(coupleSlug)
@@ -43,6 +44,7 @@ export async function POST(request: NextRequest) {
       if (!invitation) return NextResponse.json({ error: '아직 사진을 받을 수 없어요.' }, { status: 403 })
       await ensureCoupleDriveMapping(couple.userId, invitation.id)
       coupleMode = true
+      earlyOpen = couple.earlyOpen
     } else {
       const slug = (body.slug || '').trim()
       if (!slug) return NextResponse.json({ error: 'slug가 필요합니다.' }, { status: 400 })
@@ -65,7 +67,8 @@ export async function POST(request: NextRequest) {
     // 예식 당일(Day 0)부터 업로드 허용 — 예식 전에는 차단(안내 페이지에서 처리). wedding_date 없으면 허용.
     // 업로드 창: 예식 당일(Day 0) ~ 예식+10일. 그 전엔 대기, 이후엔 마감. wedding_date 없으면 허용.
     const since = daysSinceWeddingKST(invitation.wedding_date)
-    if (since !== null && since < 0) {
+    // 커플이 '미리 열기'를 켰으면 예식 전에도 허용 (마감은 그대로)
+    if (since !== null && since < 0 && !earlyOpen) {
       return NextResponse.json({ error: '결혼식 당일부터 사진을 보낼 수 있어요.' }, { status: 403 })
     }
     if (since !== null && since > 10) {

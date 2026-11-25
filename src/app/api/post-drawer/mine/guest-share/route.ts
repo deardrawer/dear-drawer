@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
       description: share?.description ?? null,
       cover: share?.cover ?? null,
       nameStyle: share?.nameStyle ?? null,
+      earlyOpen: share?.earlyOpen ?? false,
       // 미리보기용 첫 화면 — 커버 · 이름 · 날짜 (공유 페이지와 같은 값)
       look: buildShareLook(host, share?.weddingDate ?? null, share?.cover ?? null, share?.nameStyle ?? null, share?.coverY ?? null, share?.coverCrop ?? null),
       connected: !!conn,
@@ -45,7 +46,8 @@ export async function POST(request: NextRequest) {
   const user = await getCurrentUser(request)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
-    const body = (await request.json()) as { enabled?: boolean; title?: string | null; description?: string | null; invitationId?: string | null; cover?: string | null; nameStyle?: 'en' | 'ko' | null; coverY?: number | null; coverCrop?: { cropX: number; cropY: number; cropWidth: number; cropHeight: number } | null }
+    const body = (await request.json()) as { enabled?: boolean; title?: string | null; description?: string | null; invitationId?: string | null; cover?: string | null; nameStyle?: 'en' | 'ko' | null; coverY?: number | null; coverCrop?: { cropX: number; cropY: number; cropWidth: number; cropHeight: number } | null; earlyOpen?: boolean }
+    if (body.earlyOpen !== undefined) body.earlyOpen = body.earlyOpen === true
     // 첫 화면 사진 — 우리 저장소(업로드 주소)만 받음
     if (typeof body.cover === 'string' && body.cover && !/^(\/|https:\/\/)/.test(body.cover)) body.cover = null
     await setCoupleGuestShare(user.id, body)
@@ -55,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
     const share = await getCoupleGuestShareByUser(user.id)
     const host = await resolveCoupleShareInvitation(user.id)
-    return NextResponse.json({ ok: true, enabled: share?.enabled ?? false, title: share?.title ?? null, description: share?.description ?? null, selectedInvitationId: share?.invitationId ?? null, primaryInvitationId: host?.id ?? null })
+    return NextResponse.json({ ok: true, enabled: share?.enabled ?? false, earlyOpen: share?.earlyOpen ?? false, title: share?.title ?? null, description: share?.description ?? null, selectedInvitationId: share?.invitationId ?? null, primaryInvitationId: host?.id ?? null })
   } catch (e) {
     console.error('couple guest-share POST error:', e)
     return NextResponse.json({ error: e instanceof Error ? e.message : '저장 실패' }, { status: 500 })

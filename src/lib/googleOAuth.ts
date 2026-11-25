@@ -61,7 +61,8 @@ export async function buildGoogleAuthUrl(state: string): Promise<string> {
     response_type: 'code',
     scope: GOOGLE_DRIVE_SCOPE,
     access_type: 'offline', // refresh_token 발급
-    prompt: 'consent', // 최초/재연결 시 refresh_token 확실히 재발급
+    // 계정 고르기 화면을 늘 보여 줌(다른 계정으로 바꿀 수 있게) + 최초/재연결 시 refresh_token 확실히 재발급
+    prompt: 'select_account consent',
     include_granted_scopes: 'true',
     state,
   })

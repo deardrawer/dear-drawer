@@ -132,6 +132,8 @@ export default function CoupleGuestSharePanel({ onChange, upload, renderCrop }: 
           <span className="block text-[13px] font-semibold">Google Drive</span>
           <span className="block text-[11.5px] truncate" style={{ color: 'var(--ed-text-muted)' }}>{s.connected ? (s.accountEmail || '연결됨') : '연결하면 받은 사진이 자동 보관됩니다'}</span>
         </span>
+        {/* 연결돼 있으면 '바꾸기' — 계정 고르기 화면에서 다른 계정을 고르면 그 Drive 로 (새 폴더) */}
+        {s.connected && connectUrl && <a href={connectUrl} className={btn + ' flex items-center'} style={line}>바꾸기</a>}
         {!s.connected && (connectUrl ? <a href={connectUrl} className={btn + ' flex items-center'} style={solid}>연결</a> : <span className="text-[11.5px] shrink-0" style={{ color: 'var(--ed-text-muted)' }}>결제 후</span>)}
       </div>
 

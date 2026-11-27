@@ -1,4 +1,5 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
+import { resetResendableGuestFiles, setGuestFileStatus } from './guestUploadFiles'
 
 /**
  * DRIVE_QUEUE producer — R2 검증 완료 파일을 guest-drive-transfer 큐로 보낸다.
@@ -26,4 +27,14 @@ export async function enqueueDriveTransfer(fileId: string): Promise<boolean> {
     console.error('DRIVE_QUEUE enqueue 실패:', e instanceof Error ? e.message : e)
     return false
   }
+}
+
+/** Drive 를 다시 연결한 뒤 — 그동안 못 간 사진을 다시 보냄. 보낸 수를 돌려줌 (큐에 못 넣은 건 uploaded 로 남아 다음에 다시) */
+export async function resendGuestFiles(invitationId: string): Promise<number> {
+  const ids = await resetResendableGuestFiles(invitationId)
+  let n = 0
+  for (const id of ids) {
+    if (await enqueueDriveTransfer(id)) { await setGuestFileStatus(id, 'queued'); n++ }
+  }
+  return n
 }

@@ -3,6 +3,7 @@ import { buildShareLook } from '@/lib/guestShareLook'
 import { getCurrentUser } from '@/lib/ownerAuth'
 import { ensureCoupleGuestShareSlug, getCoupleGuestShareByUser, setCoupleGuestShare, resolveCoupleShareInvitation, listCouplePaidInvitations, ensureCoupleDriveMapping } from '@/lib/postDrawer'
 import { getCloudConnectionByUser } from '@/lib/cloudStorage'
+import { countTokenFailedGuestFiles } from '@/lib/guestUploadFiles'
 
 /**
  * [owner 전용] 커플(서랍) 단위 하객 사진 공유 설정.
@@ -20,6 +21,8 @@ export async function GET(request: NextRequest) {
     const host = await resolveCoupleShareInvitation(user.id)
     const invitations = await listCouplePaidInvitations(user.id)
     const conn = await getCloudConnectionByUser(user.id)
+    // 연결은 있는데 그 뒤로 로그인 정보 문제로 못 간 사진이 있으면 — 다시 연결 필요 (다시 연결하면 자동으로 다시 보냄)
+    const stuck = conn && host ? await countTokenFailedGuestFiles(host.id, conn.updated_at).catch(() => 0) : 0
     return NextResponse.json({
       slug: share?.slug ?? null,
       enabled: share?.enabled ?? false,
@@ -31,6 +34,8 @@ export async function GET(request: NextRequest) {
       // 미리보기용 첫 화면 — 커버 · 이름 · 날짜 (공유 페이지와 같은 값)
       look: buildShareLook(host, share?.weddingDate ?? null, share?.cover ?? null, share?.nameStyle ?? null, share?.coverY ?? null, share?.coverCrop ?? null),
       connected: !!conn,
+      needsReconnect: stuck > 0,
+      stuckCount: stuck,
       accountEmail: conn?.account_email ?? null,
       primaryInvitationId: host?.id ?? null, // 실제로 업로드/연결이 갈 청첩장(지정 or 자동)
       selectedInvitationId: share?.invitationId ?? null, // 커플이 명시 지정한 것(null이면 자동)

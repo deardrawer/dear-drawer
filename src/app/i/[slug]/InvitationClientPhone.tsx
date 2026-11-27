@@ -23,7 +23,7 @@ interface InvitationClientPhoneProps {
 const MAX_W = 430
 // 첫 그림 전에 화면 폭에 맞는 배율을 넣어 둔다 (깜빡임 방지) — 바로 바깥 상자에 --pf
 // 늘 폭에 꽉 맞춤 — 위아래가 짧은 화면은 잠금 · 홈 화면이 스스로 배치를 맞춤 (PhoneScreens 의 shortBy · gridScale)
-const FIT_SCRIPT = `(function(){try{var r=document.currentScript&&document.currentScript.parentElement;if(!r)return;var w=Math.min(document.documentElement.clientWidth||window.innerWidth||${PHONE_W},${MAX_W});r.style.setProperty('--pf',String(w/${PHONE_W}))}catch(e){}})()`
+const FIT_SCRIPT = `(function(){try{var r=document.currentScript&&document.currentScript.parentElement;if(!r)return;var w=Math.min(document.documentElement.clientWidth||window.innerWidth||${PHONE_W},${MAX_W});r.style.setProperty('--pf',String(w/${PHONE_W}));if(window.innerHeight)document.documentElement.style.setProperty('--pf-vh',window.innerHeight+'px')}catch(e){}})()`
 
 /**
  * THE PHONE 하객 화면 — 에디터와 같은 렌더러(PhoneFlow)를 폭에 맞춰 확대/축소해 보여준다.
@@ -58,6 +58,8 @@ export default function InvitationClientPhone({ invitation, content, isSample, p
     const fit = () => {
       const w = Math.min(document.documentElement.clientWidth || window.innerWidth, MAX_W)
       boxRef.current?.style.setProperty('--pf', String(w / PHONE_W))
+      // 화면 높이 — 실제로 보이는 높이로 (삼성 인터넷 등은 100dvh 가 아래 도구 막대 뒤까지 잡혀 아래 버튼 줄이 가려짐)
+      if (window.innerHeight) document.documentElement.style.setProperty('--pf-vh', `${window.innerHeight}px`)
     }
     fit()
     window.addEventListener('resize', fit)
@@ -86,10 +88,10 @@ export default function InvitationClientPhone({ invitation, content, isSample, p
     : undefined
 
   return (
-    <div className={PHONE_FONT_VARS} style={{ minHeight: '100dvh', background: '#1A1816', display: 'flex', justifyContent: 'center', WebkitTextSizeAdjust: '100%', textSizeAdjust: '100%' }}>
-      <div ref={boxRef} style={{ position: 'relative', width: `min(100vw, ${MAX_W}px)`, height: '100dvh', overflow: 'hidden', ['--pf' as string]: 1 }} suppressHydrationWarning>
+    <div className={PHONE_FONT_VARS} style={{ minHeight: 'var(--pf-vh, 100dvh)', background: '#1A1816', display: 'flex', justifyContent: 'center', WebkitTextSizeAdjust: '100%', textSizeAdjust: '100%' }}>
+      <div ref={boxRef} style={{ position: 'relative', width: `min(100vw, ${MAX_W}px)`, height: 'var(--pf-vh, 100dvh)', overflow: 'hidden', ['--pf' as string]: 1 }} suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: FIT_SCRIPT }} />
-        <div style={{ position: 'absolute', left: 0, top: 0, width: PHONE_W, height: 'calc(100dvh / var(--pf))', transform: 'scale(var(--pf))', transformOrigin: '0 0' }}>
+        <div style={{ position: 'absolute', left: 0, top: 0, width: PHONE_W, height: 'calc(var(--pf-vh, 100dvh) / var(--pf))', transform: 'scale(var(--pf))', transformOrigin: '0 0' }}>
           <PhoneFlow data={data} height="100%" renderRsvp={renderRsvp} invitationId={invitation.id} photoShareHref={photoShareHref} />
         </div>
       </div>

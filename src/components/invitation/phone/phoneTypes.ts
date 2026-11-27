@@ -247,6 +247,8 @@ export interface PhoneData {
     /** 잠금화면 검색창 모양 (0 밝게 · 1 어둡게 · 2 테두리 · 3 유리, 비우면 바탕에 맞춰) · 안내 글 · 위로 올린 만큼(px) */
     lockSearchStyle?: number
     lockSearchHint?: string
+    /** 잠금화면 아래 '밀어서 청첩장 열기' 글 (비우면 기본) */
+    lockSlideText?: string
     lockSearchY?: number
     /** 홈 화면 장 수 (1 ~ 3, 옆으로 넘김) */
     homePages?: number

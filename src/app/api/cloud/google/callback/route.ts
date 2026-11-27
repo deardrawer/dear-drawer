@@ -5,6 +5,7 @@ import { verifyOAuthState, exchangeCodeForTokens, GOOGLE_DRIVE_SCOPE } from '@/l
 import { encryptSecret } from '@/lib/cloudTokens'
 import { saveCloudConnection, saveProjectStorage, getProjectStorage } from '@/lib/cloudStorage'
 import { getAccountEmail, ensureRootFolders, ensureGuestFolder } from '@/lib/googleDrive'
+import { resendGuestFiles } from '@/lib/driveQueue'
 
 /**
  * Google OAuth 콜백. state 서명 + nonce 쿠키(CSRF) + 로그인 사용자/소유권 재검증 후
@@ -74,6 +75,14 @@ export async function GET(request: NextRequest) {
       rootFolderId: folders.rootFolderId,
       guestFolderId: folders.guestFolderId,
     })
+
+    // 연결이 끊겼던 동안 · 연결 전에 Drive 로 못 간 사진을 다시 보냄 (실패해도 연결은 성공)
+    try {
+      const n = await resendGuestFiles(state.invitationId)
+      if (n) console.log(`Drive 재연결 — 못 간 사진 ${n}장 다시 보냄`)
+    } catch (e) {
+      console.error('Drive 재연결 후 다시 보내기 실패:', e)
+    }
 
     const res = redirectTo(true, 'connected', state.invitationId, state.returnTo)
     res.cookies.delete('g_oauth_nonce')

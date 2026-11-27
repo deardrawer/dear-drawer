@@ -21,6 +21,9 @@ export interface CoupleShareStatus {
   earlyOpen?: boolean
   look?: ShareLook
   connected: boolean
+  /** 로그인 정보가 만료돼 Drive 로 못 간 사진이 있음 — 다시 연결하면 자동으로 다시 보냄 */
+  needsReconnect?: boolean
+  stuckCount?: number
   accountEmail: string | null
   primaryInvitationId: string | null
   selectedInvitationId: string | null
@@ -130,12 +133,17 @@ export default function CoupleGuestSharePanel({ onChange, upload, renderCrop }: 
       <div className={row}>
         <span className="min-w-0">
           <span className="block text-[13px] font-semibold">Google Drive</span>
-          <span className="block text-[11.5px] truncate" style={{ color: 'var(--ed-text-muted)' }}>{s.connected ? (s.accountEmail || '연결됨') : '연결하면 받은 사진이 자동 보관됩니다'}</span>
+          <span className="block text-[11.5px] truncate" style={{ color: s.needsReconnect ? '#C2410C' : 'var(--ed-text-muted)' }}>{s.needsReconnect ? `연결이 끊겼어요 · 못 간 사진 ${s.stuckCount ?? 0}장` : s.connected ? (s.accountEmail || '연결됨') : '연결하면 받은 사진이 자동 보관됩니다'}</span>
+          {s.connected && !s.needsReconnect && <span className="block text-[11.5px]" style={{ color: 'var(--ed-text-muted)' }}>받은 사진은 1분 안에 Drive로 옮겨져요</span>}
         </span>
         {/* 연결돼 있으면 '바꾸기' — 계정 고르기 화면에서 다른 계정을 고르면 그 Drive 로 (새 폴더) */}
-        {s.connected && connectUrl && <a href={connectUrl} className={btn + ' flex items-center'} style={line}>바꾸기</a>}
+        {s.connected && connectUrl && <a href={connectUrl} className={btn + ' flex items-center'} style={s.needsReconnect ? solid : line}>{s.needsReconnect ? '다시 연결' : '바꾸기'}</a>}
         {!s.connected && (connectUrl ? <a href={connectUrl} className={btn + ' flex items-center'} style={solid}>연결</a> : <span className="text-[11.5px] shrink-0" style={{ color: 'var(--ed-text-muted)' }}>결제 후</span>)}
       </div>
+
+      {s.needsReconnect && (
+        <p className="py-2.5 text-[12px] break-keep" style={{ color: '#C2410C' }}>다시 연결하면 못 간 사진도 자동으로 보내져요.</p>
+      )}
 
       {/* 링크 · 미리보기 */}
       {url && (

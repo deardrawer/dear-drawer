@@ -5,7 +5,7 @@
  * 왼쪽: 화면 고르기 · 위젯 추가 / 가운데: 폰 화면(눌러서 고르고 끌어서 옮김) / 오른쪽: 고른 위젯·화면 설정
  * 미감은 격자·정해진 크기·테마가 지키고, 커플은 '무엇을, 어디에'만 정한다.
  */
-import { Suspense, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
+import { Suspense, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { uploadImage } from '@/lib/imageUpload'
@@ -273,6 +273,97 @@ function formatPhone(v: string) {
   if (d.length <= 7) return `${d.slice(0, 3)}-${d.slice(3)}`
   if (d.length <= 10) return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`
   return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`
+}
+
+/**
+ * 사진 순서 바꾸기 — 마우스는 끌어서, 휴대폰은 꾹 누른 뒤 끌어서 옮김.
+ * 끄는 동안 다른 사진이 자리를 비켜 주고, 놓으면 onChange 로 새 순서. 지우기 · 자르기 단추는 data-nodrag 로 끌기에서 뺌.
+ */
+function SortableList<T>({ items, keyOf, onChange, className, renderItem }: { items: T[]; keyOf: (x: T) => string; onChange: (next: T[]) => void; className?: string; renderItem: (x: T, i: number) => ReactNode }) {
+  const boxRef = useRef<HTMLDivElement>(null)
+  const st = useRef<{ from: number; sx: number; sy: number; touch: boolean; started: boolean; timer?: ReturnType<typeof setTimeout>; rects: DOMRect[] } | null>(null)
+  const [drag, setDragS] = useState<{ from: number; over: number; dx: number; dy: number } | null>(null)
+  const dragRef = useRef<typeof drag>(null)
+  const setDrag = (d: typeof drag) => { dragRef.current = d; setDragS(d) }
+  const justDragged = useRef(false)
+  // 휴대폰 — 끄는 동안엔 서랍이 스크롤되지 않게
+  useEffect(() => {
+    const el = boxRef.current
+    if (!el) return
+    const f = (e: TouchEvent) => { if (st.current?.started) e.preventDefault() }
+    el.addEventListener('touchmove', f, { passive: false })
+    return () => el.removeEventListener('touchmove', f)
+  }, [])
+  const moved = <U,>(arr: U[], from: number, to: number) => { const a = [...arr]; const [x] = a.splice(from, 1); a.splice(to, 0, x); return a }
+  const onDown = (e: ReactPointerEvent, i: number) => {
+    if (e.button !== 0 || (e.target as HTMLElement).closest('[data-nodrag]')) return
+    const s0: { from: number; sx: number; sy: number; touch: boolean; started: boolean; timer?: ReturnType<typeof setTimeout>; rects: DOMRect[] } = { from: i, sx: e.clientX, sy: e.clientY, touch: e.pointerType !== 'mouse', started: false, rects: [] }
+    st.current = s0
+    const begin = () => {
+      const s = st.current
+      if (!s || s.started) return
+      s.started = true
+      s.rects = Array.from(boxRef.current?.children || []).map(c => (c as HTMLElement).getBoundingClientRect())
+      setDrag({ from: s.from, over: s.from, dx: 0, dy: 0 })
+      try { navigator.vibrate?.(8) } catch { /* noop */ }
+    }
+    if (s0.touch) s0.timer = setTimeout(begin, 280)
+    const move = (ev: PointerEvent) => {
+      const s = st.current
+      if (!s) return
+      const dx = ev.clientX - s.sx, dy = ev.clientY - s.sy
+      if (!s.started) {
+        if (s.touch) { if (Math.hypot(dx, dy) > 8) end(false) } // 꾹 누르기 전에 움직이면 스크롤
+        else if (Math.hypot(dx, dy) > 6) begin()
+        if (!st.current?.started) return
+      }
+      // 손가락에 가장 가까운 칸
+      let over = s.from, best = Infinity
+      s.rects.forEach((r, k) => { const d = Math.hypot(ev.clientX - (r.left + r.width / 2), ev.clientY - (r.top + r.height / 2)); if (d < best) { best = d; over = k } })
+      setDrag({ from: s.from, over, dx, dy })
+    }
+    const end = (commit: boolean) => {
+      const s = st.current
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', cancel)
+      if (s?.timer) clearTimeout(s.timer)
+      st.current = null
+      const d = dragRef.current
+      setDrag(null)
+      if (s?.started) {
+        justDragged.current = true
+        setTimeout(() => { justDragged.current = false }, 0)
+        if (commit && d && d.over !== d.from) onChange(moved(items, d.from, d.over))
+      }
+    }
+    const up = () => end(true)
+    const cancel = () => end(false)
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', cancel)
+  }
+  // 같은 사진이 두 번 들어가도 key 가 겹치지 않게
+  const seen: Record<string, number> = {}
+  const keyed = items.map((x, i) => { const k = keyOf(x); seen[k] = (seen[k] || 0) + 1; return { x, i, key: `${k}#${seen[k]}` } })
+  const order = drag ? moved(keyed, drag.from, drag.over) : keyed
+  const fr = drag && st.current?.rects[drag.from]
+  return (
+    <div ref={boxRef} className={className} onClickCapture={e => { if (justDragged.current) { e.preventDefault(); e.stopPropagation() } }}>
+      {order.map(({ x, i, key }) => (
+        <div key={key} onPointerDown={e => onDown(e, i)} onContextMenu={e => e.preventDefault()}
+          style={{ touchAction: 'pan-y', userSelect: 'none', WebkitUserSelect: 'none', cursor: drag ? 'grabbing' : 'grab', opacity: drag && i === drag.from ? 0.3 : 1, transition: 'opacity 0.15s', WebkitTouchCallout: 'none' } as CSSProperties}>
+          {renderItem(x, i)}
+        </div>
+      ))}
+      {drag && fr && (
+        // 손가락을 따라오는 사진
+        <div aria-hidden style={{ position: 'fixed', left: fr.left + drag.dx, top: fr.top + drag.dy, width: fr.width, height: fr.height, zIndex: 200, pointerEvents: 'none', transform: 'scale(1.08)', boxShadow: '0 10px 24px rgba(0,0,0,0.25)', borderRadius: 8 }}>
+          {renderItem(items[drag.from], drag.from)}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function UploadButton({ label, onFile, onFiles, busy }: { label: string; onFile?: (f: File) => void; onFiles?: (fs: File[]) => void; busy?: boolean }) {
@@ -1643,13 +1734,11 @@ function PhoneEditorContent() {
                     {folders.length > 1 && <button type="button" aria-label="폴더 삭제" title="폴더 삭제 (사진도 함께)" className="w-7 h-7 shrink-0 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50" onClick={() => save(folders.filter((_, j) => j !== fi))}><X size={16} className="mx-auto" aria-hidden /></button>}
                   </div>
                   {f.images.length > 0 && (
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {f.images.map((src, i) => (
-                        <div key={src + i} className="relative aspect-square rounded-md bg-cover bg-center" style={{ backgroundImage: `url(${src})` }}>
-                          <button type="button" aria-label="사진 삭제" className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white text-xs leading-5" onClick={() => save(folders.map((x, j) => (j === fi ? { ...x, images: x.images.filter((_, k) => k !== i) } : x)))}><X size={16} className="mx-auto" aria-hidden /></button>
+                    <SortableList className="grid grid-cols-4 gap-1.5" items={f.images} keyOf={x => x} onChange={next => save(folders.map((x, j) => (j === fi ? { ...x, images: next } : x)))} renderItem={(src, i) => (
+                        <div className="relative aspect-square rounded-md bg-cover bg-center" style={{ backgroundImage: `url(${src})` }}>
+                          <button type="button" data-nodrag aria-label="사진 삭제" className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white text-xs leading-5" onClick={() => save(folders.map((x, j) => (j === fi ? { ...x, images: x.images.filter((_, k) => k !== i) } : x)))}><X size={16} className="mx-auto" aria-hidden /></button>
                         </div>
-                      ))}
-                    </div>
+                    )} />
                   )}
                   {total < ALBUM_MAX && <UploadButton label="+ 사진 올리기" busy={busy === `album${fi}`} onFiles={fs => addFiles(fi, fs)} />}
                 </div>
@@ -1764,14 +1853,14 @@ function PhoneEditorContent() {
                 <input className={inputCls} maxLength={30} placeholder={`맺음 (비우면 '${givenFirst(data.groom)} · ${givenFirst(data.bride)} 드림')`} value={l.sign || ''} onChange={e => patchL(l.id, { sign: e.target.value })} />
                 <div>
                   <div className="flex flex-wrap gap-1.5">
-                    {(l.photos || []).map((src, k) => (
-                      <span key={src + k} className="relative w-14 h-14 rounded-md overflow-hidden border group" style={{ borderColor: 'var(--ed-border)' }}>
+                    <SortableList className="contents" items={l.photos || []} keyOf={x => x} onChange={next => patchL(l.id, { photos: next })} renderItem={(src, k) => (
+                      <span className="relative block w-14 h-14 rounded-md overflow-hidden border group" style={{ borderColor: 'var(--ed-border)' }}>
                         <button type="button" title="눌러서 자르기" className="absolute inset-0" onClick={() => setCropFor({ kind: 'letter', id: l.id, src })}><CroppedImageDiv src={src} crop={l.crops?.[src]} className="w-full h-full" /></button>
                         {k === 0 && <span className="absolute left-0 right-0 bottom-0 text-[9.5px] text-center text-white bg-black/45 pointer-events-none">대표</span>}
-                        <button type="button" aria-label="사진 빼기" className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/55 text-white text-[11px] leading-none" onClick={() => patchL(l.id, { photos: (l.photos || []).filter((_, j) => j !== k) })}><X size={16} className="mx-auto" aria-hidden /></button>
-                        {k > 0 && <button type="button" aria-label="대표 사진으로" className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-black/55 text-white text-[10px] leading-none opacity-0 group-hover:opacity-100" onClick={() => { const ph = [...(l.photos || [])]; const [x] = ph.splice(k, 1); patchL(l.id, { photos: [x, ...ph] }) }}><Star size={11} fill="currentColor" className="mx-auto" aria-hidden /></button>}
+                        <button type="button" data-nodrag aria-label="사진 빼기" className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/55 text-white text-[11px] leading-none" onClick={() => patchL(l.id, { photos: (l.photos || []).filter((_, j) => j !== k) })}><X size={16} className="mx-auto" aria-hidden /></button>
+                        {k > 0 && <button type="button" data-nodrag aria-label="대표 사진으로" className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-black/55 text-white text-[10px] leading-none opacity-0 group-hover:opacity-100" onClick={() => { const ph = [...(l.photos || [])]; const [x] = ph.splice(k, 1); patchL(l.id, { photos: [x, ...ph] }) }}><Star size={11} fill="currentColor" className="mx-auto" aria-hidden /></button>}
                       </span>
-                    ))}
+                    )} />
                     {(l.photos?.length || 0) < LETTER_PHOTOS_MAX && <UploadButton label={`+ 사진 (${l.photos?.length || 0}/${LETTER_PHOTOS_MAX})`} busy={busy === `letter-${l.id}`} onFiles={fs => addPhotos(l.id, fs)} />}
                   </div>
                 </div>
@@ -2219,12 +2308,12 @@ function PhoneEditorContent() {
                   </div>
                   <textarea rows={3} className={inputCls} maxLength={200} placeholder="주차, 식사, 셔틀처럼 당일 알려 드릴 내용" value={p.body} onChange={e => setPage(i, { body: e.target.value })} />
                   <div className="flex gap-2 items-center flex-wrap">
-                    {(p.images || []).map((im, k) => (
-                      <span key={k} className="relative">
+                    <SortableList className="contents" items={p.images || []} keyOf={im => im.url} onChange={next => setPage(i, { images: next })} renderItem={(im, k) => (
+                      <span className="relative block">
                         <span className="block w-11 h-11 rounded-md bg-cover bg-center border border-gray-200" style={{ backgroundImage: `url(${im.url})` }} />
-                        <button type="button" aria-label="사진 삭제" className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-black/60 text-white text-[10px] leading-4" onClick={() => setPage(i, { images: (p.images || []).filter((_, j) => j !== k) })}><X size={16} className="mx-auto" aria-hidden /></button>
+                        <button type="button" data-nodrag aria-label="사진 삭제" className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-black/60 text-white text-[10px] leading-4" onClick={() => setPage(i, { images: (p.images || []).filter((_, j) => j !== k) })}><X size={16} className="mx-auto" aria-hidden /></button>
                       </span>
-                    ))}
+                    )} />
                     {(p.images || []).length < 3 && <UploadButton label="+ 사진" busy={busy === `dday${i}`} onFile={f => upload(`dday${i}`, f, url => setPage(i, { images: [...(p.images || []), { url, settings: { scale: 1, positionX: 0, positionY: 0 } }] }))} />}
                     {(p.links || []).length < 2 && <button type="button" className={pill(false)} onClick={() => setPage(i, { links: [...(p.links || []), { url: '', label: '' }] })}>+ 링크</button>}
                   </div>
@@ -2432,6 +2521,7 @@ function PhoneEditorContent() {
           )}
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={data.phone.fullscreen !== false} onChange={e => setPhone({ fullscreen: e.target.checked ? undefined : false })} />열 때 전체 화면
             <FullscreenHelp /></label>
+          <Field label="밀어서 여는 글"><input className={inputCls} maxLength={12} value={data.phone.lockSlideText ?? ''} placeholder="밀어서 청첩장 열기" onChange={e => setPhone({ lockSlideText: e.target.value || undefined })} /></Field>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={data.phone.usePasscode} onChange={e => { setPhone({ usePasscode: e.target.checked }); setShowCode(e.target.checked) }} />날짜 비밀번호로 잠그기</label>
           {data.phone.usePasscode && <p className="text-[12px] -mt-2" style={{ color: 'var(--ed-text-muted)' }}>{data.wedding.date ? `비밀번호: ${data.wedding.date.slice(5, 7)}${data.wedding.date.slice(8, 10)} (예식 월일)` : '예식일을 입력해야 작동합니다.'}</p>}
         </Section>

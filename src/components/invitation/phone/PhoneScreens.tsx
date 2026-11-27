@@ -1801,7 +1801,7 @@ function LightBg({ t }: { t: PhoneTheme }) {
 
 /* ───────── 잠금화면 — 사진·컬러 / 포스터 (날짜·시간·이름·장소·열기 버튼은 모두) ───────── */
 /** 밀어서 청첩장 열기 — 동그라미를 오른쪽 끝까지 밀면 열림 (막대를 눌러도 끝까지 미끄러지며 열림) */
-function SlideToOpen({ onOpen, onDark, accent }: { onOpen?: () => void; onDark: boolean; accent: string }) {
+function SlideToOpen({ onOpen, onDark, accent, label }: { onOpen?: () => void; onDark: boolean; accent: string; label?: string }) {
   const KNOB = 42
   const PAD = 4
   const trackRef = useRef<HTMLDivElement>(null)
@@ -1828,7 +1828,7 @@ function SlideToOpen({ onOpen, onDark, accent }: { onOpen?: () => void; onDark: 
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); finish() } }}
       style={{ position: 'relative', flex: 1, margin: '0 12px', height: 50, borderRadius: 25, background: onDark ? 'rgba(0,0,0,0.28)' : 'rgba(0,0,0,0.06)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', boxShadow: onDark ? 'inset 0 0 0 1px rgba(255,255,255,0.18)' : 'inset 0 0 0 1px rgba(0,0,0,0.05)', cursor: 'pointer', touchAction: 'none', userSelect: 'none', overflow: 'hidden' }}>
       <span className="pf-shine" style={{ position: 'absolute', left: KNOB + PAD + 4, right: 10, top: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14.5, fontWeight: 600, letterSpacing: '-0.01em', whiteSpace: 'nowrap',
-        backgroundImage: `linear-gradient(90deg, ${dim} 0%, ${dim} 38%, ${ink} 50%, ${dim} 62%, ${dim} 100%)`, backgroundSize: '200% 100%', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', animation: 'pfShine 2.8s linear infinite', opacity: 1 - ratio * 1.6, transition: dragging ? 'none' : 'opacity 0.3s' }}>밀어서 청첩장 열기</span>
+        backgroundImage: `linear-gradient(90deg, ${dim} 0%, ${dim} 38%, ${ink} 50%, ${dim} 62%, ${dim} 100%)`, backgroundSize: '200% 100%', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', animation: 'pfShine 2.8s linear infinite', opacity: 1 - ratio * 1.6, transition: dragging ? 'none' : 'opacity 0.3s' }}>{label?.trim() || '밀어서 청첩장 열기'}</span>
       <span
         onPointerDown={e => {
           e.stopPropagation()
@@ -2110,7 +2110,7 @@ function LockScreenInner({ data: base, onOpen, onOpenVenue, onOpenApp, cameraHre
                   : <PhoneIcon name="music" color={ink} size={22} stroke={1.7} />}
               </button>
             : <span style={{ width: 50 }} />}
-          <SlideToOpen onOpen={onOpen} onDark={onDark} accent={data.phone.accent} />
+          <SlideToOpen onOpen={onOpen} onDark={onDark} accent={data.phone.accent} label={data.phone.lockSlideText} />
           {cameraHref === null
             ? <span style={{ width: 50 }} />
             : <a href={cameraHref || undefined} aria-label="사진 공유" onClick={e => { e.stopPropagation(); if (!cameraHref) e.preventDefault() }} style={{ ...circle(onDark), cursor: cameraHref ? 'pointer' : 'default' }}>
@@ -3065,7 +3065,7 @@ function LetterApp({ data, onBack, onNavigate }: AppProps) {
           )}
         </div>
         {!lock && acts.length > 0 && (
-          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 78, borderTop: `0.5px solid ${IOS.line}`, background: 'rgba(250,250,250,0.94)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-around', paddingTop: 14 }}>
+          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 56, borderTop: `0.5px solid ${IOS.line}`, background: 'rgba(250,250,250,0.94)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
             {acts.map(([a, label]) => <button key={a} type="button" onClick={() => onNavigate?.(a)} style={{ border: 0, background: 'transparent', color: ac, fontSize: 13.5, fontWeight: 600, cursor: 'pointer', font: 'inherit' }}>{label}</button>)}
           </div>
         )}
@@ -3689,9 +3689,9 @@ function NativeApp({ app, data, onBack, onNavigate, renderRsvp }: AppProps) {
         <div style={{ height: 100 }} />
       </>
     ), (
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 84, background: 'rgba(249,249,249,0.96)', borderTop: `0.5px solid ${IOS.line}`, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', paddingTop: 12 }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 56, background: 'rgba(249,249,249,0.96)', borderTop: `0.5px solid ${IOS.line}`, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', alignItems: 'center' }}>
         {picks.map(([k, l]) => (
-          <button key={k} type="button" onClick={() => setPick(k)} style={{ border: 0, background: 'transparent', color: IOS.red, fontSize: 17, fontWeight: pick === k ? 800 : 500, cursor: 'pointer', font: 'inherit', alignSelf: 'flex-start' }}>
+          <button key={k} type="button" onClick={() => setPick(k)} style={{ border: 0, background: 'transparent', color: IOS.red, fontSize: 17, fontWeight: pick === k ? 800 : 500, cursor: 'pointer', font: 'inherit' }}>
             {pick === k ? `✓ ${l}` : l}
           </button>
         ))}
@@ -3763,7 +3763,7 @@ function NativeApp({ app, data, onBack, onNavigate, renderRsvp }: AppProps) {
         </div>
       </>
     ), (
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 84, background: 'rgba(249,249,249,0.96)', borderTop: `0.5px solid ${IOS.line}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 12 }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 56, background: 'rgba(249,249,249,0.96)', borderTop: `0.5px solid ${IOS.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {cheerTo(data) && (
         <button type="button" onClick={() => go(cheerTo(data)!)} style={{ font: 'inherit', border: 0, background: 'transparent', color: IOS.blue, fontSize: 16, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 7L4 12l6 5M4 12h10a6 6 0 0 1 6 6" fill="none" stroke={IOS.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>

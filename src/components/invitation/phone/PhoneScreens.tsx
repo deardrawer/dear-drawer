@@ -5637,6 +5637,10 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
   // 손으로 밀기 시작하면 안내는 바로 끝
   useEffect(() => { if (swiping) setSwipeHint(false) }, [swiping])
   const [nudging, setNudging] = useState(false)
+  // 들어오는 애니메이션이 끝난 앱 — 클래스를 떼어 둠 (밀었다 돌아올 때 애니메이션이 처음부터 다시 돌며 번쩍이지 않게)
+  const [enteredApp, setEnteredApp] = useState<PhoneAppId | null>(null)
+  // 다른 화면으로 가면 지움 — 같은 앱을 다음에 다시 열 때는 들어오는 애니메이션이 다시 나오게
+  useEffect(() => { setEnteredApp(e => (e === screen ? e : null)) }, [screen])
   useEffect(() => {
     if (!swipeHint) return
     let raf = 0
@@ -5906,14 +5910,14 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
         ...(leaving && leaving !== screen ? [{ a: leaving, role: 'out' as const }] : []),
       ].map(({ a, role }) => (
         <div key={a} aria-hidden={role !== 'cur' ? true : undefined}
-          className={role === 'cur' ? (plainIn ? undefined : 'pf-app-in') : role === 'out' ? 'pf-app-out' : undefined}
+          className={role === 'cur' ? (plainIn || enteredApp === a ? undefined : 'pf-app-in') : role === 'out' ? 'pf-app-out' : undefined}
           style={{ position: 'absolute', inset: 0, ...(role !== 'cur' ? { pointerEvents: 'none' } : null),
             // 들어올 때 애니메이션(transform 고정)이 손가락 따라가기를 덮지 않게 끔 · 끄는 동안 글자 선택 막음
             ...(role === 'cur' && swipe > 0 ? { transform: `translateX(${swipe}px)`, animation: 'none', transition: swiping || nudging ? 'none' : 'transform 0.2s ease-out', boxShadow: '-12px 0 30px rgba(0,0,0,0.18)', zIndex: 3, userSelect: 'none', WebkitUserSelect: 'none' } : null),
             ...(role === 'cur' ? { touchAction: 'pan-y' } : null) }}
           onPointerDown={role === 'cur' && invitationId ? onSwipeDown : undefined} onPointerMove={role === 'cur' && invitationId ? onSwipeMove : undefined}
           onPointerUp={role === 'cur' && invitationId ? onSwipeUp : undefined} onPointerCancel={role === 'cur' && invitationId ? onSwipeUp : undefined}
-          onAnimationEnd={e => { if (e.target !== e.currentTarget) return; if (role === 'cur') setUnder(null); else if (role === 'out') setLeaving(null) }}>
+          onAnimationEnd={e => { if (e.target !== e.currentTarget) return; if (role === 'cur') { setUnder(null); setEnteredApp(a) } else if (role === 'out') setLeaving(null) }}>
           <AppScreen key={a} app={a} data={data} onBack={goBack} onNavigate={n => { setHist(h => [...h, a]); setPlainIn(false); setUnder(a); setScreen(n) }} renderRsvp={renderRsvp} />
         </div>
       ))}

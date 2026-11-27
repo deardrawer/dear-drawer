@@ -31,7 +31,14 @@ const LockIntroCtx = createContext(false)
 const GapCtx = createContext<number>(GRID.gapY)
 /** 펼친 폴더 · 검색 화면을 그릴 곳 — 홈 위젯을 통째로 줄여도 덮개는 화면 끝까지 */
 const OverlayHostCtx = createContext<HTMLElement | null>(null)
+/** 사진 크게 보기 · 펼친 폴더처럼 화면을 덮는 창이 열린 동안 — 오른쪽 위 음악 버튼을 숨김 (닫기 버튼과 겹치지 않게) */
+const ChromeHideCtx = createContext<((d: number) => void) | null>(null)
+function useHideChrome() {
+  const bump = useContext(ChromeHideCtx)
+  useEffect(() => { if (!bump) return; bump(1); return () => bump(-1) }, [bump])
+}
 function PfOverlay({ children }: { children: ReactNode }) {
+  useHideChrome()
   const host = useContext(OverlayHostCtx)
   return host ? createPortal(children, host) : <>{children}</>
 }
@@ -3129,6 +3136,7 @@ function useCopy() {
 
 /** 사진 보기 — 누르면 크게 · 좌우로 넘기기 · 두 손가락(두 번 탭)으로 확대 (다른 템플릿 라이트박스와 같은 확대) */
 function ZoomOverlay({ src, onClose, imgs }: { src: string; onClose: () => void; imgs?: string[] }) {
+  useHideChrome()
   const list = imgs && imgs.includes(src) ? imgs : [src]
   const [i, setI] = useState(Math.max(0, list.indexOf(src)))
   const [zoomed, setZoomed] = useState(false)
@@ -5600,6 +5608,9 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
   const NAV_H = 48
   const showNav = isAppScreen(screen)
   const [recents, setRecents] = useState(false)
+  // 화면을 덮는 창이 열린 수 — 0 보다 크면 음악 버튼 숨김
+  const [chromeHide, setChromeHide] = useState(0)
+  const bumpChrome = useRef((d: number) => setChromeHide(n => Math.max(0, n + d))).current
   // 최근 앱 — 청첩장의 모든 화면 (지금 화면이 맨 앞). 카드 속 화면은 보이는 근처만 그림
   const allApps = (Object.keys(APP_META) as PhoneAppId[]).filter(a => !isAppOff(data, a) && !isEmptyApp(data, a) && (a !== 'camera' || !!photoShareHref))
   const visited = isAppScreen(screen) ? [screen, ...allApps.filter(a => a !== screen)] : allApps
@@ -5834,6 +5845,7 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
   const lockOpen = (a: PhoneAppId) => { goFullscreen(); startMusic(); setDrag(0); setLockOut(true); setAnim(null); setHist([]); setUnder(null); setLeaving(null); setPlainIn(true); setScreen(a) }
   const showHomeBehind = screen === 'lock' && drag < 0 && next === 'home'
   return (
+    <ChromeHideCtx.Provider value={bumpChrome}>
     <PhotoShareCtx.Provider value={photoShareHref ?? null}>
     <GuestbookCtx.Provider value={invitationId ? { list: gb || [], post: postGb } : null}>
     <MusicCtx.Provider value={{ playing, toggle: toggleMusic, has: !!audioUrl }}>
@@ -5934,7 +5946,7 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
           </div>
         </div>
       )}
-      {audioUrl && screen !== 'lock' && screen !== 'code' && (
+      {audioUrl && screen !== 'lock' && screen !== 'code' && chromeHide === 0 && (
         // 앱 화면에서는 왼쪽 위 '뒤로'(top 52, 40px)와 같은 줄 가운데에 맞춤
         <div style={{ position: 'absolute', top: screen === 'home' ? 16 : 55, right: 14, zIndex: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
           {hint && <span style={{ padding: '7px 11px', borderRadius: 999, background: 'rgba(20,20,20,0.82)', color: '#FFFFFF', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{data.bgm?.notificationText || '배경음악이 준비되어 있어요'}</span>}
@@ -5958,5 +5970,6 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
     </MusicCtx.Provider>
     </GuestbookCtx.Provider>
     </PhotoShareCtx.Provider>
+    </ChromeHideCtx.Provider>
   )
 }

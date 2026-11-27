@@ -31,8 +31,30 @@ jobs:
       - name: Verify critical routes
         run: node scripts/verify-routes.mjs
 
+      # Google 글꼴(next/font/google)을 빌드 중에 받아오다 가끔 실패함 — 그 경우만 잠깐 쉬었다가 최대 3번까지 다시 빌드
       - name: Build for Cloudflare
-        run: npm run build:cloudflare
+        shell: bash
+        run: |
+          set -o pipefail
+          for attempt in 1 2 3; do
+            echo "::group::Build attempt $attempt"
+            if npm run build:cloudflare 2>&1 | tee build.log; then
+              echo "::endgroup::"
+              exit 0
+            fi
+            echo "::endgroup::"
+            if ! grep -q "next/font/google" build.log; then
+              echo "Build failed (not a Google Fonts fetch error) — not retrying"
+              exit 1
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "Google Fonts fetch failed — retrying in $((attempt * 30))s"
+              rm -rf .next .open-next
+              sleep $((attempt * 30))
+            fi
+          done
+          echo "Build failed 3 times on Google Fonts fetch"
+          exit 1
         env:
           NEXT_PUBLIC_KAKAO_CLIENT_ID: ${{ vars.NEXT_PUBLIC_KAKAO_CLIENT_ID }}
           NEXT_PUBLIC_KAKAO_REDIRECT_URI: ${{ vars.NEXT_PUBLIC_KAKAO_REDIRECT_URI }}

@@ -5883,7 +5883,8 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
     <MusicCtx.Provider value={{ playing, toggle: toggleMusic, has: !!audioUrl }}>
     <div ref={rootRef} style={{ position: 'relative', width: PHONE_W, height, overflow: 'hidden', background: '#000' }}>
       <style>{FLOW_CSS}</style>
-      {(screen === 'home' || showHomeBehind || under === 'home' || (swipe > 0 && swipeToHome)) && (
+      {/* 밀어서 뒤로 · 처음 안내 동안엔 뒤 화면을 계속 그려 둠 (밀었다 돌아올 때마다 새로 그리면 깜빡임) */}
+      {(screen === 'home' || showHomeBehind || under === 'home' || ((swipe > 0 || nudging || swipeHint) && swipeToHome)) && (
         <div aria-hidden={screen !== 'home' && under === 'home' ? true : undefined} className={screen === 'home' ? (anim === 'unlock' || anim === 'home' ? 'pf-home-in' : anim === 'back' ? 'pf-home-back' : undefined) : undefined}
           style={{ position: 'absolute', inset: 0, ...(screen !== 'home' && under === 'home' ? { pointerEvents: 'none' } : null), ...(showHomeBehind ? { transform: `scale(${1.08 + (drag / 844) * 0.08})`, opacity: Math.min(1, -drag / 300) } : null) }}
           onAnimationEnd={() => setAnim(null)}>
@@ -5900,7 +5901,7 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
       {/* 앱 화면들 — 같은 key 로 이어 그려서 이전 화면이 다시 마운트되지 않음 (스크롤 유지) */}
       {[
         ...(under && under !== 'home' && under !== screen ? [{ a: under, role: 'under' as const }] : []),
-        ...(swipe > 0 && hist.length && !(under && under !== 'home') ? [{ a: hist[hist.length - 1], role: 'under' as const }] : []),
+        ...((swipe > 0 || nudging || swipeHint) && hist.length && !(under && under !== 'home') ? [{ a: hist[hist.length - 1], role: 'under' as const }] : []),
         ...(isAppScreen(screen) ? [{ a: screen, role: 'cur' as const }] : []),
         ...(leaving && leaving !== screen ? [{ a: leaving, role: 'out' as const }] : []),
       ].map(({ a, role }) => (

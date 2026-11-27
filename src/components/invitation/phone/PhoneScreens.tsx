@@ -5630,11 +5630,31 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
     const key = `pf-swipe-hint-${invitationId}`
     try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1') } catch { return }
     const t0 = setTimeout(() => setSwipeHint(true), 450)
-    const t1 = setTimeout(() => setSwipeHint(false), 3200)
+    const t1 = setTimeout(() => setSwipeHint(false), 3400)
     return () => { clearTimeout(t0); clearTimeout(t1) }
   }, [screen, invitationId])
-  useEffect(() => { if (swipe > 0) setSwipeHint(false) }, [swipe])
   const [swiping, setSwiping] = useState(false)
+  // 손으로 밀기 시작하면 안내는 바로 끝
+  useEffect(() => { if (swiping) setSwipeHint(false) }, [swiping])
+  const [nudging, setNudging] = useState(false)
+  useEffect(() => {
+    if (!swipeHint) return
+    let raf = 0
+    const t0 = performance.now()
+    const ease = (x: number) => x * x * (3 - 2 * x)
+    setNudging(true)
+    const tick = (now: number) => {
+      const u = (now - t0) / 1000 - 0.15
+      let off = 0
+      ;[[0, 30], [0.8, 20]].forEach(([at, amp]) => { const v = (u - at) / 0.7; if (v >= 0 && v <= 1) off = Math.max(off, Math.sin(Math.PI * ease(v)) * amp) })
+      if (swipeSt.current?.on) { setNudging(false); return }
+      setSwipe(off)
+      if (u < 1.6) raf = requestAnimationFrame(tick)
+      else { setSwipe(0); setNudging(false) }
+    }
+    raf = requestAnimationFrame(tick)
+    return () => { cancelAnimationFrame(raf); setNudging(false) }
+  }, [swipeHint])
   const swipeSt = useRef<{ x: number; y: number; sc: number; on: boolean } | null>(null)
   const swipeToHome = !hist.length && (!backTo.current || backTo.current.screen === 'home')
   // 화면 왼쪽 절반 어디서 시작해도 오른쪽으로 밀면 뒤로 (설계 px).
@@ -5888,7 +5908,7 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
           className={role === 'cur' ? (plainIn ? undefined : 'pf-app-in') : role === 'out' ? 'pf-app-out' : undefined}
           style={{ position: 'absolute', inset: 0, ...(role !== 'cur' ? { pointerEvents: 'none' } : null),
             // 들어올 때 애니메이션(transform 고정)이 손가락 따라가기를 덮지 않게 끔 · 끄는 동안 글자 선택 막음
-            ...(role === 'cur' && swipe > 0 ? { transform: `translateX(${swipe}px)`, animation: 'none', transition: swiping ? 'none' : 'transform 0.2s ease-out', boxShadow: '-12px 0 30px rgba(0,0,0,0.18)', zIndex: 3, userSelect: 'none', WebkitUserSelect: 'none' } : null),
+            ...(role === 'cur' && swipe > 0 ? { transform: `translateX(${swipe}px)`, animation: 'none', transition: swiping || nudging ? 'none' : 'transform 0.2s ease-out', boxShadow: '-12px 0 30px rgba(0,0,0,0.18)', zIndex: 3, userSelect: 'none', WebkitUserSelect: 'none' } : null),
             ...(role === 'cur' ? { touchAction: 'pan-y' } : null) }}
           onPointerDown={role === 'cur' && invitationId ? onSwipeDown : undefined} onPointerMove={role === 'cur' && invitationId ? onSwipeMove : undefined}
           onPointerUp={role === 'cur' && invitationId ? onSwipeUp : undefined} onPointerCancel={role === 'cur' && invitationId ? onSwipeUp : undefined}
@@ -5909,12 +5929,14 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
       )}
       {/* 배경음악 버튼 — 잠금 해제 뒤 오른쪽 위 */}
       {swipeHint && isAppScreen(screen) && (
-        <div aria-hidden style={{ position: 'absolute', left: 14, top: '50%', zIndex: 25, pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 15px 10px 11px', borderRadius: 999, background: 'rgba(20,20,20,0.8)', color: '#FFFFFF', fontFamily: SYS, fontSize: 13.5, fontWeight: 600, letterSpacing: '-0.01em', boxShadow: '0 6px 18px rgba(0,0,0,0.18)', animation: 'pfSwHintIn 0.35s ease-out both' }}>
-          <style>{'@keyframes pfSwHintIn { from { opacity: 0; transform: translate(-8px, -50%); } to { opacity: 1; transform: translate(0, -50%); } } @keyframes pfSwHintNudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(6px); } }'}</style>
-          <span style={{ display: 'flex', animation: 'pfSwHintNudge 0.9s ease-in-out infinite' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l6 6-6 6M13 6l6 6-6 6" fill="none" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <div aria-hidden style={{ position: 'absolute', left: swipe, top: 0, bottom: 0, width: 240, zIndex: 25, pointerEvents: 'none', animation: 'pfSwHint 2.95s ease both' }}>
+          <style>{'@keyframes pfSwHint { 0% { opacity: 0; } 12% { opacity: 1; } 84% { opacity: 1; } 100% { opacity: 0; } } @keyframes pfSwArrow { 0%, 100% { transform: translateX(0); opacity: 0.55; } 50% { transform: translateX(4px); opacity: 1; } }'}</style>
+          {/* 왼쪽 끝 — 포인트 색이 은은하게 번짐 */}
+          <span style={{ position: 'absolute', left: 0, top: '50%', width: 110, height: 300, transform: 'translateY(-50%)', background: `radial-gradient(ellipse 100% 50% at 0% 50%, ${data.phone.accent}66 0%, ${data.phone.accent}26 45%, ${data.phone.accent}00 75%)` }} />
+          <span style={{ position: 'absolute', left: 26, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px 0 10px', borderRadius: 17, background: 'rgba(255,255,255,0.96)', boxShadow: '0 3px 12px rgba(0,0,0,0.14)', color: data.phone.accent, fontFamily: SYS, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style={{ animation: 'pfSwArrow 0.9s ease-in-out infinite' }}><path d="M6 6l6 6-6 6M13 6l6 6-6 6" fill="none" stroke={data.phone.accent} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            밀어서 돌아가기
           </span>
-          옆으로 밀면 뒤로 가요
         </div>
       )}
       {audioUrl && screen !== 'lock' && screen !== 'code' && chromeHide === 0 && (

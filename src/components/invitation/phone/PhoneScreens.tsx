@@ -5630,9 +5630,24 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
     const key = `pf-swipe-hint-${invitationId}`
     try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1') } catch { return }
     const t0 = setTimeout(() => setSwipeHint(true), 450)
-    const t1 = setTimeout(() => setSwipeHint(false), 4900)
+    // 터치가 없으면 6초쯤 뒤 저절로
+    const t1 = setTimeout(() => setHintOut(true), 6450)
     return () => { clearTimeout(t0); clearTimeout(t1) }
   }, [screen, invitationId])
+  // 안내 끝 — 살짝 흐려지며 사라짐
+  const [hintOut, setHintOut] = useState(false)
+  useEffect(() => {
+    if (!hintOut) return
+    const t = setTimeout(() => { setSwipeHint(false); setHintOut(false) }, 320)
+    return () => clearTimeout(t)
+  }, [hintOut])
+  // 화면을 터치하면 안내는 사라짐 (그 터치 동작은 그대로)
+  useEffect(() => {
+    if (!swipeHint) return
+    const off = () => setHintOut(true)
+    window.addEventListener('pointerdown', off, true)
+    return () => window.removeEventListener('pointerdown', off, true)
+  }, [swipeHint])
   const [swiping, setSwiping] = useState(false)
   // 손으로 밀기 시작하면 안내는 바로 끝
   useEffect(() => { if (swiping) setSwipeHint(false) }, [swiping])
@@ -5650,14 +5665,15 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
     const tick = (now: number) => {
       const u = (now - t0) / 1000 - 0.15
       let off = 0
-      ;[[0, 30], [0.8, 20], [2.0, 30], [2.8, 20]].forEach(([at, amp]) => { const v = (u - at) / 0.7; if (v >= 0 && v <= 1) off = Math.max(off, Math.sin(Math.PI * ease(v)) * amp) })
+      ;[[0, 30], [0.8, 20]].forEach(([at, amp]) => { const v = (u - at) / 0.7; if (v >= 0 && v <= 1) off = Math.max(off, Math.sin(Math.PI * ease(v)) * amp) })
       if (swipeSt.current?.on) { setNudging(false); return }
       setSwipe(off)
-      if (u < 3.6) raf = requestAnimationFrame(tick)
+      if (u < 1.6) raf = requestAnimationFrame(tick)
       else { setSwipe(0); setNudging(false) }
     }
     raf = requestAnimationFrame(tick)
-    return () => { cancelAnimationFrame(raf); setNudging(false) }
+    // 중간에 안내가 끝나면(터치) 화면을 제자리로 — 손으로 미는 중이면 그대로
+    return () => { cancelAnimationFrame(raf); setNudging(false); if (!swipeSt.current?.on) setSwipe(0) }
   }, [swipeHint])
   const swipeSt = useRef<{ x: number; y: number; sc: number; on: boolean } | null>(null)
   const swipeToHome = !hist.length && (!backTo.current || backTo.current.screen === 'home')
@@ -5934,8 +5950,8 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
       )}
       {/* 배경음악 버튼 — 잠금 해제 뒤 오른쪽 위 */}
       {swipeHint && isAppScreen(screen) && (
-        <div aria-hidden style={{ position: 'absolute', left: swipe, top: 0, bottom: 0, width: 240, zIndex: 25, pointerEvents: 'none', animation: 'pfSwHint 4.45s ease both' }}>
-          <style>{'@keyframes pfSwHint { 0% { opacity: 0; } 8% { opacity: 1; } 89% { opacity: 1; } 100% { opacity: 0; } } @keyframes pfSwArrow { 0%, 100% { transform: translateX(0); opacity: 0.55; } 50% { transform: translateX(4px); opacity: 1; } }'}</style>
+        <div aria-hidden style={{ position: 'absolute', left: swipe, top: 0, bottom: 0, width: 240, zIndex: 25, pointerEvents: 'none', animation: hintOut ? 'pfSwHintOut 0.32s ease forwards' : 'pfSwHintIn 0.4s ease both' }}>
+          <style>{'@keyframes pfSwHintIn { from { opacity: 0; } to { opacity: 1; } } @keyframes pfSwHintOut { from { opacity: 1; } to { opacity: 0; } } @keyframes pfSwArrow { 0%, 100% { transform: translateX(0); opacity: 0.55; } 50% { transform: translateX(4px); opacity: 1; } }'}</style>
           {/* 왼쪽 끝 — 포인트 색이 은은하게 번짐 */}
           <span style={{ position: 'absolute', left: 0, top: '50%', width: 110, height: 300, transform: 'translateY(-50%)', background: `radial-gradient(ellipse 100% 50% at 0% 50%, ${data.phone.accent}66 0%, ${data.phone.accent}26 45%, ${data.phone.accent}00 75%)` }} />
           <span style={{ position: 'absolute', left: 26, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px 0 10px', borderRadius: 17, background: 'rgba(255,255,255,0.96)', boxShadow: '0 3px 12px rgba(0,0,0,0.14)', color: data.phone.accent, fontFamily: SYS, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>

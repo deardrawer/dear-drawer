@@ -66,6 +66,15 @@ export default function InvitationClientPhone({ invitation, content, isSample, p
     return () => window.removeEventListener('resize', fit)
   }, [])
 
+  // 전체 화면에서 위쪽 카메라 구멍 자리까지 그림 (안 그러면 그 띠가 흰색으로 남음) — 내용은 그 아래부터 (env(safe-area-inset-top))
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="viewport"]') as HTMLMetaElement | null
+    if (!meta || /viewport-fit/.test(meta.content)) return
+    const prev = meta.content
+    meta.content = `${prev}, viewport-fit=cover`
+    return () => { meta.content = prev }
+  }, [])
+
   // 샘플은 회신 양식을 눌러 볼 수 있게 (보내지는 않음)
   const renderRsvp = rsvp.enabled || isSample
     ? (opts?: { attendance?: 'attending' | 'not_attending' | 'pending' }) => (
@@ -89,9 +98,9 @@ export default function InvitationClientPhone({ invitation, content, isSample, p
 
   return (
     <div className={PHONE_FONT_VARS} style={{ minHeight: 'var(--pf-vh, 100dvh)', background: '#1A1816', display: 'flex', justifyContent: 'center', WebkitTextSizeAdjust: '100%', textSizeAdjust: '100%' }}>
-      <div ref={boxRef} style={{ position: 'relative', width: `min(100vw, ${MAX_W}px)`, height: 'var(--pf-vh, 100dvh)', overflow: 'hidden', ['--pf' as string]: 1 }} suppressHydrationWarning>
+      <div ref={boxRef} style={{ position: 'relative', width: `min(100vw, ${MAX_W}px)`, height: 'var(--pf-vh, 100dvh)', overflow: 'hidden', background: 'var(--pf-top, transparent)', ['--pf' as string]: 1 }} suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: FIT_SCRIPT }} />
-        <div style={{ position: 'absolute', left: 0, top: 0, width: PHONE_W, height: 'calc(var(--pf-vh, 100dvh) / var(--pf))', transform: 'scale(var(--pf))', transformOrigin: '0 0' }}>
+        <div style={{ position: 'absolute', left: 0, top: 'env(safe-area-inset-top, 0px)', width: PHONE_W, height: 'calc((var(--pf-vh, 100dvh) - env(safe-area-inset-top, 0px)) / var(--pf))', transform: 'scale(var(--pf))', transformOrigin: '0 0' }}>
           <PhoneFlow data={data} height="100%" renderRsvp={renderRsvp} invitationId={invitation.id} photoShareHref={photoShareHref} />
         </div>
       </div>

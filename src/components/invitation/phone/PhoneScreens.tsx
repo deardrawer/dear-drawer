@@ -2304,8 +2304,6 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
   const pageTotal = homePagesOf(data)
   const shownPages = editing ? [Math.min(editing.page ?? 0, pageTotal - 1)] : Array.from({ length: pageTotal }, (_, k) => k)
   const multi = shownPages.length > 1
-  // 위 여백 — 오른쪽 위 음악 버튼이 있으면 그 아래부터
-  const CT = music?.has ? 54 : 24
   const lay = (() => {
     if (!compact) return null
     const shown = data.phone.widgets.filter(w => !(w.type === 'app' && isEmptyApp(data, w.props.app || 'memo')))
@@ -2313,10 +2311,11 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
     const dockH = dock.length > 0 ? 98 : 0
     // f 0 → 1 : 넉넉한 간격 → 가장 좁은 간격
     const at = (f: number) => {
-      const top = Math.max(0, GRID.top - CT) * (1 - f), gap = GRID.gapY - 6 * f, below = (multi ? 30 : 14) - 6 * f, db = 22 - 12 * f
+      // 위 여백 = 아래 여백(하단 바 아래) — 위아래가 같아 보이게
+      const db = 22 - 12 * f, top = db, gap = GRID.gapY - 6 * f, below = (multi ? 30 : 14) - 6 * f
       return { top, gap, db, need: top + rows * ch + (rows - 1) * gap + below + dockH + db }
     }
-    const avail = screenH - CT
+    const avail = screenH
     const loose = at(0), tight = at(1)
     if (loose.need <= avail) return { ...loose, k: 1, h: avail }
     if (tight.need <= avail) return { ...at((loose.need - avail) / (loose.need - tight.need)), k: 1, h: avail }
@@ -2355,7 +2354,7 @@ function HomeScreenInner({ data, onOpenApp, editing, reveal }: { data: PhoneData
         <div style={{ position: 'absolute', left: cellX(editing.ghost.col), top: cellY(editing.ghost.row, ch), width: spanW(editing.ghost.size), height: spanH(editing.ghost.size, ch), borderRadius: 22, background: editing.ghost.ok ? `${accent}33` : 'rgba(200,60,60,0.18)', border: `2px solid ${editing.ghost.ok ? accent : '#C83C3C'}`, pointerEvents: 'none' }} />
       )}
 
-      <div style={lay ? { position: 'absolute', top: CT, left: (PHONE_W * (1 - lay.k)) / 2, width: PHONE_W, height: lay.h, ...(lay.k < 1 ? { transform: `scale(${lay.k})`, transformOrigin: '0 0' } : null) } : { display: 'contents' }}>
+      <div style={lay ? { position: 'absolute', top: 0, left: (PHONE_W * (1 - lay.k)) / 2, width: PHONE_W, height: lay.h, ...(lay.k < 1 ? { transform: `scale(${lay.k})`, transformOrigin: '0 0' } : null) } : { display: 'contents' }}>
       <HomeRevealCtx.Provider value={!!reveal}>
       {/* 홈 화면 장 — 에디터는 고치는 장 하나, 하객은 옆으로 넘김 */}
       <div ref={pagerRef} onScroll={multi ? (e => { const el = e.currentTarget; setPg(Math.round(el.scrollLeft / Math.max(1, el.clientWidth))) }) : undefined}
@@ -5104,6 +5103,7 @@ function introPeople(data: PhoneData): IntroP[] {
 const metDays = (data: PhoneData) => { const d = data.phone.intro?.metDate && parseWeddingDate(data.phone.intro.metDate); if (!d) return null; const t = new Date(); return Math.floor((new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime() - d.getTime()) / 86400000) + 1 }
 /** 커플 소개 · 명함 — 카드를 누르면 카카오톡 프로필처럼 (배경 사진 · 큰 프로필 · 소개) */
 function IntroProfileView({ data, ps, start, onClose, onZoom }: { data: PhoneData; ps: IntroP[]; start: number; onClose: () => void; onZoom: (src: string) => void }) {
+  useHideChrome()
   const [i, setI] = useState(start)
   const p = ps[i]
   const sx = useRef<number | null>(null)
@@ -5598,30 +5598,9 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
     if (b) { setReopen(b.key || null); setAnim(null); setScreen(b.screen); return }
     setReopen(null); setAnim('back'); setScreen('home')
   }
-  /** 홈 막대 — 어느 앱에서든 바로 홈으로 */
-  const goHome = () => {
-    const cur = isAppScreen(screen) ? screen : null
-    if (!cur) return
-    backTo.current = null; setHist([]); setPlainIn(false); setUnder(null); setLeaving(cur); setReopen(null); setAnim('back'); setScreen('home')
-  }
-  // 아래 버튼 줄 (안드로이드처럼 최근 앱 · 홈 · 뒤로) — 앱 화면에서만. 앱은 그 위 칸에 그림
-  const NAV_H = 48
-  const showNav = isAppScreen(screen)
-  const [recents, setRecents] = useState(false)
   // 화면을 덮는 창이 열린 수 — 0 보다 크면 음악 버튼 숨김
   const [chromeHide, setChromeHide] = useState(0)
   const bumpChrome = useRef((d: number) => setChromeHide(n => Math.max(0, n + d))).current
-  // 최근 앱 — 청첩장의 모든 화면 (지금 화면이 맨 앞). 카드 속 화면은 보이는 근처만 그림
-  const allApps = (Object.keys(APP_META) as PhoneAppId[]).filter(a => !isAppOff(data, a) && !isEmptyApp(data, a) && (a !== 'camera' || !!photoShareHref))
-  const visited = isAppScreen(screen) ? [screen, ...allApps.filter(a => a !== screen)] : allApps
-  const [recIdx, setRecIdx] = useState(0)
-  useEffect(() => { if (recents) setRecIdx(0) }, [recents])
-  useEffect(() => { setRecents(false) }, [screen])
-  const openRecent = (a: PhoneAppId) => {
-    setRecents(false)
-    if (a === screen) return
-    backTo.current = null; setHist([]); setUnder(null); setLeaving(null); setAnim(null); setPlainIn(false); setScreen(a)
-  }
   // 하객 화면 — 앱을 열 때마다 브라우저 기록에 한 칸. 안드로이드 뒤로 · 아이폰 왼쪽 끝 밀기 · 브라우저 뒤로가 청첩장 안에서 한 단계 뒤로
   const goBackRef = useRef(goBack)
   useEffect(() => { goBackRef.current = goBack })
@@ -5644,10 +5623,39 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
   }, [invitationId])
   // 왼쪽 끝에서 오른쪽으로 밀어 뒤로 — 손가락을 따라 화면이 밀려나고, 3분의 1 넘게 밀면 뒤로
   const [swipe, setSwipe] = useState(0)
+  // 처음 앱을 열었을 때 한 번만 — 밀어서 뒤로 갈 수 있다는 짧은 안내 (하객 화면, 방문마다 한 번)
+  const [swipeHint, setSwipeHint] = useState(false)
+  useEffect(() => {
+    if (!invitationId || !isAppScreen(screen)) return
+    const key = `pf-swipe-hint-${invitationId}`
+    try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1') } catch { return }
+    const t0 = setTimeout(() => setSwipeHint(true), 450)
+    const t1 = setTimeout(() => setSwipeHint(false), 3200)
+    return () => { clearTimeout(t0); clearTimeout(t1) }
+  }, [screen, invitationId])
+  useEffect(() => { if (swipe > 0) setSwipeHint(false) }, [swipe])
   const [swiping, setSwiping] = useState(false)
   const swipeSt = useRef<{ x: number; y: number; sc: number; on: boolean } | null>(null)
   const swipeToHome = !hist.length && (!backTo.current || backTo.current.screen === 'home')
-  const EDGE = 44 // 왼쪽 끝에서 이만큼 안에서 시작하면 밀어서 뒤로 (설계 px)
+  // 화면 왼쪽 절반 어디서 시작해도 오른쪽으로 밀면 뒤로 (설계 px).
+  // 단, 옆으로 밀리는 칸(사진 넘기기 등) · 입력칸 · data-noswipe 위에서는 그 동작을 우선 — 맨 왼쪽 끝(EDGE)은 언제나 뒤로
+  const EDGE = 24
+  const swipeOk = (target: EventTarget | null, xDesign: number) => {
+    if (xDesign <= EDGE) return true
+    if (xDesign > PHONE_W / 2) return false
+    let el = target as HTMLElement | null
+    const root = rootRef.current
+    while (el && el !== root) {
+      if (el.dataset?.noswipe !== undefined || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return false
+      // 옆으로 넘기는 칸 — 가로로 꽤 넘치고, 세로로는 안 넘치거나(가로 전용) 가로 스냅이 걸린 곳 (세로 스크롤 화면은 해당 없음)
+      if (el.scrollWidth > el.clientWidth + 24) {
+        const cs = getComputedStyle(el)
+        if (/auto|scroll/.test(cs.overflowX) && (el.scrollHeight <= el.clientHeight + 4 || /x|both/.test(cs.scrollSnapType))) return false
+      }
+      el = el.parentElement
+    }
+    return true
+  }
   const onSwipeDown = (e: React.PointerEvent) => {
     // 손가락은 아래 터치 처리(touchmove 를 막아야 안드로이드 · 카카오톡이 가로 밀기를 가져가지 않음), 여기는 마우스만
     if (e.pointerType !== 'mouse') return
@@ -5655,7 +5663,7 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
     const r = rootRef.current?.getBoundingClientRect()
     if (!r) return
     const sc = r.width / PHONE_W || 1
-    if ((e.clientX - r.left) / sc > EDGE) return
+    if (chromeHide > 0 || !swipeOk(e.target, (e.clientX - r.left) / sc)) return
     swipeSt.current = { x: e.clientX, y: e.clientY, sc, on: false }
   }
   const onSwipeMove = (e: React.PointerEvent) => {
@@ -5682,7 +5690,9 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
   }
   // 손가락 밀기 — 직접 터치 이벤트로 받고, 밀기가 시작되면 브라우저의 가로 동작을 막음 (passive: false)
   const swipeLive = useRef({ swipe: 0, canStart: false })
-  useEffect(() => { swipeLive.current = { swipe, canStart: isAppScreen(screen) && !anim } })
+  useEffect(() => { swipeLive.current = { swipe, canStart: isAppScreen(screen) && !anim && chromeHide === 0 } })
+  const swipeOkRef = useRef(swipeOk)
+  useEffect(() => { swipeOkRef.current = swipeOk })
   const onSwipeUpRef = useRef(onSwipeUp)
   useEffect(() => { onSwipeUpRef.current = onSwipeUp })
   useEffect(() => {
@@ -5692,7 +5702,7 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
       if (e.touches.length !== 1 || !swipeLive.current.canStart) return
       const r = root.getBoundingClientRect(), t = e.touches[0]
       const sc = r.width / PHONE_W || 1
-      if ((t.clientX - r.left) / sc > EDGE) return
+      if (!swipeOkRef.current(e.target, (t.clientX - r.left) / sc)) return
       swipeSt.current = { x: t.clientX, y: t.clientY, sc, on: false }
     }
     const move = (e: TouchEvent) => {
@@ -5827,6 +5837,8 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
       if (!meta) { meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta) }
       meta.content = color
       document.documentElement.style.backgroundColor = color
+      // 전체 화면의 카메라 구멍 띠(위쪽)도 같은 색으로 — InvitationClientPhone 이 씀
+      document.documentElement.style.setProperty('--pf-top', color)
     }
     const id = setTimeout(pick, 520)
     return () => clearTimeout(id)
@@ -5874,7 +5886,7 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
       ].map(({ a, role }) => (
         <div key={a} aria-hidden={role !== 'cur' ? true : undefined}
           className={role === 'cur' ? (plainIn ? undefined : 'pf-app-in') : role === 'out' ? 'pf-app-out' : undefined}
-          style={{ position: 'absolute', inset: 0, ...(showNav ? { bottom: NAV_H } : null), ...(role !== 'cur' ? { pointerEvents: 'none' } : null),
+          style={{ position: 'absolute', inset: 0, ...(role !== 'cur' ? { pointerEvents: 'none' } : null),
             // 들어올 때 애니메이션(transform 고정)이 손가락 따라가기를 덮지 않게 끔 · 끄는 동안 글자 선택 막음
             ...(role === 'cur' && swipe > 0 ? { transform: `translateX(${swipe}px)`, animation: 'none', transition: swiping ? 'none' : 'transform 0.2s ease-out', boxShadow: '-12px 0 30px rgba(0,0,0,0.18)', zIndex: 3, userSelect: 'none', WebkitUserSelect: 'none' } : null),
             ...(role === 'cur' ? { touchAction: 'pan-y' } : null) }}
@@ -5896,59 +5908,18 @@ export function PhoneFlow({ data, height, renderRsvp, startScreen = 'lock', invi
         </div>
       )}
       {/* 배경음악 버튼 — 잠금 해제 뒤 오른쪽 위 */}
-      {/* 아래 버튼 줄 — 최근 앱 · 홈 · 뒤로 (삼성 순서) */}
-      {showNav && (() => {
-        const dark = screen === 'video' || screen === 'camera'
-        const ink = dark ? 'rgba(255,255,255,0.88)' : '#3A3A3C'
-        const btn: CSSProperties = { flex: 1, height: '100%', border: 0, background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }
-        return (
-          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: NAV_H, zIndex: 26, display: 'flex', background: dark ? '#000000' : '#FFFFFF', borderTop: dark ? undefined : '0.5px solid rgba(0,0,0,0.08)' }}>
-            <button type="button" aria-label="최근 앱" style={btn} onClick={() => setRecents(r => !r)}>
-              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 6v12M12 6v12M17 6v12" stroke={ink} strokeWidth="1.9" strokeLinecap="round" /></svg>
-            </button>
-            <button type="button" aria-label="홈으로" style={btn} onClick={() => { setRecents(false); goHome() }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="5" fill="none" stroke={ink} strokeWidth="1.9" /></svg>
-            </button>
-            <button type="button" aria-label="뒤로" style={btn} onClick={() => { if (recents) { setRecents(false); return } if (isAppScreen(screen)) goBack() }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke={ink} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </button>
-          </div>
-        )
-      })()}
-      {/* 최근 앱 — 열어 본 화면을 카드로 (눌러서 바로 이동) */}
-      {recents && showNav && (
-        <div onClick={() => setRecents(false)} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: NAV_H, zIndex: 27, background: 'rgba(60,60,64,0.62)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', display: 'flex', flexDirection: 'column', animation: 'pfRecentIn 0.22s ease-out both' }}>
-          <style>{`@keyframes pfRecentIn { from { opacity: 0 } to { opacity: 1 } } @keyframes pfCardIn { from { opacity: 0; transform: scale(1.08) } to { opacity: 1; transform: none } }`}</style>
-          <div style={{ padding: '58px 18px 0', display: 'flex' }}>
-            <span style={{ padding: '9px 16px', borderRadius: 999, background: 'rgba(255,255,255,0.22)', color: '#FFFFFF', fontSize: 14, fontWeight: 700 }}>실행 중인 앱 {visited.length}개</span>
-          </div>
-          <div onClick={e => e.stopPropagation()} onScroll={e => { const el = e.currentTarget; setRecIdx(Math.round(el.scrollLeft / (PHONE_W * 0.6 + 18))) }} style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', gap: 18, overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '0 70px', scrollbarWidth: 'none' }}>
-            {visited.map((a, i) => (
-              <div key={a} style={{ flex: '0 0 auto', scrollSnapAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, animation: `pfCardIn 0.28s ease-out ${i * 0.04}s both` }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 7, color: '#FFFFFF', fontSize: 13.5, fontWeight: 700 }}>
-                  <span style={{ width: 28, height: 28, borderRadius: 8, background: data.phone.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><AppGlyph app={a} color="#FFFFFF" size={17} /></span>
-                  {APP_META[a].label}
-                </span>
-                <button type="button" onClick={() => openRecent(a)} aria-label={`${APP_META[a].label} 열기`}
-                  style={{ width: PHONE_W * 0.6, height: 520 * 0.6 + 140, borderRadius: 26, overflow: 'hidden', border: 0, padding: 0, background: '#FFFFFF', cursor: 'pointer', position: 'relative', boxShadow: '0 18px 40px rgba(0,0,0,0.3)' }}>
-                  <span style={{ position: 'absolute', left: 0, top: 0, width: PHONE_W, height: (520 * 0.6 + 140) / 0.6, transform: 'scale(0.6)', transformOrigin: '0 0', pointerEvents: 'none' }}>
-                    {Math.abs(i - recIdx) <= 1
-                      ? <AppScreen app={a} data={data} onBack={() => {}} onNavigate={() => {}} renderRsvp={renderRsvp} />
-                      : <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F2F2F7' }}><AppGlyph app={a} color="#C7C7CC" size={90} /></span>}
-                  </span>
-                </button>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '6px 0 22px' }}>
-            <button type="button" onClick={e => { e.stopPropagation(); setRecents(false); goHome() }}
-              style={{ padding: '12px 46px', borderRadius: 999, border: 0, background: 'rgba(255,255,255,0.22)', color: '#FFFFFF', fontSize: 15, fontWeight: 700, cursor: 'pointer', font: 'inherit' }}>모두 닫기</button>
-          </div>
+      {swipeHint && isAppScreen(screen) && (
+        <div aria-hidden style={{ position: 'absolute', left: 14, top: '50%', zIndex: 25, pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 15px 10px 11px', borderRadius: 999, background: 'rgba(20,20,20,0.8)', color: '#FFFFFF', fontFamily: SYS, fontSize: 13.5, fontWeight: 600, letterSpacing: '-0.01em', boxShadow: '0 6px 18px rgba(0,0,0,0.18)', animation: 'pfSwHintIn 0.35s ease-out both' }}>
+          <style>{'@keyframes pfSwHintIn { from { opacity: 0; transform: translate(-8px, -50%); } to { opacity: 1; transform: translate(0, -50%); } } @keyframes pfSwHintNudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(6px); } }'}</style>
+          <span style={{ display: 'flex', animation: 'pfSwHintNudge 0.9s ease-in-out infinite' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l6 6-6 6M13 6l6 6-6 6" fill="none" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </span>
+          옆으로 밀면 뒤로 가요
         </div>
       )}
       {audioUrl && screen !== 'lock' && screen !== 'code' && chromeHide === 0 && (
         // 앱 화면에서는 왼쪽 위 '뒤로'(top 52, 40px)와 같은 줄 가운데에 맞춤
-        <div style={{ position: 'absolute', top: screen === 'home' ? 16 : 55, right: 14, zIndex: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ position: 'absolute', top: screen === 'home' ? 8 : 55, right: screen === 'home' ? 8 : 14, zIndex: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
           {hint && <span style={{ padding: '7px 11px', borderRadius: 999, background: 'rgba(20,20,20,0.82)', color: '#FFFFFF', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{data.bgm?.notificationText || '배경음악이 준비되어 있어요'}</span>}
           <button type="button" onClick={toggleMusic} aria-label={playing ? '배경음악 끄기' : '배경음악 켜기'}
             style={{ position: 'relative', width: 34, height: 34, borderRadius: '50%', border: 0, background: 'rgba(255,255,255,0.88)', boxShadow: '0 2px 10px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>

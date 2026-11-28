@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { D1Database } from "@cloudflare/workers-types";
+import { verifySiteAdmin } from "@/lib/siteAdmin";
 
 interface CloudflareEnvWithDB {
   DB?: D1Database;
@@ -18,8 +19,9 @@ interface PaymentRequest {
   created_at: string;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    if (!verifySiteAdmin(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { env } = await getCloudflareContext() as { env: CloudflareEnvWithDB };
 
     if (!env.DB) {

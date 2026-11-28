@@ -228,7 +228,7 @@ export default function AdminPage() {
   // ===== Payment Functions =====
   const fetchPayments = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/payment-requests')
+      const res = await fetch('/api/admin/payment-requests', { headers: { 'x-admin-password': password } })
       if (res.ok) {
         const data = await res.json() as { requests?: PaymentRequest[] }
         const requests = data.requests || []
@@ -247,7 +247,7 @@ export default function AdminPage() {
     } catch (err) {
       console.error('Failed to fetch payments:', err)
     }
-  }, [])
+  }, [password])
 
   const handleApprove = async (requestId: string) => {
     if (!confirm('이 결제를 승인하시겠습니까?')) return
@@ -256,7 +256,7 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/approve', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
         body: JSON.stringify({ requestId, createGeunnal: geunnalToggle[requestId] ?? true }),
       })
 
@@ -281,7 +281,7 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/reject', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
         body: JSON.stringify({ requestId }),
       })
 

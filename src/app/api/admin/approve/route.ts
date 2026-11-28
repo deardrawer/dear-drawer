@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { D1Database } from "@cloudflare/workers-types";
+import { verifySiteAdmin } from "@/lib/siteAdmin";
 
 interface CloudflareEnvWithDB {
   DB?: D1Database;
@@ -43,6 +44,7 @@ async function sendTelegramNotification(
 
 export async function POST(request: NextRequest) {
   try {
+    if (!verifySiteAdmin(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { requestId, createGeunnal } = await request.json() as { requestId: string; createGeunnal?: boolean };
 
     if (!requestId) {

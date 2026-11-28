@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE, adminCookieToken } from "@/lib/adminCookie";
+import { isAdminAccount } from "@/lib/siteAdmin";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +15,8 @@ export async function POST(request: NextRequest) {
 
     // Cloudflare에서는 요청 핸들러 내부에서 env 읽어야 함
     const adminPassword = process.env.ADMIN_PASSWORD;
-    if (!adminPassword || password !== adminPassword) {
+    // 관리자 계정이 등록돼 있으면 그 계정으로 로그인한 상태여야 함 (아니면 비밀번호가 맞아도 같은 응답)
+    if (!adminPassword || password !== adminPassword || !(await isAdminAccount(request))) {
       return NextResponse.json(
         { success: false, error: "비밀번호가 올바르지 않습니다." },
         { status: 401 }

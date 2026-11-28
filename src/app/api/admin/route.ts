@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifySiteAdmin } from '@/lib/siteAdmin'
 import {
   getAllInvitationsForAdmin,
   getAdminStats,
@@ -10,17 +11,12 @@ import {
 import { setPostDrawerLongTerm } from "@/lib/postDrawer";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-// 관리자 인증 확인 (Cloudflare에서는 요청 핸들러 내부에서 env 읽어야 함)
-function verifyAdmin(request: NextRequest): boolean {
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword) return false;
-  const authHeader = request.headers.get("x-admin-password");
-  return authHeader === adminPassword;
-}
+// 관리자 인증 — 비밀번호 + (등록돼 있으면) 관리자 계정 로그인
+const verifyAdmin = verifySiteAdmin
 
 // GET: 청첩장 목록 및 통계 조회
 export async function GET(request: NextRequest) {
-  if (!verifyAdmin(request)) {
+  if (!(await verifyAdmin(request))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -48,7 +44,7 @@ export async function GET(request: NextRequest) {
 
 // PATCH: 워터마크(is_paid) 토글 / 공개 자동 종료(public_auto_close) 토글
 export async function PATCH(request: NextRequest) {
-  if (!verifyAdmin(request)) {
+  if (!(await verifyAdmin(request))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -117,7 +113,7 @@ export async function PATCH(request: NextRequest) {
 
 // DELETE: 청첩장 삭제
 export async function DELETE(request: NextRequest) {
-  if (!verifyAdmin(request)) {
+  if (!(await verifyAdmin(request))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

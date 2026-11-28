@@ -109,7 +109,8 @@ export async function POST(request: NextRequest) {
           minute: '2-digit'
         })
 
-        const adminUrl = `${request.headers.get('origin') || 'https://invite.deardrawer.com'}/admin`
+        // 관리자 페이지는 관리자 계정으로 로그인해야 열림 — 로그인을 거쳐 관리자 페이지로
+        const adminUrl = `${request.headers.get('origin') || 'https://invite.deardrawer.com'}/login?redirect=%2Fadmin`
 
         const message = `🔔 <b>새로운 결제 요청</b>
 

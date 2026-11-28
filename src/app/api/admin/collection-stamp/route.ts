@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { verifySiteAdmin } from '@/lib/siteAdmin'
 import { listCollectionStamps, createCollectionStamp, updateCollectionStamp, deleteCollectionStamp } from '@/lib/postDrawer'
 
 /**
@@ -7,17 +8,14 @@ import { listCollectionStamps, createCollectionStamp, updateCollectionStamp, del
  */
 export const dynamic = 'force-dynamic'
 
-function verifyAdmin(request: NextRequest): boolean {
-  const adminPassword = process.env.ADMIN_PASSWORD
-  if (!adminPassword) return false
-  return request.headers.get('x-admin-password') === adminPassword
-}
+// 관리자 인증 — 비밀번호 + (등록돼 있으면) 관리자 계정 로그인
+const verifyAdmin = verifySiteAdmin
 function isAllowedUrl(url: string): boolean {
   return /^\/api\/r2\//.test(url) || /^\/uploads\//.test(url)
 }
 
 export async function GET(request: NextRequest) {
-  if (!verifyAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await verifyAdmin(request))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     return NextResponse.json({ items: await listCollectionStamps() })
   } catch (e) {
@@ -27,7 +25,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!verifyAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await verifyAdmin(request))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const body = (await request.json()) as { photo?: string; message?: string; weddingDate?: string }
     if (body.photo && !isAllowedUrl(body.photo.trim())) {
@@ -46,7 +44,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  if (!verifyAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await verifyAdmin(request))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const body = (await request.json()) as { id?: string; photo?: string; message?: string | null; weddingDate?: string; hidden?: boolean }
     if (!body.id) return NextResponse.json({ error: 'id가 필요합니다.' }, { status: 400 })
@@ -68,7 +66,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  if (!verifyAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await verifyAdmin(request))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const id = new URL(request.url).searchParams.get('id')
     if (!id) return NextResponse.json({ error: 'id가 필요합니다.' }, { status: 400 })

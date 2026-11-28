@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { verifySiteAdmin } from '@/lib/siteAdmin'
 import { getDB, deleteInvitationCascadeAdmin } from '@/lib/db'
 import {
   drawerStampPhotoOf,
@@ -20,11 +21,8 @@ import {
  */
 // 저장 직후 목록이 옛 데이터로 캐시되지 않도록 항상 동적 처리
 export const dynamic = 'force-dynamic'
-function verifyAdmin(request: NextRequest): boolean {
-  const adminPassword = process.env.ADMIN_PASSWORD
-  if (!adminPassword) return false
-  return request.headers.get('x-admin-password') === adminPassword
-}
+// 관리자 인증 — 비밀번호 + (등록돼 있으면) 관리자 계정 로그인
+const verifyAdmin = verifySiteAdmin
 
 function isAllowedUrl(url: string): boolean {
   return /^\/api\/r2\//.test(url) || /^\/uploads\//.test(url)
@@ -60,7 +58,7 @@ function toItem(r: Row) {
 
 // GET: 공개 우표 목록 (발행된 청첩장)
 export async function GET(request: NextRequest) {
-  if (!verifyAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await verifyAdmin(request))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const db = await getDB()
     const rows = (
@@ -85,7 +83,7 @@ export async function GET(request: NextRequest) {
 
 // PATCH: 우표 사진/멘트/숨김 수정
 export async function PATCH(request: NextRequest) {
-  if (!verifyAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await verifyAdmin(request))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const body = (await request.json()) as {
       invitationId?: string
@@ -135,7 +133,7 @@ export async function PATCH(request: NextRequest) {
 // DELETE: 청첩장 영구 삭제(되돌릴 수 없음). 오삭제 방지 — 신랑·신부 이름을 정확히 입력해야 실행.
 //  결제 기록은 보존(정산/증빙), 하객 사진 원본은 커플 Google Drive에 있어 미삭제. R2 이미지는 후속 정리 대상.
 export async function DELETE(request: NextRequest) {
-  if (!verifyAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await verifyAdmin(request))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const { searchParams } = new URL(request.url)
     const id = (searchParams.get('invitationId') || '').toString()

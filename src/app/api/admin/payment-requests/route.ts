@@ -21,7 +21,7 @@ interface PaymentRequest {
 
 export async function GET(request: NextRequest) {
   try {
-    if (!verifySiteAdmin(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!(await verifySiteAdmin(request))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { env } = await getCloudflareContext() as { env: CloudflareEnvWithDB };
 
     if (!env.DB) {

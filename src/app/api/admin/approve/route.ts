@@ -44,7 +44,7 @@ async function sendTelegramNotification(
 
 export async function POST(request: NextRequest) {
   try {
-    if (!verifySiteAdmin(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!(await verifySiteAdmin(request))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { requestId, createGeunnal } = await request.json() as { requestId: string; createGeunnal?: boolean };
 
     if (!requestId) {

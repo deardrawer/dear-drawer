@@ -345,6 +345,17 @@ export default function AdminPage() {
     }
   }, [isAuthenticated, fetchInvitations, fetchPayments])
 
+  // 관리자 계정 등록 도우미 — 아직 ADMIN_USER_ID 가 없을 때만 지금 로그인한 계정 번호를 보여 줌
+  const [whoami, setWhoami] = useState<{ enforced: boolean; userId?: string | null } | null>(null)
+  const [idCopied, setIdCopied] = useState(false)
+  useEffect(() => {
+    if (!isAuthenticated) return
+    fetch('/api/admin/whoami', { headers: { 'x-admin-password': password } })
+      .then(r => (r.ok ? r.json() as Promise<{ enforced: boolean; userId?: string | null }> : null))
+      .then(d => setWhoami(d))
+      .catch(() => setWhoami(null))
+  }, [isAuthenticated, password])
+
   // 청첩장의 현재 공개 자동 종료 상태(오버라이드 우선, 없으면 content.meta.publicAutoClose)
   const autoCloseOf = (inv: Invitation): boolean => {
     if (inv.id in autoCloseOverride) return autoCloseOverride[inv.id]
@@ -516,6 +527,23 @@ export default function AdminPage() {
           </button>
         </div>
       </header>
+
+      {whoami && !whoami.enforced && (
+        <div className="mx-6 mt-4 rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: '#FFF8EC', border: '1px solid #EAD9B8', color: '#5C4636' }}>
+          <div className="font-semibold mb-1">관리자 계정 등록</div>
+          {whoami.userId ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span>지금 로그인한 계정 번호</span>
+              <code className="px-2 py-0.5 rounded bg-white" style={{ border: '1px solid #EAD9B8' }}>{whoami.userId}</code>
+              <button type="button" className="px-2.5 py-1 rounded-md text-xs bg-white" style={{ border: '1px solid #EAD9B8' }}
+                onClick={() => { navigator.clipboard.writeText(whoami.userId || ''); setIdCopied(true); setTimeout(() => setIdCopied(false), 1400) }}>{idCopied ? '복사됨' : '복사'}</button>
+              <span className="w-full text-xs" style={{ color: '#8A7564' }}>Cloudflare 설정값 ADMIN_USER_ID 에 넣으면 이 계정으로 로그인했을 때만 관리자에 들어올 수 있어요. 등록하면 이 안내는 사라져요.</span>
+            </div>
+          ) : (
+            <div>카카오로 로그인하지 않은 상태예요. <a href="/login?redirect=/admin" className="underline">로그인</a> 후 다시 열면 계정 번호가 보여요.</div>
+          )}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="px-6 pt-4">

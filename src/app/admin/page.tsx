@@ -51,9 +51,22 @@ interface PaymentRequest {
   buyer_phone: string
   status: 'pending' | 'approved' | 'rejected'
   created_at: string
+  inv_groom_name?: string | null
+  inv_bride_name?: string | null
+  inv_template_id?: string | null
+  inv_is_paid?: number | null
 }
 
 type TabType = 'invitations' | 'payments' | 'geunnal'
+
+// 템플릿 이름 — 청첩장 관리 템플릿 고르기
+const TEMPLATE_NAMES: Record<string, string> = {
+  'narrative-our': 'OUR', 'narrative-family': 'FAMILY', 'narrative-the-simple': 'THE SIMPLE', 'the-simple': 'THE SIMPLE',
+  'narrative-phone': 'THE PHONE', 'narrative-parents': 'PARENTS', parents: 'PARENTS', 'parents-formal': '혼주용',
+  'narrative-magazine': '매거진', 'narrative-film': '필름', 'narrative-record': '레코드', 'narrative-exhibit': '전시', 'narrative-essay': '에세이',
+  'narrative-classic': 'CLASSIC', 'narrative-thankyou': '감사장',
+}
+const templateName = (id: string) => TEMPLATE_NAMES[id] || id
 
 interface GeunnalPageItem {
   id: string
@@ -86,6 +99,9 @@ export default function AdminPage() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [recentUsers, setRecentUsers] = useState<RecentUser[]>([])
   const [filter, setFilter] = useState<'all' | 'incomplete' | 'expiring' | 'paid'>('all')
+  // 신랑 · 신부 이름 찾기 + 템플릿 고르기
+  const [query, setQuery] = useState('')
+  const [tplFilter, setTplFilter] = useState('all')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
   // Payments state
@@ -424,7 +440,11 @@ export default function AdminPage() {
   }
 
   // ===== Computed =====
+  const q = query.replace(/\s/g, '').toLowerCase()
+  const templateOptions = Array.from(new Set(invitations.map((inv) => inv.template_id))).sort((a, b) => templateName(a).localeCompare(templateName(b)))
   const filteredInvitations = invitations.filter((inv) => {
+    if (tplFilter !== 'all' && inv.template_id !== tplFilter) return false
+    if (q && ![inv.groom_name, inv.bride_name, inv.user_email, inv.id].some((v) => (v || '').replace(/\s/g, '').toLowerCase().includes(q))) return false
     if (filter === 'incomplete') return !inv.is_published
     if (filter === 'expiring') return inv.days_until_deletion <= 7 && !inv.is_paid
     if (filter === 'paid') return inv.is_paid === 1
@@ -683,6 +703,31 @@ export default function AdminPage() {
               )}
             </div>
 
+            {/* 신랑 · 신부 찾기 */}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="신랑 · 신부 이름, 이메일로 찾기"
+                className="flex-1 min-w-[180px] px-4 py-2 rounded-lg text-sm"
+                style={{ backgroundColor: '#FFF', border: '1px solid #E8E4DD' }}
+              />
+              <select
+                value={tplFilter}
+                onChange={(e) => setTplFilter(e.target.value)}
+                className="px-3 py-2 rounded-lg text-sm"
+                style={{ backgroundColor: '#FFF', border: '1px solid #E8E4DD', color: '#444' }}
+              >
+                <option value="all">템플릿 전체</option>
+                {templateOptions.map((t) => (
+                  <option key={t} value={t}>{templateName(t)} ({invitations.filter((inv) => inv.template_id === t).length})</option>
+                ))}
+              </select>
+              {(query || tplFilter !== 'all') && (
+                <span className="text-xs" style={{ color: '#888' }}>{filteredInvitations.length}개</span>
+              )}
+            </div>
+
             {/* Filter & Actions */}
             <div className="flex flex-wrap items-center gap-3 mb-4">
               <div className="flex gap-2">
@@ -768,7 +813,7 @@ export default function AdminPage() {
                         </td>
                         <td className="px-4 py-3">
                           <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: '#F5F3EE', color: '#666' }}>
-                            {inv.template_id}
+                            {templateName(inv.template_id)}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-sm" style={{ color: '#666' }}>
@@ -1014,6 +1059,19 @@ export default function AdminPage() {
                           <p className="text-xs" style={{ color: '#AAA' }}>
                             접수일: {new Date(req.created_at).toLocaleString('ko-KR')}
                           </p>
+                          {req.invitation_id && (
+                            <div className="flex flex-wrap items-center gap-2 pt-1 text-sm">
+                              <span style={{ color: '#666' }}>
+                                청첩장: {[req.inv_groom_name, req.inv_bride_name].filter(Boolean).join(' · ') || '이름 없음'}
+                                {req.inv_template_id && <span className="ml-1 text-xs" style={{ color: '#AAA' }}>({req.inv_template_id})</span>}
+                              </span>
+                              <a href={req.inv_template_id === 'parents-formal' ? `/invite/${req.invitation_id}` : `/invitation/${req.invitation_id}`}
+                                target="_blank" rel="noopener noreferrer" className="px-2 py-0.5 rounded text-xs underline" style={{ color: '#8B6F47' }}>보기</a>
+                              {req.inv_is_paid === 1 && (
+                                <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}>이미 워터마크 제거됨</span>
+                              )}
+                            </div>
+                          )}
                         </div>
                         <div className="flex flex-col items-end gap-2">
                           <label className="flex items-center gap-1.5 cursor-pointer select-none">

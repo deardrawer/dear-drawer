@@ -35,9 +35,12 @@ export async function GET(request: NextRequest) {
 
     const { results } = await db
       .prepare(
-        `SELECT * FROM payment_requests ORDER BY
-          CASE WHEN status = 'pending' THEN 0 ELSE 1 END,
-          created_at DESC`
+        // 청첩장 정보도 함께 — 이름 · 템플릿 · 이미 결제됐는지 (중복 신청 알아보기)
+        `SELECT pr.*, i.groom_name AS inv_groom_name, i.bride_name AS inv_bride_name,
+                i.template_id AS inv_template_id, i.is_paid AS inv_is_paid
+         FROM payment_requests pr
+         LEFT JOIN invitations i ON i.id = pr.invitation_id
+         ORDER BY CASE WHEN pr.status = 'pending' THEN 0 ELSE 1 END, pr.created_at DESC`
       )
       .all<PaymentRequest>();
 

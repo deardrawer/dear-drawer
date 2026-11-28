@@ -17,16 +17,8 @@ function PaymentForm() {
   // 감사장 템플릿
   const isThankYou = templateId === 'narrative-thankyou'
 
-  // 미니스토리형 템플릿 목록
-  const MINI_STORY_TEMPLATES = [
-    'narrative-magazine', 'narrative-film', 'narrative-record', 'narrative-exhibit', 'narrative-essay',
-    'magazine', 'film', 'record', 'exhibit', 'essay',
-  ]
-  const THE_SIMPLE_TEMPLATES = ['narrative-the-simple', 'the-simple']
-  const isTheSimple = THE_SIMPLE_TEMPLATES.includes(templateId)
-  const isMiniStory = MINI_STORY_TEMPLATES.includes(templateId)
-  const paymentIdx = isTheSimple ? 15 : isMiniStory ? 14 : 8
-  const productName = isTheSimple ? 'THE SIMPLE' : isMiniStory ? '미니스토리형' : '스토리형'
+  // 결제는 스마트스토어 상품 하나 (링크 모음 /links 와 같은 주소)
+  const SMARTSTORE_URL = 'https://mkt.shopping.naver.com/link/6ab51c57eeb8b60d4188f0e7'
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -129,11 +121,11 @@ function PaymentForm() {
           ) : (
             <>
               <p className="text-sm text-gray-600 mb-4">
-                디어드로어에서 모바일 청첩장 결제 완료 후 주문번호를 입력해주세요.
+                스마트스토어에서 결제를 마친 뒤 주문번호를 입력해 주세요.
               </p>
 
               <a
-                href={`https://www.deardrawer.com/product/?idx=${paymentIdx}`}
+                href={SMARTSTORE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full mb-6"
@@ -142,7 +134,7 @@ function PaymentForm() {
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
-                  {productName} 결제하기
+                  스마트스토어에서 결제하기
                 </Button>
               </a>
             </>
@@ -155,13 +147,13 @@ function PaymentForm() {
                 id="orderNumber"
                 value={form.orderNumber}
                 onChange={(e) => setForm({ ...form, orderNumber: e.target.value })}
-                placeholder="예: 202501150001"
+                placeholder="예: 2026112812345678"
                 required
               />
               <p className="text-xs text-gray-500">
                 {isThankYou
                   ? '모바일 청첩장 구매 시 안내된 주문번호를 입력하세요.'
-                  : '아임웹 주문 완료 후 안내된 주문번호를 입력하세요.'}
+                  : '네이버 주문 상세에 나오는 주문번호(16자리)를 입력하세요.'}
               </p>
             </div>
 
